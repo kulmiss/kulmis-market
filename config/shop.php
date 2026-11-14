@@ -17,4 +17,7 @@ return [
     // Static HTML cache for guest pages (see docs/deploy.md for the server rules).
     'page_cache' => (bool) env('PAGE_CACHE', true),
     'page_cache_in_tests' => false,
+
+    // 32-byte key for encrypted backups (php artisan km:backup-key).
+    'backup_key' => env('BACKUP_KEY'),
 ];

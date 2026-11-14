@@ -9,6 +9,8 @@
 <html lang="en" class="h-full">
 <head>
     <meta charset="utf-8">
+    {{-- Also in a meta tag so static cached pages keep the policy (headers come from PHP for live pages). --}}
+    <meta http-equiv="Content-Security-Policy" content="{{ str_replace("; frame-ancestors 'none'", '', \App\Support\Csp::storefront()) }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title }}</title>
     <meta name="description" content="{{ $description }}">
@@ -22,9 +24,7 @@
     <meta property="og:image" content="{{ $ogImage }}">
     <meta name="twitter:card" content="summary_large_image">
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
-    <script>
-        (function(){try{var t=localStorage.getItem('km-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}})();
-    </script>
+    <script>{!! \App\Support\Csp::THEME_SCRIPT !!}</script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>

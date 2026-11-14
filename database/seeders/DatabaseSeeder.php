@@ -9,6 +9,6 @@ class DatabaseSeeder extends Seeder
     /** Production-safe defaults. For demo products: --class=DemoSeeder */
     public function run(): void
     {
-        $this->call(ShopBasicsSeeder::class);
+        $this->call([ShopBasicsSeeder::class, PagesSeeder::class]);
     }
 }

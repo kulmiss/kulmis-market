@@ -30,3 +30,14 @@ change any of them.
 | 21 | Ship the admin build in git? | Yes. `public/admin-app` is committed, so shared hosting needs no Node. CI rebuilds it to make sure it compiles. | Decided (recommended) |
 | 22 | Guests and sessions | Public pages never start a session for guests, so the only cookies are `km_cart` and `km_ref`. Guest checkout uses the stateless API. Signed-in customers get a normal session. | Decided (recommended) |
 | 23 | Storefront look | Clay, sand and coffee colours, serif headings with the system font stack (no web fonts, for speed and privacy). Change the colours in `resources/css/app.css` (`@theme`). | Decided (recommended), easy to change |
+| 24 | Security headers | Strict CSP (one hashed inline script, nothing third-party), plus a meta CSP so cached pages keep it. `form-action` allows `checkout.chapa.co` for the payment redirect. | Decided (recommended) |
+| 25 | Backups | Nightly encrypted backup (libsodium) of the DB, proofs and uploads, kept 14 days on the server. **You still need to copy them off the server.** | Decided (recommended) |
+
+## Still open: needs you
+| # | What | Why |
+|---|------|-----|
+| A | **SMS provider**: which one, plus its API details | Until then SMS only go to the log. Email and Telegram work. |
+| B | **Domain + hosting** | Set `APP_URL`, `MAIL_FROM_ADDRESS`. Note: Proclamation 1321/2024 has rules on keeping personal data on servers in Ethiopia, so this may matter when you choose hosting. |
+| C | **Chapa account** (test, then live keys + webhook secret) | Card / Telebirr payments. |
+| D | **Telegram bot + private channel** | Signals access. |
+| E | **Look & feel** | The colours, logo and texts are placeholders that fit "warm, handcrafted". Tell me what to change. |

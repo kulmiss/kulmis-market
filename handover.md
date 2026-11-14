@@ -1,14 +1,22 @@
 # Handover — Kulmis Market
 
-_Last updated: PR 19._
+_Last updated: PR 20 (the whole plan is built)._
 
-## What this is
-Kulmis Market is an online shop for handcrafted products, plus a trading-signals
-service and a paid monthly membership with a 3-level referral program.
-Customers are in Ethiopia, the only currency is ETB, and the UI is English
-(ready for Amharic later).
+Kulmis Market is an online shop for handcrafted Ethiopian products, plus a
+trading-signals service (private Telegram channel) and a paid monthly
+membership with a 3-level referral program. It's priced in ETB, written in
+English (ready for Amharic) and aimed at customers in Ethiopia.
 
-## Current state
+## Stack
+- **Backend:** Laravel 13 (PHP 8.3), MySQL/MariaDB, database queue + one
+  cron line
+- **Storefront:** server-rendered Blade + Tailwind 4 + about 10 KB of vanilla
+  JS, with a static page cache served without PHP
+- **Admin:** React (satnaing/shadcn-admin + shadcn/ui) at `/admin`
+- **API:** REST `/api/v1`, ready for the Flutter app (Sanctum tokens)
+- Built assets are committed, so the server needs no Node
+
+## PRs (stacked drafts — merge in this order)
 | PR | Branch | Status |
 |----|--------|--------|
 | 1 | `pr/01-scaffold` | Draft. Laravel 13, Docker, CI, docs |
@@ -16,41 +24,56 @@ Customers are in Ethiopia, the only currency is ETB, and the UI is English
 | 3 | `pr/03-money-ledger` | Draft. Double-entry ledger, wallet buckets, idempotency ([docs/ledger.md](docs/ledger.md)) |
 | 4 | `pr/04-catalog` | Draft. Products, variants, images, early access, members-only, cost & 2.5× warning ([docs/catalog.md](docs/catalog.md)) |
 | 5 | `pr/05-pricing` | Draft. Member price, coupons, free shipping, Join & save, profit check ([docs/pricing.md](docs/pricing.md)) |
-| 6 | `pr/06-cart-checkout` | Draft. Cart, guest checkout (idempotent, no oversell), tracking, unpaid auto-cancel ([docs/checkout.md](docs/checkout.md)) |
-| 7 | `pr/07-shipping-notify` | Draft. Zones by city + weight, couriers, status flow, SMS/email/Telegram messages ([docs/shipping-notifications.md](docs/shipping-notifications.md)) |
-| 8 | `pr/08-payments` | Draft. Chapa (signature + re-verify), manual proof, exactly-once, refunds, PDF receipts ([docs/payments.md](docs/payments.md)) |
-| 9 | `pr/09-membership` | Draft. Customer accounts, monthly membership, grace, reminders, loyalty reward ([docs/membership.md](docs/membership.md)) |
-| 10 | `pr/10-signals` | Draft. Signals plan, Telegram bot (personal links, join approval, auto-removal), locked results, performance page ([docs/signals.md](docs/signals.md)) |
-| 11 | `pr/11-referrals` | Draft. 3-level commissions, link/cookie/code, locked referrer, skip inactive, 14-day pending, refund reversal ([docs/referrals.md](docs/referrals.md)) |
-| 12 | `pr/12-wallet-cashout` | Draft. Wallet spending, cash-out (min, name match, approval, reminders), fraud queue + holds ([docs/wallet-cashout-fraud.md](docs/wallet-cashout-fraud.md)) |
-| 13 | `pr/13-engagement` | Draft. Badges, monthly top referrers, QR + share links, dashboard data |
-| 14 | `pr/14-api-v1` | Draft. Order history, profile, SMS password reset, JSON 401s, full endpoint list ([docs/api.md](docs/api.md)) |
-| 15 | `pr/15-admin-shell` | Draft. React admin shell (shadcn-admin), login + 2FA, feature switches, settings, activity log ([docs/admin.md](docs/admin.md)) |
-| 16 | `pr/16-admin-shop` | Draft. Admin: orders (flow, bulk), payments queue + refunds, products editor, categories, coupons, shipping, members |
-| 17 | `pr/17-admin-money` | Draft. Admin: cash-outs, ledger, fraud queue, commissions, referral tree, signals, subscribers, Telegram status |
-| 18 | `pr/18-admin-dashboards` | Draft. KPI dashboard (revenue, gross profit, MRR/churn, commissions, queues), system status, scheduler heartbeat |
-| 19 | `pr/19-storefront` | Draft. Blade storefront (no guest session), static page cache, SEO, account area, pages & banners, Lighthouse CI ([docs/storefront.md](docs/storefront.md)) |
+| 6 | `pr/06-cart-checkout` | Draft. Cart, guest checkout, tracking, unpaid auto-cancel ([docs/checkout.md](docs/checkout.md)) |
+| 7 | `pr/07-shipping-notify` | Draft. Zones, couriers, status flow, SMS/email/Telegram ([docs/shipping-notifications.md](docs/shipping-notifications.md)) |
+| 8 | `pr/08-payments` | Draft. Chapa, manual proof, exactly-once, refunds, receipts ([docs/payments.md](docs/payments.md)) |
+| 9 | `pr/09-membership` | Draft. Accounts, membership, grace, reminders, loyalty ([docs/membership.md](docs/membership.md)) |
+| 10 | `pr/10-signals` | Draft. Signals, Telegram bot access control, locked results ([docs/signals.md](docs/signals.md)) |
+| 11 | `pr/11-referrals` | Draft. 3-level commissions, link/code, locked referrer ([docs/referrals.md](docs/referrals.md)) |
+| 12 | `pr/12-wallet-cashout` | Draft. Wallet spending, cash-out, fraud queue ([docs/wallet-cashout-fraud.md](docs/wallet-cashout-fraud.md)) |
+| 13 | `pr/13-engagement` | Draft. Badges, top referrers, QR/share |
+| 14 | `pr/14-api-v1` | Draft. Account API, SMS reset, endpoint list ([docs/api.md](docs/api.md)) |
+| 15 | `pr/15-admin-shell` | Draft. React admin shell, 2FA login, switches, settings ([docs/admin.md](docs/admin.md)) |
+| 16 | `pr/16-admin-shop` | Draft. Admin: orders, payments, products, coupons, shipping, members |
+| 17 | `pr/17-admin-money` | Draft. Admin: cash-outs, ledger, fraud, commissions, tree, signals |
+| 18 | `pr/18-admin-dashboards` | Draft. KPI dashboard, system status |
+| 19 | `pr/19-storefront` | Draft. Storefront, page cache, SEO, member area ([docs/storefront.md](docs/storefront.md)) |
+| 20 | `pr/20-texts-golive` | **Ready for review (CI runs here).** Default texts, CSP, encrypted backups, `km:doctor`, deploy guide ([docs/deploy.md](docs/deploy.md)) |
 
-The full plan is in [docs/pr-plan.md](docs/pr-plan.md).
+**Merge order:** 1 → 2 → … → 20. Each PR targets the previous branch. After
+merging one into `main`, change the next PR's base to `main` (GitHub offers
+this automatically), or merge the top PR #20 into `main` once you're happy
+with the whole stack.
 
-## Key decisions so far
-- **Laravel at the repo root.** Shared hosting can point the document root at
-  `public/` directly. The React admin will live in `admin/` (PR 15) and build
-  into `public/admin`.
-- **Money is integer santim** (1 ETB = 100). No floats anywhere. The ledger
-  arrives in PR 3.
-- **Queue:** database driver. On shared hosting, one cron line runs
-  `schedule:run`, which drains the queue every minute
-  (`QUEUE_VIA_SCHEDULER=true`). On a VPS, run a real `queue:work` and set it
-  to false.
-- **API** is versioned under `/api/v1`.
-- **Tests:** in-memory SQLite locally for speed, MySQL 8 in CI.
-- **Admin UI:** built on satnaing/shadcn-admin with shadcn/ui components. The
-  user asked not to use `saas-kit`.
-- **CI:** skips draft PRs. Only the top PR of the stack is marked ready.
+## Key decisions
+All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
+- Money is integer santim and double-entry. Balances are never stored.
+  Discounts round half-up; commissions round down.
+- Commissions: only active members (incl. grace) earn, inactive levels
+  are skipped (not passed up), 14 days pending → available, refunds
+  reverse them (even after release).
+- Guests get no session or IP storage. The only cookies are `km_cart` and
+  `km_ref`.
+- Admin requires 2FA. Staff can't get API tokens.
+- Signals access goes through a personal deep link bound to one Telegram
+  account, plus join-request approval, with automatic removal.
 
-## How to run
+## How to run locally
 See [docs/local-setup.md](docs/local-setup.md).
 
-## Next up
-PR 20: default texts, hardening, backups, deploy.
+## Test status
+- 216 backend tests pass on SQLite and MariaDB 10.11 (every money path in
+  the brief is covered).
+- The admin passes typecheck, lint (0 errors) and build. The storefront
+  builds.
+- CI (on the top PR): Pint + PHPUnit on MySQL 8, admin
+  typecheck/lint/build, and Lighthouse ≥ 95 + LCP ≤ 1.5 s.
+
+## Not done / next ideas
+- Larastan isn't installed (the build machine couldn't download it). Add
+  it with `composer require --dev larastan/larastan`.
+- Amharic: all texts go through settings, pages or Blade, so adding `lang/am`
+  plus a language switch is the next step.
+- Product reviews: the `shop.reviews` switch exists (off), but the feature
+  isn't built.
+- Flutter app: the API is ready (`docs/api.md`).

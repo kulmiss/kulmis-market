@@ -32,3 +32,8 @@ Schedule::command('payouts:remind')->dailyAt('08:41');
 Schedule::call(fn () => Cache::put('scheduler.heartbeat', now()->toIso8601String(), now()->addDay()))
     ->everyMinute()->name('heartbeat');
 Schedule::call(fn () => PageCache::clear())->everyFifteenMinutes()->name('page-cache-refresh');
+
+// Encrypted nightly backup (needs BACKUP_KEY). Copy backups off the server too.
+if (config('shop.backup_key')) {
+    Schedule::command('km:backup')->dailyAt('02:17')->withoutOverlapping();
+}

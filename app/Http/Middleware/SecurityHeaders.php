@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\Csp;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,6 +23,12 @@ class SecurityHeaders
         $headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), interest-cohort=()');
         $headers->set('Cross-Origin-Opener-Policy', 'same-origin');
+
+        $headers->set('X-Permitted-Cross-Domain-Policies', 'none');
+        $type = (string) $headers->get('Content-Type');
+        if (! $headers->has('Content-Security-Policy') && ($type === '' || str_starts_with($type, 'text/html'))) {
+            $headers->set('Content-Security-Policy', $request->is('admin', 'admin/*') ? Csp::admin() : Csp::storefront());
+        }
 
         if ($request->isSecure()) {
             $headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
