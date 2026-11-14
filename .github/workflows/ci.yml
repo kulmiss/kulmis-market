@@ -101,3 +101,11 @@ jobs:
           curl -fsS http://127.0.0.1:8000/ > /dev/null || (cat /tmp/serve.log; tail -50 storage/logs/*.log; exit 1)
       - name: Lighthouse CI
         run: npx --yes @lhci/cli@0.14.x autorun
+      - name: Show failed Lighthouse audits
+        if: failure()
+        run: |
+          for f in .lighthouseci/lhr-*.json; do
+            jq -r '.finalDisplayedUrl as $u | .categories as $c | .audits | to_entries[]
+              | select(.value.score != null and .value.score < 0.9 and (.value.scoreDisplayMode == "binary" or .value.scoreDisplayMode == "numeric"))
+              | "\($u)  \(.key): \(.value.title) [\(.value.score)]"' "$f"
+          done | sort -u

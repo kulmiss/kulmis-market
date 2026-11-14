@@ -9,7 +9,7 @@
         @foreach ($categories as $c)<a href="{{ url('/c/'.$c->slug) }}" class="{{ $category?->id === $c->id ? 'btn-dark' : 'btn-ghost' }}">{{ $c->name }}</a>@endforeach
         <form class="ms-auto" method="get">
             <label class="sr-only" for="sort">Sort</label>
-            <select id="sort" name="sort" class="input py-2" onchange="this.form.submit()">
+            <select id="sort" name="sort" class="input py-2" data-autosubmit>
                 <option value="newest" @selected($sort === 'newest')>Newest</option>
                 <option value="price_asc" @selected($sort === 'price_asc')>Price: low to high</option>
                 <option value="price_desc" @selected($sort === 'price_desc')>Price: high to low</option>
