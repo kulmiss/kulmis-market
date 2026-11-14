@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\TrackingController;
+use App\Models\ShippingZone;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Support\Facades\Route;
@@ -15,3 +16,8 @@ Route::middleware(['feature:shop', EncryptCookies::class, AddQueuedCookiesToResp
     Route::post('checkout', [CheckoutController::class, 'store'])->middleware('throttle:10,1')->name('checkout');
     Route::post('orders/track', TrackingController::class)->middleware('throttle:10,1')->name('orders.track');
 });
+
+Route::middleware('feature:shop')->get('shipping/zones', fn () => response()->json([
+    'data' => ShippingZone::query()->where('is_active', true)->orderBy('position')
+        ->get(['id', 'name', 'cities', 'base_fee', 'included_grams', 'per_kg_fee', 'eta_days_min', 'eta_days_max', 'is_default']),
+]))->name('shipping.zones');

@@ -7,6 +7,7 @@ use App\Models\Cart;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ShippingZone;
 use App\Models\User;
 use App\Support\Features;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,6 +18,12 @@ use Tests\TestCase;
 class CheckoutTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        ShippingZone::query()->create(['name' => 'Everywhere', 'cities' => [], 'base_fee' => 0, 'is_default' => true]);
+    }
 
     private function addToCart(Product $p, int $qty = 1, ?string $token = null, ?int $variant = null): string
     {

@@ -58,6 +58,14 @@ return [
     'site.support_email' => ['string', 'hello@kulmis.market', 'Support email', 'Site'],
     'site.telegram_support' => ['string', '', 'Telegram support username', 'Site'],
 
+    // Customer messages (SMS / email / Telegram). Placeholders:
+    // {name} {number} {total} {courier} {tracking} {tracking_link} {track_url} {making_days} {reason} {site}
+    'notify.order_paid' => ['text', 'Hi {name}, we received your payment for order {number} ({total}). Track it here: {track_url}', 'Message: order paid', 'Messages'],
+    'notify.order_making' => ['text', 'Hi {name}, your order {number} is being handmade now. It should be ready in about {making_days} days.', 'Message: being made', 'Messages'],
+    'notify.order_shipped' => ['text', 'Hi {name}, order {number} is on its way with {courier}. Tracking number: {tracking} {tracking_link}', 'Message: shipped', 'Messages'],
+    'notify.order_delivered' => ['text', 'Hi {name}, order {number} has been delivered. Thank you for choosing handmade at {site}!', 'Message: delivered', 'Messages'],
+    'notify.order_cancelled' => ['text', 'Hi {name}, order {number} was cancelled. {reason}', 'Message: cancelled', 'Messages'],
+
     // Manual payment instructions
     'payments.bank_details' => ['text', "Commercial Bank of Ethiopia\nAccount name: Kulmis Market\nAccount number: 1000000000000", 'Bank transfer details', 'Payments'],
     'payments.telebirr_details' => ['text', 'Telebirr: +251 900 000 000 (Kulmis Market)', 'Telebirr transfer details', 'Payments'],

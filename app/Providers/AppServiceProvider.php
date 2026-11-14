@@ -2,14 +2,20 @@
 
 namespace App\Providers;
 
+use App\Events\OrderStatusChanged;
 use App\Models\User;
+use App\Notify\OrderNotifier;
+use App\Notify\Sms\HttpSmsGateway;
+use App\Notify\Sms\LogSmsGateway;
+use App\Notify\Sms\SmsGateway;
 use App\Session\PrivacySessionHandler;
-use App\Shipping\FreeShippingQuoter;
 use App\Shipping\ShippingQuoter;
+use App\Shipping\ZoneShippingQuoter;
 use App\Support\Features;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
@@ -19,7 +25,11 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->bindIf(ShippingQuoter::class, FreeShippingQuoter::class);
+        $this->app->bind(ShippingQuoter::class, ZoneShippingQuoter::class);
+        $this->app->bind(SmsGateway::class, fn () => match (config('services.sms.driver')) {
+            'http' => new HttpSmsGateway,
+            default => new LogSmsGateway,
+        });
     }
 
     public function boot(): void
@@ -39,6 +49,8 @@ class AppServiceProvider extends ServiceProvider
         foreach (config('permissions.abilities') as $ability) {
             Gate::define($ability, fn (User $user) => $user->hasAbility($ability));
         }
+
+        Event::listen(OrderStatusChanged::class, [OrderNotifier::class, 'handle']);
 
         Blade::if('feature', fn (string $key) => Features::enabled($key));
 

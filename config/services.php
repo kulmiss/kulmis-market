@@ -35,4 +35,21 @@ return [
         ],
     ],
 
+    // SMS: "log" (default, writes to the log) or "http" (any provider with a
+    // JSON POST API: {to, message, sender} + Bearer token).
+    'sms' => [
+        'driver' => env('SMS_DRIVER', 'log'),
+        'url' => env('SMS_URL'),
+        'token' => env('SMS_TOKEN'),
+        'sender' => env('SMS_SENDER', 'KulmisMkt'),
+    ],
+
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'bot_username' => env('TELEGRAM_BOT_USERNAME'),
+        'channel_id' => env('TELEGRAM_CHANNEL_ID'),          // private signals channel, e.g. -1001234567890
+        'webhook_secret' => env('TELEGRAM_WEBHOOK_SECRET'),  // checked on every webhook call
+        'admin_chat_id' => env('TELEGRAM_ADMIN_CHAT_ID'),    // where you get reminders (optional)
+    ],
+
 ];
