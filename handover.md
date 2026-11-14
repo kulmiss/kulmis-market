@@ -1,6 +1,6 @@
 # Handover — Kulmis Market
 
-_Last updated: PR 1 (scaffold)._
+_Last updated: PR 2 (platform core)._
 
 ## What this is
 Kulmis Market is an online shop for handcrafted products, plus a trading-signals
@@ -35,4 +35,4 @@ The full plan is in [docs/pr-plan.md](docs/pr-plan.md).
 See [docs/local-setup.md](docs/local-setup.md).
 
 ## Next up
-PR 2: feature switches, settings store, roles, activity log, admin 2FA.
+PR 3: money ledger.

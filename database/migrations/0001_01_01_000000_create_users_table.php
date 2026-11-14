@@ -13,10 +13,20 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
+            $table->string('first_name', 80);
+            $table->string('last_name', 80)->default('');
+            $table->string('phone', 20)->nullable()->unique();
+            $table->string('email')->nullable()->unique();
             $table->timestamp('email_verified_at')->nullable();
+            $table->timestamp('phone_verified_at')->nullable();
             $table->string('password');
+            $table->string('role', 32)->default('customer')->index();
+            $table->string('status', 16)->default('active');
+            $table->text('two_factor_secret')->nullable();
+            $table->text('two_factor_recovery_codes')->nullable();
+            $table->timestamp('two_factor_confirmed_at')->nullable();
+            $table->unsignedBigInteger('two_factor_last_step')->nullable();
+            $table->unsignedBigInteger('telegram_user_id')->nullable()->unique();
             $table->rememberToken();
             $table->timestamps();
         });
@@ -30,6 +40,7 @@ return new class extends Migration
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
+            // Stays NULL for guests (no IP storage, see PrivacySessionHandler).
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
             $table->longText('payload');

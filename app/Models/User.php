@@ -2,31 +2,99 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
+use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
+/**
+ * @property int $id
+ * @property string $first_name
+ * @property string $last_name
+ * @property ?string $phone
+ * @property ?string $email
+ * @property string $role
+ * @property string $status
+ * @property ?string $two_factor_secret
+ * @property ?array<int, string> $two_factor_recovery_codes
+ * @property ?Carbon $two_factor_confirmed_at
+ * @property ?int $two_factor_last_step
+ * @property ?int $telegram_user_id
+ * @property-read string $name
+ */
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    public const ROLE_CUSTOMER = 'customer';
+
+    public const ROLE_SUPER_ADMIN = 'super_admin';
+
+    /** @var array<string, mixed> */
+    protected $attributes = ['role' => self::ROLE_CUSTOMER, 'status' => 'active', 'last_name' => ''];
+
+    protected $fillable = ['first_name', 'last_name', 'phone', 'email', 'password'];
+
+    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'];
+
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
             'password' => 'hashed',
+            'two_factor_secret' => 'encrypted',
+            'two_factor_recovery_codes' => 'encrypted:array',
+            'two_factor_confirmed_at' => 'datetime',
+            'telegram_user_id' => 'integer',
         ];
+    }
+
+    /** @return Attribute<string, never> */
+    protected function name(): Attribute
+    {
+        return Attribute::get(fn () => trim($this->first_name.' '.$this->last_name));
+    }
+
+    /** "Abebe K." — the only form other members ever see. */
+    public function publicName(): string
+    {
+        $initial = mb_substr($this->last_name, 0, 1);
+
+        return $this->first_name.($initial !== '' ? ' '.mb_strtoupper($initial).'.' : '');
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->role !== self::ROLE_CUSTOMER && array_key_exists($this->role, config('permissions.roles'));
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === self::ROLE_SUPER_ADMIN;
+    }
+
+    public function hasAbility(string $ability): bool
+    {
+        if (! $this->isStaff()) {
+            return false;
+        }
+        $abilities = config("permissions.roles.{$this->role}.abilities", []);
+
+        return in_array('*', $abilities, true) || in_array($ability, $abilities, true);
+    }
+
+    public function hasTwoFactor(): bool
+    {
+        return $this->two_factor_secret !== null && $this->two_factor_confirmed_at !== null;
+    }
+
+    public function isActiveAccount(): bool
+    {
+        return $this->status === 'active';
     }
 }
