@@ -1,7 +1,6 @@
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { ChevronDownIcon } from '@radix-ui/react-icons'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { fonts } from '@/config/fonts'
 import { showSubmittedData } from '@/lib/show-submitted-data'
 import { cn } from '@/lib/utils'
@@ -37,11 +36,11 @@ export function AppearanceForm() {
   }
 
   const form = useForm<AppearanceFormValues>({
-    resolver: zodResolver(appearanceFormSchema),
     defaultValues,
   })
 
-  function onSubmit(data: AppearanceFormValues) {
+  function onSubmit(raw: AppearanceFormValues) {
+    const data = appearanceFormSchema.parse(raw)
     if (data.font != font) setFont(data.font)
     if (data.theme != theme) setTheme(data.theme)
 
