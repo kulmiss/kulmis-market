@@ -27,3 +27,4 @@ change any of them.
 | 18 | Can an expired member cash out their balance? | Yes. The wallet is kept when membership expires (per brief), and cash-out stays open. Earning stops. | Decided (recommended) |
 | 19 | Daily sign-up limit exceeded | The new people are still linked (they may be real), but the referrer is flagged and held until you review. | Decided (recommended) |
 | 20 | "Device" for self-referral checks | Uses a hash of the essential cart token. No fingerprinting and no extra cookie. | Decided (recommended) |
+| 21 | Ship the admin build in git? | Yes. `public/admin-app` is committed, so shared hosting needs no Node. CI rebuilds it to make sure it compiles. | Decided (recommended) |

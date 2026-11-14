@@ -25,3 +25,6 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+/admin/node_modules
+/admin/*.tsbuildinfo
+/admin/node_modules/.tmp
