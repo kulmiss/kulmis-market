@@ -25,6 +25,7 @@ return [
     'catalog.early_access_hours' => ['int', 48, 'Member early access (hours)', 'Pricing'],
     'catalog.min_price_cost_ratio' => ['ratio', 250, 'Warn when price is below cost ×', 'Pricing'],
     'payments.fee_bps' => ['bps', 350, 'Payment fee estimate (for profit checks)', 'Pricing'],
+    'catalog.low_stock' => ['int', 3, 'Low stock alert at', 'Pricing'],
     'orders.unpaid_cancel_hours' => ['int', 48, 'Cancel unpaid orders after (hours)', 'Pricing'],
 
     // Referral

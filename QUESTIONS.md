@@ -15,3 +15,5 @@ change any of them.
 | 6 | Static analysis (Larastan) | Left out for now: this build machine can't download it. Add it back with `composer require --dev larastan/larastan`. | Decided (recommended) |
 | 7 | Repo layout | Laravel at the root, React admin in `admin/` building to `public/admin`. Works on shared hosting. | Decided (recommended) |
 | 8 | Rounding | Customer discounts round half-up to the santim. Commissions and rewards round down. | Decided (recommended) |
+| 9 | Members-only product: who can see it? | Everyone sees it with a "Members only" badge (good for "Join & save"). Only active members can buy it. | Decided (recommended) |
+| 10 | Do members keep benefits during the 3-day grace period? | Yes. Discounts, signals and earnings continue until the grace period ends. | Decided (recommended) |

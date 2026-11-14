@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Membership\Members;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -91,6 +93,17 @@ class User extends Authenticatable
     public function hasTwoFactor(): bool
     {
         return $this->two_factor_secret !== null && $this->two_factor_confirmed_at !== null;
+    }
+
+    /** @return HasOne<Membership, $this> */
+    public function membership(): HasOne
+    {
+        return $this->hasOne(Membership::class);
+    }
+
+    public function isActiveMember(): bool
+    {
+        return Members::isActive($this);
     }
 
     public function isActiveAccount(): bool
