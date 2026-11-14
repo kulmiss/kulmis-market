@@ -19,3 +19,7 @@ change any of them.
 | 10 | Do members keep benefits during the 3-day grace period? | Yes. Discounts, signals and earnings continue until the grace period ends. | Decided (recommended) |
 | 11 | Free shipping "over 3,000 ETB": is exactly 3,000 included? | Yes (≥ 3,000), measured on goods after member discount and coupon, excluding shipping. | Decided (recommended) |
 | 12 | Can coupons stack with the member discount? | Yes. The coupon applies after the member discount. Use `members_only` or a lower value to control it. | Decided (recommended) |
+| 13 | Someone signed up without a code: can a later code set their referrer? | No. The referrer is fixed at sign-up (none in this case). Only Super Admin can set or change it. | Decided (recommended) |
+| 14 | Refund after earnings are already *available* | They're reversed from *available*. If the member already spent or withdrew them, the wallet goes negative and cash-out stays blocked until it's positive again. | Decided (recommended) |
+| 15 | Guest buyers (no account) | The referrer is saved per order, and on the signals subscription at the first purchase (kept for renewals). | Decided (recommended) |
+| 16 | Does a skipped level get passed up to the next active member? | No (as in your brief). The skipped share stays with the shop, and each level only ever gets its own rate. | ✅ From brief |

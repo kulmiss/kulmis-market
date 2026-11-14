@@ -6,6 +6,8 @@ use App\Membership\Members;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -25,6 +27,10 @@ use Laravel\Sanctum\HasApiTokens;
  * @property ?Carbon $two_factor_confirmed_at
  * @property ?int $two_factor_last_step
  * @property ?int $telegram_user_id
+ * @property ?string $referral_code
+ * @property ?Carbon $referral_code_changed_at
+ * @property ?int $referrer_id
+ * @property ?Carbon $referred_at
  * @property-read string $name
  */
 class User extends Authenticatable
@@ -53,6 +59,8 @@ class User extends Authenticatable
             'two_factor_recovery_codes' => 'encrypted:array',
             'two_factor_confirmed_at' => 'datetime',
             'telegram_user_id' => 'integer',
+            'referral_code_changed_at' => 'datetime',
+            'referred_at' => 'datetime',
         ];
     }
 
@@ -99,6 +107,18 @@ class User extends Authenticatable
     public function membership(): HasOne
     {
         return $this->hasOne(Membership::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function referrer(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'referrer_id');
+    }
+
+    /** @return HasMany<User, $this> */
+    public function referrals(): HasMany
+    {
+        return $this->hasMany(self::class, 'referrer_id');
     }
 
     public function isActiveMember(): bool

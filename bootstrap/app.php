@@ -1,10 +1,13 @@
 <?php
 
+use App\Http\Middleware\CaptureReferral;
 use App\Http\Middleware\EnsureFeature;
 use App\Http\Middleware\EnsureStaff;
 use App\Http\Middleware\EnsureTwoFactor;
 use App\Http\Middleware\SecurityHeaders;
 use App\Pricing\PricingException;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -31,6 +34,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.2fa' => EnsureTwoFactor::class,
         ]);
         $middleware->throttleApi();
+        // Essential cookies only (cart token, referral code) — also readable by the API.
+        $middleware->api(prepend: [
+            EncryptCookies::class,
+            AddQueuedCookiesToResponse::class,
+        ]);
+        $middleware->web(append: [CaptureReferral::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(fn (PricingException $e) => response()->json(['message' => $e->getMessage()], 422));

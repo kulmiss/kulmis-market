@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\CustomerRegistered;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Support\Activity;
 use App\Support\Phone;
-use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -17,9 +17,6 @@ use Illuminate\Validation\ValidationException;
 /** Customer accounts (token auth for the API and the future Flutter app). */
 class AuthController extends Controller
 {
-    /** Hooks for later steps (referral code at sign-up). @var list<Closure> */
-    public static array $afterRegister = [];
-
     public function register(Request $request): JsonResponse
     {
         $request->merge(['phone' => Phone::normalize($request->input('phone')) ?? $request->input('phone'),
@@ -31,11 +28,10 @@ class AuthController extends Controller
             'email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')],
             'password' => ['required', 'string', Password::min(8)->letters()->numbers()],
             'device_name' => ['nullable', 'string', 'max:60'],
+            'referral_code' => ['nullable', 'string', 'max:16'],
         ]);
         $user = User::query()->create(collect($data)->only(['first_name', 'last_name', 'phone', 'email', 'password'])->all());
-        foreach (self::$afterRegister as $hook) {
-            $hook($request, $user);
-        }
+        CustomerRegistered::dispatch($request, $user);
         Activity::log('customer.registered', $user, [], null, $user->id);
 
         return response()->json(['token' => $this->token($user, $data['device_name'] ?? 'api'), 'user' => self::present($user)], 201);
@@ -76,6 +72,7 @@ class AuthController extends Controller
         return [
             'id' => $user->id, 'first_name' => $user->first_name, 'last_name' => $user->last_name,
             'phone' => $user->phone, 'email' => $user->email,
+            'referral_code' => $user->referral_code,
             'is_member' => $user->isActiveMember(),
             'membership' => $m ? ['status' => $m->status, 'renews_at' => $m->current_period_end?->toIso8601String(),
                 'access_until' => $m->accessEndsAt()?->toIso8601String()] : null,

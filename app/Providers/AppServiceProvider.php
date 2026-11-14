@@ -2,14 +2,20 @@
 
 namespace App\Providers;
 
+use App\Events\CustomerRegistered;
 use App\Events\MembershipActivated;
 use App\Events\MembershipEnded;
 use App\Events\OrderStatusChanged;
+use App\Events\PaymentRefunded;
+use App\Events\PaymentSucceeded;
 use App\Models\User;
 use App\Notify\OrderNotifier;
 use App\Notify\Sms\HttpSmsGateway;
 use App\Notify\Sms\LogSmsGateway;
 use App\Notify\Sms\SmsGateway;
+use App\Orders\CheckoutExtras;
+use App\Referral\Attribution;
+use App\Referral\ReferralListener;
 use App\Session\PrivacySessionHandler;
 use App\Shipping\ShippingQuoter;
 use App\Shipping\ZoneShippingQuoter;
@@ -28,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->singleton(CheckoutExtras::class);
         $this->app->bind(ShippingQuoter::class, ZoneShippingQuoter::class);
         $this->app->bind(SmsGateway::class, fn () => match (config('services.sms.driver')) {
             'http' => new HttpSmsGateway,
@@ -57,6 +64,14 @@ class AppServiceProvider extends ServiceProvider
 
         Event::listen(MembershipActivated::class, [MembershipSignalsListener::class, 'activated']);
         Event::listen(MembershipEnded::class, [MembershipSignalsListener::class, 'ended']);
+
+        // Referral program.
+        Event::listen(PaymentSucceeded::class, [ReferralListener::class, 'paid']);
+        Event::listen(PaymentRefunded::class, [ReferralListener::class, 'refunded']);
+        Event::listen(CustomerRegistered::class,
+            fn (CustomerRegistered $e) => app(Attribution::class)->attachAtSignup($e->request, $e->user));
+        $this->app->make(CheckoutExtras::class)->add(
+            fn ($request, $cart, $user, $data) => app(Attribution::class)->forOrder($request, $user, $data));
 
         Blade::if('feature', fn (string $key) => Features::enabled($key));
 

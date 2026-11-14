@@ -7,18 +7,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\User;
 use App\Orders\Checkout;
+use App\Orders\CheckoutExtras;
 use App\Orders\OrderService;
 use App\Support\Features;
 use App\Support\Phone;
-use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CheckoutController extends Controller
 {
-    /** Hooks later PRs use to add order columns (referral, wallet...). @var list<Closure> */
-    public static array $extenders = [];
-
     public function __construct(private readonly CartManager $carts, private readonly Checkout $checkout) {}
 
     public function store(Request $request): JsonResponse
@@ -40,14 +37,12 @@ class CheckoutController extends Controller
             'address' => ['required', 'string', 'max:500'],
             'shipping_zone_id' => ['nullable', 'integer'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'referral_code' => ['nullable', 'string', 'max:16'],
         ]);
         $cart = $this->carts->find($request);
         abort_unless($cart, 422, 'Your cart is empty.');
 
-        $extra = [];
-        foreach (self::$extenders as $extend) {
-            $extra = array_merge($extra, (array) $extend($request, $cart, $user, $data));
-        }
+        $extra = app(CheckoutExtras::class)->collect($request, $cart, $user, $data);
         $order = $this->checkout->place($cart, $data, $user, $data['checkout_key'], $extra);
         if ($order->wasRecentlyCreated && $order->amountDue() === 0 && $order->status === Order::PENDING_PAYMENT) {
             app(OrderService::class)->markPaid($order, 'Nothing left to pay');

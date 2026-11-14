@@ -7,6 +7,7 @@ use App\Models\Payment;
 use App\Models\Signal;
 use App\Models\User;
 use App\Payments\PaymentService;
+use App\Referral\Attribution;
 use App\Signals\SignalAccess;
 use App\Signals\TelegramBot;
 use App\Support\Features;
@@ -57,6 +58,7 @@ class SignalController extends Controller
         $data = $this->buyer($request);
         try {
             $purchase = $this->access->newGuestPurchase($data, $this->user($request));
+            app(Attribution::class)->forSignals($request, $purchase->subscription);
             $payment = $this->payments->startChapa($purchase, url('/signals?paid=1'));
         } catch (InvalidArgumentException $e) {
             throw ValidationException::withMessages(['signals' => $e->getMessage()]);
@@ -75,6 +77,7 @@ class SignalController extends Controller
         ]);
         try {
             $purchase = $this->access->newGuestPurchase($data, $this->user($request));
+            app(Attribution::class)->forSignals($request, $purchase->subscription);
             $this->payments->submitProof($purchase, $data['method'], $request->file('proof'), $data['reference'] ?? null, $data['phone']);
         } catch (InvalidArgumentException $e) {
             throw ValidationException::withMessages(['signals' => $e->getMessage()]);
@@ -117,6 +120,7 @@ class SignalController extends Controller
             'first_name' => ['required', 'string', 'max:80'], 'last_name' => ['nullable', 'string', 'max:80'],
             'phone' => ['required', fn ($a, $v, $fail) => Phone::isValid($v) ?: $fail('Enter a valid Ethiopian mobile number.')],
             'email' => ['nullable', 'email', 'max:255'],
+            'referral_code' => ['nullable', 'string', 'max:16'],
         ]);
     }
 

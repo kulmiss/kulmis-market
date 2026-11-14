@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\MembershipController;
+use App\Http\Controllers\Api\ReferralController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('auth/register', [AuthController::class, 'register'])->middleware('throttle:10,1')->name('auth.register');
@@ -19,4 +20,10 @@ Route::middleware('feature:membership')->group(function () {
         Route::post('membership/pay', [MembershipController::class, 'pay'])->middleware('throttle:10,1')->name('membership.pay');
         Route::post('membership/payment-proof', [MembershipController::class, 'proof'])->middleware('throttle:10,1')->name('membership.proof');
     });
+});
+
+Route::middleware(['feature:referral', 'auth:sanctum'])->prefix('referral')->name('referral.')->group(function () {
+    Route::get('/', [ReferralController::class, 'show'])->name('show');
+    Route::get('history', [ReferralController::class, 'history'])->name('history');
+    Route::put('code', [ReferralController::class, 'changeCode'])->middleware('throttle:10,1')->name('code');
 });
