@@ -257,6 +257,9 @@ if (forgot) {
     });
 }
 
+/* ---------- auto-submit selects (no inline handlers: strict CSP) ---------- */
+$$('[data-autosubmit]').forEach((el) => el.addEventListener('change', () => el.form?.submit()));
+
 /* ---------- copy buttons ---------- */
 $$('[data-copy]').forEach((b) => b.addEventListener('click', () => {
     const src = $('[data-copy-source]', b.parentElement);
