@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureFeature;
 use App\Http\Middleware\EnsureStaff;
 use App\Http\Middleware\EnsureTwoFactor;
 use App\Http\Middleware\SecurityHeaders;
+use App\Pricing\PricingException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -32,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->throttleApi();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(fn (PricingException $e) => response()->json(['message' => $e->getMessage()], 422));
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );

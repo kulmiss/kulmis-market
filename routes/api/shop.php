@@ -1,0 +1,17 @@
+<?php
+
+use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\CheckoutController;
+use App\Http\Controllers\Api\TrackingController;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Support\Facades\Route;
+
+Route::middleware(['feature:shop', EncryptCookies::class, AddQueuedCookiesToResponse::class])->group(function () {
+    Route::get('cart', [CartController::class, 'show'])->name('cart.show');
+    Route::post('cart/items', [CartController::class, 'add'])->name('cart.add');
+    Route::patch('cart/items/{item}', [CartController::class, 'update'])->whereNumber('item')->name('cart.update');
+    Route::put('cart/coupon', [CartController::class, 'coupon'])->name('cart.coupon');
+    Route::post('checkout', [CheckoutController::class, 'store'])->middleware('throttle:10,1')->name('checkout');
+    Route::post('orders/track', TrackingController::class)->middleware('throttle:10,1')->name('orders.track');
+});

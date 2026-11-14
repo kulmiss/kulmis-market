@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Models\User;
 use App\Session\PrivacySessionHandler;
+use App\Shipping\FreeShippingQuoter;
+use App\Shipping\ShippingQuoter;
 use App\Support\Features;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -17,7 +19,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->app->bindIf(ShippingQuoter::class, FreeShippingQuoter::class);
     }
 
     public function boot(): void

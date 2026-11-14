@@ -1,6 +1,6 @@
 # Handover — Kulmis Market
 
-_Last updated: PR 5._
+_Last updated: PR 6._
 
 ## What this is
 Kulmis Market is an online shop for handcrafted products, plus a trading-signals
@@ -16,6 +16,7 @@ Customers are in Ethiopia, the only currency is ETB, and the UI is English
 | 3 | `pr/03-money-ledger` | Draft. Double-entry ledger, wallet buckets, idempotency ([docs/ledger.md](docs/ledger.md)) |
 | 4 | `pr/04-catalog` | Draft. Products, variants, images, early access, members-only, cost & 2.5× warning ([docs/catalog.md](docs/catalog.md)) |
 | 5 | `pr/05-pricing` | Draft. Member price, coupons, free shipping, Join & save, profit check ([docs/pricing.md](docs/pricing.md)) |
+| 6 | `pr/06-cart-checkout` | Draft. Cart, guest checkout (idempotent, no oversell), tracking, unpaid auto-cancel ([docs/checkout.md](docs/checkout.md)) |
 
 The full plan is in [docs/pr-plan.md](docs/pr-plan.md).
 
@@ -39,4 +40,4 @@ The full plan is in [docs/pr-plan.md](docs/pr-plan.md).
 See [docs/local-setup.md](docs/local-setup.md).
 
 ## Next up
-PR 6: cart & checkout.
+PR 7: shipping & notifications.
