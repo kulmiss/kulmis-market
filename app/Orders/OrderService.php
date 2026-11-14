@@ -65,7 +65,7 @@ class OrderService
         $this->transition($order, Order::CANCELLED, $reason, $actorId);
     }
 
-    private function restock(Order $order): void
+    public function restock(Order $order): void
     {
         foreach ($order->items as $item) {
             /** @var OrderItem $item */

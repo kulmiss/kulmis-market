@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\User;
 use App\Orders\Checkout;
+use App\Orders\OrderService;
 use App\Support\Features;
 use App\Support\Phone;
 use Closure;
@@ -48,6 +49,10 @@ class CheckoutController extends Controller
             $extra = array_merge($extra, (array) $extend($request, $cart, $user, $data));
         }
         $order = $this->checkout->place($cart, $data, $user, $data['checkout_key'], $extra);
+        if ($order->wasRecentlyCreated && $order->amountDue() === 0 && $order->status === Order::PENDING_PAYMENT) {
+            app(OrderService::class)->markPaid($order, 'Nothing left to pay');
+            $order->refresh();
+        }
 
         return response()->json(['data' => $this->present($order)], $order->wasRecentlyCreated ? 201 : 200);
     }
@@ -64,6 +69,7 @@ class CheckoutController extends Controller
             'member_discount' => $order->member_discount,
             'shipping' => $order->shippingPayable(),
             'track_url' => url('/track?number='.$order->number),
+            'payment_methods' => $order->status === Order::PENDING_PAYMENT ? PaymentController::methods() : [],
         ];
     }
 }

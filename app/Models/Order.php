@@ -2,9 +2,13 @@
 
 namespace App\Models;
 
+use App\Orders\OrderService;
+use App\Payments\Payable;
+use App\Support\Activity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -43,7 +47,7 @@ use Illuminate\Support\Carbon;
  * @property ?string $cancel_reason
  * @property Carbon $created_at
  */
-class Order extends Model
+class Order extends Model implements Payable
 {
     public const PENDING_PAYMENT = 'pending_payment';
 
@@ -103,6 +107,66 @@ class Order extends Model
     public function coupon(): BelongsTo
     {
         return $this->belongsTo(Coupon::class);
+    }
+
+    /** @return MorphMany<Payment, $this> */
+    public function payments(): MorphMany
+    {
+        return $this->morphMany(Payment::class, 'payable');
+    }
+
+    // --- Payable -----------------------------------------------------------
+
+    public function payableAmount(): int
+    {
+        return $this->amountDue();
+    }
+
+    public function payableTitle(): string
+    {
+        return 'Order '.$this->number;
+    }
+
+    public function payableIncomeAccount(): string
+    {
+        return 'income:sales';
+    }
+
+    public function payableCustomer(): array
+    {
+        return ['first_name' => $this->first_name, 'last_name' => $this->last_name, 'phone' => $this->phone, 'email' => $this->email];
+    }
+
+    public function payableUserId(): ?int
+    {
+        return $this->user_id;
+    }
+
+    public function isSettled(): bool
+    {
+        return $this->status !== self::PENDING_PAYMENT;
+    }
+
+    public function markPaidFrom(Payment $payment): void
+    {
+        $this->refresh();
+        $this->update(['payment_fee' => $this->payment_fee + $payment->fee]);
+        if ($this->status === self::CANCELLED) {
+            // Paid after auto-cancel: keep the money recorded, flag for a refund or re-open.
+            Activity::log('order.paid_after_cancel', $this, ['payment' => $payment->uuid]);
+
+            return;
+        }
+        app(OrderService::class)->markPaid($this, 'Paid via '.$payment->provider);
+    }
+
+    public function refundedFrom(Payment $payment, int $amount, bool $full): void
+    {
+        $this->refresh();
+        $this->update(['refunded_amount' => $this->refunded_amount + $amount]);
+        if ($full && $this->canMoveTo(self::REFUNDED)) {
+            app(OrderService::class)->transition($this, self::REFUNDED, 'Refunded');
+        }
     }
 
     public function shippingPayable(): int
