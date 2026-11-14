@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Setting;
+use App\Storefront\PageCache;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
@@ -43,6 +44,7 @@ class Settings
         $before = self::get($key);
         Setting::query()->updateOrCreate(['key' => $key], ['value' => $value, 'updated_by' => $actorId]);
         self::flush();
+        PageCache::clear();
         if ($before !== $value) {
             Activity::log('setting.updated', null, ['key' => $key, 'from' => $before, 'to' => $value], $reason);
         }

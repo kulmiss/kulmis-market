@@ -1,24 +1,37 @@
 <?php
 
-use App\Referral\Attribution;
+use App\Http\Controllers\Web\AccountController;
+use App\Http\Controllers\Web\AuthController;
+use App\Referral\Engagement;
+use App\Referral\ReferralCodes;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
+/*
+| Pages that need a session (sign-in, member area, member checkout).
+| Public pages live in routes/storefront.php (no session for guests).
+*/
+
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:20,1');
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
+    Route::get('/forgot', [AuthController::class, 'showForgot'])->name('forgot');
 });
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Referral link: kulmis.market/r/ABDI25 → remembers the code for 30 days.
-Route::get('/r/{code}', function (string $code, Attribution $attribution) {
-    $attribution->rememberFromLink($code);
+Route::middleware('auth')->prefix('account')->name('account.')->group(function () {
+    Route::get('/', [AccountController::class, 'dashboard'])->name('dashboard');
+    Route::post('membership/pay', [AccountController::class, 'payMembership'])->middleware('feature:membership')->name('membership.pay');
+    Route::post('membership/proof', [AccountController::class, 'membershipProof'])->middleware(['feature:membership', 'feature:payments.manual'])->name('membership.proof');
+    Route::post('cash-out', [AccountController::class, 'cashOut'])->middleware(['feature:wallet', 'feature:wallet.cashout', 'throttle:5,1'])->name('cashout');
+    Route::post('referral-code', [AccountController::class, 'referralCode'])->middleware('feature:referral')->name('referral-code');
+});
+Route::post('/checkout', [AccountController::class, 'checkout'])->middleware(['auth', 'feature:shop', 'throttle:10,1'])->name('checkout.member');
 
-    return redirect('/?ref='.rawurlencode(strtoupper($code)));
-})->where('code', '[A-Za-z0-9]{2,16}')->middleware('throttle:60,1')->name('referral.link');
+Route::get('/account/referral-qr.svg', function (Request $request, Engagement $engagement) {
+    app(ReferralCodes::class)->assign($request->user());
 
-// React admin (built into public/admin-app). Any /admin/* path loads the app;
-// it talks to /api/v1/admin with the session + CSRF cookie.
-Route::get('/admin/{path?}', function () {
-    $index = public_path('admin-app/index.html');
-    abort_unless(is_file($index), 404, 'Admin not built. Run: cd admin && npm ci && npm run build');
-
-    return response((string) file_get_contents($index), 200, ['Content-Type' => 'text/html; charset=UTF-8', 'Cache-Control' => 'no-store']);
-})->where('path', '.*')->name('admin.app');
+    return response($engagement->qrSvg(url('/r/'.$request->user()->referral_code)), 200, ['Content-Type' => 'image/svg+xml', 'Cache-Control' => 'private, max-age=86400']);
+})->middleware(['auth', 'feature:referral'])->name('account.qr');

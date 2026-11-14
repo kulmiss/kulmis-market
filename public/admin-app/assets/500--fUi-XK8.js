@@ -1,0 +1,1 @@
+import{d as e}from"./index-C-Fn1Bi8.js";var t=e;export{t as component};

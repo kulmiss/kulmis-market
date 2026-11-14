@@ -18,8 +18,30 @@
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
+    # Never serve the static page cache or dotfiles directly by path
+    RewriteRule ^page-cache/ - [F,L]
+
+    # Static page cache: guests (no km_session cookie), plain GET, no query string
+    RewriteCond %{REQUEST_METHOD} GET
+    RewriteCond %{QUERY_STRING} ^$
+    RewriteCond %{HTTP_COOKIE} !km_session
+    RewriteCond %{DOCUMENT_ROOT}/page-cache/index.html -f
+    RewriteRule ^$ page-cache/index.html [END]
+
+    RewriteCond %{REQUEST_METHOD} GET
+    RewriteCond %{QUERY_STRING} ^$
+    RewriteCond %{HTTP_COOKIE} !km_session
+    RewriteCond %{DOCUMENT_ROOT}/page-cache/$1.html -f
+    RewriteRule ^([a-z0-9/_-]+)$ page-cache/$1.html [END]
+
     # Send Requests To Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.(css|js|webp|avif|jpg|jpeg|png|svg|woff2)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
 </IfModule>

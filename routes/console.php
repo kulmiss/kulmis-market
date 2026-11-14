@@ -1,5 +1,6 @@
 <?php
 
+use App\Storefront\PageCache;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
 
@@ -30,3 +31,4 @@ Schedule::command('payouts:remind')->dailyAt('08:41');
 // Heartbeat for the admin status page (shows if cron is really running).
 Schedule::call(fn () => Cache::put('scheduler.heartbeat', now()->toIso8601String(), now()->addDay()))
     ->everyMinute()->name('heartbeat');
+Schedule::call(fn () => PageCache::clear())->everyFifteenMinutes()->name('page-cache-refresh');

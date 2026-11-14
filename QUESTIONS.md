@@ -28,3 +28,5 @@ change any of them.
 | 19 | Daily sign-up limit exceeded | The new people are still linked (they may be real), but the referrer is flagged and held until you review. | Decided (recommended) |
 | 20 | "Device" for self-referral checks | Uses a hash of the essential cart token. No fingerprinting and no extra cookie. | Decided (recommended) |
 | 21 | Ship the admin build in git? | Yes. `public/admin-app` is committed, so shared hosting needs no Node. CI rebuilds it to make sure it compiles. | Decided (recommended) |
+| 22 | Guests and sessions | Public pages never start a session for guests, so the only cookies are `km_cart` and `km_ref`. Guest checkout uses the stateless API. Signed-in customers get a normal session. | Decided (recommended) |
+| 23 | Storefront look | Clay, sand and coffee colours, serif headings with the system font stack (no web fonts, for speed and privacy). Change the colours in `resources/css/app.css` (`@theme`). | Decided (recommended), easy to change |

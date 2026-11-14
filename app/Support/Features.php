@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\FeatureFlag;
+use App\Storefront\PageCache;
 use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 
@@ -48,6 +49,7 @@ class Features
         $before = self::own($key);
         FeatureFlag::query()->updateOrCreate(['key' => $key], ['enabled' => $enabled, 'updated_by' => $actorId]);
         self::flush();
+        PageCache::clear();
         if ($before !== $enabled) {
             Activity::log('feature.'.($enabled ? 'enabled' : 'disabled'), null, ['key' => $key]);
         }

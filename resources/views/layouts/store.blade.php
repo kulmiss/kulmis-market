@@ -1,0 +1,48 @@
+@php
+    $site = \App\Support\Settings::string('site.name');
+    $title = isset($title) ? $title.' · '.$site : $site.' — '.\App\Support\Settings::string('site.tagline');
+    $description = $description ?? 'Handcrafted Ethiopian products, member prices, and trading signals.';
+    $ogImage = $ogImage ?? asset('og-default.png');
+    $topBar = \App\Models\Banner::query()->live('top_bar')->first();
+@endphp
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ $title }}</title>
+    <meta name="description" content="{{ $description }}">
+    <link rel="canonical" href="{{ $canonical ?? url()->current() }}">
+    <meta name="theme-color" content="#b5532b">
+    <meta property="og:site_name" content="{{ $site }}">
+    <meta property="og:title" content="{{ $title }}">
+    <meta property="og:description" content="{{ $description }}">
+    <meta property="og:type" content="{{ $ogType ?? 'website' }}">
+    <meta property="og:url" content="{{ $canonical ?? url()->current() }}">
+    <meta property="og:image" content="{{ $ogImage }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <script>
+        (function(){try{var t=localStorage.getItem('km-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}})();
+    </script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('head')
+</head>
+<body class="flex min-h-full flex-col">
+<a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:p-2">Skip to content</a>
+@if ($topBar)
+    <div class="bg-coffee-900 px-4 py-2 text-center text-sm text-sand-100">
+        {{ $topBar->title }} @if ($topBar->link_url)<a class="ms-2 underline" href="{{ $topBar->link_url }}">{{ $topBar->link_text ?? 'Learn more' }}</a>@endif
+    </div>
+@endif
+@include('store.partials.header')
+<main id="main" class="flex-1">
+    @if (session('status'))
+        <div class="container-km mt-4"><div class="rounded-xl bg-leaf-600/10 px-4 py-3 text-leaf-600" role="status">{{ session('status') }}</div></div>
+    @endif
+    @yield('content')
+</main>
+@include('store.partials.footer')
+@stack('scripts')
+</body>
+</html>

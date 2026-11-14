@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Events\CatalogChanged;
 use App\Events\CustomerRegistered;
 use App\Events\MembershipActivated;
 use App\Events\MembershipEnded;
@@ -20,6 +21,7 @@ use App\Session\PrivacySessionHandler;
 use App\Shipping\ShippingQuoter;
 use App\Shipping\ZoneShippingQuoter;
 use App\Signals\MembershipSignalsListener;
+use App\Storefront\PageCache;
 use App\Support\Features;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -72,6 +74,9 @@ class AppServiceProvider extends ServiceProvider
             fn (CustomerRegistered $e) => app(Attribution::class)->attachAtSignup($e->request, $e->user));
         $this->app->make(CheckoutExtras::class)->add(
             fn ($request, $cart, $user, $data) => app(Attribution::class)->forOrder($request, $user, $data));
+
+        // Static page cache: anything shown on public pages changed → purge.
+        Event::listen(CatalogChanged::class, fn () => PageCache::clear());
 
         Blade::if('feature', fn (string $key) => Features::enabled($key));
 
