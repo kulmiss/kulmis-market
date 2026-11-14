@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\Tag;
+use App\Pricing\ProfitCheck;
 use App\Support\Activity;
 use App\Support\Settings;
 use Illuminate\Http\JsonResponse;
@@ -187,7 +188,8 @@ class ProductController extends Controller
         return array_merge($p->makeVisible(['cost_materials', 'cost_labour', 'cost_packaging'])->toArray(), [
             'total_cost' => $p->totalCost(),
             'available_stock' => $p->availableStock(),
-            'warnings' => $p->priceWarnings(),
+            'warnings' => app(ProfitCheck::class)->warnings($p),
+            'profit' => app(ProfitCheck::class)->worstCase($p),
             'images' => $p->images->map(fn ($i) => $this->presentImage($i))->all(),
         ]);
     }

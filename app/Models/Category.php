@@ -19,6 +19,9 @@ class Category extends Model
     /** @use HasFactory<CategoryFactory> */
     use HasFactory;
 
+    /** @var array<string, mixed> */
+    protected $attributes = ['is_active' => true, 'position' => 0];
+
     protected $fillable = ['parent_id', 'name', 'slug', 'description', 'position', 'is_active'];
 
     protected $dispatchesEvents = ['saved' => CatalogChanged::class, 'deleted' => CatalogChanged::class];

@@ -19,6 +19,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ProductVariant extends Model
 {
+    /** @var array<string, mixed> */
+    protected $attributes = ['is_active' => true, 'position' => 0];
+
     protected $fillable = ['sku', 'name', 'options', 'price', 'weight_grams', 'stock', 'position', 'is_active'];
 
     protected $dispatchesEvents = ['saved' => CatalogChanged::class, 'deleted' => CatalogChanged::class];

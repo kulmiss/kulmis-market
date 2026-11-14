@@ -43,6 +43,9 @@ class Product extends Model
 
     public const STATUSES = ['draft', 'active', 'archived'];
 
+    /** @var array<string, mixed> */
+    protected $attributes = ['stock_mode' => self::STOCK, 'status' => 'draft', 'is_featured' => false, 'is_members_only' => false, 'weight_grams' => 0, 'cost_materials' => 0, 'cost_labour' => 0, 'cost_packaging' => 0];
+
     protected $fillable = [
         'name', 'slug', 'short_description', 'description', 'category_id', 'price',
         'cost_materials', 'cost_labour', 'cost_packaging', 'weight_grams', 'stock_mode', 'stock',
