@@ -21,3 +21,4 @@ if (config('shop.queue_via_scheduler')) {
 
 Schedule::command('queue:prune-failed --hours=720')->daily();
 Schedule::command('orders:cancel-unpaid')->hourly()->withoutOverlapping();
+Schedule::command('memberships:sweep')->hourly()->withoutOverlapping();

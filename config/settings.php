@@ -66,6 +66,13 @@ return [
     'notify.order_delivered' => ['text', 'Hi {name}, order {number} has been delivered. Thank you for choosing handmade at {site}!', 'Message: delivered', 'Messages'],
     'notify.order_cancelled' => ['text', 'Hi {name}, order {number} was cancelled. {reason}', 'Message: cancelled', 'Messages'],
 
+    // Membership messages. Placeholders: {name} {date} {grace_date} {price} {renew_url} {site} {amount}
+    'notify.membership_activated' => ['text', 'Welcome to {site} membership, {name}! Your benefits are active until {date}.', 'Message: membership active', 'Messages'],
+    'notify.membership_before' => ['text', 'Hi {name}, your membership renews on {date}. Renew now to keep your discounts, signals and earnings: {renew_url}', 'Message: renewal reminder (before)', 'Messages'],
+    'notify.membership_today' => ['text', 'Hi {name}, your membership ends today. Renew ({price}) to keep your benefits: {renew_url}', 'Message: renewal reminder (on the day)', 'Messages'],
+    'notify.membership_after' => ['text', 'Hi {name}, your membership has ended. You still have benefits until {grace_date}. Renew here: {renew_url}', 'Message: renewal reminder (after)', 'Messages'],
+    'notify.loyalty_reward' => ['text', 'Thank you for staying with us, {name}! We added {amount} to your wallet.', 'Message: loyalty reward', 'Messages'],
+
     // Manual payment instructions
     'payments.bank_details' => ['text', "Commercial Bank of Ethiopia\nAccount name: Kulmis Market\nAccount number: 1000000000000", 'Bank transfer details', 'Payments'],
     'payments.telebirr_details' => ['text', 'Telebirr: +251 900 000 000 (Kulmis Market)', 'Telebirr transfer details', 'Payments'],
