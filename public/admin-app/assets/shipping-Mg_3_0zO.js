@@ -1,1 +1,0 @@
-import{r as e}from"./catalog-pages-Cle_ID38.js";var t=e;export{t as component};
