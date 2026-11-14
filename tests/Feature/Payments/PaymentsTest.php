@@ -219,6 +219,19 @@ class PaymentsTest extends TestCase
         Http::assertSent(fn ($r) => str_contains($r->url(), '/refund/'));
     }
 
+    public function test_admin_can_list_payments_of_one_order(): void
+    {
+        Storage::fake('local');
+        $a = $this->order();
+        $b = $this->order();
+        foreach ([$a, $b] as $o) {
+            app(PaymentService::class)->submitProof($o, 'telebirr', UploadedFile::fake()->image('p.jpg'), null, null);
+        }
+        $this->actingAsAdmin();
+        $this->getJson('/api/v1/admin/payments?order_id='.$a->id)->assertOk()->assertJsonPath('total', 1)
+            ->assertJsonPath('data.0.payable_id', $a->id);
+    }
+
     public function test_refund_needs_finance_ability(): void
     {
         $this->actingAsAdmin('fulfilment');

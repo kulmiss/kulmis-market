@@ -26,9 +26,10 @@ class PaymentController extends Controller
             'status' => ['nullable', 'string', 'max:20'], 'provider' => ['nullable', 'string', 'max:20'],
             'q' => ['nullable', 'string', 'max:80'], 'per_page' => ['nullable', 'integer', 'max:200'],
         ]);
-        $page = Payment::query()->with('payable')
+        $page = Payment::query()->with(['payable', 'refunds'])
             ->when($request->input('status'), fn ($q, $v) => $q->where('status', $v))
             ->when($request->input('provider'), fn ($q, $v) => $q->where('provider', $v))
+            ->when($request->input('order_id'), fn ($q, $v) => $q->where('payable_type', (new Order)->getMorphClass())->where('payable_id', $v))
             ->when($request->input('q'), fn ($q, $v) => $q->where(fn ($w) => $w->where('tx_ref', 'like', "%$v%")
                 ->orWhere('provider_reference', 'like', "%$v%")->orWhere('proof_reference', 'like', "%$v%")))
             ->latest('id')->paginate((int) $request->input('per_page', 25));

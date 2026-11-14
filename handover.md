@@ -1,6 +1,6 @@
 # Handover — Kulmis Market
 
-_Last updated: PR 15._
+_Last updated: PR 16._
 
 ## What this is
 Kulmis Market is an online shop for handcrafted products, plus a trading-signals
@@ -26,6 +26,7 @@ Customers are in Ethiopia, the only currency is ETB, and the UI is English
 | 13 | `pr/13-engagement` | Draft. Badges, monthly top referrers, QR + share links, dashboard data |
 | 14 | `pr/14-api-v1` | Draft. Order history, profile, SMS password reset, JSON 401s, full endpoint list ([docs/api.md](docs/api.md)) |
 | 15 | `pr/15-admin-shell` | Draft. React admin shell (shadcn-admin), login + 2FA, feature switches, settings, activity log ([docs/admin.md](docs/admin.md)) |
+| 16 | `pr/16-admin-shop` | Draft. Admin: orders (flow, bulk), payments queue + refunds, products editor, categories, coupons, shipping, members |
 
 The full plan is in [docs/pr-plan.md](docs/pr-plan.md).
 
@@ -49,4 +50,4 @@ The full plan is in [docs/pr-plan.md](docs/pr-plan.md).
 See [docs/local-setup.md](docs/local-setup.md).
 
 ## Next up
-PR 16: admin shop screens.
+PR 17: admin money & signals screens.
