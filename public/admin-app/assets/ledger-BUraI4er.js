@@ -1,0 +1,1 @@
+import{i as e}from"./money-pages-Tpp_f6zL.js";var t=e;export{t as component};

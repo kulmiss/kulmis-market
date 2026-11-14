@@ -1,1 +1,0 @@
-import{t as e}from"./catalog-pages-C13ITdru.js";var t=e;export{t as component};

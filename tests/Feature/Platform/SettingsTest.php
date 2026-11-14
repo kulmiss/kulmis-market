@@ -30,7 +30,8 @@ class SettingsTest extends TestCase
         $this->assertSame(550_000, Settings::get('membership.price'));
         $log = ActivityLog::query()->where('action', 'setting.updated')->firstOrFail();
         $this->assertSame('New price', $log->reason);
-        $this->assertSame(['key' => 'membership.price', 'from' => 500_000, 'to' => 550_000], $log->properties);
+        // assertEquals: MySQL 8 may reorder JSON object keys.
+        $this->assertEquals(['key' => 'membership.price', 'from' => 500_000, 'to' => 550_000], $log->properties);
     }
 
     public function test_invalid_values_are_rejected(): void
