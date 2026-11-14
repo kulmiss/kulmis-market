@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\MembershipController;
 use App\Http\Controllers\Api\ReferralController;
@@ -37,4 +38,14 @@ Route::middleware(['feature:wallet', 'auth:sanctum'])->prefix('wallet')->name('w
     Route::get('/', [WalletController::class, 'show'])->name('show');
     Route::post('cash-out', [WalletController::class, 'cashOut'])
         ->middleware(['feature:wallet.cashout', 'throttle:5,1'])->name('cashout');
+});
+
+Route::post('auth/forgot', [AccountController::class, 'forgot'])->middleware('throttle:3,10')->name('auth.forgot');
+Route::post('auth/reset', [AccountController::class, 'reset'])->middleware('throttle:10,10')->name('auth.reset');
+
+Route::middleware('auth:sanctum')->prefix('me')->name('me.')->group(function () {
+    Route::put('/', [AccountController::class, 'update'])->name('update');
+    Route::put('password', [AccountController::class, 'password'])->name('password');
+    Route::get('orders', [AccountController::class, 'orders'])->name('orders');
+    Route::get('orders/{number}', [AccountController::class, 'order'])->name('orders.show');
 });

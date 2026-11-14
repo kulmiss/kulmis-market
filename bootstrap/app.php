@@ -40,6 +40,8 @@ return Application::configure(basePath: dirname(__DIR__))
             AddQueuedCookiesToResponse::class,
         ]);
         $middleware->web(append: [CaptureReferral::class]);
+        // API callers get a JSON 401; people browsing the shop go to /login.
+        $middleware->redirectGuestsTo(fn (Request $request) => $request->is('api/*') ? null : '/login');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(fn (PricingException $e) => response()->json(['message' => $e->getMessage()], 422));
