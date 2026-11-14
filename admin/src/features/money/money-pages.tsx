@@ -1,0 +1,238 @@
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { type ColumnDef } from '@tanstack/react-table'
+import { Check, Copy, Eye, X } from 'lucide-react'
+import { toast } from 'sonner'
+import { useMutate } from '@/hooks/use-mutate'
+import { api } from '@/lib/api'
+import { formatDate, formatETB } from '@/lib/money'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { FilterBar, SearchInput, SelectFilter, opts } from '@/components/km/filter-bar'
+import { FormDialog } from '@/components/km/form-dialog'
+import { Page } from '@/components/km/page'
+import { ResourceTable } from '@/components/km/resource-table'
+import { StatusBadge } from '@/components/km/status-badge'
+
+/* ---------- Cash-outs ---------- */
+
+type Payout = {
+  id: number; amount: number; method: string; account: string; account_name: string; bank_name: string | null; status: string
+  due_at: string; created_at: string; payout_reference: string | null; reject_reason: string | null; hold_reason: string | null
+  user: { id: number; first_name: string; last_name: string; phone: string }
+}
+
+export function CashOutsPage() {
+  const [status, setStatus] = useState('requested')
+  const [overdue, setOverdue] = useState(false)
+  const columns: ColumnDef<Payout, unknown>[] = [
+    { header: 'Requested', cell: ({ row }) => formatDate(row.original.created_at, true) },
+    { header: 'Member', cell: ({ row }) => `${row.original.user.first_name} ${row.original.user.last_name}` },
+    { header: 'Amount', cell: ({ row }) => <b>{formatETB(row.original.amount)}</b> },
+    { header: 'To', cell: ({ row }) => `${row.original.method}${row.original.bank_name ? ` · ${row.original.bank_name}` : ''} · ${row.original.account}` },
+    { header: 'Due', cell: ({ row }) => {
+      const late = new Date(row.original.due_at) < new Date() && ['requested', 'on_hold'].includes(row.original.status)
+      return <span className={late ? 'font-semibold text-red-600' : ''}>{formatDate(row.original.due_at, true)}{late ? ' · overdue' : ''}</span>
+    } },
+    { header: 'Status', cell: ({ row }) => <span><StatusBadge status={row.original.status} />{row.original.hold_reason && <span className='ms-1 text-xs'>{row.original.hold_reason}</span>}</span> },
+    { header: '', id: 'act', cell: ({ row }) => ['requested', 'on_hold'].includes(row.original.status) && <PayoutActions payout={row.original} /> },
+  ]
+  return (
+    <Page title='Cash-outs' description='Pay within 3 days. Open a request to see the full account number, send the money, then record the reference.'>
+      <FilterBar>
+        <SelectFilter value={status} onChange={setStatus} placeholder='Status' options={opts('requested', 'on_hold', 'paid', 'rejected')} />
+        <label className='flex items-center gap-2 text-sm'><Switch checked={overdue} onCheckedChange={setOverdue} /> Overdue only</label>
+      </FilterBar>
+      <ResourceTable<Payout> queryKey='cash-outs' path='/cash-outs' params={{ status, overdue: overdue ? 1 : undefined }} columns={columns} />
+    </Page>
+  )
+}
+
+function PayoutActions({ payout }: { payout: Payout }) {
+  const [reference, setReference] = useState('')
+  const [reason, setReason] = useState('')
+  const [full, setFull] = useState<{ account_number: string; wallet: { available: number } } | null>(null)
+  const pay = useMutate('post', ['cash-outs'], 'Marked as paid — member notified')
+  const reject = useMutate('post', ['cash-outs'], 'Rejected — money returned to wallet')
+  return (
+    <div className='flex gap-1'>
+      <FormDialog title={`Pay ${formatETB(payout.amount)} to ${payout.account_name}`} saveText='I sent it — mark paid'
+        trigger={<Button size='sm' onClick={async () => setFull((await api.get(`/cash-outs/${payout.id}`)).data.data)}><Eye /> Pay</Button>}
+        onSave={() => pay.mutateAsync({ path: `/cash-outs/${payout.id}/pay`, body: { reference } })}>
+        <div className='rounded-md bg-muted p-3 text-sm'>
+          <div>{payout.method === 'bank' ? `Bank: ${payout.bank_name}` : 'Telebirr'}</div>
+          <div>Name: <b>{payout.account_name}</b></div>
+          <div className='flex items-center gap-2'>Account: <b className='font-mono'>{full?.account_number ?? '…'}</b>
+            {full && <Button size='icon' variant='ghost' className='size-6' onClick={() => navigator.clipboard.writeText(full.account_number).then(() => toast.success('Copied'))}><Copy /></Button>}</div>
+          {payout.status === 'on_hold' && <div className='mt-2 text-amber-700'>On hold: review the fraud queue first.</div>}
+        </div>
+        <Input placeholder='Transfer reference (required)' value={reference} onChange={(e) => setReference(e.target.value)} />
+      </FormDialog>
+      <FormDialog title='Reject cash-out' saveText='Reject' trigger={<Button size='sm' variant='ghost'><X /></Button>}
+        onSave={() => reject.mutateAsync({ path: `/cash-outs/${payout.id}/reject`, body: { reason } })}>
+        <Input placeholder='Reason (sent to the member)' value={reason} onChange={(e) => setReason(e.target.value)} />
+      </FormDialog>
+    </div>
+  )
+}
+
+/* ---------- Ledger ---------- */
+
+type Entry = { id: number; uuid: string; type: string; description: string | null; reason: string | null; created_at: string
+  postings: { id: number; amount: number; account: { code: string; name: string } }[] }
+
+export function LedgerPage() {
+  const [type, setType] = useState('')
+  const [user, setUser] = useState('')
+  const accounts = useQuery({ queryKey: ['ledger-accounts'], queryFn: async () => (await api.get<{ data: { code: string; name: string; type: string; balance: number }[] }>('/ledger/accounts')).data.data })
+  const columns: ColumnDef<Entry, unknown>[] = [
+    { header: 'When', cell: ({ row }) => formatDate(row.original.created_at, true) },
+    { header: 'Type', cell: ({ row }) => <code className='text-xs'>{row.original.type}</code> },
+    { header: 'Description', cell: ({ row }) => <span>{row.original.description}{row.original.reason && <span className='block text-xs text-muted-foreground'>Reason: {row.original.reason}</span>}</span> },
+    { header: 'Postings (+ debit / − credit)', cell: ({ row }) => (
+      <div className='grid text-xs'>{row.original.postings.map((p) => <span key={p.id} className='font-mono'>{p.account.code}: {p.amount > 0 ? '+' : ''}{formatETB(p.amount, false)}</span>)}</div>
+    ) },
+  ]
+  return (
+    <Page title='Ledger' description='Double-entry, integer santim. Balances are calculated from postings and never edited.'>
+      <div className='mb-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-6'>
+        {accounts.data?.map((a) => (
+          <Card key={a.code} className='gap-1 py-3'>
+            <CardHeader className='px-3'><CardTitle className='text-xs font-normal text-muted-foreground'>{a.code}</CardTitle></CardHeader>
+            <CardContent className='px-3 font-semibold'>{formatETB(a.balance)}</CardContent>
+          </Card>
+        ))}
+      </div>
+      <FilterBar>
+        <SearchInput value={type} onChange={setType} placeholder='Type starts with (commission., payout.)' />
+        <SearchInput value={user} onChange={setUser} placeholder='Member ID' />
+      </FilterBar>
+      <ResourceTable<Entry> queryKey='ledger' path='/ledger/entries' params={{ type, user_id: user }} columns={columns} />
+    </Page>
+  )
+}
+
+/* ---------- Fraud ---------- */
+
+type Flag = { id: number; type: string; status: string; details: Record<string, unknown> | null; note: string | null; created_at: string
+  user: { id: number; first_name: string; last_name: string; phone: string; referral_code: string; status: string } }
+
+export function FraudPage() {
+  const [status, setStatus] = useState('open')
+  const columns: ColumnDef<Flag, unknown>[] = [
+    { header: 'When', cell: ({ row }) => formatDate(row.original.created_at, true) },
+    { header: 'Member', cell: ({ row }) => <a className='underline' href={`/admin/members/${row.original.user.id}`}>{row.original.user.first_name} {row.original.user.last_name}</a> },
+    { header: 'Signal', cell: ({ row }) => row.original.type.replaceAll('_', ' ') },
+    { header: 'Details', cell: ({ row }) => <code className='text-xs'>{JSON.stringify(row.original.details)}</code> },
+    { header: 'Status', cell: ({ row }) => <StatusBadge status={row.original.status} /> },
+    { header: '', id: 'act', cell: ({ row }) => row.original.status === 'open' && <Review flag={row.original} /> },
+  ]
+  return (
+    <Page title='Fraud queue' description="An open flag holds the member's earnings and cash-outs until you clear it.">
+      <FilterBar><SelectFilter value={status} onChange={setStatus} placeholder='Status' options={opts('open', 'cleared', 'confirmed')} /></FilterBar>
+      <ResourceTable<Flag> queryKey='fraud' path='/fraud' params={{ status: status === 'all' ? 'all' : status }} columns={columns} />
+    </Page>
+  )
+}
+
+function Review({ flag }: { flag: Flag }) {
+  const review = useMutate('post', ['fraud'], 'Reviewed')
+  const [note, setNote] = useState('')
+  const [suspend, setSuspend] = useState(false)
+  return (
+    <FormDialog title='Review flag' saveText='Confirm fraud' trigger={<Button size='sm' variant='outline'>Review</Button>}
+      onSave={() => review.mutateAsync({ path: `/fraud/${flag.id}/review`, body: { decision: 'confirmed', note, suspend } })}>
+      <Input placeholder='Note' value={note} onChange={(e) => setNote(e.target.value)} />
+      <label className='flex items-center gap-2 text-sm'><Switch checked={suspend} onCheckedChange={setSuspend} /> Also suspend the account</label>
+      <Button variant='outline' onClick={() => review.mutate({ path: `/fraud/${flag.id}/review`, body: { decision: 'cleared', note } })}>
+        <Check /> It's fine — clear and release holds
+      </Button>
+    </FormDialog>
+  )
+}
+
+/* ---------- Commissions ---------- */
+
+type CommissionRow = { id: number; type: string; level: number; base_amount: number; rate_bps: number; amount: number; reversed_amount: number
+  status: string; skip_reason: string | null; available_at: string | null; on_hold: boolean; created_at: string
+  recipient: { id: number; first_name: string; last_name: string } }
+
+export function CommissionsPage() {
+  const [status, setStatus] = useState('all')
+  const [type, setType] = useState('all')
+  const [level, setLevel] = useState('all')
+  const columns: ColumnDef<CommissionRow, unknown>[] = [
+    { header: 'When', cell: ({ row }) => formatDate(row.original.created_at, true) },
+    { header: 'Recipient', cell: ({ row }) => `${row.original.recipient.first_name} ${row.original.recipient.last_name}` },
+    { header: 'Sale', cell: ({ row }) => `${row.original.type} · L${row.original.level}` },
+    { header: 'Base', cell: ({ row }) => formatETB(row.original.base_amount) },
+    { header: 'Rate', cell: ({ row }) => `${row.original.rate_bps / 100}%` },
+    { header: 'Amount', cell: ({ row }) => <span>{formatETB(row.original.amount)}{row.original.reversed_amount > 0 && <span className='ms-1 text-xs text-red-600'>−{formatETB(row.original.reversed_amount)}</span>}</span> },
+    { header: 'Status', cell: ({ row }) => <span><StatusBadge status={row.original.on_hold ? 'on_hold' : row.original.status} />{row.original.skip_reason && <span className='ms-1 text-xs text-muted-foreground'>{row.original.skip_reason.replaceAll('_', ' ')}</span>}</span> },
+    { header: 'Available', cell: ({ row }) => formatDate(row.original.available_at) },
+  ]
+  return (
+    <Page title='Commissions' description='Pending for 14 days, then available. Skipped = recipient was not an active member (the shop keeps it).'>
+      <FilterBar>
+        <SelectFilter value={status} onChange={setStatus} placeholder='Status' options={opts('pending', 'available', 'reversed', 'skipped')} />
+        <SelectFilter value={type} onChange={setType} placeholder='Type' options={opts('membership', 'signals', 'products')} />
+        <SelectFilter value={level} onChange={setLevel} placeholder='Level' options={[1, 2, 3].map((l) => ({ value: String(l), label: `Level ${l}` }))} />
+      </FilterBar>
+      <ResourceTable<CommissionRow> queryKey='commissions' path='/referrals/commissions' params={{ status, type, level }} columns={columns} />
+    </Page>
+  )
+}
+
+/* ---------- Referral tree ---------- */
+
+type Node = { id: number; name: string; phone: string | null; code: string | null; active: boolean; joined: string | null
+  wallet: { pending: number; available: number; payout: number }; children_count: number; children: Node[] }
+
+export function ReferralTreePage({ initialUser }: { initialUser?: number }) {
+  const [userId, setUserId] = useState(initialUser ? String(initialUser) : '')
+  const [show, setShow] = useState(initialUser ? String(initialUser) : '')
+  const tree = useQuery({
+    queryKey: ['tree', show], enabled: !!show,
+    queryFn: async () => (await api.get<{ data: { upline: { id: number; name: string; code: string }[]; node: Node } }>(`/referrals/tree/${show}`)).data.data,
+  })
+  return (
+    <Page title='Referral tree' description='Full view for Super Admin: 3 levels down, upline, wallets.'>
+      <FilterBar>
+        <Input className='h-9 w-48' placeholder='Member ID' value={userId} onChange={(e) => setUserId(e.target.value)} />
+        <Button size='sm' onClick={() => setShow(userId)}>Show</Button>
+      </FilterBar>
+      {tree.data && (
+        <div className='grid gap-3'>
+          {tree.data.upline.length > 0 && (
+            <div className='text-sm text-muted-foreground'>Upline: {tree.data.upline.map((u) => (
+              <button key={u.id} className='me-2 underline' onClick={() => { setUserId(String(u.id)); setShow(String(u.id)) }}>{u.name} ({u.code})</button>
+            ))}</div>
+          )}
+          <TreeNode node={tree.data.node} level={0} onOpen={(id) => { setUserId(String(id)); setShow(String(id)) }} />
+        </div>
+      )}
+    </Page>
+  )
+}
+
+function TreeNode({ node, level, onOpen }: { node: Node; level: number; onOpen: (id: number) => void }) {
+  return (
+    <div className={level > 0 ? 'ms-6 border-s ps-3' : ''}>
+      <div className='flex flex-wrap items-center gap-2 py-1 text-sm'>
+        <button className='font-medium underline-offset-4 hover:underline' onClick={() => onOpen(node.id)}>{node.name}</button>
+        <span className='font-mono text-xs text-muted-foreground'>{node.code}</span>
+        <StatusBadge status={node.active ? 'active' : 'expired'} />
+        <span className='text-xs text-muted-foreground'>{level === 0 ? 'you are viewing' : `L${level}`} · pending {formatETB(node.wallet.pending)} · available {formatETB(node.wallet.available)} · {node.children_count} direct</span>
+      </div>
+      {node.children.map((c) => <TreeNode key={c.id} node={c} level={level + 1} onOpen={onOpen} />)}
+    </div>
+  )
+}
+
+export function TableShell({ head, children }: { head: string[]; children: React.ReactNode }) {
+  return <Table><TableHeader><TableRow>{head.map((h) => <TableHead key={h}>{h}</TableHead>)}</TableRow></TableHeader><TableBody>{children}</TableBody></Table>
+}
+export { TableCell, TableRow }

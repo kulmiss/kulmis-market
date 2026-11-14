@@ -19,11 +19,16 @@ import { Route as errors500RouteImport } from './routes/(errors)/500'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
+import { Route as AuthenticatedCashOutsRouteImport } from './routes/_authenticated/cash-outs'
 import { Route as AuthenticatedCategoriesRouteImport } from './routes/_authenticated/categories'
+import { Route as AuthenticatedCommissionsRouteImport } from './routes/_authenticated/commissions'
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
 import { Route as AuthenticatedCouponsRouteImport } from './routes/_authenticated/coupons'
 import { Route as AuthenticatedFeaturesRouteImport } from './routes/_authenticated/features'
+import { Route as AuthenticatedFraudRouteImport } from './routes/_authenticated/fraud'
+import { Route as AuthenticatedLedgerRouteImport } from './routes/_authenticated/ledger'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
+import { Route as AuthenticatedReferralsRouteImport } from './routes/_authenticated/referrals'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
 import { Route as AuthenticatedShippingRouteImport } from './routes/_authenticated/shipping'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
@@ -35,6 +40,9 @@ import { Route as AuthenticatedProductsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedProductsIdRouteImport } from './routes/_authenticated/products/$id'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
+import { Route as AuthenticatedSignalsIndexRouteImport } from './routes/_authenticated/signals/index'
+import { Route as AuthenticatedSignalsSubscribersRouteImport } from './routes/_authenticated/signals/subscribers'
+import { Route as AuthenticatedSignalsTelegramRouteImport } from './routes/_authenticated/signals/telegram'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -85,11 +93,22 @@ const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
   path: '/activity',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCashOutsRoute = AuthenticatedCashOutsRouteImport.update({
+  id: '/cash-outs',
+  path: '/cash-outs',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCategoriesRoute = AuthenticatedCategoriesRouteImport.update({
   id: '/categories',
   path: '/categories',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCommissionsRoute =
+  AuthenticatedCommissionsRouteImport.update({
+    id: '/commissions',
+    path: '/commissions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConfigRoute = AuthenticatedConfigRouteImport.update({
   id: '/config',
   path: '/config',
@@ -105,9 +124,24 @@ const AuthenticatedFeaturesRoute = AuthenticatedFeaturesRouteImport.update({
   path: '/features',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFraudRoute = AuthenticatedFraudRouteImport.update({
+  id: '/fraud',
+  path: '/fraud',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLedgerRoute = AuthenticatedLedgerRouteImport.update({
+  id: '/ledger',
+  path: '/ledger',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPaymentsRoute = AuthenticatedPaymentsRouteImport.update({
   id: '/payments',
   path: '/payments',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedReferralsRoute = AuthenticatedReferralsRouteImport.update({
+  id: '/referrals',
+  path: '/referrals',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRouteRoute =
@@ -172,6 +206,24 @@ const AuthenticatedSettingsDisplayRoute =
     path: '/display',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
+const AuthenticatedSignalsIndexRoute =
+  AuthenticatedSignalsIndexRouteImport.update({
+    id: '/signals/',
+    path: '/signals/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSignalsSubscribersRoute =
+  AuthenticatedSignalsSubscribersRouteImport.update({
+    id: '/signals/subscribers',
+    path: '/signals/subscribers',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSignalsTelegramRoute =
+  AuthenticatedSignalsTelegramRouteImport.update({
+    id: '/signals/telegram',
+    path: '/signals/telegram',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -184,21 +236,29 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/activity': typeof AuthenticatedActivityRoute
+  '/cash-outs': typeof AuthenticatedCashOutsRoute
   '/categories': typeof AuthenticatedCategoriesRoute
+  '/commissions': typeof AuthenticatedCommissionsRoute
   '/config': typeof AuthenticatedConfigRoute
   '/coupons': typeof AuthenticatedCouponsRoute
   '/features': typeof AuthenticatedFeaturesRoute
+  '/fraud': typeof AuthenticatedFraudRoute
+  '/ledger': typeof AuthenticatedLedgerRoute
   '/payments': typeof AuthenticatedPaymentsRoute
+  '/referrals': typeof AuthenticatedReferralsRoute
   '/shipping': typeof AuthenticatedShippingRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/products/$id': typeof AuthenticatedProductsIdRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
+  '/signals/subscribers': typeof AuthenticatedSignalsSubscribersRoute
+  '/signals/telegram': typeof AuthenticatedSignalsTelegramRoute
   '/members/': typeof AuthenticatedMembersIndexRoute
   '/orders/': typeof AuthenticatedOrdersIndexRoute
   '/products/': typeof AuthenticatedProductsIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/signals/': typeof AuthenticatedSignalsIndexRoute
 }
 export interface FileRoutesByTo {
   '/sign-in': typeof authSignInRoute
@@ -209,11 +269,16 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/activity': typeof AuthenticatedActivityRoute
+  '/cash-outs': typeof AuthenticatedCashOutsRoute
   '/categories': typeof AuthenticatedCategoriesRoute
+  '/commissions': typeof AuthenticatedCommissionsRoute
   '/config': typeof AuthenticatedConfigRoute
   '/coupons': typeof AuthenticatedCouponsRoute
   '/features': typeof AuthenticatedFeaturesRoute
+  '/fraud': typeof AuthenticatedFraudRoute
+  '/ledger': typeof AuthenticatedLedgerRoute
   '/payments': typeof AuthenticatedPaymentsRoute
+  '/referrals': typeof AuthenticatedReferralsRoute
   '/shipping': typeof AuthenticatedShippingRoute
   '/': typeof AuthenticatedIndexRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
@@ -221,10 +286,13 @@ export interface FileRoutesByTo {
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/products/$id': typeof AuthenticatedProductsIdRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
+  '/signals/subscribers': typeof AuthenticatedSignalsSubscribersRoute
+  '/signals/telegram': typeof AuthenticatedSignalsTelegramRoute
   '/members': typeof AuthenticatedMembersIndexRoute
   '/orders': typeof AuthenticatedOrdersIndexRoute
   '/products': typeof AuthenticatedProductsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
+  '/signals': typeof AuthenticatedSignalsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -238,11 +306,16 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
+  '/_authenticated/cash-outs': typeof AuthenticatedCashOutsRoute
   '/_authenticated/categories': typeof AuthenticatedCategoriesRoute
+  '/_authenticated/commissions': typeof AuthenticatedCommissionsRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
   '/_authenticated/coupons': typeof AuthenticatedCouponsRoute
   '/_authenticated/features': typeof AuthenticatedFeaturesRoute
+  '/_authenticated/fraud': typeof AuthenticatedFraudRoute
+  '/_authenticated/ledger': typeof AuthenticatedLedgerRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
+  '/_authenticated/referrals': typeof AuthenticatedReferralsRoute
   '/_authenticated/shipping': typeof AuthenticatedShippingRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
@@ -250,10 +323,13 @@ export interface FileRoutesById {
   '/_authenticated/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/_authenticated/products/$id': typeof AuthenticatedProductsIdRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
+  '/_authenticated/signals/subscribers': typeof AuthenticatedSignalsSubscribersRoute
+  '/_authenticated/signals/telegram': typeof AuthenticatedSignalsTelegramRoute
   '/_authenticated/members/': typeof AuthenticatedMembersIndexRoute
   '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
   '/_authenticated/products/': typeof AuthenticatedProductsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/_authenticated/signals/': typeof AuthenticatedSignalsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -268,21 +344,29 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/activity'
+    | '/cash-outs'
     | '/categories'
+    | '/commissions'
     | '/config'
     | '/coupons'
     | '/features'
+    | '/fraud'
+    | '/ledger'
     | '/payments'
+    | '/referrals'
     | '/shipping'
     | '/errors/$error'
     | '/members/$id'
     | '/orders/$id'
     | '/products/$id'
     | '/settings/display'
+    | '/signals/subscribers'
+    | '/signals/telegram'
     | '/members/'
     | '/orders/'
     | '/products/'
     | '/settings/'
+    | '/signals/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/sign-in'
@@ -293,11 +377,16 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/activity'
+    | '/cash-outs'
     | '/categories'
+    | '/commissions'
     | '/config'
     | '/coupons'
     | '/features'
+    | '/fraud'
+    | '/ledger'
     | '/payments'
+    | '/referrals'
     | '/shipping'
     | '/'
     | '/errors/$error'
@@ -305,10 +394,13 @@ export interface FileRouteTypes {
     | '/orders/$id'
     | '/products/$id'
     | '/settings/display'
+    | '/signals/subscribers'
+    | '/signals/telegram'
     | '/members'
     | '/orders'
     | '/products'
     | '/settings'
+    | '/signals'
   id:
     | '__root__'
     | '/_authenticated'
@@ -321,11 +413,16 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/activity'
+    | '/_authenticated/cash-outs'
     | '/_authenticated/categories'
+    | '/_authenticated/commissions'
     | '/_authenticated/config'
     | '/_authenticated/coupons'
     | '/_authenticated/features'
+    | '/_authenticated/fraud'
+    | '/_authenticated/ledger'
     | '/_authenticated/payments'
+    | '/_authenticated/referrals'
     | '/_authenticated/shipping'
     | '/_authenticated/'
     | '/_authenticated/errors/$error'
@@ -333,10 +430,13 @@ export interface FileRouteTypes {
     | '/_authenticated/orders/$id'
     | '/_authenticated/products/$id'
     | '/_authenticated/settings/display'
+    | '/_authenticated/signals/subscribers'
+    | '/_authenticated/signals/telegram'
     | '/_authenticated/members/'
     | '/_authenticated/orders/'
     | '/_authenticated/products/'
     | '/_authenticated/settings/'
+    | '/_authenticated/signals/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -422,11 +522,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedActivityRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/cash-outs': {
+      id: '/_authenticated/cash-outs'
+      path: '/cash-outs'
+      fullPath: '/cash-outs'
+      preLoaderRoute: typeof AuthenticatedCashOutsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/categories': {
       id: '/_authenticated/categories'
       path: '/categories'
       fullPath: '/categories'
       preLoaderRoute: typeof AuthenticatedCategoriesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/commissions': {
+      id: '/_authenticated/commissions'
+      path: '/commissions'
+      fullPath: '/commissions'
+      preLoaderRoute: typeof AuthenticatedCommissionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/config': {
@@ -450,11 +564,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFeaturesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/fraud': {
+      id: '/_authenticated/fraud'
+      path: '/fraud'
+      fullPath: '/fraud'
+      preLoaderRoute: typeof AuthenticatedFraudRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ledger': {
+      id: '/_authenticated/ledger'
+      path: '/ledger'
+      fullPath: '/ledger'
+      preLoaderRoute: typeof AuthenticatedLedgerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/payments': {
       id: '/_authenticated/payments'
       path: '/payments'
       fullPath: '/payments'
       preLoaderRoute: typeof AuthenticatedPaymentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/referrals': {
+      id: '/_authenticated/referrals'
+      path: '/referrals'
+      fullPath: '/referrals'
+      preLoaderRoute: typeof AuthenticatedReferralsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
@@ -534,6 +669,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsDisplayRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
+    '/_authenticated/signals/': {
+      id: '/_authenticated/signals/'
+      path: '/signals'
+      fullPath: '/signals/'
+      preLoaderRoute: typeof AuthenticatedSignalsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/signals/subscribers': {
+      id: '/_authenticated/signals/subscribers'
+      path: '/signals/subscribers'
+      fullPath: '/signals/subscribers'
+      preLoaderRoute: typeof AuthenticatedSignalsSubscribersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/signals/telegram': {
+      id: '/_authenticated/signals/telegram'
+      path: '/signals/telegram'
+      fullPath: '/signals/telegram'
+      preLoaderRoute: typeof AuthenticatedSignalsTelegramRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -556,39 +712,55 @@ const AuthenticatedSettingsRouteRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
+  AuthenticatedCashOutsRoute: typeof AuthenticatedCashOutsRoute
   AuthenticatedCategoriesRoute: typeof AuthenticatedCategoriesRoute
+  AuthenticatedCommissionsRoute: typeof AuthenticatedCommissionsRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
   AuthenticatedCouponsRoute: typeof AuthenticatedCouponsRoute
   AuthenticatedFeaturesRoute: typeof AuthenticatedFeaturesRoute
+  AuthenticatedFraudRoute: typeof AuthenticatedFraudRoute
+  AuthenticatedLedgerRoute: typeof AuthenticatedLedgerRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
+  AuthenticatedReferralsRoute: typeof AuthenticatedReferralsRoute
   AuthenticatedShippingRoute: typeof AuthenticatedShippingRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
   AuthenticatedMembersIdRoute: typeof AuthenticatedMembersIdRoute
   AuthenticatedOrdersIdRoute: typeof AuthenticatedOrdersIdRoute
   AuthenticatedProductsIdRoute: typeof AuthenticatedProductsIdRoute
+  AuthenticatedSignalsSubscribersRoute: typeof AuthenticatedSignalsSubscribersRoute
+  AuthenticatedSignalsTelegramRoute: typeof AuthenticatedSignalsTelegramRoute
   AuthenticatedMembersIndexRoute: typeof AuthenticatedMembersIndexRoute
   AuthenticatedOrdersIndexRoute: typeof AuthenticatedOrdersIndexRoute
   AuthenticatedProductsIndexRoute: typeof AuthenticatedProductsIndexRoute
+  AuthenticatedSignalsIndexRoute: typeof AuthenticatedSignalsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
   AuthenticatedActivityRoute: AuthenticatedActivityRoute,
+  AuthenticatedCashOutsRoute: AuthenticatedCashOutsRoute,
   AuthenticatedCategoriesRoute: AuthenticatedCategoriesRoute,
+  AuthenticatedCommissionsRoute: AuthenticatedCommissionsRoute,
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,
   AuthenticatedCouponsRoute: AuthenticatedCouponsRoute,
   AuthenticatedFeaturesRoute: AuthenticatedFeaturesRoute,
+  AuthenticatedFraudRoute: AuthenticatedFraudRoute,
+  AuthenticatedLedgerRoute: AuthenticatedLedgerRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
+  AuthenticatedReferralsRoute: AuthenticatedReferralsRoute,
   AuthenticatedShippingRoute: AuthenticatedShippingRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
   AuthenticatedMembersIdRoute: AuthenticatedMembersIdRoute,
   AuthenticatedOrdersIdRoute: AuthenticatedOrdersIdRoute,
   AuthenticatedProductsIdRoute: AuthenticatedProductsIdRoute,
+  AuthenticatedSignalsSubscribersRoute: AuthenticatedSignalsSubscribersRoute,
+  AuthenticatedSignalsTelegramRoute: AuthenticatedSignalsTelegramRoute,
   AuthenticatedMembersIndexRoute: AuthenticatedMembersIndexRoute,
   AuthenticatedOrdersIndexRoute: AuthenticatedOrdersIndexRoute,
   AuthenticatedProductsIndexRoute: AuthenticatedProductsIndexRoute,
+  AuthenticatedSignalsIndexRoute: AuthenticatedSignalsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
