@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
 
 /*
@@ -25,3 +26,7 @@ Schedule::command('memberships:sweep')->hourly()->withoutOverlapping();
 Schedule::command('signals:sweep')->hourly()->withoutOverlapping();
 Schedule::command('referrals:release')->hourly()->withoutOverlapping();
 Schedule::command('payouts:remind')->dailyAt('08:41');
+
+// Heartbeat for the admin status page (shows if cron is really running).
+Schedule::call(fn () => Cache::put('scheduler.heartbeat', now()->toIso8601String(), now()->addDay()))
+    ->everyMinute()->name('heartbeat');

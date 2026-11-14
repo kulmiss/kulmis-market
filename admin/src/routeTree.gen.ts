@@ -31,6 +31,7 @@ import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedReferralsRouteImport } from './routes/_authenticated/referrals'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
 import { Route as AuthenticatedShippingRouteImport } from './routes/_authenticated/shipping'
+import { Route as AuthenticatedStatusRouteImport } from './routes/_authenticated/status'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 import { Route as AuthenticatedMembersIndexRouteImport } from './routes/_authenticated/members/index'
 import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authenticated/members/$id'
@@ -155,6 +156,11 @@ const AuthenticatedShippingRoute = AuthenticatedShippingRouteImport.update({
   path: '/shipping',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedStatusRoute = AuthenticatedStatusRouteImport.update({
+  id: '/status',
+  path: '/status',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedErrorsErrorRoute =
   AuthenticatedErrorsErrorRouteImport.update({
     id: '/errors/$error',
@@ -247,6 +253,7 @@ export interface FileRoutesByFullPath {
   '/payments': typeof AuthenticatedPaymentsRoute
   '/referrals': typeof AuthenticatedReferralsRoute
   '/shipping': typeof AuthenticatedShippingRoute
+  '/status': typeof AuthenticatedStatusRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
@@ -280,6 +287,7 @@ export interface FileRoutesByTo {
   '/payments': typeof AuthenticatedPaymentsRoute
   '/referrals': typeof AuthenticatedReferralsRoute
   '/shipping': typeof AuthenticatedShippingRoute
+  '/status': typeof AuthenticatedStatusRoute
   '/': typeof AuthenticatedIndexRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
@@ -317,6 +325,7 @@ export interface FileRoutesById {
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/referrals': typeof AuthenticatedReferralsRoute
   '/_authenticated/shipping': typeof AuthenticatedShippingRoute
+  '/_authenticated/status': typeof AuthenticatedStatusRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
@@ -355,6 +364,7 @@ export interface FileRouteTypes {
     | '/payments'
     | '/referrals'
     | '/shipping'
+    | '/status'
     | '/errors/$error'
     | '/members/$id'
     | '/orders/$id'
@@ -388,6 +398,7 @@ export interface FileRouteTypes {
     | '/payments'
     | '/referrals'
     | '/shipping'
+    | '/status'
     | '/'
     | '/errors/$error'
     | '/members/$id'
@@ -424,6 +435,7 @@ export interface FileRouteTypes {
     | '/_authenticated/payments'
     | '/_authenticated/referrals'
     | '/_authenticated/shipping'
+    | '/_authenticated/status'
     | '/_authenticated/'
     | '/_authenticated/errors/$error'
     | '/_authenticated/members/$id'
@@ -606,6 +618,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShippingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/status': {
+      id: '/_authenticated/status'
+      path: '/status'
+      fullPath: '/status'
+      preLoaderRoute: typeof AuthenticatedStatusRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/errors/$error': {
       id: '/_authenticated/errors/$error'
       path: '/errors/$error'
@@ -723,6 +742,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedReferralsRoute: typeof AuthenticatedReferralsRoute
   AuthenticatedShippingRoute: typeof AuthenticatedShippingRoute
+  AuthenticatedStatusRoute: typeof AuthenticatedStatusRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
   AuthenticatedMembersIdRoute: typeof AuthenticatedMembersIdRoute
@@ -750,6 +770,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedReferralsRoute: AuthenticatedReferralsRoute,
   AuthenticatedShippingRoute: AuthenticatedShippingRoute,
+  AuthenticatedStatusRoute: AuthenticatedStatusRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
   AuthenticatedMembersIdRoute: AuthenticatedMembersIdRoute,

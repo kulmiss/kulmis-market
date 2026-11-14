@@ -76,7 +76,7 @@ export function MemberDetail({ id }: { id: string }) {
     <Page title={`${u.first_name} ${u.last_name}`} description={`${u.phone ?? ''} ${u.email ? `· ${u.email}` : ''} · joined ${formatDate(u.created_at)}`}
       actions={<>
         <Button variant='outline' asChild><Link to='/members'><ArrowLeft /> Members</Link></Button>
-        {can('manage-referrals') && <Button variant='outline' asChild><a href={`/admin/referrals?user=${u.id}`}><Network /> Referral tree</a></Button>}
+        {can('manage-referrals') && <Button variant='outline' asChild><Link to='/referrals' search={{ user: u.id }}><Network /> Referral tree</Link></Button>}
       </>}>
       <div className='grid gap-4 lg:grid-cols-3'>
         <Card>
