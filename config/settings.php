@@ -73,6 +73,8 @@ return [
     'notify.membership_after' => ['text', 'Hi {name}, your membership has ended. You still have benefits until {grace_date}. Renew here: {renew_url}', 'Message: renewal reminder (after)', 'Messages'],
     'notify.loyalty_reward' => ['text', 'Thank you for staying with us, {name}! We added {amount} to your wallet.', 'Message: loyalty reward', 'Messages'],
 
+    'notify.signals_access' => ['text', 'Hi {name}, your trading signals access is ready. Open this personal link in Telegram to join (do not share it): {link}', 'Message: signals access link', 'Messages'],
+
     // Manual payment instructions
     'payments.bank_details' => ['text', "Commercial Bank of Ethiopia\nAccount name: Kulmis Market\nAccount number: 1000000000000", 'Bank transfer details', 'Payments'],
     'payments.telebirr_details' => ['text', 'Telebirr: +251 900 000 000 (Kulmis Market)', 'Telebirr transfer details', 'Payments'],

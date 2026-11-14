@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Events\MembershipActivated;
+use App\Events\MembershipEnded;
 use App\Events\OrderStatusChanged;
 use App\Models\User;
 use App\Notify\OrderNotifier;
@@ -11,6 +13,7 @@ use App\Notify\Sms\SmsGateway;
 use App\Session\PrivacySessionHandler;
 use App\Shipping\ShippingQuoter;
 use App\Shipping\ZoneShippingQuoter;
+use App\Signals\MembershipSignalsListener;
 use App\Support\Features;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -51,6 +54,9 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Event::listen(OrderStatusChanged::class, [OrderNotifier::class, 'handle']);
+
+        Event::listen(MembershipActivated::class, [MembershipSignalsListener::class, 'activated']);
+        Event::listen(MembershipEnded::class, [MembershipSignalsListener::class, 'ended']);
 
         Blade::if('feature', fn (string $key) => Features::enabled($key));
 

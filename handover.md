@@ -1,6 +1,6 @@
 # Handover — Kulmis Market
 
-_Last updated: PR 9._
+_Last updated: PR 10._
 
 ## What this is
 Kulmis Market is an online shop for handcrafted products, plus a trading-signals
@@ -20,6 +20,7 @@ Customers are in Ethiopia, the only currency is ETB, and the UI is English
 | 7 | `pr/07-shipping-notify` | Draft. Zones by city + weight, couriers, status flow, SMS/email/Telegram messages ([docs/shipping-notifications.md](docs/shipping-notifications.md)) |
 | 8 | `pr/08-payments` | Draft. Chapa (signature + re-verify), manual proof, exactly-once, refunds, PDF receipts ([docs/payments.md](docs/payments.md)) |
 | 9 | `pr/09-membership` | Draft. Customer accounts, monthly membership, grace, reminders, loyalty reward ([docs/membership.md](docs/membership.md)) |
+| 10 | `pr/10-signals` | Draft. Signals plan, Telegram bot (personal links, join approval, auto-removal), locked results, performance page ([docs/signals.md](docs/signals.md)) |
 
 The full plan is in [docs/pr-plan.md](docs/pr-plan.md).
 
@@ -43,4 +44,4 @@ The full plan is in [docs/pr-plan.md](docs/pr-plan.md).
 See [docs/local-setup.md](docs/local-setup.md).
 
 ## Next up
-PR 10: signals + Telegram.
+PR 11: referral engine.
