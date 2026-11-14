@@ -6,6 +6,7 @@ use App\Events\PaymentRefunded;
 use App\Events\PaymentSucceeded;
 use App\Ledger\Account;
 use App\Ledger\Ledger;
+use App\Ledger\Wallet;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Support\Activity;
@@ -169,7 +170,12 @@ class PaymentService
 
             /** @var Model&Payable $payable */
             $payable = $locked->payable;
-            if ($locked->provider !== Payment::WALLET) {
+            if ($locked->provider === Payment::WALLET) {
+                // Back to the member's available balance.
+                $this->ledger->post('wallet.refunded', [[$payable->payableIncomeAccount(), $amount],
+                    [$this->ledger->userAccount((int) $locked->user_id, Wallet::AVAILABLE), -$amount]],
+                    "refund:{$refund->id}", $locked, $reason, $actorId, 'Refund to wallet');
+            } else {
                 $this->ledger->post('payment.refunded', [[$payable->payableIncomeAccount(), $amount], [Account::CASH, -$amount]],
                     "refund:{$refund->id}", $locked, $reason, $actorId, 'Refund');
             }

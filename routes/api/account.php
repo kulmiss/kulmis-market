@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\MembershipController;
 use App\Http\Controllers\Api\ReferralController;
+use App\Http\Controllers\Api\WalletController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('auth/register', [AuthController::class, 'register'])->middleware('throttle:10,1')->name('auth.register');
@@ -26,4 +27,10 @@ Route::middleware(['feature:referral', 'auth:sanctum'])->prefix('referral')->nam
     Route::get('/', [ReferralController::class, 'show'])->name('show');
     Route::get('history', [ReferralController::class, 'history'])->name('history');
     Route::put('code', [ReferralController::class, 'changeCode'])->middleware('throttle:10,1')->name('code');
+});
+
+Route::middleware(['feature:wallet', 'auth:sanctum'])->prefix('wallet')->name('wallet.')->group(function () {
+    Route::get('/', [WalletController::class, 'show'])->name('show');
+    Route::post('cash-out', [WalletController::class, 'cashOut'])
+        ->middleware(['feature:wallet.cashout', 'throttle:5,1'])->name('cashout');
 });

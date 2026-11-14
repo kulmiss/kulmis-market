@@ -11,6 +11,7 @@ use App\Orders\CheckoutExtras;
 use App\Orders\OrderService;
 use App\Support\Features;
 use App\Support\Phone;
+use App\Wallet\WalletPayments;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -38,12 +39,17 @@ class CheckoutController extends Controller
             'shipping_zone_id' => ['nullable', 'integer'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'referral_code' => ['nullable', 'string', 'max:16'],
+            'use_wallet' => ['nullable', 'boolean'],
         ]);
         $cart = $this->carts->find($request);
         abort_unless($cart, 422, 'Your cart is empty.');
 
         $extra = app(CheckoutExtras::class)->collect($request, $cart, $user, $data);
         $order = $this->checkout->place($cart, $data, $user, $data['checkout_key'], $extra);
+        if ($order->wasRecentlyCreated && $user && $request->boolean('use_wallet')) {
+            app(WalletPayments::class)->apply($order, $user);
+            $order->refresh();
+        }
         if ($order->wasRecentlyCreated && $order->amountDue() === 0 && $order->status === Order::PENDING_PAYMENT) {
             app(OrderService::class)->markPaid($order, 'Nothing left to pay');
             $order->refresh();
@@ -59,7 +65,8 @@ class CheckoutController extends Controller
             'number' => $order->number,
             'status' => $order->status,
             'total' => $order->total,
-            'amount_due' => $order->amountDue(),
+            'amount_due' => $order->status === Order::PENDING_PAYMENT ? $order->amountDue() : 0,
+            'wallet_used' => $order->wallet_used,
             'currency' => config('shop.currency'),
             'member_discount' => $order->member_discount,
             'shipping' => $order->shippingPayable(),

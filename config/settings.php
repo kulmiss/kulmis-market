@@ -75,6 +75,9 @@ return [
 
     'notify.signals_access' => ['text', 'Hi {name}, your trading signals access is ready. Open this personal link in Telegram to join (do not share it): {link}', 'Message: signals access link', 'Messages'],
 
+    'notify.payout_paid' => ['text', 'Hi {name}, we sent your cash-out of {amount}. Reference: {reference}', 'Message: cash-out paid', 'Messages'],
+    'notify.payout_rejected' => ['text', 'Hi {name}, your cash-out of {amount} was not approved and is back in your wallet. {reason}', 'Message: cash-out rejected', 'Messages'],
+
     // Manual payment instructions
     'payments.bank_details' => ['text', "Commercial Bank of Ethiopia\nAccount name: Kulmis Market\nAccount number: 1000000000000", 'Bank transfer details', 'Payments'],
     'payments.telebirr_details' => ['text', 'Telebirr: +251 900 000 000 (Kulmis Market)', 'Telebirr transfer details', 'Payments'],

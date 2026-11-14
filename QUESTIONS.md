@@ -23,3 +23,7 @@ change any of them.
 | 14 | Refund after earnings are already *available* | They're reversed from *available*. If the member already spent or withdrew them, the wallet goes negative and cash-out stays blocked until it's positive again. | Decided (recommended) |
 | 15 | Guest buyers (no account) | The referrer is saved per order, and on the signals subscription at the first purchase (kept for renewals). | Decided (recommended) |
 | 16 | Does a skipped level get passed up to the next active member? | No (as in your brief). The skipped share stays with the shop, and each level only ever gets its own rate. | ✅ From brief |
+| 17 | Does an amount paid from the wallet count as "actually paid" for commissions? | Yes. Wallet money is real earnings, and the sale is the same sale. | Decided (recommended) |
+| 18 | Can an expired member cash out their balance? | Yes. The wallet is kept when membership expires (per brief), and cash-out stays open. Earning stops. | Decided (recommended) |
+| 19 | Daily sign-up limit exceeded | The new people are still linked (they may be real), but the referrer is flagged and held until you review. | Decided (recommended) |
+| 20 | "Device" for self-referral checks | Uses a hash of the essential cart token. No fingerprinting and no extra cookie. | Decided (recommended) |

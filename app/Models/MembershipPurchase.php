@@ -80,7 +80,8 @@ class MembershipPurchase extends Model implements Payable
 
     public function refundedFrom(Payment $payment, int $amount, bool $full): void
     {
-        if ($full) {
+        // Wallet + Chapa can share one purchase: revoke when everything is refunded.
+        if ((int) $this->payments()->sum('refunded_amount') >= $this->amount) {
             app(MembershipService::class)->revoke($this, 'Refunded');
         }
     }

@@ -10,6 +10,7 @@ use App\Models\OrderStatusChange;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Support\Activity;
+use App\Wallet\WalletPayments;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -37,6 +38,9 @@ class OrderService
                 $locked->update(['cancel_reason' => $note]);
                 $this->restock($locked);
                 $this->releaseCoupon($locked);
+                if ($locked->wallet_used > 0 && $from === Order::PENDING_PAYMENT) {
+                    app(WalletPayments::class)->releaseFor($locked, 'Order cancelled');
+                }
             }
             $change = $locked->history()->create(['from' => $from, 'to' => $to, 'note' => $note, 'actor_id' => $actorId]);
             $order->setRawAttributes($locked->getAttributes(), true);

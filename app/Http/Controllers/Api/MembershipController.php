@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Payments\PaymentService;
 use App\Support\Features;
 use App\Support\Settings;
+use App\Wallet\WalletPayments;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -50,16 +51,25 @@ class MembershipController extends Controller
     /** Start paying one month (Chapa) — returns the checkout URL. */
     public function pay(Request $request): JsonResponse
     {
-        $request->validate(['method' => ['required', Rule::in(['chapa'])]]);
-        abort_if(Features::disabled('payments.chapa'), 404);
+        $request->validate(['method' => ['required', Rule::in(['chapa', 'wallet'])], 'use_wallet' => ['nullable', 'boolean']]);
         try {
             $purchase = $this->memberships->newPurchase($request->user());
+            if ($request->input('method') === 'wallet' || $request->boolean('use_wallet')) {
+                app(WalletPayments::class)->apply($purchase, $request->user());
+                if ($purchase->fresh()->isSettled()) {
+                    return response()->json(['data' => ['paid' => true, 'amount' => 0]], 201);
+                }
+                if ($request->input('method') === 'wallet') {
+                    throw new InvalidArgumentException('Not enough in your wallet. Pay the rest with Chapa.');
+                }
+            }
+            abort_if(Features::disabled('payments.chapa'), 404);
             $payment = $this->payments->startChapa($purchase, url('/account?membership=paid'));
         } catch (InvalidArgumentException $e) {
             throw ValidationException::withMessages(['membership' => $e->getMessage()]);
         }
 
-        return response()->json(['data' => ['checkout_url' => $payment->checkout_url, 'amount' => $payment->amount]], 201);
+        return response()->json(['data' => ['checkout_url' => $payment->checkout_url, 'amount' => $payment->amount, 'paid' => false]], 201);
     }
 
     public function proof(Request $request): JsonResponse

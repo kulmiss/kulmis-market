@@ -2,6 +2,8 @@
 
 namespace App\Referral;
 
+use App\Cart\CartManager;
+use App\Fraud\FraudGuard;
 use App\Models\Order;
 use App\Models\SignalSubscription;
 use App\Models\User;
@@ -61,10 +63,21 @@ class Attribution
     public function attachAtSignup(Request $request, User $user): void
     {
         $this->codes->assign($user);
+        $device = app(CartManager::class)->deviceHash(app(CartManager::class)->find($request));
+        if ($device) {
+            $user->forceFill(['signup_device_hash' => $device])->save();
+        }
         $code = $this->codeFrom($request);
         [$referrer, $refused] = $this->validReferrer($code, $user, $user->phone, $user->email);
+        $guard = app(FraudGuard::class);
+        if ($referrer && $guard->sameDevice($referrer, $device)) {
+            $guard->flag($referrer, 'self_referral_device', ['new_user' => $user->id]);
+            $referrer = null;
+            $refused = 'self_referral';
+        }
         if ($referrer) {
             $user->forceFill(['referrer_id' => $referrer->id, 'referred_at' => now()])->save();
+            $guard->checkDailyLimit($referrer);
         } elseif ($refused === 'self_referral') {
             Activity::log('referral.self_referral_blocked', $user, ['code' => $code], null, $user->id);
         }

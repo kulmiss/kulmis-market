@@ -2,6 +2,7 @@
 
 namespace App\Referral;
 
+use App\Fraud\FraudGuard;
 use App\Ledger\Account;
 use App\Ledger\Ledger;
 use App\Ledger\Wallet;
@@ -71,6 +72,11 @@ class CommissionEngine
                     if (! $locked || $locked->status !== Commission::PENDING || $locked->on_hold || $locked->outstanding() <= 0) {
                         return;
                     }
+                    if (app(FraudGuard::class)->isOnHold($locked->recipient_id)) {
+                        $locked->update(['on_hold' => true]);
+
+                        return;
+                    }
                     $amount = $locked->outstanding();
                     $this->ledger->post('commission.released', [
                         [$this->ledger->userAccount($locked->recipient_id, Wallet::PENDING), $amount],
@@ -89,7 +95,9 @@ class CommissionEngine
     {
         $source = $payment->payable;
         $paidTotal = $this->paidTotal($source, $payment);
-        $full = $payment->refunded_amount >= $payment->amount;
+        $full = $source instanceof Order ? $source->fresh()->refunded_amount >= $source->total
+            : ($source instanceof MembershipPurchase ? $payment->refunded_amount >= $payment->amount && $source->fresh()->status === 'refunded'
+            : $payment->refunded_amount >= $payment->amount);
         $count = 0;
         Commission::query()->where('source_type', $source->getMorphClass())->where('source_id', $source->getKey())
             ->whereIn('status', [Commission::PENDING, Commission::AVAILABLE])
@@ -151,21 +159,31 @@ class CommissionEngine
         }
         $rate = Settings::int("referral.rate.$type.l$level");
         $amount = Money::bpsFloor($base, $rate);
+        $guard = app(FraudGuard::class);
+        $device = $source instanceof Order ? $source->device_hash : null;
+        $ownAccount = $guard->paidWithOwnAccount($recipient, $payment->payer_account);
+        $ownDevice = $buyer === null && $guard->sameDevice($recipient, $device);
+        if ($ownAccount || $ownDevice) {
+            $guard->flag($recipient, $ownAccount ? 'self_referral_payment' : 'self_referral_device', ['payment' => $payment->id]);
+        }
         $skip = match (true) {
-            $this->attribution->isSamePerson($recipient, $buyer, $phone, $email) => 'self_referral',
+            $this->attribution->isSamePerson($recipient, $buyer, $phone, $email), $ownAccount, $ownDevice => 'self_referral',
             ! $recipient->isActiveAccount() => 'account_suspended',
             ! Members::isActive($recipient) => 'not_active_member',
             $amount <= 0 => 'zero_amount',
             default => null,
         };
 
-        return DB::transaction(function () use ($source, $payment, $type, $level, $base, $rate, $amount, $recipient, $buyer, $skip) {
+        $hold = $guard->isOnHold($recipient);
+
+        return DB::transaction(function () use ($source, $payment, $type, $level, $base, $rate, $amount, $recipient, $buyer, $skip, $hold) {
             $c = Commission::query()->create([
                 'source_type' => $source->getMorphClass(), 'source_id' => $source->getKey(), 'payment_id' => $payment->id,
                 'recipient_id' => $recipient->id, 'buyer_user_id' => $buyer?->id, 'level' => $level, 'type' => $type,
                 'base_amount' => $base, 'rate_bps' => $rate, 'amount' => $skip ? 0 : $amount,
                 'status' => $skip ? Commission::SKIPPED : Commission::PENDING, 'skip_reason' => $skip,
                 'available_at' => $skip ? null : now()->addDays(Settings::int('referral.pending_days')),
+                'on_hold' => ! $skip && $hold,
             ]);
             if (! $skip) {
                 $this->ledger->post('commission.earned', [

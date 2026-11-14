@@ -164,7 +164,7 @@ class Order extends Model implements Payable
     {
         $this->refresh();
         $this->update(['refunded_amount' => $this->refunded_amount + $amount]);
-        if ($full && $this->canMoveTo(self::REFUNDED)) {
+        if ($this->refunded_amount >= $this->total && $this->canMoveTo(self::REFUNDED)) {
             app(OrderService::class)->transition($this, self::REFUNDED, 'Refunded');
         }
     }

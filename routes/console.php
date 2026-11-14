@@ -24,3 +24,4 @@ Schedule::command('orders:cancel-unpaid')->hourly()->withoutOverlapping();
 Schedule::command('memberships:sweep')->hourly()->withoutOverlapping();
 Schedule::command('signals:sweep')->hourly()->withoutOverlapping();
 Schedule::command('referrals:release')->hourly()->withoutOverlapping();
+Schedule::command('payouts:remind')->dailyAt('08:41');
