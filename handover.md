@@ -1,6 +1,6 @@
 # Handover — Kulmis Market
 
-_Last updated: PR 2 (platform core)._
+_Last updated: PR 3._
 
 ## What this is
 Kulmis Market is an online shop for handcrafted products, plus a trading-signals
@@ -12,6 +12,8 @@ Customers are in Ethiopia, the only currency is ETB, and the UI is English
 | PR | Branch | Status |
 |----|--------|--------|
 | 1 | `pr/01-scaffold` | Draft. Laravel 13, Docker, CI, docs |
+| 2 | `pr/02-platform-core` | Draft. Feature switches, settings, roles, activity log, admin 2FA ([docs/platform.md](docs/platform.md)) |
+| 3 | `pr/03-money-ledger` | Draft. Double-entry ledger, wallet buckets, idempotency ([docs/ledger.md](docs/ledger.md)) |
 
 The full plan is in [docs/pr-plan.md](docs/pr-plan.md).
 
@@ -35,4 +37,4 @@ The full plan is in [docs/pr-plan.md](docs/pr-plan.md).
 See [docs/local-setup.md](docs/local-setup.md).
 
 ## Next up
-PR 3: money ledger.
+PR 4: catalog.

@@ -14,3 +14,4 @@ change any of them.
 | 5 | Domain | Placeholder `kulmis.market`. Change `APP_URL` and `MAIL_FROM_ADDRESS`. | Decided (recommended) |
 | 6 | Static analysis (Larastan) | Left out for now: this build machine can't download it. Add it back with `composer require --dev larastan/larastan`. | Decided (recommended) |
 | 7 | Repo layout | Laravel at the root, React admin in `admin/` building to `public/admin`. Works on shared hosting. | Decided (recommended) |
+| 8 | Rounding | Customer discounts round half-up to the santim. Commissions and rewards round down. | Decided (recommended) |
