@@ -95,6 +95,9 @@ jobs:
           php artisan storage:link
           php artisan config:cache && php artisan route:cache && php artisan view:cache
       - name: Serve
-        run: (php -S 127.0.0.1:8000 -t public vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php > /tmp/serve.log 2>&1 &) && sleep 3 && curl -fsS http://127.0.0.1:8000/ > /dev/null
+        run: |
+          (PHP_CLI_SERVER_WORKERS=4 php artisan serve --host=127.0.0.1 --port=8000 > /tmp/serve.log 2>&1 &)
+          sleep 3
+          curl -fsS http://127.0.0.1:8000/ > /dev/null || (cat /tmp/serve.log; tail -50 storage/logs/*.log; exit 1)
       - name: Lighthouse CI
         run: npx --yes @lhci/cli@0.14.x autorun
