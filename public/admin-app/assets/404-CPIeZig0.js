@@ -1,1 +1,0 @@
-import{o as e}from"./index-CHdtQtmq.js";var t=e;export{t as component};
