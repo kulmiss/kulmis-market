@@ -46,6 +46,10 @@ class TeamView
             ],
             'earnings_by_level' => collect([1, 2, 3])->mapWithKeys(fn ($l) => [$l => (int) ($earnings[$l] ?? 0)]),
             'wallet' => Wallet::for($member)->summary(),
+            'badge' => app(Engagement::class)->progress($member),
+            'share' => app(Engagement::class)->shareLinks(url('/r/'.$member->referral_code), (string) $member->referral_code),
+            'qr_url' => route('api.referral.qr'),
+            'renews_at' => $member->membership()->first()?->current_period_end?->toIso8601String(),
         ];
     }
 

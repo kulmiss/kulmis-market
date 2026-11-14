@@ -1,6 +1,6 @@
 # Handover — Kulmis Market
 
-_Last updated: PR 12._
+_Last updated: PR 13._
 
 ## What this is
 Kulmis Market is an online shop for handcrafted products, plus a trading-signals
@@ -23,6 +23,7 @@ Customers are in Ethiopia, the only currency is ETB, and the UI is English
 | 10 | `pr/10-signals` | Draft. Signals plan, Telegram bot (personal links, join approval, auto-removal), locked results, performance page ([docs/signals.md](docs/signals.md)) |
 | 11 | `pr/11-referrals` | Draft. 3-level commissions, link/cookie/code, locked referrer, skip inactive, 14-day pending, refund reversal ([docs/referrals.md](docs/referrals.md)) |
 | 12 | `pr/12-wallet-cashout` | Draft. Wallet spending, cash-out (min, name match, approval, reminders), fraud queue + holds ([docs/wallet-cashout-fraud.md](docs/wallet-cashout-fraud.md)) |
+| 13 | `pr/13-engagement` | Draft. Badges, monthly top referrers, QR + share links, dashboard data |
 
 The full plan is in [docs/pr-plan.md](docs/pr-plan.md).
 
@@ -46,4 +47,4 @@ The full plan is in [docs/pr-plan.md](docs/pr-plan.md).
 See [docs/local-setup.md](docs/local-setup.md).
 
 ## Next up
-PR 13: engagement (badges, top referrers, member dashboard).
+PR 14: API v1 completion.

@@ -27,7 +27,11 @@ Route::middleware(['feature:referral', 'auth:sanctum'])->prefix('referral')->nam
     Route::get('/', [ReferralController::class, 'show'])->name('show');
     Route::get('history', [ReferralController::class, 'history'])->name('history');
     Route::put('code', [ReferralController::class, 'changeCode'])->middleware('throttle:10,1')->name('code');
+    Route::get('qr.svg', [ReferralController::class, 'qr'])->name('qr');
 });
+
+// Public monthly list: first name + badge only.
+Route::middleware(['feature:referral', 'feature:top_referrers'])->get('referral/top', [ReferralController::class, 'top'])->name('referral.top');
 
 Route::middleware(['feature:wallet', 'auth:sanctum'])->prefix('wallet')->name('wallet.')->group(function () {
     Route::get('/', [WalletController::class, 'show'])->name('show');

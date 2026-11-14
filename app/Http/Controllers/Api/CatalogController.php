@@ -19,6 +19,7 @@ class CatalogController extends Controller
         $request->validate([
             'q' => ['nullable', 'string', 'max:100'], 'category' => ['nullable', 'string', 'max:140'],
             'tag' => ['nullable', 'string', 'max:80'], 'featured' => ['nullable', 'boolean'],
+            'members_only' => ['nullable', 'boolean'], 'early_access' => ['nullable', 'boolean'],
             'sort' => ['nullable', Rule::in(['newest', 'price_asc', 'price_desc', 'name'])],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:60'],
         ]);
@@ -29,6 +30,8 @@ class CatalogController extends Controller
             ->when($request->input('category'), fn ($q, $v) => $q->whereHas('category', fn ($c) => $c->where('slug', $v)))
             ->when($request->input('tag'), fn ($q, $v) => $q->whereHas('tags', fn ($t) => $t->where('slug', $v)))
             ->when($request->boolean('featured'), fn ($q) => $q->where('is_featured', true))
+            ->when($request->boolean('members_only'), fn ($q) => $q->where('is_members_only', true))
+            ->when($request->boolean('early_access'), fn ($q) => $q->where('release_at', '>', now()))
             ->tap(fn ($q) => match ($request->input('sort', 'newest')) {
                 'price_asc' => $q->orderBy('price'), 'price_desc' => $q->orderByDesc('price'),
                 'name' => $q->orderBy('name'), default => $q->orderByDesc('release_at')->orderByDesc('id'),
