@@ -16,6 +16,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Payments\ChapaGateway;
 use App\Payments\PaymentService;
+use App\Pricing\PricingException;
 use App\Referral\CommissionEngine;
 use App\Wallet\CashOuts;
 use App\Wallet\PayoutAccounts;
@@ -227,7 +228,7 @@ class BreakItTest extends ReferralTestCase
     {
         try {
             $fn();
-        } catch (InvalidArgumentException|ValidationException|LedgerException|\App\Pricing\PricingException) {
+        } catch (InvalidArgumentException|ValidationException|LedgerException|PricingException) {
             $this->addToAssertionCount(1);
 
             return;
