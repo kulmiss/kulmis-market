@@ -81,6 +81,9 @@ change any of them.
 | 72 | Badge bonus: free months given by staff | They don't count: not for the member's own "paid every day", not as an active team member, not as team money. Bonuses come only from real money. | Decided (recommended) |
 | 73 | Badge bonus: refunds later | A refund before the bonus is ready lowers or cancels it. After it is ready it is not taken back (the 5% budget and 2% team limit already cover this). | Decided (recommended) |
 | 74 | Profit guard | Settings that could pay out more than 35% of a membership (team earnings + badge bonus + loyalty) can't be saved. Today: 20.34%, you keep at least 3,983 of every 5,000 ETB. | Decided (you + recommended) |
+| 75 | Product grids on phones | Info cards are one column on phones; product photos stay two per row on phones (normal for shops, easier to browse). Say if you want one. | Decided (recommended) |
+| 76 | Money history codes | Admin shows easy names first and the technical type small underneath; CSV files keep the codes so spreadsheets and the accountant can match them. | Decided (recommended) |
+| 77 | Member money history | The wallet page lists every wallet line, including "on the way → ready to use" moves (two lines each), so the totals always add up. | Decided (recommended) |
 
 ## Still open: needs you
 | # | What | Why |

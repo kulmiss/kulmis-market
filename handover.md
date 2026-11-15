@@ -16,7 +16,7 @@ English (ready for Amharic) and aimed at customers in Ethiopia.
 - **API:** REST `/api/v1`, ready for the Flutter app (Sanctum tokens)
 - Built assets are committed, so the server needs no Node
 
-## PRs (everything up to #44 is merged into main; #45 and up are a stack — merge the top one)
+## PRs (everything up to #44 is merged into main; #45–#51 are a stack — merge the top one)
 | PR | Branch | Status |
 |----|--------|--------|
 | 1 | `pr/01-scaffold` | Merged. Laravel 13, Docker, CI, docs |
@@ -70,10 +70,24 @@ PRs 1–28 are merged into `main`.
 | 43 | `pr/43-perf` | Merged via #52. Speed: speculation rules, LCP preload, lighter photos, service worker + offline page, fewer queries, cached dashboard, skeletons, deploy clears the page cache, CI budgets (phone Lighthouse, server time) |
 | 44 | `pr/44-report` | Merged (#52). SECURITY_REPORT round 3 (scores, every bug, speed before → after), docs, handover |
 | 45 | `pr/45-switches` | Draft (#53). Feature switches for every feature (order tracking, PDF receipts, sign-up, customer 2FA, share buttons, QR codes, instant loading, offline page, each message type, each badge), sections with easy descriptions, search and on/off overview; queue workers see changes at once ([docs/platform.md](docs/platform.md#feature-switches)) |
-| 46 | `pr/46-bonus` | Draft. Monthly badge bonus (Bronze 200 … Diamond 6,000 ETB), highest badge only, paid only for fully paid months; profit guards: 2% of the member's own team money, 5% monthly budget with pro-rata cut, 35% settings guard; dry run, pay now / skip, first payout by hand; member card; simulation test ([docs/badge-bonus.md](docs/badge-bonus.md)) |
+| 46 | `pr/46-bonus` | Draft (#54). Monthly badge bonus (Bronze 200 … Diamond 6,000 ETB), highest badge only, paid only for fully paid months; profit guards: 2% of the member's own team money, 5% monthly budget with pro-rata cut, 35% settings guard; dry run, pay now / skip, first payout by hand; member card; simulation test ([docs/badge-bonus.md](docs/badge-bonus.md)) |
+| 47 | `pr/47-tables` | Draft (#55). One data table everywhere (admin + member area): search, sort, filters, columns, page size, selection + bulk, CSV, sticky header, saved per table, server paging, cards on phones ([docs/admin.md](docs/admin.md#data-tables-every-list)) |
+| 48 | `pr/48-mobile` | Draft (#56). Mobile first at 360/390/414: one column on phones, 48 px touch targets, readable charts, filters/sort/badge groups folded with a count (remembered) |
+| 49 | `pr/49-search` | Draft (#57). Global search Ctrl/⌘K: grouped, role-aware, #ID / exact phrase / phone formats, advanced filters, recent searches, quick actions, ~15 ms ([docs/admin.md](docs/admin.md#search-everything-ctrl-k)) |
+| 50 | `pr/50-easy-english` | Draft (#58). Very easy English in admin, member area and messages; Money history instead of Ledger; [docs/glossary.md](docs/glossary.md) |
+| 51 | `pr/51-report` | **Top PR, targets main, ready for review, CI runs here.** Round 4 report, handover, merge and run steps |
 
 **Merge:** the top PR targets `main` and contains every commit
 below it, so one merge brings in everything.
+
+## Round 4 (feature switches, badge bonus, tables, mobile, search, easy English)
+
+- **Feature switches**: every feature has one, grouped with easy descriptions, search and an on/off overview. Queue workers now see changes at once.
+- **Badge bonus**: see [docs/badge-bonus.md](docs/badge-bonus.md). You keep at least 3,983 of every 5,000 ETB membership (worst case 20.34% paid out; settings can never go over 35%). The job on the 1st waits for your first "Pay now".
+- **Tables**: one data table in the admin (`components/km/data-table.tsx`) and in the member area (`App\Member\MemberTable`).
+- **Phones**: checked at 360/390/414 px, no sideways scrolling, 48 px targets.
+- **Search**: Ctrl/⌘K, role-aware, about 15 ms.
+- **Words**: [docs/glossary.md](docs/glossary.md).
 
 ## Key decisions
 All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
@@ -94,8 +108,9 @@ All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
 See [docs/local-setup.md](docs/local-setup.md).
 
 ## Test status
-- 358 backend tests pass on SQLite and MariaDB 10.11 (every money path in
-  the brief is covered).
+- 424 backend tests pass on SQLite and MariaDB 10.11 (every money path in
+  the brief is covered, plus the badge bonus simulation with 2,500 random
+  members in 4 set-ups).
 - The admin passes typecheck, lint (0 errors) and build. The storefront
   builds.
 - CI (on the top PR): Pint, Larastan level 6, PHPUnit on MySQL 8, admin
@@ -105,6 +120,9 @@ See [docs/local-setup.md](docs/local-setup.md).
 - Round 3 review (15 Nov): every screen and flow re-tested in a browser as
   every member type and staff role, attack tests and real parallel requests;
   22 bugs found and fixed. See SECURITY_REPORT.md.
+- Round 4 (15 Nov): shop, member area and admin checked in a headless
+  browser at 360/390/414 px (no sideways scrolling, touch targets) and on
+  desktop; screenshots sent with the round-4 report.
 - Layout checked in headless Chrome (15 Nov): every admin page and every
   storefront page at 1440 px and 390 px, plus the sign-in/2FA screens at
   610 px. No page scrolls sideways; wide admin tables scroll inside their box.
