@@ -69,3 +69,17 @@ heading order on /shop, and text compression (gzip/deflate) in nginx and
 Lighthouse (desktop, as in CI): 100 / 98–100 / 100 / 100 on all key pages
 (best practices up from 96). Phone through nginx with the page cache:
 LCP 1.2–1.4 s. Cached pages answer in < 1 ms; uncached in ~30 ms.
+
+## Logo and icons
+Logo A, the "smiling mesob" (chosen from [three options](logo-options.png)).
+One source file: `resources/brand/logo-mark.svg`. It is used in:
+- the storefront header (`partials/logo-mark.blade.php`), error pages, and
+  the admin (`admin/src/assets/logo.tsx`)
+- `public/favicon.svg` + `favicon.ico`, `apple-touch-icon.png`, and
+  `brand/icon-192/512.png` (`site.webmanifest`)
+- emails (`brand/logo-96.png`, a PNG because many mail apps block SVG) and
+  PDF receipts (the same PNG, embedded)
+- the social preview `og-default.png` (1200×630)
+
+To change the logo, replace the SVG and regenerate the PNGs (for example
+`rsvg-convert -w 512 -h 512 resources/brand/logo-mark.svg -o public/brand/icon-512.png`).

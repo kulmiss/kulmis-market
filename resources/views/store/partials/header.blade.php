@@ -1,7 +1,7 @@
 <header class="sticky top-0 z-30 border-b border-sand-200 bg-sand-50/90 backdrop-blur dark:border-coffee-800 dark:bg-coffee-900/90">
     <div class="container-km flex h-16 items-center gap-4">
         <a href="{{ url('/') }}" class="flex items-center gap-2 font-serif text-xl font-semibold" aria-label="{{ \App\Support\Settings::string('site.name') }} home">
-            <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#b5532b"/><path d="M8 20c4-8 12-8 16 0M10 14c3-4 9-4 12 0" stroke="#fbf8f3" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+            @include('partials.logo-mark', ['size' => 28])
             <span>{{ \App\Support\Settings::string('site.name') }}</span>
         </a>
         <nav class="ms-4 hidden items-center gap-5 text-sm font-medium md:flex" aria-label="Main">

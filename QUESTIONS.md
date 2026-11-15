@@ -65,4 +65,4 @@ change any of them.
 | B | **Domain + hosting** | Set `APP_URL`, `MAIL_FROM_ADDRESS`. Note: Proclamation 1321/2024 has rules on keeping personal data on servers in Ethiopia, so this may matter when you choose hosting. |
 | C | **Chapa account** (test, then live keys + webhook secret) | Card / Telebirr payments. |
 | D | **Telegram bot + private channel** | Signals access. |
-| E | **Look & feel** | The colours, logo and texts are placeholders that fit "warm, handcrafted". Tell me what to change. |
+| E | **Look & feel** | Logo A (smiling mesob) is in. Colours and texts still fit "warm, handcrafted"; tell me what to change. |

@@ -9,7 +9,7 @@
   .total td { font-weight: bold; border-bottom: none; font-size: 12px; }
 </style></head>
 <body>
-  <h1>{{ \App\Support\Settings::string('site.name') }}</h1>
+  <h1><img src="data:image/png;base64,{{ base64_encode((string) file_get_contents(public_path('brand/logo-96.png'))) }}" width="28" height="28" alt="" style="vertical-align:middle;margin-right:6px">{{ \App\Support\Settings::string('site.name') }}</h1>
   <div class="muted">{{ \App\Support\Settings::string('site.tagline') }} · {{ \App\Support\Settings::string('site.support_phone') }}</div>
   <p><strong>Receipt</strong> · {{ $title }}<br>
      Paid {{ $payment->paid_at?->timezone(config('app.timezone'))->format('d M Y, H:i') }} · {{ ucfirst(str_replace('_', ' ', $payment->provider)) }}<br>
