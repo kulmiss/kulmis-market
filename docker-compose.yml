@@ -31,7 +31,7 @@ services:
   mysql:
     image: mysql:8.0
     environment:
-      MYSQL_DATABASE: kulmis
+      MYSQL_DATABASE: kulmis-market
       MYSQL_USER: kulmis
       MYSQL_PASSWORD: secret
       MYSQL_ROOT_PASSWORD: root

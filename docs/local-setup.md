@@ -14,7 +14,8 @@ docker compose exec app php artisan km:create-admin you@example.com
 - Shop: http://localhost:8080
 - Admin: http://localhost:8080/admin (sign in → set up 2FA with your phone app)
 - Mail inbox (Mailpit): http://localhost:8025
-- MySQL from your computer: `127.0.0.1:3307` (user `kulmis`, password `secret`)
+- MySQL from your computer: `127.0.0.1:3307` (database `kulmis-market`, user `kulmis`, password `secret`)
+- Admin passwords need at least 5 characters (`ADMIN_PASSWORD_MIN` in `.env`).
 
 **"ports are not available"** when starting: another program on your computer
 uses that port. Pick a free one in `.env` (`APP_PORT`, `MAILPIT_PORT` or

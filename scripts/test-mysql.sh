@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Run the test suite against a real MySQL/MariaDB, the way CI does.
-# Defaults match docker-compose (host port 3307). Override with env vars.
+# Defaults: host port 3307, test database "kulmis". Override with env vars.
 set -euo pipefail
 export DB_CONNECTION=mysql
 export DB_HOST="${DB_HOST:-127.0.0.1}"

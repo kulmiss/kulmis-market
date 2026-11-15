@@ -20,4 +20,8 @@ return [
 
     // 32-byte key for encrypted backups (php artisan km:backup-key).
     'backup_key' => env('BACKUP_KEY'),
+
+    // Minimum length for staff passwords set with km:create-admin.
+    // Admins also need 2FA to sign in.
+    'admin_password_min' => (int) env('ADMIN_PASSWORD_MIN', 5),
 ];

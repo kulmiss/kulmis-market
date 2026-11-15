@@ -104,8 +104,21 @@ class AdminAuthTest extends TestCase
     public function test_create_admin_command(): void
     {
         $this->artisan('km:create-admin', ['email' => 'me@example.com'])
-            ->expectsQuestion('Password (min 12 characters)', 'a-long-password-1')
+            ->expectsQuestion('Password (min 5 characters)', 'abcde')
             ->assertSuccessful();
         $this->assertTrue(User::query()->where('email', 'me@example.com')->firstOrFail()->isSuperAdmin());
+    }
+
+    public function test_create_admin_rejects_short_password_and_min_is_configurable(): void
+    {
+        $this->artisan('km:create-admin', ['email' => 'me@example.com'])
+            ->expectsQuestion('Password (min 5 characters)', 'abcd')
+            ->assertFailed();
+
+        config(['shop.admin_password_min' => 12]);
+        $this->artisan('km:create-admin', ['email' => 'me@example.com'])
+            ->expectsQuestion('Password (min 12 characters)', 'abcde')
+            ->assertFailed();
+        $this->assertFalse(User::query()->where('email', 'me@example.com')->exists());
     }
 }

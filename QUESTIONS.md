@@ -32,6 +32,8 @@ change any of them.
 | 23 | Storefront look | Clay, sand and coffee colours, serif headings with the system font stack (no web fonts, for speed and privacy). Change the colours in `resources/css/app.css` (`@theme`). | Decided (recommended), easy to change |
 | 24 | Security headers | Strict CSP (one hashed inline script, nothing third-party), plus a meta CSP so cached pages keep it. `form-action` allows `checkout.chapa.co` for the payment redirect. | Decided (recommended) |
 | 25 | Backups | Nightly encrypted backup (libsodium) of the DB, proofs and uploads, kept 14 days on the server. **You still need to copy them off the server.** | Decided (recommended) |
+| 26 | Database name | `kulmis-market` (you asked, 15 Nov). | Decided (you) |
+| 27 | Admin password length | Minimum 5 characters (you asked, 15 Nov), set by `ADMIN_PASSWORD_MIN` in `.env`. 2FA is still required for every admin. Note: the ASVS L2 level in your brief asks for 12. | Decided (you) |
 
 ## Still open: needs you
 | # | What | Why |

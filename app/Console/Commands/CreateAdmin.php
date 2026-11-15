@@ -20,9 +20,10 @@ class CreateAdmin extends Command
 
             return self::FAILURE;
         }
-        $password = (string) $this->secret('Password (min 12 characters)');
+        $min = max(1, (int) config('shop.admin_password_min'));
+        $password = (string) $this->secret("Password (min {$min} characters)");
         $v = Validator::make(['email' => $this->argument('email'), 'password' => $password], [
-            'email' => ['required', 'email'], 'password' => ['required', 'min:12'],
+            'email' => ['required', 'email'], 'password' => ['required', 'min:'.$min],
         ]);
         if ($v->fails()) {
             $this->error($v->errors()->first());
