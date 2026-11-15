@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Demo\HidesDemo;
 use App\Events\CatalogChanged;
+use App\Jobs\NotifyBackInStock;
 use App\Support\Features;
 use App\Support\Settings;
 use Database\Factories\ProductFactory;
@@ -35,6 +36,16 @@ use Illuminate\Support\Carbon;
  */
 class Product extends Model
 {
+    protected static function booted(): void
+    {
+        // Sold out → back in stock: tell the people who asked (products without options).
+        static::updated(function (Product $p) {
+            if ($p->wasChanged('stock') && (int) $p->getOriginal('stock') < 1 && (int) $p->stock > 0) {
+                NotifyBackInStock::dispatch($p->id, null)->afterCommit();
+            }
+        });
+    }
+
     /** @use HasFactory<ProductFactory> */
     use HasFactory;
 

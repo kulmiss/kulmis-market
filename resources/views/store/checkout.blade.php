@@ -11,6 +11,19 @@
             <form class="mt-6 grid gap-4" method="post" action="{{ url('/checkout') }}" @if (!$user) data-guest-checkout @endif data-checkout-form>
                 @if ($user) @csrf @endif
                 <input type="hidden" name="checkout_key" value="{{ \Illuminate\Support\Str::uuid() }}">
+                @if ($user && \App\Support\Features::enabled('shop.saved_addresses'))
+                    @php $saved = \App\Models\Address::query()->where('user_id', $user->id)->orderByDesc('is_default')->orderBy('id')->get(); @endphp
+                    @if ($saved->isNotEmpty())
+                        <div><label class="label" for="saved-address">Deliver to</label>
+                            <select id="saved-address" class="input" data-saved-address>
+                                @foreach ($saved as $a)
+                                    <option value="{{ $a->id }}" data-fill="{{ json_encode(['first_name' => $a->first_name, 'last_name' => $a->last_name, 'phone' => $a->phone, 'city' => $a->city, 'address' => $a->address]) }}" @selected($a->is_default)>{{ $a->label }}: {{ $a->city }}, {{ \Illuminate\Support\Str::limit($a->address, 40) }}</option>
+                                @endforeach
+                                <option value="">A new address</option>
+                            </select>
+                        </div>
+                    @endif
+                @endif
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div><label class="label" for="cf">First name</label><input id="cf" name="first_name" class="input" required autocomplete="given-name" value="{{ old('first_name', $user?->first_name) }}"></div>
                     <div><label class="label" for="cl">Last name</label><input id="cl" name="last_name" class="input" autocomplete="family-name" value="{{ old('last_name', $user?->last_name) }}"></div>
@@ -25,6 +38,9 @@
                 </div>
                 <div><label class="label" for="ca">Address (area, street, landmark)</label><textarea id="ca" name="address" class="input" rows="2" required autocomplete="street-address">{{ old('address') }}</textarea></div>
                 <div><label class="label" for="cn">Notes (optional)</label><input id="cn" name="notes" class="input" value="{{ old('notes') }}"></div>
+                @if ($user && \App\Support\Features::enabled('shop.saved_addresses'))
+                    <label class="flex min-h-12 items-center gap-2 text-sm"><input type="checkbox" name="save_address" value="1" class="size-5"> Save this address for next time</label>
+                @endif
                 @if (!$user)
                     <div><label class="label" for="cr">Referral code (optional — a link you opened is remembered)</label><input id="cr" name="referral_code" class="input uppercase" value="{{ old('referral_code') }}"></div>
                 @endif

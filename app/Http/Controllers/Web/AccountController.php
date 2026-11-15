@@ -10,6 +10,7 @@ use App\Ledger\Wallet;
 use App\Member\MemberDashboard;
 use App\Member\MemberTables;
 use App\Membership\MembershipService;
+use App\Models\Address;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
@@ -233,6 +234,9 @@ class AccountController extends Controller
         } catch (PricingException $e) {
             throw ValidationException::withMessages(['cart' => $e->getMessage()]);
         }
+        if ($order->wasRecentlyCreated && $request->boolean('save_address') && Features::enabled('shop.saved_addresses')) {
+            $this->rememberAddress($user, $data);
+        }
         if ($order->wasRecentlyCreated && $request->boolean('use_wallet')) {
             $wallet->apply($order, $user);
             $order->refresh();
@@ -245,6 +249,21 @@ class AccountController extends Controller
         return $order->status === Order::PENDING_PAYMENT
             ? redirect('/pay/'.$order->number)
             : redirect('/track?number='.$order->number)->with('status', 'Order placed and paid. Thank you!');
+    }
+
+    /** @param array<string, mixed> $data */
+    private function rememberAddress(User $user, array $data): void
+    {
+        $same = Address::query()->where('user_id', $user->id)->where('city', $data['city'])->where('address', $data['address'])->exists();
+        $count = Address::query()->where('user_id', $user->id)->count();
+        if ($same || $count >= Address::MAX_PER_USER) {
+            return;
+        }
+        $a = new Address(['label' => $count ? 'Address '.($count + 1) : 'Home', 'first_name' => $data['first_name'],
+            'last_name' => (string) ($data['last_name'] ?? ''), 'phone' => $data['phone'], 'city' => $data['city'], 'address' => $data['address']]);
+        $a->user_id = $user->id;
+        $a->is_default = $count === 0;
+        $a->save();
     }
 
     public function newCheckoutKey(): string

@@ -4,6 +4,7 @@ namespace App\Orders;
 
 use App\Events\OrderPaid;
 use App\Events\OrderStatusChanged;
+use App\Jobs\NotifyBackInStock;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderStatusChange;
@@ -76,10 +77,19 @@ class OrderService
             if ($item->made_to_order) {
                 continue;
             }
+            // Was it sold out? Then the people waiting for it get a message.
             if ($item->product_variant_id) {
+                $was = (int) ProductVariant::query()->whereKey($item->product_variant_id)->value('stock');
                 ProductVariant::query()->whereKey($item->product_variant_id)->increment('stock', $item->quantity);
+                if ($was < 1 && $item->product_id) {
+                    NotifyBackInStock::dispatch($item->product_id, $item->product_variant_id)->afterCommit();
+                }
             } elseif ($item->product_id) {
+                $was = (int) Product::query()->whereKey($item->product_id)->value('stock');
                 Product::query()->whereKey($item->product_id)->increment('stock', $item->quantity);
+                if ($was < 1) {
+                    NotifyBackInStock::dispatch($item->product_id, null)->afterCommit();
+                }
             }
         }
     }

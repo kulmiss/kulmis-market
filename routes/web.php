@@ -3,6 +3,7 @@
 use App\Http\Controllers\Web\AccountController;
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\SecurityController;
+use App\Http\Controllers\Web\ShopAccountController;
 use App\Referral\Engagement;
 use App\Referral\ReferralCodes;
 use Illuminate\Http\Request;
@@ -42,6 +43,19 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
     Route::post('badges/seen', [AccountController::class, 'badgesSeen'])->middleware(['feature:badges', 'throttle:30,1'])->name('badges.seen');
 
     Route::get('security', [SecurityController::class, 'show'])->name('security');
+
+    // Wishlist, saved addresses, buy again
+    Route::middleware('feature:shop.wishlist')->group(function () {
+        Route::get('wishlist', [ShopAccountController::class, 'wishlist'])->name('wishlist');
+        Route::post('wishlist/{product}', [ShopAccountController::class, 'toggleWishlist'])->middleware('throttle:60,1')->name('wishlist.toggle');
+    });
+    Route::middleware('feature:shop.saved_addresses')->group(function () {
+        Route::get('addresses', [ShopAccountController::class, 'addresses'])->name('addresses');
+        Route::post('addresses', [ShopAccountController::class, 'saveAddress'])->middleware('throttle:20,1')->name('addresses.store');
+        Route::put('addresses/{address}', [ShopAccountController::class, 'saveAddress'])->middleware('throttle:20,1')->name('addresses.update');
+        Route::delete('addresses/{address}', [ShopAccountController::class, 'deleteAddress'])->middleware('throttle:20,1')->name('addresses.delete');
+    });
+    Route::post('orders/{number}/buy-again', [ShopAccountController::class, 'buyAgain'])->middleware(['feature:shop', 'feature:shop.buy_again', 'throttle:20,1'])->name('orders.buy-again');
     Route::middleware('throttle:10,1')->group(function () {
         Route::post('security/password', [SecurityController::class, 'password'])->name('security.password');
         Route::post('security/email', [SecurityController::class, 'email'])->name('security.email');

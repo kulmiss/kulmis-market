@@ -11,6 +11,8 @@
         ['Badges', '/account/badges', 'award', \App\Support\Features::enabled('badges')],
         ['Orders', '/account/orders', 'shopping-bag', \App\Support\Features::enabled('shop')],
         ['Signals', '/account/signals', 'radio', \App\Support\Features::enabled('signals')],
+        ['Wishlist', '/account/wishlist', 'heart', \App\Support\Features::enabled('shop.wishlist')],
+        ['Addresses', '/account/addresses', 'map-pin', \App\Support\Features::enabled('shop.saved_addresses')],
         ['Security', '/account/security', 'shield-check', true],
     ], fn ($n) => $n[3]));
     $here = '/'.trim(request()->path(), '/');

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CheckoutController;
+use App\Http\Controllers\Api\StockAlertController;
 use App\Http\Controllers\Api\TrackingController;
 use App\Models\ShippingZone;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -22,3 +23,5 @@ Route::middleware('feature:shop')->get('shipping/zones', fn () => response()->js
     'data' => ShippingZone::query()->where('is_active', true)->orderBy('position')
         ->get(['id', 'name', 'cities', 'base_fee', 'included_grams', 'per_kg_fee', 'eta_days_min', 'eta_days_max', 'is_default']),
 ]))->name('shipping.zones');
+
+Route::post('stock-alerts', [StockAlertController::class, 'store'])->middleware(['feature:shop.stock_alerts', 'throttle:5,1'])->name('stock-alerts');

@@ -55,8 +55,10 @@ const busy = async (form, fn) => {
     try { await fn(); } finally { delete form.dataset.busy; buttons.forEach((b) => { b.disabled = false; }); }
 };
 
-/* Plain (non-JS) forms: block a second submit while the page is loading. */
+/* Plain (non-JS) forms: block a second submit while the page is loading.
+   data-confirm="Question?" asks first (no inline scripts: the CSP forbids them). */
 $$('form[method="post"]').forEach((f) => f.addEventListener('submit', (e) => {
+    if (f.dataset.confirm && !f.dataset.sent && !window.confirm(f.dataset.confirm)) { e.preventDefault(); return; }
     if (f.dataset.sent) { e.preventDefault(); return; }
     f.dataset.sent = '1';
     setTimeout(() => {
@@ -338,6 +340,34 @@ if ('serviceWorker' in navigator && html.dataset.offline === 'off') {
         navigator.serviceWorker.controller?.postMessage('km-clear-pages');
     }));
 }
+
+/* ---------- checkout: pick a saved address ---------- */
+$$('[data-saved-address]').forEach((sel) => {
+    const fill = () => {
+        const opt = sel.selectedOptions[0];
+        const data = opt?.dataset.fill ? JSON.parse(opt.dataset.fill) : null;
+        const form = sel.closest('form');
+        ['first_name', 'last_name', 'phone', 'city', 'address'].forEach((k) => {
+            const el = form.elements[k];
+            if (el) el.value = data ? data[k] ?? '' : (k === 'first_name' || k === 'last_name' || k === 'phone' ? el.value : '');
+        });
+    };
+    sel.addEventListener('change', fill);
+    fill();
+});
+
+/* ---------- "tell me when it's back" ---------- */
+$$('[data-stock-alert]').forEach((form) => form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    busy(form, async () => {
+        const msg = $('[data-alert-message]', form);
+        try {
+            const d = formData(form);
+            const res = await api('/stock-alerts', { method: 'POST', body: { product_id: Number(form.dataset.product), variant_id: d.variant_id ? Number(d.variant_id) : null, contact: d.contact, website: d.website } });
+            say(msg, res.message, true);
+        } catch (err) { say(msg, err.message); }
+    });
+}));
 
 /* ---------- member tables: saved view, columns, selection, CSV ---------- */
 const store = {

@@ -72,6 +72,44 @@
             <p data-cart-message class="text-sm" role="status" aria-live="polite"></p>
         </form>
 
+        @feature('shop.wishlist')
+            @auth
+                @php $saved = \App\Models\WishlistItem::query()->where('user_id', auth()->id())->where('product_id', $product->id)->exists(); @endphp
+                <form method="post" action="{{ url('/account/wishlist/'.$product->id) }}" class="mt-3">@csrf
+                    <button class="btn-ghost w-full" aria-pressed="{{ $saved ? 'true' : 'false' }}">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="{{ $saved ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                        {{ $saved ? 'Saved in your wishlist' : 'Save to wishlist' }}
+                    </button>
+                </form>
+            @else
+                <a href="{{ url('/login') }}" class="btn-ghost mt-3 w-full">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                    Sign in to save it
+                </a>
+            @endauth
+        @endfeature
+
+        @feature('shop.stock_alerts')
+            @php $soldOutVariants = $variants->filter(fn ($v) => ! $product->isMadeToOrder() && (int) $v->stock < 1); @endphp
+            @if (! $product->isMadeToOrder() && (($variants->isEmpty() && (int) $stock < 1) || $soldOutVariants->isNotEmpty()))
+                <form class="card mt-4 grid gap-3" data-stock-alert data-product="{{ $product->id }}" novalidate>
+                    <p class="font-semibold">{{ $variants->isEmpty() ? 'Sold out right now' : 'Some options are sold out' }}</p>
+                    <p class="muted -mt-2 text-sm">Leave your phone or email. We send you <b>one</b> message when it is back.</p>
+                    @if ($soldOutVariants->isNotEmpty())
+                        <label><span class="label">Which one?</span>
+                            <select name="variant_id" class="input">@foreach ($soldOutVariants as $v)<option value="{{ $v->id }}">{{ $v->name }}</option>@endforeach</select>
+                        </label>
+                    @endif
+                    <label><span class="label">Phone or email</span>
+                        <input name="contact" class="input" required maxlength="160" autocomplete="email" placeholder="09… or you@example.com" value="{{ auth()->user()?->phone }}">
+                    </label>
+                    <input type="text" name="website" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
+                    <button class="btn-dark">Tell me when it's back</button>
+                    <p data-alert-message class="text-sm" role="status" aria-live="polite"></p>
+                </form>
+            @endif
+        @endfeature
+
         @feature('membership')
         <div class="card mt-6 text-sm">
             <p class="font-semibold">Members pay {{ \App\Support\Money::format($memberPrice) }} for this</p>

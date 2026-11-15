@@ -84,6 +84,9 @@ change any of them.
 | 75 | Product grids on phones | Info cards are one column on phones; product photos stay two per row on phones (normal for shops, easier to browse). Say if you want one. | Decided (recommended) |
 | 76 | Money history codes | Admin shows easy names first and the technical type small underneath; CSV files keep the codes so spreadsheets and the accountant can match them. | Decided (recommended) |
 | 77 | Member money history | The wallet page lists every wallet line, including "on the way → ready to use" moves (two lines each), so the totals always add up. | Decided (recommended) |
+| 78 | Back-in-stock alerts | One message per request (SMS for a phone, email for an email); then the request is closed. At most 20 open requests per phone/email. Guests can ask too (rate-limited, honeypot). | Decided (recommended) |
+| 79 | Buy again | Uses today's prices and skips items that are no longer sold, and says which ones. | Decided (recommended) |
+| 80 | Saved addresses | Up to 10 per person; the first one is the default; "Save this address for next time" at checkout skips duplicates. | Decided (recommended) |
 
 ## Still open: needs you
 | # | What | Why |

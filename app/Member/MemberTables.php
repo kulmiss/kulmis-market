@@ -10,10 +10,12 @@ use App\Models\PayoutRequest;
 use App\Models\Signal;
 use App\Models\User;
 use App\Notify\OrderNotifier;
+use App\Support\Features;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\HtmlString;
 
 /** The tables of the member area, each in easy words. */
 final class MemberTables
@@ -130,7 +132,7 @@ final class MemberTables
             'created_at' => ['Date', 'date', true],
             'total' => ['Total', 'money', true, 'end'],
             'status' => ['Status', 'status', true],
-        ], ['status' => ['label' => 'Status', 'options' => ['pending_payment' => 'Waiting for payment', 'paid' => 'Paid', 'making' => 'Being made',
+        ] + (Features::enabled('shop.buy_again') ? ['again' => ['Buy again', 'text']] : []), ['status' => ['label' => 'Status', 'options' => ['pending_payment' => 'Waiting for payment', 'paid' => 'Paid', 'making' => 'Being made',
             'shipped' => 'On its way', 'delivered' => 'Delivered', 'cancelled' => 'Cancelled', 'refunded' => 'Money given back']]],
             'Order number', '', 'No orders yet.'))->fromQuery(
                 $request,
@@ -138,7 +140,9 @@ final class MemberTables
                 ['number' => 'id', 'created_at' => 'created_at', 'total' => 'total', 'status' => 'status'],
                 fn (Builder $q, string $v) => $q->where('number', 'like', '%'.strtoupper($v).'%'),
                 fn (Order $o) => ['_id' => $o->id, 'number' => $o->number, 'created_at' => $o->created_at->toIso8601String(), 'total' => $o->total,
-                    'status' => $o->status, '_url' => OrderNotifier::trackUrl($o)],
+                    'status' => $o->status, '_url' => OrderNotifier::trackUrl($o), 'again' => '',
+                    '_html' => ['again' => new HtmlString('<form method="post" action="'.e(url('/account/orders/'.$o->number.'/buy-again')).'">'
+                        .csrf_field().'<button class="m-btn-ghost min-h-10" aria-label="Buy order '.e($o->number).' again">Buy again</button></form>')]],
                 ['status' => 'status'],
             );
     }

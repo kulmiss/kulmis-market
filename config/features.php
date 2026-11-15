@@ -18,6 +18,10 @@ return [
     'shop.free_shipping' => ['Free shipping for members', 'Shop', true, 'membership', 'Members pay no delivery above the amount set in Settings.'],
     'shop.members_only_product' => ['Members-only product of the month', 'Shop', true, 'membership', 'One product that only members can buy.'],
     'shop.early_access' => ['Members early access', 'Shop', true, 'membership', 'Members can buy new products a few hours before everyone else.'],
+    'shop.wishlist' => ['Wishlist', 'Shop', true, 'shop', 'Signed-in customers can save products with a heart and find them later.'],
+    'shop.stock_alerts' => ['"Tell me when it\'s back"', 'Shop', true, 'shop', 'People can leave their phone or email on a sold-out item and get one message when it is back.'],
+    'shop.buy_again' => ['Buy again', 'Shop', true, 'shop', 'A "Buy again" button on past orders puts the same items in the cart (today\'s prices).'],
+    'shop.saved_addresses' => ['Saved addresses', 'Shop', true, 'shop', 'Signed-in customers can save several delivery addresses and pick one at checkout.'],
     'shop.order_tracking' => ['Order tracking page', 'Shop', true, 'shop', 'The "Track order" page and its links in menus and messages.'],
 
     // Payments
@@ -72,6 +76,7 @@ return [
     'messages.order_shipped' => ['Order sent', 'Messages', true, 'shop', 'Tell the customer their order is on its way.'],
     'messages.order_delivered' => ['Order delivered', 'Messages', true, 'shop', 'Tell the customer their order arrived.'],
     'messages.order_cancelled' => ['Order cancelled', 'Messages', true, 'shop', 'Tell the customer their order was cancelled.'],
+    'messages.back_in_stock' => ['Back in stock', 'Messages', true, 'shop.stock_alerts', 'Tell people a sold-out item they asked about is back.'],
     'messages.membership_activated' => ['Membership started', 'Messages', true, 'membership', 'Welcome message when a membership starts.'],
     'messages.membership_before' => ['Renew soon', 'Messages', true, 'membership', 'Reminder before the membership ends.'],
     'messages.membership_today' => ['Ends today', 'Messages', true, 'membership', 'Reminder on the last day.'],
