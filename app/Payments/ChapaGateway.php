@@ -61,7 +61,8 @@ class ChapaGateway
         }
 
         return [
-            'status' => (string) ($data['status'] ?? 'unknown'),
+            // Chapa must confirm the same transaction we asked about.
+            'status' => isset($data['tx_ref']) && (string) $data['tx_ref'] !== $txRef ? 'mismatch' : (string) ($data['status'] ?? 'unknown'),
             'amount' => self::santim((string) ($data['amount'] ?? '0')),
             'currency' => (string) ($data['currency'] ?? ''),
             'reference' => isset($data['reference']) ? (string) $data['reference'] : null,

@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Laravel\Sanctum\TransientToken;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -16,10 +15,11 @@ class EnsureTwoFactor
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
-        abort_unless($user, 401);
+        abort_if($user === null, 401);
 
-        $token = method_exists($user, 'currentAccessToken') ? $user->currentAccessToken() : null;
-        if ($token !== null && ! $token instanceof TransientToken) {
+        // Admin requests come from the browser session that passed 2FA. A
+        // bearer token never went through that login.
+        if ($request->bearerToken() !== null) {
             abort(403, 'Admin access requires a browser session with 2FA.');
         }
 

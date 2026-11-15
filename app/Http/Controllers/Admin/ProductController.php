@@ -88,6 +88,7 @@ class ProductController extends Controller
         $changes = match ($data['action']) {
             'activate' => ['status' => 'active'], 'archive' => ['status' => 'archived'], 'draft' => ['status' => 'draft'],
             'feature' => ['is_featured' => true], 'unfeature' => ['is_featured' => false],
+            default => abort(422),
         };
         $count = 0;
         Product::query()->whereKey($data['ids'])->each(function (Product $p) use ($changes, &$count) {

@@ -15,7 +15,7 @@ class FeaturesTest extends TestCase
     public function test_defaults_come_from_config(): void
     {
         $this->assertTrue(Features::enabled('shop'));
-        $this->assertFalse(Features::enabled('shop.reviews'));
+        $this->assertTrue(Features::enabled('membership'));
     }
 
     public function test_child_is_off_when_parent_is_off_without_losing_its_own_value(): void

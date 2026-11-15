@@ -11,7 +11,6 @@ return [
     'shop' => ['Shop', 'Shop', true, null],
     'shop.guest_checkout' => ['Guest checkout', 'Shop', true, 'shop'],
     'shop.coupons' => ['Coupons', 'Shop', true, 'shop'],
-    'shop.reviews' => ['Product reviews', 'Shop', false, 'shop'],
     'shop.free_shipping' => ['Free shipping for members', 'Shop', true, 'membership'],
     'shop.members_only_product' => ['Members-only product of the month', 'Shop', true, 'membership'],
     'shop.early_access' => ['Members early access', 'Shop', true, 'membership'],

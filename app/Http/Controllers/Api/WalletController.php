@@ -23,7 +23,7 @@ class WalletController extends Controller
             ->whereHas('account', fn ($q) => $q->where('user_id', $user->id)->where('code', 'like', '%:available'))
             ->latest('id')->limit(100)->get()
             ->map(fn (Posting $p) => ['type' => $p->entry->type, 'description' => $p->entry->description,
-                'amount' => -$p->amount, 'at' => $p->entry->created_at?->toIso8601String()]);
+                'amount' => -$p->amount, 'at' => $p->entry->created_at->toIso8601String()]);
 
         return response()->json(['data' => [
             'balances' => Wallet::for($user)->summary(),

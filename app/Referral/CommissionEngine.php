@@ -57,7 +57,7 @@ class CommissionEngine
             $recipient = $next;
         }
 
-        return array_values(array_filter($created));
+        return $created;
     }
 
     /** Hourly: pending → available after the refund window (unless on hold). */
@@ -151,7 +151,7 @@ class CommissionEngine
         return [null, 0, null, null, null, null];
     }
 
-    private function createOne(Model $source, Payment $payment, string $type, int $level, int $base, User $recipient, ?User $buyer, ?string $phone, ?string $email): ?Commission
+    private function createOne(Model $source, Payment $payment, string $type, int $level, int $base, User $recipient, ?User $buyer, ?string $phone, ?string $email): Commission
     {
         $existing = Commission::query()->where('source_type', $source->getMorphClass())->where('source_id', $source->getKey())->where('level', $level)->first();
         if ($existing) {

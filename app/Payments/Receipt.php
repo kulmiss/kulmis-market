@@ -18,8 +18,8 @@ class Receipt
             'payment' => $payment,
             'payable' => $payable,
             'order' => $payable instanceof Order ? $payable->load('items') : null,
-            'customer' => $payable instanceof Payable ? $payable->payableCustomer() : [],
-            'title' => $payable instanceof Payable ? $payable->payableTitle() : 'Payment',
+            'customer' => $payable->payableCustomer(),
+            'title' => $payable->payableTitle(),
         ])->setPaper('a5');
 
         return $pdf->download('receipt-'.$payment->tx_ref.'.pdf');

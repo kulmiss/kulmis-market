@@ -142,6 +142,9 @@ class MembershipService
     {
         $now ??= now();
         $stats = ['grace' => 0, 'expired' => 0, 'reminders' => 0];
+        if (Features::disabled('membership')) {
+            return $stats; // paused: nothing expires and no reminders go out while it's off
+        }
 
         Membership::query()->where('status', 'active')->where('current_period_end', '<', $now)
             ->each(function (Membership $m) use (&$stats) {

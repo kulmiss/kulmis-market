@@ -12,7 +12,7 @@ use Illuminate\Session\DatabaseSessionHandler;
 class PrivacySessionHandler extends DatabaseSessionHandler
 {
     /**
-     * @param  array<string, mixed>  $payload
+     * @param  array<mixed>  $payload
      * @return $this
      */
     protected function addRequestInformation(&$payload)

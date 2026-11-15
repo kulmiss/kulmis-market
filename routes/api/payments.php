@@ -3,7 +3,7 @@
 use App\Http\Controllers\Api\PaymentController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('throttle:20,1')->group(function () {
+Route::middleware(['feature:shop', 'throttle:20,1'])->group(function () {
     Route::post('orders/{number}/payment-options', [PaymentController::class, 'options'])->name('orders.payment-options');
     Route::post('orders/{number}/pay', [PaymentController::class, 'pay'])->name('orders.pay');
     Route::post('orders/{number}/payment-proof', [PaymentController::class, 'proof'])->name('orders.payment-proof');

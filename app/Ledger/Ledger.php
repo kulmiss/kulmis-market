@@ -18,7 +18,7 @@ use Illuminate\Support\Str;
 class Ledger
 {
     /**
-     * @param  list<array{0: Account|string, 1: int}>  $lines  [account, amount]
+     * @param  list<array{0: Account|string, 1: mixed}>  $lines  [account, amount in santim]; amounts are checked below
      * @param  list<Account|string>  $nonNegative  accounts whose natural balance must stay ≥ 0
      */
     public function post(

@@ -33,7 +33,9 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Payment proofs live here. No public URL route: admins view them
+            // through an authorised controller only.
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

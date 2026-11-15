@@ -61,7 +61,7 @@ class AccountController extends Controller
             throw ValidationException::withMessages(['current_password' => 'Wrong password.']);
         }
         $user->update(['password' => $data['password']]);
-        $user->tokens()->where('id', '!=', $user->currentAccessToken()?->getKey())->delete();
+        $user->tokens()->where('id', '!=', $user->currentAccessToken()->getKey())->delete();
         Activity::log('customer.password_changed', $user);
 
         return response()->json(['ok' => true]);

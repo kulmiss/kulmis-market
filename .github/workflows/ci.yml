@@ -39,6 +39,8 @@ jobs:
       - run: cp .env.example .env && php artisan key:generate
       - name: Lint (Pint)
         run: vendor/bin/pint --test
+      - name: Static analysis (Larastan, level 5)
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
       - name: Tests (MySQL — money paths must pass on the real engine)
         env:
           DB_CONNECTION: mysql

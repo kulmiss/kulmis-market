@@ -42,7 +42,7 @@ class TrackingController extends Controller
             'shipping' => $order->shippingPayable(),
             'city' => $order->city,
             'tracking_number' => $order->tracking_number,
-            'timeline' => $order->history->map(fn ($h) => ['status' => $h->to, 'at' => $h->created_at?->toIso8601String()]),
+            'timeline' => $order->history->map(fn ($h) => ['status' => $h->to, 'at' => $h->created_at->toIso8601String()]),
         ];
     }
 }

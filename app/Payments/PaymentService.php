@@ -65,6 +65,8 @@ class PaymentService
         $result = $this->chapa->verify($txRef);
         if ($result['status'] === 'success' && $result['currency'] === 'ETB' && $result['amount'] >= $payment->amount) {
             $this->markPaid($payment, $result['charge'] ?: null, $result['reference'], $result['payer'], ['chapa' => $result['raw']]);
+        } elseif ($result['status'] === 'mismatch') {
+            Activity::log('payment.reference_mismatch', $payment, ['asked' => $txRef]);
         } elseif (in_array($result['status'], ['failed', 'cancelled'], true)) {
             $payment->update(['status' => Payment::FAILED, 'meta' => ['chapa' => $result['raw']]]);
         } elseif ($result['status'] === 'success') {

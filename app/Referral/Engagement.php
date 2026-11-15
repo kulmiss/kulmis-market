@@ -88,7 +88,7 @@ class Engagement
                 }
             }
 
-            return array_values(array_map(fn ($r, $i) => ['rank' => $i + 1] + $r, $rows, array_keys($rows)));
+            return array_map(fn ($r, $i) => ['rank' => $i + 1] + $r, $rows, array_keys($rows));
         });
     }
 

@@ -1,6 +1,6 @@
 # Handover — Kulmis Market
 
-_Last updated: PR 20 (the whole plan is built)._
+_Last updated: PR 21._
 
 Kulmis Market is an online shop for handcrafted Ethiopian products, plus a
 trading-signals service (private Telegram channel) and a paid monthly
@@ -38,7 +38,8 @@ English (ready for Amharic) and aimed at customers in Ethiopia.
 | 17 | `pr/17-admin-money` | Draft. Admin: cash-outs, ledger, fraud, commissions, tree, signals |
 | 18 | `pr/18-admin-dashboards` | Draft. KPI dashboard, system status |
 | 19 | `pr/19-storefront` | Draft. Storefront, page cache, SEO, member area ([docs/storefront.md](docs/storefront.md)) |
-| 20 | `pr/20-texts-golive` | **Ready for review (CI runs here).** Default texts, CSP, encrypted backups, `km:doctor`, deploy guide ([docs/deploy.md](docs/deploy.md)) |
+| 20 | `pr/20-texts-golive` | Draft. Default texts, CSP, encrypted backups, `km:doctor`, deploy guide ([docs/deploy.md](docs/deploy.md)) |
+| 21 | `pr/21-logic-review` | Draft. Review: Larastan in CI, money edge-case tests (replays, double clicks, races, bad input), feature-switch matrix, jobs pause when off |
 
 **Merge order:** 1 → 2 → … → 20. Each PR targets the previous branch. After
 merging one into `main`, change the next PR's base to `main` (GitHub offers
@@ -62,7 +63,7 @@ All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
 See [docs/local-setup.md](docs/local-setup.md).
 
 ## Test status
-- 217 backend tests pass on SQLite and MariaDB 10.11 (every money path in
+- 239 backend tests pass on SQLite and MariaDB 10.11 (every money path in
   the brief is covered).
 - The admin passes typecheck, lint (0 errors) and build. The storefront
   builds.

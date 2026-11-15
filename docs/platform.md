@@ -41,3 +41,15 @@ table: updates and deletes throw. The IP is recorded only for signed-in users.
 ## Privacy
 Sessions use the `privacy-database` driver, which stores no IP address or
 user agent for guests.
+
+## What "off" means for background jobs
+Turning a feature off hides its pages, API and admin screens, and **pauses**
+its jobs. Nothing is deleted:
+- `membership` off → no expiries, no reminders, members keep signals access.
+- `telegram_bot` off → the signals sweep waits (nobody can be removed from the
+  channel without the bot, so nobody is marked removed either).
+- `loyalty_reward` off → no rewards are granted.
+- `notifications.*` off → that channel is skipped.
+
+`tests/Feature/Platform/FeatureSwitchMatrixTest.php` checks every switch
+against every route it guards.

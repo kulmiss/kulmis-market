@@ -29,7 +29,7 @@ final class Line
 
     public function weightGrams(): int
     {
-        return ($this->variant?->weight_grams ?? $this->product->weight_grams) * $this->quantity;
+        return ($this->variant->weight_grams ?? $this->product->weight_grams) * $this->quantity;
     }
 
     public function unitCost(): int

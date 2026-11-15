@@ -39,7 +39,7 @@ class CartController extends Controller
     {
         $data = $request->validate(['quantity' => ['required', 'integer', 'min:0', 'max:99']]);
         $cart = $this->carts->find($request);
-        abort_unless($cart, 404);
+        abort_if($cart === null, 404);
         $this->carts->setQuantity($cart, $item, $data['quantity']);
 
         return $this->respond($cart, $request);
@@ -49,7 +49,7 @@ class CartController extends Controller
     {
         $data = $request->validate(['code' => ['nullable', 'string', 'max:40']]);
         $cart = $this->carts->find($request);
-        abort_unless($cart, 404);
+        abort_if($cart === null, 404);
         $previous = $cart->coupon_code;
         $cart->update(['coupon_code' => $data['code'] ? strtoupper(trim($data['code'])) : null]);
         try {

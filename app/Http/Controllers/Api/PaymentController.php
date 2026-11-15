@@ -72,7 +72,7 @@ class PaymentController extends Controller
         $ref = (string) ($request->query('trx_ref') ?? $request->query('tx_ref') ?? '');
         $payment = $ref !== '' ? $this->payments->confirmChapa($ref) : null;
 
-        return response()->json(['status' => $payment?->status ?? 'unknown']);
+        return response()->json(['status' => $payment->status ?? 'unknown']);
     }
 
     /** Chapa webhook: signature first, then re-verify with Chapa's API. */
@@ -114,7 +114,7 @@ class PaymentController extends Controller
     {
         $phone = Phone::normalize((string) $request->input('phone'));
         $order = Order::query()->where('number', strtoupper($number))->where('phone', $phone ?? '')->first();
-        abort_unless($order, 404, 'Order not found.');
+        abort_if($order === null, 404, 'Order not found.');
 
         return $order;
     }

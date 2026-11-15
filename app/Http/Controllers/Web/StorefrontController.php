@@ -128,6 +128,7 @@ class StorefrontController extends Controller
 
     public function pay(Request $request, string $number): View
     {
+        abort_if(Features::disabled('shop'), 404);
         $user = $request->user();
         $order = Order::query()->where('number', strtoupper($number))->first();
         $phone = Phone::normalize((string) $request->query('phone'));
@@ -140,6 +141,8 @@ class StorefrontController extends Controller
 
     public function track(): View
     {
+        abort_if(Features::disabled('shop'), 404);
+
         return view('store.track');
     }
 

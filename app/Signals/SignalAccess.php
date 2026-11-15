@@ -148,12 +148,20 @@ class SignalAccess
     /** Hourly: remove everyone whose access (incl. grace) has ended. */
     public function sweep(): int
     {
+        // While the bot is off nobody can actually be removed, so wait.
+        if (Features::disabled('telegram_bot')) {
+            return 0;
+        }
         $removed = 0;
+        $membershipOff = Features::disabled('membership');
         SignalSubscription::query()->with('user.membership')->whereIn('status', ['active', 'pending'])
             ->where(fn ($q) => $q->where('source', SignalSubscription::MEMBERSHIP)->orWhere('grace_ends_at', '<', now()))
-            ->each(function (SignalSubscription $sub) use (&$removed) {
+            ->each(function (SignalSubscription $sub) use (&$removed, $membershipOff) {
                 if ($sub->status === 'pending' && $sub->grace_ends_at === null) {
                     return; // never paid
+                }
+                if ($membershipOff && $sub->source === SignalSubscription::MEMBERSHIP) {
+                    return; // membership is paused, not ended: keep members in the channel
                 }
                 $removed += (int) $this->removeIfNotEntitled($sub);
             });

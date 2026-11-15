@@ -35,7 +35,7 @@ class PriceCalculator
 
     public function unitListPrice(Product $product, ?ProductVariant $variant): int
     {
-        return $variant?->price ?? $product->price;
+        return $variant->price ?? $product->price;
     }
 
     /**

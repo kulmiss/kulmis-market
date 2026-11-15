@@ -53,7 +53,7 @@ class TeamView
         ];
     }
 
-    /** @return Collection<int, array<string, mixed>> earnings history without buyer details */
+    /** @return Collection<int, array{type: string, level: int, amount: int, reversed: int, status: string, available_at: string|null, created_at: string|null}> earnings history without buyer details */
     public function history(User $member, int $limit = 50): Collection
     {
         return Commission::query()->where('recipient_id', $member->id)->where('status', '!=', Commission::SKIPPED)

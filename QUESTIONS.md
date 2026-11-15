@@ -12,8 +12,8 @@ change any of them.
 | 3 | Laravel version | **Laravel 13** (13.42). Laravel 11 had 5 unpatched security advisories. Needs PHP 8.3+. | ✅ Answered by you |
 | 4 | SMS provider for Ethiopia | One `SmsGateway` interface with a `log` driver (default) and a generic HTTP JSON driver (`SMS_DRIVER=http`, `SMS_URL`, `SMS_TOKEN`). If your provider's API has a different shape, it's one small class to adapt. | Decided (recommended), you pick the provider |
 | 5 | Domain | Placeholder `kulmis.market`. Change `APP_URL` and `MAIL_FROM_ADDRESS`. | Decided (recommended) |
-| 6 | Static analysis (Larastan) | Left out for now: this build machine can't download it. Add it back with `composer require --dev larastan/larastan`. | Decided (recommended) |
-| 7 | Repo layout | Laravel at the root, React admin in `admin/` building to `public/admin`. Works on shared hosting. | Decided (recommended) |
+| 6 | Static analysis (Larastan) | Larastan level 5 runs in CI (added in the review, PR 21). 0 errors. | Decided (recommended) |
+| 7 | Repo layout | Laravel at the root, React admin in `admin/` building to `public/admin-app` (served at `/admin`). Works on shared hosting. | Decided (recommended) |
 | 8 | Rounding | Customer discounts round half-up to the santim. Commissions and rewards round down. | Decided (recommended) |
 | 9 | Members-only product: who can see it? | Everyone sees it with a "Members only" badge (good for "Join & save"). Only active members can buy it. | Decided (recommended) |
 | 10 | Do members keep benefits during the 3-day grace period? | Yes. Discounts, signals and earnings continue until the grace period ends. | Decided (recommended) |
@@ -34,6 +34,9 @@ change any of them.
 | 25 | Backups | Nightly encrypted backup (libsodium) of the DB, proofs and uploads, kept 14 days on the server. **You still need to copy them off the server.** | Decided (recommended) |
 | 26 | Database name | `kulmis-market` (you asked, 15 Nov). | Decided (you) |
 | 27 | Admin password length | Minimum 5 characters (you asked, 15 Nov), set by `ADMIN_PASSWORD_MIN` in `.env`. 2FA is still required for every admin. Note: the ASVS L2 level in your brief asks for 12. | Decided (you) |
+| 28 | Product reviews switch | Removed. Reviews were never built (the brief said "if added"), so the switch did nothing and only confused the overview. | Decided (review) |
+| 29 | What happens to background jobs when a feature is off? | They pause. Membership off: nothing expires, no reminders, members stay in the signals channel. Telegram bot off: nobody is marked removed (they couldn't actually be removed). Turning it back on catches up. | Decided (review) |
+| 30 | Paying an order while the shop is switched off | Not possible: the pay/track pages and payment API are hidden too. Unpaid orders are auto-cancelled as usual. | Decided (review) |
 
 ## Still open: needs you
 | # | What | Why |

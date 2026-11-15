@@ -32,7 +32,7 @@ class SignalPublisher
     public static function format(Signal $s): string
     {
         $lines = ['<b>'.e($s->pair).' — '.strtoupper(e($s->direction)).'</b>', 'Entry: '.e($s->entry)];
-        foreach (array_values($s->targets) as $i => $t) {
+        foreach ($s->targets as $i => $t) {
             $lines[] = 'Target '.($i + 1).': '.e($t);
         }
         $lines[] = 'Stop loss: '.e($s->stop_loss);

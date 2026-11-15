@@ -33,7 +33,7 @@ class Checkout
     {
         $items = $this->carts->pricingItems($cart);
         $member = (bool) $user?->isActiveMember();
-        $weight = array_sum(array_map(fn ($i) => ($i[1]?->weight_grams ?? $i[0]->weight_grams) * $i[2], $items));
+        $weight = array_sum(array_map(fn ($i) => ($i[1]->weight_grams ?? $i[0]->weight_grams) * $i[2], $items));
         $fee = $items && ($zoneId || $city) ? $this->shipping->quote($zoneId, (string) $city, $weight) : 0;
 
         return $this->prices->quote($items, $member, $cart->coupon_code, $fee, $this->couponUses($user, $phone));
@@ -73,7 +73,7 @@ class Checkout
             })->values()->all();
 
             $member = (bool) $user?->isActiveMember();
-            $weight = array_sum(array_map(fn ($i) => ($i[1]?->weight_grams ?? $i[0]->weight_grams) * $i[2], $items));
+            $weight = array_sum(array_map(fn ($i) => ($i[1]->weight_grams ?? $i[0]->weight_grams) * $i[2], $items));
             $fee = $this->shipping->quote($customer['shipping_zone_id'] ?? null, $customer['city'], $weight);
             $quote = $this->prices->quote($items, $member, $cart->coupon_code, $fee, $this->couponUses($user, $customer['phone']));
 
@@ -125,7 +125,13 @@ class Checkout
             }
 
             if ($quote->coupon) {
-                Coupon::query()->whereKey($quote->coupon->id)->increment('used_count');
+                // Atomic: two checkouts can't both take the last use.
+                $taken = Coupon::query()->whereKey($quote->coupon->id)
+                    ->where(fn ($q) => $q->whereNull('max_uses')->orWhereColumn('used_count', '<', 'max_uses'))
+                    ->increment('used_count');
+                if ($taken === 0) {
+                    throw new PricingException('This coupon has been used up.');
+                }
                 DB::table('coupon_redemptions')->insert(['coupon_id' => $quote->coupon->id, 'order_id' => $order->id,
                     'user_id' => $user?->id, 'phone' => $customer['phone'], 'created_at' => now()]);
             }

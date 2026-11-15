@@ -42,7 +42,7 @@ class CheckoutController extends Controller
             'use_wallet' => ['nullable', 'boolean'],
         ]);
         $cart = $this->carts->find($request);
-        abort_unless($cart, 422, 'Your cart is empty.');
+        abort_if($cart === null, 422, 'Your cart is empty.');
 
         $extra = app(CheckoutExtras::class)->collect($request, $cart, $user, $data);
         $order = $this->checkout->place($cart, $data, $user, $data['checkout_key'], $extra);
