@@ -130,7 +130,7 @@
                     <div class="flex min-h-12 items-center gap-3">
                         <label class="grid size-12 shrink-0 place-items-center"><span class="sr-only">Select row</span><input type="checkbox" class="size-6" data-mtable-select></label>
                         <div class="min-w-0 flex-1 font-medium break-words" data-col="{{ $first }}" data-csv="{{ \App\Member\MemberTable::safe($t->plain($first, $row[$first] ?? '')) }}">
-                            @if (isset($row['_url']))<a class="hover:underline" href="{{ $row['_url'] }}">{{ $cell($first, $row) }}</a>@else{{ $cell($first, $row) }}@endif
+                            @if (isset($row['_url']))<a class="inline-flex min-h-12 items-center hover:underline" href="{{ $row['_url'] }}">{{ $cell($first, $row) }}</a>@else{{ $cell($first, $row) }}@endif
                         </div>
                     </div>
                     <dl class="mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
@@ -154,9 +154,9 @@
                     @foreach (\App\Member\MemberTable::PAGE_SIZES as $n)<option value="{{ $n }}" @selected($t->state['per_page'] === $n)>{{ $n }} a page</option>@endforeach
                 </select>
             </label>
-            @if ($t->page->onFirstPage())<span class="m-btn-ghost min-h-12 opacity-40 sm:min-h-10" aria-disabled="true">←</span>@else<a class="m-btn-ghost min-h-12 sm:min-h-10" href="{{ $t->page->previousPageUrl() }}" aria-label="Previous page">←</a>@endif
+            @if ($t->page->onFirstPage())<span class="m-btn-ghost min-h-12 min-w-12 justify-center opacity-40 sm:min-h-10" aria-disabled="true">←</span>@else<a class="m-btn-ghost min-h-12 min-w-12 justify-center sm:min-h-10" href="{{ $t->page->previousPageUrl() }}" aria-label="Previous page">←</a>@endif
             <span class="tabular-nums">{{ $t->page->currentPage() }}/{{ $t->page->lastPage() }}</span>
-            @if ($t->page->hasMorePages())<a class="m-btn-ghost min-h-12 sm:min-h-10" href="{{ $t->page->nextPageUrl() }}" aria-label="Next page">→</a>@else<span class="m-btn-ghost min-h-12 opacity-40 sm:min-h-10" aria-disabled="true">→</span>@endif
+            @if ($t->page->hasMorePages())<a class="m-btn-ghost min-h-12 min-w-12 justify-center sm:min-h-10" href="{{ $t->page->nextPageUrl() }}" aria-label="Next page">→</a>@else<span class="m-btn-ghost min-h-12 min-w-12 justify-center opacity-40 sm:min-h-10" aria-disabled="true">→</span>@endif
         </div>
     </div>
 </div>

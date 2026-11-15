@@ -65,7 +65,7 @@ function PageDialog({ page }: { page?: PageRow }) {
   return (
     <FormDialog title={page ? `Edit ${page.title}` : 'New page'} trigger={page ? <Button size='icon' variant='ghost'><Pencil /></Button> : <Button><Plus /> New page</Button>}
       onSave={() => save.mutateAsync({ path: page ? `/pages/${page.id}` : '/pages', body: d })}>
-      <div className='grid grid-cols-2 gap-3'>
+      <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
         <label className='grid gap-1.5 text-sm leading-none font-medium'>Title<Input value={d.title} onChange={(e) => setD({ ...d, title: e.target.value })} /></label>
         <label className='grid gap-1.5 text-sm leading-none font-medium'>Address (/p/…)<Input value={d.slug} onChange={(e) => setD({ ...d, slug: e.target.value })} /></label>
       </div>
@@ -94,7 +94,7 @@ function BannerDialog({ banner }: { banner?: BannerRow }) {
       </div>
       <label className='grid gap-1.5 text-sm leading-none font-medium'>Title<Input value={d.title} onChange={(e) => setD({ ...d, title: e.target.value })} /></label>
       <label className='grid gap-1.5 text-sm leading-none font-medium'>Text<Input value={d.text} onChange={(e) => setD({ ...d, text: e.target.value })} /></label>
-      <div className='grid grid-cols-2 gap-3'>
+      <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
         <label className='grid gap-1.5 text-sm leading-none font-medium'>Link (/shop or https://…)<Input value={d.link_url} onChange={(e) => setD({ ...d, link_url: e.target.value })} /></label>
         <label className='grid gap-1.5 text-sm leading-none font-medium'>Button text<Input value={d.link_text} onChange={(e) => setD({ ...d, link_text: e.target.value })} /></label>
         <label className='grid gap-1.5 text-sm leading-none font-medium'>From<Input type='date' value={d.starts_at} onChange={(e) => setD({ ...d, starts_at: e.target.value })} /></label>

@@ -47,7 +47,7 @@ function NewSignal() {
   return (
     <FormDialog title='New signal' saveText='Post to channel' trigger={<Button><Plus /> New signal</Button>}
       onSave={() => post.mutateAsync({ path: '/signals', body: { ...d, targets: d.targets.filter(Boolean), notes: d.notes || null } })}>
-      <div className='grid grid-cols-2 gap-3'>
+      <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
         <F label='Pair'><Input placeholder='BTC/USDT' value={d.pair} onChange={(e) => setD({ ...d, pair: e.target.value.toUpperCase() })} /></F>
         <F label='Direction'>
           <Select value={d.direction} onValueChange={(v) => setD({ ...d, direction: v })}>
@@ -118,7 +118,7 @@ function AddSub() {
   return (
     <FormDialog title='Give access by hand' saveText='Give access' trigger={<Button><Plus /> Add subscriber</Button>}
       onSave={() => add.mutateAsync({ path: '/signals/subscribers', body: d })}>
-      <div className='grid grid-cols-2 gap-3'>
+      <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
         <F label='First name'><Input value={d.first_name} onChange={(e) => setD({ ...d, first_name: e.target.value })} /></F>
         <F label='Last name'><Input value={d.last_name} onChange={(e) => setD({ ...d, last_name: e.target.value })} /></F>
         <F label='Phone'><Input value={d.phone} onChange={(e) => setD({ ...d, phone: e.target.value })} /></F>

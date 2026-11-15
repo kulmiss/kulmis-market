@@ -41,7 +41,7 @@
 
 @if ($featured->count() > 1 || $latest->isNotEmpty())
 <section class="container-km mt-12">
-    <div class="mb-5 flex items-end justify-between"><h2 class="text-3xl">New from the workshop</h2><a href="{{ url('/shop') }}" class="text-sm font-semibold text-brand-600">See all →</a></div>
+    <div class="mb-5 flex items-end justify-between"><h2 class="text-3xl">New from the workshop</h2><a href="{{ url('/shop') }}" class="inline-flex min-h-12 items-center text-sm font-semibold text-brand-600">See all →</a></div>
     <div class="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4">
         @foreach ($latest as $p)@include('store.partials.product-card', ['p' => $p])@endforeach
     </div>

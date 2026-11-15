@@ -67,7 +67,7 @@ export function BonusPage() {
   return (
     <Page title='Badge bonus' description='On the 1st of each month, members with a team badge (Bronze to Diamond) get a bonus for the month that ended. Safety limits keep you in profit.'>
       {d.demo && <p className='mb-4 rounded-md bg-amber-500/10 p-3 text-sm'>You are looking at <b>demo</b> members and demo money ("Show demo data" is on). Real members are paid from real money only.</p>}
-      <div className='grid grid-cols-1 gap-4 lg:grid-cols-3'>
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
         {/* Safety */}
         <Card>
           <CardHeader className='pb-2'>

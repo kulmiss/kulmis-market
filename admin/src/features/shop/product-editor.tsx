@@ -174,7 +174,7 @@ export function ProductEditor({ id }: { id: string }) {
                   {p?.images.map((img) => (
                     <div key={img.id} className='group relative'>
                       <img src={img.thumb} alt={img.alt ?? ''} className='aspect-square w-full rounded object-cover' />
-                      <Button size='icon' variant='destructive' className='absolute end-1 top-1 size-7 opacity-0 group-hover:opacity-100' onClick={() => removeImage(img.id)}><Trash2 /></Button>
+                      <Button size='icon' variant='destructive' className='absolute end-1 top-1 size-12 sm:size-7 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100' aria-label='Remove photo' onClick={() => removeImage(img.id)}><Trash2 /></Button>
                     </div>
                   ))}
                 </div>

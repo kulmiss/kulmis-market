@@ -120,7 +120,7 @@ function BadgeDialog({ badge, rules, icons: iconNames }: { badge?: Badge; rules:
           <SelectContent>{rules.map((r) => <SelectItem key={r.key} value={r.key}>{r.label}</SelectItem>)}</SelectContent>
         </Select>
       </L>
-      <div className='grid grid-cols-2 gap-3'>
+      <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
         <L label={unit === 'money' ? 'Unlocks at (earned)' : unit === 'rank' ? 'Rank (1 = top)' : unit === 'position' ? 'First N members' : `Unlocks at (${unit ?? 'count'})`}>
           {unit === 'money'
             ? <MoneyInput value={d.threshold} onChange={(v) => setD({ ...d, threshold: v })} />

@@ -36,7 +36,7 @@
         @endif
     </div>
     <div>
-        @if ($product->category)<a href="{{ url('/c/'.$product->category->slug) }}" class="text-sm font-semibold text-brand-600">{{ $product->category->name }}</a>@endif
+        @if ($product->category)<a href="{{ url('/c/'.$product->category->slug) }}" class="inline-flex min-h-12 items-center text-sm font-semibold text-brand-600 sm:min-h-0">{{ $product->category->name }}</a>@endif
         <h1 class="mt-1 text-4xl">{{ $product->name }}</h1>
         <div class="mt-4 text-xl" data-price>@include('store.partials.price', ['price' => $product->price])</div>
         <div class="mt-3 flex flex-wrap gap-2">

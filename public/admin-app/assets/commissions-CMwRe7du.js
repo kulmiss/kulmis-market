@@ -1,0 +1,1 @@
+import{n as e}from"./money-pages-DpSx-M5n.js";var t=e;export{t as component};

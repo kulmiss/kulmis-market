@@ -55,7 +55,7 @@
 
 {{-- Money --}}
 @if (F::enabled('wallet') || $ref)
-<section class="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Your money">
+<section class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Your money">
     @include('member.partials.stat', ['label' => 'Total earned', 'value' => $fmt($money['earned']), 'icon' => 'coins', 'tone' => 'accent', 'sub' => 'All time, after refunds'])
     @include('member.partials.stat', ['label' => 'Pending', 'value' => $fmt($money['pending']), 'icon' => 'clock', 'sub' => \App\Support\Settings::int('referral.pending_days').'-day refund window'])
     @include('member.partials.stat', ['label' => 'Available', 'value' => $fmt($money['available']), 'icon' => 'wallet', 'sub' => 'Ready to cash out'])
@@ -64,7 +64,7 @@
 @endif
 
 @if ($ref)
-<section class="mt-3 grid gap-3 lg:grid-cols-3">
+<section class="mt-3 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
     <div class="m-card flex flex-col justify-between gap-3">
         <div>
             <p class="text-xs font-medium uppercase tracking-wide m-muted">This month</p>
@@ -82,8 +82,8 @@
         <div class="flex items-center justify-between gap-2">
             <h2 class="font-semibold">Earnings</h2>
             <div class="flex rounded-xl p-1 text-xs font-semibold m-soft" role="tablist" aria-label="Chart period">
-                <a href="{{ url('/account?chart=daily') }}" role="tab" @class(['rounded-lg px-3 py-1', 'text-white' => $dash['chart_mode'] === 'daily']) @if ($dash['chart_mode'] === 'daily') aria-selected="true" style="background: var(--m-accent)" @endif>Daily</a>
-                <a href="{{ url('/account?chart=monthly') }}" role="tab" @class(['rounded-lg px-3 py-1', 'text-white' => $dash['chart_mode'] === 'monthly']) @if ($dash['chart_mode'] === 'monthly') aria-selected="true" style="background: var(--m-accent)" @endif>Monthly</a>
+                <a href="{{ url('/account?chart=daily') }}" role="tab" @class(['inline-flex min-h-12 items-center rounded-lg px-3 sm:min-h-8', 'text-white' => $dash['chart_mode'] === 'daily']) @if ($dash['chart_mode'] === 'daily') aria-selected="true" style="background: var(--m-accent)" @endif>Daily</a>
+                <a href="{{ url('/account?chart=monthly') }}" role="tab" @class(['inline-flex min-h-12 items-center rounded-lg px-3 sm:min-h-8', 'text-white' => $dash['chart_mode'] === 'monthly']) @if ($dash['chart_mode'] === 'monthly') aria-selected="true" style="background: var(--m-accent)" @endif>Monthly</a>
             </div>
         </div>
         @if (array_sum(array_column($dash['chart'], 'value')) > 0)
@@ -180,7 +180,7 @@
 @endif
 
 {{-- Referral + team --}}
-<section class="mt-3 grid gap-3 lg:grid-cols-3">
+<section class="mt-3 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
     <div class="m-card lg:col-span-2" id="referral">
         <h2 class="font-semibold">Your referral link</h2>
         <div class="mt-3 grid gap-4 sm:grid-cols-[1fr_auto]">
@@ -195,7 +195,7 @@
                 </div>
                 @endif
                 @if ($ref['can_change_code'])
-                    <details class="text-sm"><summary class="cursor-pointer m-muted">Choose your own code (once)</summary>
+                    <details class="text-sm"><summary class="flex min-h-12 cursor-pointer items-center m-muted">Choose your own code (once)</summary>
                         <form method="post" action="{{ url('/account/referral-code') }}" class="mt-2 flex gap-2">@csrf<input name="code" class="m-input uppercase" placeholder="e.g. SELAM25" maxlength="12" aria-label="New code"><button class="m-btn-ghost">Save</button></form>
                     </details>
                 @endif
@@ -209,7 +209,7 @@
         </div>
     </div>
     <div class="m-card">
-        <div class="flex items-center justify-between"><h2 class="font-semibold">Your team</h2><a href="{{ url('/account/team') }}" class="text-xs m-accent-text">See all →</a></div>
+        <div class="flex items-center justify-between"><h2 class="font-semibold">Your team</h2><a href="{{ url('/account/team') }}" class="inline-flex min-h-12 items-center text-xs m-accent-text">See all →</a></div>
         <ul class="mt-3 grid gap-2">
             @foreach ([1 => [$ref['team']['level1_count'], $ref['team']['level1_active']], 2 => [$ref['team']['level2_count'], null], 3 => [$ref['team']['level3_count'], null]] as $lvl => [$count, $active])
                 <li class="flex items-center justify-between rounded-xl px-3 py-2.5 m-soft">
@@ -221,7 +221,7 @@
     </div>
 </section>
 
-<section class="mt-3 grid gap-3 lg:grid-cols-3">
+<section class="mt-3 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
     <div class="m-card">
         <h2 class="font-semibold">Newest in your team</h2>
         @forelse ($dash['newest'] as $p)
@@ -282,10 +282,10 @@
         @if ($signalsLink)
             <p class="mt-1 text-sm m-muted">Included in your membership. Open your personal link in Telegram (don't share it).</p>
             <a class="m-btn mt-3 w-full" href="{{ $signalsLink }}" rel="noopener">{!! I::svg('send', 17) !!}Open in Telegram</a>
-            <a class="mt-2 block text-center text-xs m-accent-text" href="{{ url('/account/signals') }}">Recent results →</a>
+            <a class="mt-2 flex min-h-12 items-center justify-center text-xs m-accent-text" href="{{ url('/account/signals') }}">Recent results →</a>
         @elseif ($isMember)
             <p class="mt-1 text-sm m-muted">Included in your membership. Your personal Telegram link appears here as soon as our Telegram bot is connected.</p>
-            <a class="mt-3 block text-center text-xs m-accent-text" href="{{ url('/account/signals') }}">Recent results →</a>
+            <a class="mt-3 flex min-h-12 items-center justify-center text-xs m-accent-text" href="{{ url('/account/signals') }}">Recent results →</a>
         @else
             <p class="mt-1 text-sm m-muted">Members get our private Telegram channel with trading signals.</p>
             <a class="m-btn-ghost mt-3 w-full" href="#membership">{!! I::svg('radio', 17) !!}Get access with membership</a>

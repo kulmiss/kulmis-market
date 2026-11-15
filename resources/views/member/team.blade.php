@@ -3,7 +3,7 @@
 @section('content')
 <h1 class="font-serif text-3xl font-semibold">Your team</h1>
 <p class="mt-1 text-sm m-muted">People you invited (level 1) and the people they invited (levels 2 and 3). For privacy you see names only for level 1.</p>
-<section class="mt-5 grid grid-cols-3 gap-3">
+<section class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
     @include('member.partials.stat', ['label' => 'Level 1', 'value' => $t['level1_count'], 'icon' => 'users', 'tone' => 'accent', 'sub' => $t['level1_active'].' active'])
     @include('member.partials.stat', ['label' => 'Level 2', 'value' => $t['level2_count'], 'icon' => 'network'])
     @include('member.partials.stat', ['label' => 'Level 3', 'value' => $t['level3_count'], 'icon' => 'network'])

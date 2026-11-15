@@ -4,6 +4,6 @@
         <span class="text-xs font-medium uppercase tracking-wide m-muted">{{ $label }}</span>
         <span class="grid size-8 place-items-center rounded-full {{ ($tone ?? '') === 'accent' ? 'text-white' : 'm-soft m-accent-text' }}" @if (($tone ?? '') === 'accent') style="background: var(--m-accent)" @endif>{!! \App\Badges\BadgeIcons::svg($icon, 16) !!}</span>
     </div>
-    <span class="whitespace-nowrap text-[1.05rem] font-bold tabular-nums leading-tight min-[400px]:text-xl sm:text-2xl">{{ $value }}</span>
+    <span class="min-w-0 text-2xl font-bold tabular-nums leading-tight [overflow-wrap:anywhere] sm:text-xl lg:text-2xl">{{ $value }}</span>
     @isset($sub)<span class="text-xs m-muted">{{ $sub }}</span>@endisset
 </div>

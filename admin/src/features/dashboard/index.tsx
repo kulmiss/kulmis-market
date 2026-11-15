@@ -31,7 +31,7 @@ type D = {
   daily: { date: string; revenue: number; orders: number }[]
 }
 
-const ranges = [{ label: '7 days', days: 7 }, { label: '30 days', days: 30 }, { label: '90 days', days: 90 }, { label: '12 months', days: 365 }]
+const ranges = [{ label: '7 days', short: '7 d', days: 7 }, { label: '30 days', short: '30 d', days: 30 }, { label: '90 days', short: '90 d', days: 90 }, { label: '12 months', short: '1 year', days: 365 }]
 
 export function Dashboard() {
   const [days, setDays] = useState(30)
@@ -49,7 +49,7 @@ export function Dashboard() {
 
   return (
     <Page title='Dashboard' description='Money from the ledger, so refunds are already taken off.'
-      actions={ranges.map((r) => <Button key={r.days} size='sm' variant={days === r.days ? 'default' : 'outline'} onClick={() => setDays(r.days)}>{r.label}</Button>)}>
+      actions={<div className='grid w-full grid-cols-4 gap-2 sm:flex sm:w-auto' role='group' aria-label='Time range'>{ranges.map((r) => <Button key={r.days} size='sm' className='px-1 sm:px-3' aria-pressed={days === r.days} variant={days === r.days ? 'default' : 'outline'} onClick={() => setDays(r.days)}><span className='sm:hidden'>{r.short}</span><span className='hidden sm:inline'>{r.label}</span></Button>)}</div>}>
       {!d ? <PageSkeleton /> : (
         <div className='grid gap-4'>
           {d.demo.visible && d.demo.exists && (
@@ -77,8 +77,8 @@ export function Dashboard() {
               <ResponsiveContainer width='100%' height='100%'>
                 <AreaChart data={d.daily}>
                   <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
-                  <XAxis dataKey='date' tickFormatter={(v: string) => v.slice(5)} fontSize={12} />
-                  <YAxis allowDecimals={false} domain={[0, (max: number) => Math.max(max, 100_000)]} tickFormatter={(v: number) => `${Math.round(v / 100).toLocaleString()}`} fontSize={12} width={60} />
+                  <XAxis dataKey='date' tickFormatter={(v: string) => v.slice(5)} fontSize={12} minTickGap={24} />
+                  <YAxis allowDecimals={false} domain={[0, (max: number) => Math.max(max, 100_000)]} tickFormatter={(v: number) => (v >= 100_000_00 ? `${Math.round(v / 100_000_00)}M` : v >= 100_000 ? `${Math.round(v / 100_000)}k` : `${Math.round(v / 100)}`)} fontSize={12} width={40} />
                   <Tooltip formatter={(v) => formatMoney(Number(v))} labelFormatter={(l) => String(l)} />
                   <Area type='monotone' dataKey='revenue' stroke='var(--color-primary)' fill='var(--color-primary)' fillOpacity={0.15} />
                 </AreaChart>
@@ -86,7 +86,7 @@ export function Dashboard() {
             </CardContent>
           </Card>
 
-          <div className='grid grid-cols-1 gap-4 lg:grid-cols-3'>
+          <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
             <Card>
               <CardHeader><CardTitle className='text-base'>Commissions</CardTitle></CardHeader>
               <CardContent className='grid gap-1 text-sm'>

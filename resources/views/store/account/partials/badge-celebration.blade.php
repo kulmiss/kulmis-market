@@ -13,7 +13,7 @@
         <form method="post" action="{{ url('/account/badges/seen') }}" class="mt-5 grid gap-2" data-celebrate-form>
             @csrf
             <button class="btn-primary">Yay! 🎉</button>
-            <a class="text-sm underline" href="{{ url('/account/badges') }}">See all my badges</a>
+            <a class="inline-flex min-h-12 items-center text-sm underline" href="{{ url('/account/badges') }}">See all my badges</a>
         </form>
     </div>
 </div>

@@ -5,7 +5,7 @@
 @extends('layouts.member', ['title' => 'Wallet'])
 @section('content')
 <h1 class="font-serif text-3xl font-semibold">Wallet</h1>
-<section class="mt-5 grid grid-cols-3 gap-3" id="wallet">
+<section class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3" id="wallet">
     @include('member.partials.stat', ['label' => 'On the way', 'value' => $fmt($wallet['pending']), 'icon' => 'clock', 'sub' => 'Ready in '.\App\Support\Settings::int('referral.pending_days').' days'])
     @include('member.partials.stat', ['label' => 'Ready to use', 'value' => $fmt($wallet['available']), 'icon' => 'wallet', 'tone' => 'accent'])
     @include('member.partials.stat', ['label' => 'Cash-out asked', 'value' => $fmt($wallet['payout']), 'icon' => 'banknote'])
@@ -21,7 +21,7 @@
                 @else
                     <p class="muted mt-1 text-sm">Add the Telebirr number or bank account we should pay you to. The name must match yours.</p>
                 @endif
-                <details class="mt-2 text-sm" @if (!$acct) open @endif><summary class="cursor-pointer">{{ $acct ? 'Change account' : 'Add account' }}</summary>
+                <details class="mt-2 text-sm" @if (!$acct) open @endif><summary class="flex min-h-12 cursor-pointer items-center">{{ $acct ? 'Change account' : 'Add account' }}</summary>
                     <form method="post" action="{{ url('/account/payout-account') }}" class="mt-3 grid gap-3 sm:grid-cols-2">
                         @csrf
                         <div><label class="label" for="pm">Type</label><select id="pm" name="method" class="m-input"><option value="telebirr">Telebirr</option><option value="bank">Bank account</option></select></div>

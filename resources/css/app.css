@@ -95,3 +95,17 @@
 .dark .text-brand-500, .dark .text-brand-600, .dark .text-brand-700 { color: #6fcf97; }
 .dark .prose-km a { color: #6fcf97; }
 .dark .text-danger-600, .dark .text-danger-700 { color: #f97066; }
+
+/* Phones: every button, field and link is easy to tap (48 px), without
+   changing how text links look. */
+@media (max-width: 639px) {
+    .btn, .btn-primary, .btn-ghost, .btn-dark, .m-btn, .m-btn-ghost, .input, .m-input, .m-nav-link { min-height: 48px; }
+    select.input, select.m-input { min-height: 48px; }
+    summary { min-height: 48px; display: flex; align-items: center; }
+    label:has(> input[type="checkbox"]), label:has(> input[type="radio"]) { min-height: 48px; }
+    footer nav > a, header nav[aria-label="Mobile"] > a { display: flex; align-items: center; min-height: 48px; }
+    :where(main, footer) :where(p, li, span, dd, label, small) > a[href]:not(.btn):not(.btn-primary):not(.btn-ghost):not(.m-btn):not(.m-btn-ghost) { position: relative; }
+    :where(main, footer) :where(p, li, span, dd, label, small) > a[href]:not(.btn):not(.btn-primary):not(.btn-ghost):not(.m-btn):not(.m-btn-ghost)::after {
+        content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, 44px); height: 44px; transform: translate(-50%, -50%);
+    }
+}

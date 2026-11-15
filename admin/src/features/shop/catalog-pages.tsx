@@ -90,7 +90,7 @@ function CouponDialog({ coupon }: { coupon?: Coupon }) {
       trigger={coupon ? <Button size='icon' variant='ghost'><Pencil /></Button> : <Button><Plus /> New coupon</Button>}
       onSave={() => save.mutateAsync({ path: coupon ? `/coupons/${coupon.id}` : '/coupons', body: { ...d, ends_at: d.ends_at || null } })}>
       <L label='Code'><Input value={d.code} onChange={(e) => setD({ ...d, code: e.target.value.toUpperCase() })} /></L>
-      <div className='grid grid-cols-2 gap-3'>
+      <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
         <L label='Type'>
           <Select value={d.type} onValueChange={(v) => setD({ ...d, type: v as 'percent' | 'fixed' })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
@@ -103,11 +103,11 @@ function CouponDialog({ coupon }: { coupon?: Coupon }) {
             : <MoneyInput value={d.value} onChange={(v) => setD({ ...d, value: v })} />}
         </L>
       </div>
-      <div className='grid grid-cols-2 gap-3'>
+      <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
         <L label='Minimum order'><MoneyInput value={d.min_subtotal} onChange={(v) => setD({ ...d, min_subtotal: v })} /></L>
         <L label='Max discount (optional)'><MoneyInput value={d.max_discount} onChange={(v) => setD({ ...d, max_discount: v || null })} /></L>
       </div>
-      <div className='grid grid-cols-3 gap-3'>
+      <div className='grid grid-cols-1 gap-3 sm:grid-cols-3'>
         <L label='Ends on'><Input type='date' value={d.ends_at} onChange={(e) => setD({ ...d, ends_at: e.target.value })} /></L>
         <L label='Total uses'><Input type='number' min={1} value={d.max_uses ?? ''} onChange={(e) => setD({ ...d, max_uses: e.target.value ? Number(e.target.value) : null })} /></L>
         <L label='Per customer'><Input type='number' min={1} value={d.max_uses_per_customer ?? ''} onChange={(e) => setD({ ...d, max_uses_per_customer: e.target.value ? Number(e.target.value) : null })} /></L>
@@ -164,7 +164,7 @@ function ZoneDialog({ zone }: { zone?: Zone }) {
       onSave={() => save.mutateAsync({ path: zone ? `/shipping-zones/${zone.id}` : '/shipping-zones', body: { ...d, cities: d.cities.split(',').map((c) => c.trim()).filter(Boolean) } })}>
       <L label='Name'><Input value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} /></L>
       <L label='Cities (comma separated)'><Input value={d.cities} placeholder='Addis Ababa, Adama' onChange={(e) => setD({ ...d, cities: e.target.value })} /></L>
-      <div className='grid grid-cols-2 gap-3'>
+      <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
         <L label='Fee (first kg)'><MoneyInput value={d.base_fee} onChange={(v) => setD({ ...d, base_fee: v })} /></L>
         <L label='Each extra kg'><MoneyInput value={d.per_kg_fee} onChange={(v) => setD({ ...d, per_kg_fee: v })} /></L>
         <L label='Delivery from (days)'><Input type='number' value={d.eta_days_min} onChange={(e) => setD({ ...d, eta_days_min: Number(e.target.value) })} /></L>

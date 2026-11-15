@@ -54,11 +54,11 @@
     <div class="flex min-h-screen flex-col">
         {{-- Top bar (mobile) --}}
         <header class="sticky top-0 z-30 flex h-14 items-center gap-2 border-b px-4 backdrop-blur lg:hidden" style="border-color: var(--m-line); background: color-mix(in srgb, var(--m-surface) 88%, transparent)">
-            <a href="{{ url('/') }}" aria-label="{{ $site }} home">@include('partials.logo-mark', ['size' => 28])</a>
+            <a href="{{ url('/') }}" class="-ms-2 grid size-12 place-items-center" aria-label="{{ $site }} home">@include('partials.logo-mark', ['size' => 28])</a>
             <span class="font-semibold">{{ $title ?? 'My account' }}</span>
             <span class="ms-auto"></span>
-            @feature('appearance.theme_switch')<button type="button" data-theme-toggle class="rounded-full p-2" aria-label="Switch light/dark">{!! I::svg('moon', 20) !!}</button>@endfeature
-            <a href="{{ url('/account/security') }}" class="grid size-8 place-items-center rounded-full text-sm font-bold text-white" style="background: var(--m-accent)" aria-label="My profile and security">{{ mb_substr($u->first_name, 0, 1) }}</a>
+            @feature('appearance.theme_switch')<button type="button" data-theme-toggle class="grid size-12 place-items-center rounded-full" aria-label="Switch light/dark">{!! I::svg('moon', 20) !!}</button>@endfeature
+            <a href="{{ url('/account/security') }}" class="-me-2 grid size-12 place-items-center" aria-label="My profile and security"><span class="grid size-8 place-items-center rounded-full text-sm font-bold text-white" style="background: var(--m-accent)">{{ mb_substr($u->first_name, 0, 1) }}</span></a>
         </header>
 
         <main id="main" class="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-5 sm:px-6 lg:pb-10 lg:pt-8">
