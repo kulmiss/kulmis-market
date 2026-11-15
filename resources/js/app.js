@@ -202,13 +202,6 @@ const payPage = $('[data-pay-page]');
 if (payPage) {
     const { number, phone } = payPage.dataset;
     const msg = $('[data-form-message]', payPage);
-    $('[data-pay-chapa]', payPage)?.addEventListener('click', async (e) => {
-        e.target.disabled = true;
-        try {
-            const { data } = await api(`/orders/${encodeURIComponent(number)}/pay`, { method: 'POST', body: { method: 'chapa', phone } });
-            location.href = data.checkout_url;
-        } catch (err) { say(msg, err.message); e.target.disabled = false; }
-    });
     $('[data-proof-form]', payPage)?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const form = new FormData(e.target);
@@ -254,8 +247,9 @@ if (signalsForm) {
     signalsForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         try {
-            const { data } = await api('/signals/subscribe', { method: 'POST', body: formData(signalsForm) });
-            location.href = data.checkout_url;
+            const { data } = await api('/signals/payment-proof', { method: 'POST', form: new FormData(signalsForm) });
+            say($('[data-form-message]', signalsForm), data.message || 'Thank you! We check your receipt and send your Telegram link by SMS.', true);
+            signalsForm.reset();
         } catch (err) { say($('[data-form-message]', signalsForm), err.message); }
     });
 }

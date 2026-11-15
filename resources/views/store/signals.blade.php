@@ -27,12 +27,19 @@
             </div>
             <div><label class="label" for="sp">Phone (your link comes by SMS)</label><input id="sp" name="phone" class="input" required inputmode="tel" placeholder="09…" autocomplete="tel"></div>
             <div><label class="label" for="se">Email (optional)</label><input id="se" name="email" type="email" class="input" autocomplete="email"></div>
-            @chapa
-            <button class="btn-primary">Pay {{ $m('signals.guest_price') }} with Chapa</button>
-            @else
-            <p class="text-sm text-clay-700" role="status">{{ app(\App\Payments\ChapaGateway::class)->unsupportedMessage() }}</p>
-            @endchapa
-            <p class="muted text-xs">Telebirr, CBE Birr, M-Pesa or card. After paying you get a personal one-time Telegram link. Access ends automatically after the month (+{{ \App\Support\Settings::int('signals.grace_days') }} days grace) unless you renew.</p>
+            @feature('payments.manual')
+            <div class="grid gap-3 rounded-xl bg-sand-100 p-3 text-sm sm:grid-cols-2 dark:bg-coffee-900">
+                <pre class="whitespace-pre-wrap font-sans">{{ \App\Support\Settings::string('payments.telebirr_details') }}</pre>
+                <pre class="whitespace-pre-wrap font-sans">{{ \App\Support\Settings::string('payments.bank_details') }}</pre>
+            </div>
+            <div class="grid gap-3 sm:grid-cols-2">
+                <div><label class="label" for="sm">Paid with</label><select id="sm" name="method" class="input"><option value="telebirr">Telebirr</option><option value="bank_transfer">Bank transfer</option></select></div>
+                <div><label class="label" for="sr">Transaction reference</label><input id="sr" name="reference" class="input"></div>
+            </div>
+            <div><label class="label" for="spf">Receipt photo or PDF</label><input id="spf" name="proof" type="file" accept="image/*,application/pdf" class="input" required></div>
+            <button class="btn-primary">Send receipt · {{ $m('signals.guest_price') }}</button>
+            @endfeature
+            <p class="muted text-xs">Transfer {{ $m('signals.guest_price') }} by Telebirr or bank and send the receipt. Once we check it you get a personal one-time Telegram link by SMS. Access ends automatically after the month (+{{ \App\Support\Settings::int('signals.grace_days') }} days grace) unless you renew.</p>
             <p data-form-message class="text-sm text-clay-600" role="alert"></p>
         </form>
     </div>

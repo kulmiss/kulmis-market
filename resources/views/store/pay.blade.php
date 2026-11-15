@@ -8,15 +8,6 @@
         <p class="mt-3 text-2xl font-semibold">{{ \App\Support\Money::format($order->amountDue()) }}</p>
         <p class="muted text-sm">Save your order number: <b>{{ $order->number }}</b>. Unpaid orders are cancelled after {{ \App\Support\Settings::int('orders.unpaid_cancel_hours') }} hours.</p>
         <div class="mt-6 grid gap-4">
-            @chapa
-            <div class="card">
-                <h2 class="text-xl">Pay now</h2>
-                <p class="muted text-sm">Telebirr, CBE Birr, M-Pesa or card — through Chapa.</p>
-                <button class="btn-primary mt-4" data-pay-chapa>Pay with Chapa</button>
-            </div>
-            @elsefeature('payments.chapa')
-            <p class="card text-sm text-clay-700" role="status" data-chapa-unsupported>{{ app(\App\Payments\ChapaGateway::class)->unsupportedMessage() }}</p>
-            @endchapa
             @feature('payments.manual')
             <div class="card">
                 <h2 class="text-xl">Transfer and upload the receipt</h2>
@@ -31,7 +22,7 @@
                     </div>
                     <div><label class="label" for="pa">Paid from (phone / account)</label><input id="pa" name="payer_account" class="input"></div>
                     <div><label class="label" for="pf">Receipt photo or PDF</label><input id="pf" name="proof" type="file" accept="image/*,application/pdf" class="input" required></div>
-                    <button class="btn-dark">Send receipt</button>
+                    <button class="btn-primary">Send receipt</button>
                 </form>
             </div>
             @endfeature

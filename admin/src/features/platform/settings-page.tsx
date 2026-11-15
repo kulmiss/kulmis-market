@@ -88,7 +88,7 @@ export function SettingsPage() {
         </CardContent>
       </Card>
       <ConfirmDialog open={confirmOpen} onOpenChange={setConfirmOpen} title='Change the currency?'
-        desc={<span>Existing prices, wallet balances, earnings and orders are <b>not converted</b>. They keep their numbers and only the symbol and format change, for example {formatMoney(500000)} will show as <b>{formatMoney(500000, true, preview)}</b>. Online payment through Chapa only works in ETB.</span>}
+        desc={<span>Existing prices, wallet balances, earnings and orders are <b>not converted</b>. They keep their numbers and only the symbol and format change, for example {formatMoney(500000)} will show as <b>{formatMoney(500000, true, preview)}</b>.</span>}
         confirmText='Yes, change it' destructive handleConfirm={() => save(true)} />
     </Page>
   )

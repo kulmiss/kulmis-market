@@ -73,25 +73,16 @@ class PaymentController extends Controller
         return $this->attempt(fn () => $this->payments->rejectProof($payment, (int) $request->user()?->id, $data['reason']));
     }
 
-    /** Ask Chapa again (for "customer says they paid"). */
-    public function check(Payment $payment): JsonResponse
-    {
-        abort_unless($payment->provider === Payment::CHAPA, 422);
-
-        return response()->json(['data' => $this->payments->confirmChapa($payment->tx_ref)]);
-    }
-
     public function refund(Request $request, Payment $payment, OrderService $orders): JsonResponse
     {
         $data = $request->validate([
             'amount' => ['required', 'integer', 'min:1'],
             'reason' => ['required', 'string', 'min:3', 'max:500'],
-            'via_provider' => ['boolean'],
             'restock' => ['boolean'],
         ]);
 
         return $this->attempt(function () use ($payment, $data, $request, $orders) {
-            $this->payments->refund($payment, (int) $data['amount'], $data['reason'], $request->user()?->id, $request->boolean('via_provider', true));
+            $this->payments->refund($payment, (int) $data['amount'], $data['reason'], $request->user()?->id);
             if ($request->boolean('restock') && $payment->payable instanceof Order) {
                 $orders->restock($payment->payable->load('items'));
             }

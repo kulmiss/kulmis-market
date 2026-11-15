@@ -16,7 +16,6 @@ use App\Notify\Sms\HttpSmsGateway;
 use App\Notify\Sms\LogSmsGateway;
 use App\Notify\Sms\SmsGateway;
 use App\Orders\CheckoutExtras;
-use App\Payments\ChapaGateway;
 use App\Referral\Attribution;
 use App\Referral\ReferralListener;
 use App\Session\PrivacySessionHandler;
@@ -24,7 +23,6 @@ use App\Shipping\ShippingQuoter;
 use App\Shipping\ZoneShippingQuoter;
 use App\Signals\MembershipSignalsListener;
 use App\Storefront\PageCache;
-use App\Support\Currency;
 use App\Support\Features;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -83,8 +81,6 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(CatalogChanged::class, fn () => PageCache::clear());
 
         Blade::if('feature', fn (string $key) => Features::enabled($key));
-        // Chapa is on AND accepts the shop currency (Settings → General).
-        Blade::if('chapa', fn () => Features::enabled('payments.chapa') && app(ChapaGateway::class)->supports(Currency::code()));
 
         RateLimiter::for('login', fn (Request $request) => [
             Limit::perMinute(5)->by(mb_strtolower((string) $request->input('login')).'|'.$request->ip()),

@@ -7,7 +7,7 @@ Base URL: `/api/v1`. JSON everywhere. Money is **integer santim** (500000 = 5,00
 - **Errors:** `{"message": "...", "errors": {field: [...]}}` with status 401, 403, 404, 422 or 429.
 - A feature that's switched off answers **404**.
 - **Admin:** `/api/v1/admin/*` uses the same-domain session + CSRF cookie and 2FA. It is not for the app.
-- **Webhooks:** `webhooks/chapa` (signature + re-verify) and `webhooks/telegram` (secret header).
+- **Webhooks:** `webhooks/telegram` (secret header).
 
 ## Customer / public endpoints
 
@@ -37,7 +37,6 @@ Base URL: `/api/v1`. JSON everywhere. Money is **integer santim** (500000 = 5,00
 | POST | `/api/v1/orders/{number}/pay` | public |
 | POST | `/api/v1/orders/{number}/payment-options` | public |
 | POST | `/api/v1/orders/{number}/payment-proof` | public |
-| GET | `/api/v1/payments/chapa/callback` | public |
 | GET | `/api/v1/payments/{payment}/receipt` | signed link |
 | GET | `/api/v1/ping` | public |
 | GET | `/api/v1/products` | public |
@@ -55,7 +54,6 @@ Base URL: `/api/v1`. JSON everywhere. Money is **integer santim** (500000 = 5,00
 | POST | `/api/v1/signals/subscribe` | public |
 | GET | `/api/v1/wallet` | token |
 | POST | `/api/v1/wallet/cash-out` | token |
-| POST | `/api/v1/webhooks/chapa` | public |
 | POST | `/api/v1/webhooks/telegram` | public |
 
 ## Admin endpoints

@@ -5,8 +5,9 @@
   phone, optional email, password) and `POST /api/v1/auth/login` (phone or
   email). Both return a Sanctum token. Staff can't get API tokens; they use
   the admin login with 2FA.
-- **Buying:** `POST /api/v1/membership/pay {method: chapa}` →
-  `checkout_url`, or `POST /api/v1/membership/payment-proof` for a transfer.
+- **Buying:** `POST /api/v1/membership/pay {method: wallet}` when the wallet
+  covers the price, or `POST /api/v1/membership/payment-proof` for a transfer
+  (add `use_wallet: true` to pay part from the wallet and transfer the rest).
   Each payment adds 1 month:
   - renewing **before access ends** (including the grace period) adds the
     month after the current end and keeps the membership *continuous*

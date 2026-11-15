@@ -18,7 +18,7 @@ out = ["# REST API v1", "",
  "- **Errors:** `{\"message\": \"...\", \"errors\": {field: [...]}}` with status 401, 403, 404, 422 or 429.",
  "- A feature that's switched off answers **404**.",
  "- **Admin:** `/api/v1/admin/*` uses the same-domain session + CSRF cookie and 2FA. It is not for the app.",
- "- **Webhooks:** `webhooks/chapa` (signature + re-verify) and `webhooks/telegram` (secret header).", "",
+ "- **Webhooks:** `webhooks/telegram` (secret header).", "",
  "## Customer / public endpoints", "", "| Method | Path | Auth |", "|---|---|---|"]
 for r in sorted(pub, key=lambda r: r["uri"]):
     out.append("| %s | `/%s` | %s |" % (method(r), r["uri"], auth(r)))

@@ -10,29 +10,25 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ShippingZone;
-use App\Payments\ChapaGateway;
+use App\Models\User;
 use App\Payments\PaymentService;
 use App\Payments\Receipt;
 use App\Support\Features;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class PaymentsTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const SECRET = 'whsec_test';
-
     protected function setUp(): void
     {
         parent::setUp();
-        config(['services.chapa.secret_key' => 'CHASECK_TEST-x', 'services.chapa.webhook_secret' => self::SECRET]);
+        Storage::fake('local');
         ShippingZone::query()->create(['name' => 'All', 'cities' => [], 'base_fee' => 10_000, 'is_default' => true]);
     }
 
@@ -48,108 +44,58 @@ class PaymentsTest extends TestCase
         return Order::query()->latest('id')->firstOrFail(); // total 2,100 ETB
     }
 
-    private function fakeChapa(string $status = 'success', ?string $amount = '2100.00', string $currency = 'ETB'): void
+    /** Customer sends a Telebirr receipt and staff approve it. */
+    private function paidByTransfer(Order $order): Payment
     {
-        Http::fake([
-            'api.chapa.co/v1/transaction/initialize' => Http::response(['status' => 'success', 'data' => ['checkout_url' => 'https://checkout.chapa.co/abc']]),
-            'api.chapa.co/v1/transaction/verify/*' => Http::response(['status' => 'success', 'data' => [
-                'status' => $status, 'amount' => $amount, 'currency' => $currency, 'reference' => 'APxyz', 'charge' => '73.50', 'mobile' => '0933445566']]),
-            'api.chapa.co/v1/refund/*' => Http::response(['status' => 'success', 'data' => ['reference' => 'RF1']]),
-        ]);
+        $this->postJson("/api/v1/orders/{$order->number}/payment-proof", [
+            'phone' => '0933445566', 'method' => 'telebirr', 'reference' => 'TB'.$order->id,
+            'proof' => UploadedFile::fake()->image('receipt.jpg'),
+        ])->assertCreated();
+        $payment = Payment::query()->latest('id')->firstOrFail();
+        $staff = User::factory()->role('finance')->create();
+        app(PaymentService::class)->approveProof($payment, $staff->id);
+
+        return $payment->fresh();
     }
 
-    private function startChapa(Order $order): Payment
-    {
-        $this->postJson("/api/v1/orders/{$order->number}/pay", ['method' => 'chapa', 'phone' => '0933445566'])
-            ->assertCreated()->assertJsonPath('data.checkout_url', 'https://checkout.chapa.co/abc');
-
-        return Payment::query()->latest('id')->firstOrFail();
-    }
-
-    private function webhook(string $txRef, array $headers = []): TestResponse
-    {
-        $body = json_encode(['event' => 'charge.success', 'tx_ref' => $txRef, 'status' => 'success']);
-
-        return $this->call('POST', '/api/v1/webhooks/chapa', [], [], [], array_merge([
-            'CONTENT_TYPE' => 'application/json', 'HTTP_X_CHAPA_SIGNATURE' => hash_hmac('sha256', (string) $body, self::SECRET),
-        ], $headers), $body);
-    }
-
-    public function test_chapa_init_sends_correct_amount_and_phone(): void
-    {
-        $this->fakeChapa();
-        $this->startChapa($this->order());
-        Http::assertSent(fn ($r) => str_contains($r->url(), 'initialize') && $r['amount'] === '2100.00'
-            && $r['currency'] === 'ETB' && $r['phone_number'] === '0933445566' && str_starts_with($r['tx_ref'], 'KM-'));
-    }
-
-    public function test_pay_needs_matching_phone(): void
-    {
-        $this->fakeChapa();
-        $order = $this->order();
-        $this->postJson("/api/v1/orders/{$order->number}/pay", ['method' => 'chapa', 'phone' => '0911000000'])->assertNotFound();
-    }
-
-    public function test_signed_webhook_marks_paid_once_with_ledger_and_event(): void
+    public function test_approved_transfer_posts_ledger_once(): void
     {
         Event::fake([PaymentSucceeded::class]);
-        $this->fakeChapa();
         $order = $this->order();
-        $payment = $this->startChapa($order);
+        $payment = $this->paidByTransfer($order);
 
-        $this->webhook($payment->tx_ref)->assertOk();
-        $this->webhook($payment->tx_ref)->assertOk(); // duplicate delivery
-        $this->getJson('/api/v1/payments/chapa/callback?trx_ref='.$payment->tx_ref)->assertJson(['status' => 'paid']);
-
-        $order->refresh();
-        $this->assertSame('paid', $order->status);
-        $this->assertSame(7_350, $order->payment_fee);
+        $this->assertSame('paid', $order->fresh()->status);
+        $this->assertSame(0, $payment->fee);
+        $this->assertFalse(app(PaymentService::class)->markPaid($payment)); // second time does nothing
         Event::assertDispatchedTimes(PaymentSucceeded::class, 1);
 
         $ledger = app(Ledger::class);
-        $this->assertSame(210_000 - 7_350, $ledger->balance(Account::CASH));
+        $this->assertSame(210_000, $ledger->balance(Account::CASH));
         $this->assertSame(210_000, $ledger->balance('income:sales'));
-        $this->assertSame('0933445566', $payment->fresh()->payer_account);
     }
 
-    public function test_bad_signature_is_rejected_and_gives_no_value(): void
+    public function test_proof_needs_matching_phone(): void
     {
-        $this->fakeChapa();
-        $payment = $this->startChapa($this->order());
-        $this->webhook($payment->tx_ref, ['HTTP_X_CHAPA_SIGNATURE' => 'nope'])->assertUnauthorized();
-        $this->assertSame('pending', $payment->fresh()->status);
+        $order = $this->order();
+        $this->postJson("/api/v1/orders/{$order->number}/payment-proof", ['phone' => '0911000000', 'method' => 'telebirr',
+            'proof' => UploadedFile::fake()->image('r.jpg')])->assertNotFound();
     }
 
-    public function test_alternative_chapa_signature_header_is_accepted(): void
+    public function test_cannot_send_proof_for_a_paid_order(): void
     {
-        $this->assertTrue(app(ChapaGateway::class)->validSignature('{}', null, hash_hmac('sha256', self::SECRET, self::SECRET)));
-        $this->assertFalse(app(ChapaGateway::class)->validSignature('{}', null, null));
+        $order = $this->order();
+        $this->paidByTransfer($order);
+        $this->postJson("/api/v1/orders/{$order->number}/payment-proof", ['phone' => '0933445566', 'method' => 'telebirr',
+            'proof' => UploadedFile::fake()->image('r.jpg')])->assertUnprocessable();
     }
 
-    public function test_signed_webhook_for_unpaid_transaction_gives_no_value(): void
+    public function test_old_card_payment_routes_are_gone(): void
     {
-        $this->fakeChapa('pending');
-        $payment = $this->startChapa($this->order());
-        $this->webhook($payment->tx_ref)->assertOk();
-        $this->assertSame('pending', $payment->fresh()->status);
-    }
-
-    public function test_underpaid_or_wrong_currency_is_never_auto_accepted(): void
-    {
-        $this->fakeChapa('success', '100.00');
-        $payment = $this->startChapa($order = $this->order());
-        $this->webhook($payment->tx_ref)->assertOk();
-        $this->assertSame('pending', $payment->fresh()->status);
-        $this->assertTrue($payment->fresh()->meta['mismatch']);
-        $this->assertSame('pending_payment', $order->fresh()->status);
-    }
-
-    public function test_cannot_pay_twice_for_a_paid_order(): void
-    {
-        $this->fakeChapa();
-        $payment = $this->startChapa($order = $this->order());
-        $this->webhook($payment->tx_ref);
-        $this->postJson("/api/v1/orders/{$order->number}/pay", ['method' => 'chapa', 'phone' => '0933445566'])->assertUnprocessable();
+        $order = $this->order();
+        $this->postJson("/api/v1/orders/{$order->number}/pay", ['method' => 'chapa', 'phone' => '0933445566'])->assertNotFound();
+        $this->postJson('/api/v1/webhooks/chapa', [])->assertNotFound();
+        $this->getJson('/api/v1/payments/chapa/callback')->assertNotFound();
+        $this->get("/pay/{$order->number}?phone=0933445566")->assertOk()->assertSee('Send receipt')->assertDontSee('Chapa');
     }
 
     public function test_manual_proof_flow_approve(): void
@@ -198,9 +144,7 @@ class PaymentsTest extends TestCase
     public function test_partial_then_full_refund(): void
     {
         Event::fake([PaymentRefunded::class]);
-        $this->fakeChapa();
-        $payment = $this->startChapa($order = $this->order());
-        $this->webhook($payment->tx_ref);
+        $payment = $this->paidByTransfer($order = $this->order());
         $this->actingAsAdmin();
 
         $this->postJson("/api/v1/admin/payments/{$payment->id}/refund", ['amount' => 50_000, 'reason' => 'One item damaged'])
@@ -216,7 +160,7 @@ class PaymentsTest extends TestCase
         $this->assertSame(5, Product::query()->firstOrFail()->stock);
         $this->assertSame(0, app(Ledger::class)->balance('income:sales'));
         Event::assertDispatchedTimes(PaymentRefunded::class, 2);
-        Http::assertSent(fn ($r) => str_contains($r->url(), '/refund/'));
+        $this->assertSame(['manual', 'manual'], $payment->refunds()->pluck('method')->all());
     }
 
     public function test_admin_can_list_payments_of_one_order(): void
@@ -234,17 +178,14 @@ class PaymentsTest extends TestCase
 
     public function test_refund_needs_finance_ability(): void
     {
+        $payment = $this->paidByTransfer($this->order());
         $this->actingAsAdmin('fulfilment');
-        $this->fakeChapa();
-        $payment = $this->startChapa($this->order());
         $this->postJson("/api/v1/admin/payments/{$payment->id}/refund", ['amount' => 1, 'reason' => 'x'])->assertForbidden();
     }
 
     public function test_receipt_pdf_via_signed_link(): void
     {
-        $this->fakeChapa();
-        $payment = $this->startChapa($this->order());
-        $this->webhook($payment->tx_ref);
+        $payment = $this->paidByTransfer($this->order());
 
         $res = $this->get(Receipt::link($payment->fresh()));
         $res->assertOk();
@@ -252,14 +193,13 @@ class PaymentsTest extends TestCase
         $this->get('/api/v1/payments/'.$payment->uuid.'/receipt')->assertForbidden(); // unsigned
     }
 
-    public function test_paid_after_auto_cancel_is_recorded_and_flagged(): void
+    public function test_approved_after_cancel_is_recorded_and_flagged(): void
     {
-        $this->fakeChapa();
         $order = $this->order();
-        $payment = app(PaymentService::class)->startChapa($order, 'https://x');
+        $payment = app(PaymentService::class)->submitProof($order, 'telebirr', UploadedFile::fake()->image('p.jpg'), 'TB9', null);
         Order::query()->whereKey($order->id)->update(['status' => 'cancelled']);
 
-        $this->webhook($payment->tx_ref)->assertOk();
+        app(PaymentService::class)->approveProof($payment, User::factory()->role('finance')->create()->id);
         $this->assertSame('paid', $payment->fresh()->status);
         $this->assertSame('cancelled', $order->fresh()->status);
         $this->assertDatabaseHas('activity_log', ['action' => 'order.paid_after_cancel']);
@@ -268,9 +208,10 @@ class PaymentsTest extends TestCase
     public function test_payment_method_switches(): void
     {
         $order = $this->order();
-        Features::set('payments.chapa', false);
-        $this->postJson("/api/v1/orders/{$order->number}/pay", ['method' => 'chapa', 'phone' => '0933445566'])->assertNotFound();
         $this->postJson("/api/v1/orders/{$order->number}/payment-options", ['phone' => '0933445566'])
-            ->assertOk()->assertJsonCount(2, 'data.methods');
+            ->assertOk()->assertJsonCount(2, 'data.methods')->assertJsonPath('data.methods.0.id', 'telebirr');
+        Features::set('payments.manual', false);
+        $this->postJson("/api/v1/orders/{$order->number}/payment-options", ['phone' => '0933445566'])
+            ->assertOk()->assertJsonCount(0, 'data.methods');
     }
 }

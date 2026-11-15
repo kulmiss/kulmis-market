@@ -194,25 +194,27 @@
         @else
             <p class="mt-1 text-sm m-muted">{{ $fmt($m['price']) }} per month: member prices, trading signals and earnings from your team.</p>
         @endif
+        @if (F::enabled('wallet.spend') && $wallet['available'] >= $m['price'])
         <form method="post" action="{{ url('/account/membership/pay') }}" class="mt-3 grid gap-2">
             @csrf
-            @chapa<button name="method" value="chapa" class="m-btn">{{ $isMember ? 'Renew' : 'Join' }} with Chapa · {{ $fmt($m['price']) }}</button>@elsefeature('payments.chapa')<p class="text-sm text-amber-700 dark:text-amber-300" role="status">{{ app(\App\Payments\ChapaGateway::class)->unsupportedMessage() }}</p>@endchapa
-            @if (F::enabled('wallet.spend') && $wallet['available'] >= 100)
-                @if ($wallet['available'] >= $m['price'])
-                    <button name="method" value="wallet" class="m-btn-ghost">Pay from wallet ({{ $fmt($wallet['available']) }})</button>
-                @elsechapa
-                    <button name="method" value="wallet_chapa" class="m-btn-ghost">Wallet {{ $fmt($wallet['available']) }} + rest with Chapa</button>
-                @endif
-            @endif
+            <button name="method" value="wallet" class="m-btn">{{ $isMember ? 'Renew' : 'Join' }} from my wallet · {{ $fmt($m['price']) }}</button>
         </form>
+        @endif
         @feature('payments.manual')
-        <details class="mt-3 text-sm"><summary class="cursor-pointer m-muted">Paid by bank or Telebirr transfer?</summary>
+        <details class="mt-3 text-sm" @if (! (F::enabled('wallet.spend') && $wallet['available'] >= $m['price'])) open @endif><summary class="cursor-pointer font-medium">{{ $isMember ? 'Renew' : 'Join' }} by Telebirr or bank transfer · {{ $fmt($m['price']) }}</summary>
+            <div class="mt-3 grid gap-2 rounded-xl p-3 text-xs m-soft">
+                <pre class="whitespace-pre-wrap font-sans">{{ \App\Support\Settings::string('payments.telebirr_details') }}</pre>
+                <pre class="whitespace-pre-wrap font-sans">{{ \App\Support\Settings::string('payments.bank_details') }}</pre>
+            </div>
             <form method="post" action="{{ url('/account/membership/proof') }}" enctype="multipart/form-data" class="mt-3 grid gap-2">
                 @csrf
                 <select name="method" class="m-input" aria-label="How you paid"><option value="telebirr">Telebirr</option><option value="bank_transfer">Bank transfer</option></select>
                 <input name="reference" class="m-input" placeholder="Transaction reference" aria-label="Transaction reference">
                 <input name="proof" type="file" accept="image/*,application/pdf" class="m-input" required aria-label="Receipt photo or PDF">
-                <button class="m-btn-ghost">Send receipt</button>
+                @if (F::enabled('wallet.spend') && $wallet['available'] >= 100 && $wallet['available'] < $m['price'])
+                    <label class="flex items-center gap-2"><input type="checkbox" name="use_wallet" value="1" class="size-4"> Use my wallet ({{ $fmt($wallet['available']) }}) and transfer only the rest</label>
+                @endif
+                <button class="m-btn">Send receipt</button>
             </form>
         </details>
         @endfeature

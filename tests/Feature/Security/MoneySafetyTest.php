@@ -8,16 +8,13 @@ use App\Ledger\Account;
 use App\Ledger\Ledger;
 use App\Ledger\Wallet;
 use App\Models\FraudFlag;
-use App\Models\Order;
 use App\Models\PayoutAccount;
 use App\Models\PayoutRequest;
 use App\Models\Product;
 use App\Models\User;
-use App\Payments\PaymentService;
 use App\Support\Settings;
 use App\Support\Totp;
 use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Feature\Referral\ReferralTestCase;
@@ -155,26 +152,6 @@ class MoneySafetyTest extends ReferralTestCase
         $this->assertSame($admin->id, PayoutAccount::query()->firstOrFail()->verified_by);
         // Once verified, later payouts to the same account don't ask again.
         $this->postJson("/api/v1/admin/cash-outs/$second/pay", ['reference' => 'TB2'])->assertOk();
-    }
-
-    public function test_pay_with_chapa_twice_reuses_the_open_checkout(): void
-    {
-        config(['services.chapa.secret_key' => 'CHASECK_TEST-x']);
-        Http::fake(['api.chapa.co/v1/transaction/initialize' => Http::response(['data' => ['checkout_url' => 'https://checkout.chapa.co/one']])]);
-        $p = Product::factory()->create(['price' => 100_000, 'stock' => 3]);
-        $token = $this->postJson('/api/v1/cart/items', ['product_id' => $p->id])->json('token');
-        $this->withHeaders(['X-Cart-Token' => $token])->postJson('/api/v1/checkout', ['checkout_key' => (string) Str::uuid(),
-            'first_name' => 'H', 'phone' => '0911000999', 'city' => 'Adama', 'address' => 'x'])->assertCreated();
-        $order = Order::query()->firstOrFail();
-
-        $a = $this->postJson("/api/v1/orders/{$order->number}/pay", ['method' => 'chapa', 'phone' => '0911000999'])->assertCreated()->json('data.tx_ref');
-        $b = $this->postJson("/api/v1/orders/{$order->number}/pay", ['method' => 'chapa', 'phone' => '0911000999'])->assertCreated()->json('data.tx_ref');
-        $this->assertSame($a, $b);
-        Http::assertSentCount(1);
-
-        $this->travel(31)->minutes(); // an old abandoned checkout is not reused
-        $c = app(PaymentService::class)->startChapa($order->fresh(), 'https://x')->tx_ref;
-        $this->assertNotSame($a, $c);
     }
 
     public function test_signups_from_one_browser_or_network_flag_the_referrer(): void

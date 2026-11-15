@@ -53,22 +53,7 @@ class SignalController extends Controller
         ]]);
     }
 
-    /** Guests buy a month (Chapa). */
-    public function subscribe(Request $request): JsonResponse
-    {
-        abort_if(Features::disabled('payments.chapa'), 404);
-        $data = $this->buyer($request);
-        try {
-            $purchase = $this->access->newGuestPurchase($data, $this->user($request));
-            app(Attribution::class)->forSignals($request, $purchase->subscription);
-            $payment = $this->payments->startChapa($purchase, url('/signals?paid=1'));
-        } catch (InvalidArgumentException $e) {
-            throw ValidationException::withMessages(['signals' => $e->getMessage()]);
-        }
-
-        return response()->json(['data' => ['checkout_url' => $payment->checkout_url, 'amount' => $payment->amount]], 201);
-    }
-
+    /** Guests buy a month: bank / Telebirr transfer with a receipt (checked by staff). */
     public function proof(Request $request): JsonResponse
     {
         abort_if(Features::disabled('payments.manual'), 404);
@@ -85,7 +70,7 @@ class SignalController extends Controller
             throw ValidationException::withMessages(['signals' => $e->getMessage()]);
         }
 
-        return response()->json(['data' => ['status' => 'awaiting_review']], 201);
+        return response()->json(['data' => ['status' => 'awaiting_review', 'message' => 'Thank you! We check your receipt and send your personal Telegram link by SMS.']], 201);
     }
 
     /** Members: get the personal Telegram link (free). */

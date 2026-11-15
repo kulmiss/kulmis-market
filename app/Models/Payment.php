@@ -39,8 +39,6 @@ class Payment extends Model
         return 'payable';
     }
 
-    public const CHAPA = 'chapa';
-
     public const BANK = 'bank_transfer';
 
     public const TELEBIRR = 'telebirr';

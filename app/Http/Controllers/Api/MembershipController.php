@@ -49,30 +49,24 @@ class MembershipController extends Controller
             + ['price' => Settings::int('membership.price')]]);
     }
 
-    /** Start paying one month (Chapa) — returns the checkout URL. */
+    /** Pay one month from the wallet (bank / Telebirr transfer: see proof()). */
     public function pay(Request $request): JsonResponse
     {
-        $request->validate(['method' => ['required', Rule::in(['chapa', 'wallet'])], 'use_wallet' => ['nullable', 'boolean']]);
+        $request->validate(['method' => ['required', Rule::in(['wallet'])]]);
         try {
             $purchase = $this->memberships->newPurchase($request->user());
-            if ($request->input('method') === 'wallet' || $request->boolean('use_wallet')) {
-                app(WalletPayments::class)->apply($purchase, $request->user());
-                if ($purchase->fresh()->isSettled()) {
-                    return response()->json(['data' => ['paid' => true, 'amount' => 0]], 201);
-                }
-                if ($request->input('method') === 'wallet') {
-                    throw new InvalidArgumentException('Not enough in your wallet. Pay the rest with Chapa.');
-                }
+            app(WalletPayments::class)->apply($purchase, $request->user());
+            if (! $purchase->fresh()->isSettled()) {
+                throw new InvalidArgumentException('Not enough in your wallet. Use it for part of the price and transfer the rest (send the receipt).');
             }
-            abort_if(Features::disabled('payments.chapa'), 404);
-            $payment = $this->payments->startChapa($purchase, url('/account?membership=paid'));
         } catch (InvalidArgumentException $e) {
             throw ValidationException::withMessages(['membership' => $e->getMessage()]);
         }
 
-        return response()->json(['data' => ['checkout_url' => $payment->checkout_url, 'amount' => $payment->amount, 'paid' => false]], 201);
+        return response()->json(['data' => ['paid' => true, 'amount' => 0]], 201);
     }
 
+    /** Bank / Telebirr transfer with a receipt; use_wallet pays part from the wallet first. */
     public function proof(Request $request): JsonResponse
     {
         abort_if(Features::disabled('payments.manual'), 404);
@@ -80,10 +74,17 @@ class MembershipController extends Controller
             'method' => ['required', Rule::in([Payment::BANK, Payment::TELEBIRR])],
             'proof' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:5120'],
             'reference' => ['nullable', 'string', 'max:120'], 'payer_account' => ['nullable', 'string', 'max:120'],
+            'use_wallet' => ['nullable', 'boolean'],
         ]);
         try {
             $purchase = $this->memberships->newPurchase($request->user());
-            $this->payments->submitProof($purchase, $data['method'], $request->file('proof'), $data['reference'] ?? null, $data['payer_account'] ?? null);
+            if ($request->boolean('use_wallet')) {
+                app(WalletPayments::class)->apply($purchase, $request->user());
+                if ($purchase->fresh()->isSettled()) {
+                    return response()->json(['data' => ['status' => 'paid']], 201);
+                }
+            }
+            $this->payments->submitProof($purchase->fresh(), $data['method'], $request->file('proof'), $data['reference'] ?? null, $data['payer_account'] ?? null);
         } catch (InvalidArgumentException $e) {
             throw ValidationException::withMessages(['membership' => $e->getMessage()]);
         }

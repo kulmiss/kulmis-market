@@ -18,7 +18,6 @@ use App\Support\Settings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -32,7 +31,6 @@ class CurrencyTest extends TestCase
     {
         parent::setUp();
         ShippingZone::query()->create(['name' => 'All', 'cities' => [], 'base_fee' => 10_000, 'is_default' => true]);
-        config(['services.chapa.secret_key' => 'CHASECK_TEST-x']);
     }
 
     /** @param array<string, string> $values */
@@ -152,41 +150,5 @@ class CurrencyTest extends TestCase
             'customer' => $second->payableCustomer(), 'title' => $second->payableTitle()])->render();
         $this->assertStringContainsString('$1,000.00', $html);
         $this->assertNotEmpty(Receipt::link($p));
-    }
-
-    public function test_chapa_checkout_is_blocked_with_a_clear_message_when_it_cannot_take_the_currency(): void
-    {
-        Http::fake();
-        $this->dollars();
-        $order = $this->order();
-
-        $this->postJson("/api/v1/orders/{$order->number}/pay", ['method' => 'chapa', 'phone' => '0933445566'])
-            ->assertUnprocessable()->assertJsonValidationErrors('payment')
-            ->assertJsonFragment(['Online payment through Chapa only works in ETB, and this shop now uses USD. Please pay by bank or Telebirr transfer, or contact us.']);
-        Http::assertNothingSent();
-        $this->assertSame(0, Payment::query()->count());
-
-        $page = $this->get("/pay/{$order->number}?phone=0933445566")->assertOk();
-        $page->assertDontSee('Pay with Chapa')->assertSee('only works in ETB')->assertSee('Transfer and upload the receipt');
-        $this->get('/signals')->assertOk()->assertDontSee('with Chapa</button>', false)->assertSee('only works in ETB');
-    }
-
-    public function test_chapa_gets_the_shop_currency_when_it_supports_it_and_must_answer_in_it(): void
-    {
-        config(['services.chapa.currencies' => ['ETB', 'USD']]);
-        $this->dollars();
-        Http::fake([
-            'api.chapa.co/v1/transaction/initialize' => Http::response(['status' => 'success', 'data' => ['checkout_url' => 'https://checkout.chapa.co/abc']]),
-            'api.chapa.co/v1/transaction/verify/*' => Http::response(['status' => 'success', 'data' => [
-                'status' => 'success', 'amount' => '9999.00', 'currency' => 'ETB', 'reference' => 'AP1', 'charge' => '0']]),
-        ]);
-        $order = $this->order();
-        $this->postJson("/api/v1/orders/{$order->number}/pay", ['method' => 'chapa', 'phone' => '0933445566'])->assertCreated();
-        Http::assertSent(fn ($r) => str_contains($r->url(), 'initialize') && $r['currency'] === 'USD');
-
-        // Chapa answers in another currency: never marked paid.
-        $payment = Payment::query()->latest('id')->firstOrFail();
-        $this->assertSame('USD', $payment->currency);
-        $this->assertFalse(app(PaymentService::class)->confirmChapa($payment->tx_ref)->isPaid());
     }
 }

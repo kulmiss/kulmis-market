@@ -38,7 +38,6 @@ return [
     'wallet.spend' => ['Pay with wallet in the shop', 'Wallet', true, 'wallet'],
     'wallet.cashout' => ['Cash out', 'Wallet', true, 'wallet'],
 
-    'payments.chapa' => ['Chapa payments', 'Payments', true, null],
     'payments.manual' => ['Bank / Telebirr transfer with proof', 'Payments', true, null],
 
     'notifications.sms' => ['SMS notifications', 'Notifications', true, null],

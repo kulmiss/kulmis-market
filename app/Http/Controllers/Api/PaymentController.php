@@ -5,10 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Payment;
-use App\Payments\ChapaGateway;
 use App\Payments\PaymentService;
 use App\Payments\Receipt;
-use App\Security\SecurityAlerts;
 use App\Support\Features;
 use App\Support\Phone;
 use App\Support\Settings;
@@ -34,20 +32,6 @@ class PaymentController extends Controller
         ]]);
     }
 
-    public function pay(Request $request, string $number): JsonResponse
-    {
-        $request->validate(['method' => ['required', Rule::in(['chapa'])]]);
-        abort_if(Features::disabled('payments.chapa'), 404);
-        $order = $this->order($request, $number);
-        try {
-            $payment = $this->payments->startChapa($order, url('/track?number='.$order->number.'&paid=1'));
-        } catch (InvalidArgumentException $e) {
-            throw ValidationException::withMessages(['order' => $e->getMessage()]);
-        }
-
-        return response()->json(['data' => ['checkout_url' => $payment->checkout_url, 'tx_ref' => $payment->tx_ref]], 201);
-    }
-
     public function proof(Request $request, string $number): JsonResponse
     {
         abort_if(Features::disabled('payments.manual'), 404);
@@ -67,32 +51,6 @@ class PaymentController extends Controller
         return response()->json(['data' => ['status' => $payment->status, 'message' => 'Thank you! We will confirm your payment shortly.']], 201);
     }
 
-    /** Chapa redirects the customer here (GET ?trx_ref=...). We verify server-side. */
-    public function chapaCallback(Request $request): JsonResponse
-    {
-        $ref = (string) ($request->query('trx_ref') ?? $request->query('tx_ref') ?? '');
-        $payment = $ref !== '' ? $this->payments->confirmChapa($ref) : null;
-
-        return response()->json(['status' => $payment->status ?? 'unknown']);
-    }
-
-    /** Chapa webhook: signature first, then re-verify with Chapa's API. */
-    public function chapaWebhook(Request $request, ChapaGateway $chapa): JsonResponse
-    {
-        $raw = (string) $request->getContent();
-        if (! $chapa->validSignature($raw, $request->header('x-chapa-signature'), $request->header('chapa-signature'))) {
-            app(SecurityAlerts::class)->badSignature('Chapa');
-
-            return response()->json(['message' => 'Invalid signature'], 401);
-        }
-        $ref = (string) ($request->input('tx_ref') ?? $request->input('trx_ref') ?? '');
-        if ($ref !== '') {
-            $this->payments->confirmChapa($ref);
-        }
-
-        return response()->json(['ok' => true]);
-    }
-
     public function receipt(string $payment, Receipt $receipt): Response
     {
         return $receipt->download(Payment::query()->where('uuid', $payment)->firstOrFail());
@@ -102,9 +60,6 @@ class PaymentController extends Controller
     public static function methods(): array
     {
         $methods = [];
-        if (Features::enabled('payments.chapa')) {
-            $methods[] = ['id' => 'chapa', 'label' => 'Telebirr, CBE Birr, M-Pesa or card (Chapa)', 'instant' => true];
-        }
         if (Features::enabled('payments.manual')) {
             $methods[] = ['id' => Payment::TELEBIRR, 'label' => 'Telebirr transfer + screenshot', 'instructions' => Settings::string('payments.telebirr_details')];
             $methods[] = ['id' => Payment::BANK, 'label' => 'Bank transfer + receipt photo', 'instructions' => Settings::string('payments.bank_details')];

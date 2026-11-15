@@ -15,7 +15,6 @@ class RedactSecrets
 {
     /** @var array<string, string> pattern => replacement */
     public const PATTERNS = [
-        '/CHA(?:SECK|PUBK)(?:_TEST)?-[A-Za-z0-9]+/' => 'CHA***',                        // Chapa keys
         '/\b\d{8,10}:[A-Za-z0-9_-]{30,}\b/' => '[telegram-token]',                       // Telegram bot token
         '/(Bearer\s+)[A-Za-z0-9|._~+\/=-]{10,}/i' => '$1***',
         '/("?(?:password|password_confirmation|current_password|secret|token|api_key|webhook_secret|two_factor_secret|code|recovery_code|account_number)"?\s*[:=]\s*)("[^"]*"|[^\s,}&]+)/i' => '$1"***"',

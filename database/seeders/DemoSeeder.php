@@ -439,7 +439,8 @@ class DemoSeeder extends Seeder
             $lines = mt_rand(1, 10) <= 7 ? 1 : 2;
             for ($l = 0; $l < $lines; $l++) {
                 $p = $this->buyable[array_rand($this->buyable)];
-                $variant = $p->variants()->where('is_active', true)->inRandomOrder()->first();
+                $variants = $p->variants()->where('is_active', true)->orderBy('id')->get();
+                $variant = $variants->isEmpty() ? null : $variants[mt_rand(0, $variants->count() - 1)]; // seeded, same on every database
                 app(CartManager::class)->add($cart, $p->id, $variant?->id, mt_rand(1, 10) <= 8 ? 1 : 2);
             }
             if (mt_rand(1, 10) === 1) {
@@ -506,7 +507,7 @@ class DemoSeeder extends Seeder
                     if ($order->id % 29 === 0) {
                         $payment = Payment::query()->where('payable_type', $order->getMorphClass())->where('payable_id', $order->id)->where('status', Payment::PAID)->first();
                         if ($payment) {
-                            app(PaymentService::class)->refund($payment, $payment->amount, 'Arrived broken; full refund.', $this->admin->id, false);
+                            app(PaymentService::class)->refund($payment, $payment->amount, 'Arrived broken; full refund.', $this->admin->id);
                         }
                     }
                 }

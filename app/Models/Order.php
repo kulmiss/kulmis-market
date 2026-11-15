@@ -177,7 +177,7 @@ class Order extends Model implements Payable
         return $this->shipping - $this->shipping_discount;
     }
 
-    /** What still has to be paid by Chapa/bank after the wallet part. */
+    /** What still has to be paid by transfer after the wallet part. */
     public function amountDue(): int
     {
         return max(0, $this->total - $this->wallet_used);

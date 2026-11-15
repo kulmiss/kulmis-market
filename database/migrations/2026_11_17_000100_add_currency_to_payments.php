@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/** The currency a payment was asked in, so a later currency change can't make Chapa accept the wrong one. */
+/** The currency a payment was asked in, so a later currency change can't make it read in the wrong one. */
 return new class extends Migration
 {
     public function up(): void

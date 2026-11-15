@@ -8,7 +8,7 @@ assets are committed, so the server needs **no Node.js**.
 - PHP **8.3+** with pdo_mysql, bcmath, intl, gd (with WebP; AVIF optional),
   zip, mbstring, sodium, openssl
 - MySQL 8 / MariaDB 10.6+
-- HTTPS (Chapa and Telegram webhooks need it)
+- HTTPS (the Telegram webhook needs it)
 - Cron that runs every minute
 
 ---
@@ -81,7 +81,6 @@ assets are committed, so the server needs **no Node.js**.
 ## Connect the services
 | Service | What to do | `.env` |
 |---|---|---|
-| **Chapa** | In the Chapa dashboard: copy the secret key and set the webhook URL to `https://your-domain/api/v1/webhooks/chapa` with a webhook secret. Start with test keys. | `CHAPA_SECRET_KEY`, `CHAPA_WEBHOOK_SECRET` |
 | **Telegram** | @BotFather → new bot. Create a private channel and add the bot as admin (invite + ban users). Get the channel id (`-100…`). Then `php artisan telegram:set-webhook`. | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `TELEGRAM_CHANNEL_ID`, `TELEGRAM_WEBHOOK_SECRET`, `TELEGRAM_ADMIN_CHAT_ID` (your own chat, for cash-out reminders) |
 | **SMS** | Any provider with a JSON API (`POST {to, message, sender}` + Bearer token). Different shape? Adapt `app/Notify/Sms/HttpSmsGateway.php`. | `SMS_DRIVER=http`, `SMS_URL`, `SMS_TOKEN`, `SMS_SENDER` |
 | **Email** | Any SMTP (your host's, or a mail service). | `MAIL_*` |
@@ -143,7 +142,7 @@ Run `php artisan km:doctor` after every deploy and every `.env` change. It
 - Admin path: 2FA is always required. For an extra lock, set
   `ADMIN_ALLOWED_IPS` to your own IP(s)/ranges; everyone else gets a 404
   for `/admin` and the admin API.
-- Webhook secrets for Chapa and Telegram, and `TELEGRAM_ADMIN_CHAT_ID` so
+- The Telegram webhook secret, and `TELEGRAM_ADMIN_CHAT_ID` so
   you get security alerts.
 - Composer: `composer install --no-dev --optimize-autoloader` on the server.
 

@@ -32,10 +32,7 @@ and **decimal separator**. The default is ETB, written as before
 - **Nothing is converted.** Money stays integer 1/100 units, so 5,000 ETB
   becomes 5,000 USD. The admin shows a live preview and a confirmation;
   the API refuses a currency change without `confirm_currency_change: true`.
-- **Chapa:** accepts the currencies in `CHAPA_CURRENCIES` (default `ETB`).
-  For any other currency, Chapa buttons are replaced by a clear message and
-  `…/pay` returns 422; bank/Telebirr transfer with a receipt still works.
-  Each payment stores its currency, and Chapa must confirm the same one.
+- Each payment stores the currency it was asked in.
 - Cached pages are cleared when the setting changes.
 
 ## Roles

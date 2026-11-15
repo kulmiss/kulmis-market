@@ -14,14 +14,14 @@ use App\Models\Payment;
 use App\Models\PayoutAccount;
 use App\Models\Product;
 use App\Models\User;
-use App\Payments\ChapaGateway;
 use App\Payments\PaymentService;
 use App\Pricing\PricingException;
 use App\Referral\CommissionEngine;
 use App\Wallet\CashOuts;
 use App\Wallet\PayoutAccounts;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Illuminate\Validation\ValidationException;
@@ -96,51 +96,24 @@ class BreakItTest extends ReferralTestCase
         $this->assertSame(1, Order::query()->count());
     }
 
-    public function test_webhook_replays_and_redirect_races_give_value_once(): void
+    public function test_double_approvals_give_value_once(): void
     {
-        config(['services.chapa.secret_key' => 'CHASECK_TEST-x', 'services.chapa.webhook_secret' => 'whsec']);
+        Storage::fake('local');
         [, , $l1] = $this->chain();
         $p = Product::factory()->create(['price' => 100_000, 'stock' => 5]);
         $this->checkout($this->cart($p), ['referral_code' => $l1->referral_code])->assertCreated();
         $order = Order::query()->latest('id')->firstOrFail();
-        Http::fake([
-            'api.chapa.co/v1/transaction/initialize' => Http::response(['data' => ['checkout_url' => 'https://checkout.chapa.co/x']]),
-            'api.chapa.co/v1/transaction/verify/*' => fn ($r) => Http::response(['data' => [
-                'status' => 'success', 'amount' => ChapaGateway::birr($order->total), 'currency' => 'ETB',
-                'tx_ref' => basename(parse_url($r->url(), PHP_URL_PATH)), 'reference' => 'AP1', 'charge' => '0']]),
-        ]);
-        $payment = app(PaymentService::class)->startChapa($order, 'https://x');
-        $body = json_encode(['tx_ref' => $payment->tx_ref]);
-        $sig = hash_hmac('sha256', $body, 'whsec');
+        $payment = app(PaymentService::class)->submitProof($order, 'telebirr', UploadedFile::fake()->image('r.jpg'), 'TB1', null);
+        $stale = clone $payment;
+        app(PaymentService::class)->approveProof($payment, $this->admin->id);
         for ($i = 0; $i < 5; $i++) {
-            $this->call('POST', '/api/v1/webhooks/chapa', [], [], [], ['HTTP_X_CHAPA_SIGNATURE' => $sig, 'CONTENT_TYPE' => 'application/json'], $body)->assertOk();
-            $this->getJson('/api/v1/payments/chapa/callback?trx_ref='.$payment->tx_ref)->assertOk();
+            $this->assertFalse(app(PaymentService::class)->markPaid($stale)); // a stale copy can't pay it again
         }
-        // A stale copy of the payment model can't pay it again either.
-        $this->assertFalse(app(PaymentService::class)->markPaid($payment));
 
         $this->assertSame(1, DB::table('journal_entries')->where('type', 'payment.received')->count());
         $this->assertSame(3, Commission::query()->count());
         $this->assertSame(6_000, Wallet::for($l1)->pending());
         $this->assertLedgerBalances();
-    }
-
-    public function test_chapa_answer_for_a_different_transaction_is_refused(): void
-    {
-        config(['services.chapa.secret_key' => 'CHASECK_TEST-x']);
-        $p = Product::factory()->create(['price' => 100_000, 'stock' => 5]);
-        $this->checkout($this->cart($p))->assertCreated();
-        $order = Order::query()->latest('id')->firstOrFail();
-        Http::fake([
-            'api.chapa.co/v1/transaction/initialize' => Http::response(['data' => ['checkout_url' => 'https://checkout.chapa.co/x']]),
-            'api.chapa.co/v1/transaction/verify/*' => Http::response(['data' => [
-                'status' => 'success', 'amount' => '999999.00', 'currency' => 'ETB', 'tx_ref' => 'KM-SOMEONE-ELSES', 'charge' => '0']]),
-        ]);
-        $payment = app(PaymentService::class)->startChapa($order, 'https://x');
-        app(PaymentService::class)->confirmChapa($payment->tx_ref);
-
-        $this->assertFalse($payment->fresh()->isPaid());
-        $this->assertDatabaseHas('activity_log', ['action' => 'payment.reference_mismatch']);
     }
 
     public function test_approving_a_proof_twice_and_wrong_refunds_are_refused(): void
@@ -151,11 +124,11 @@ class BreakItTest extends ReferralTestCase
 
         $svc = app(PaymentService::class);
         foreach ([0, -100, $payment->amount + 1] as $bad) {
-            $this->expectExceptionCount(fn () => $svc->refund($payment->fresh(), $bad, 'x', $this->admin->id, false));
+            $this->expectExceptionCount(fn () => $svc->refund($payment->fresh(), $bad, 'x', $this->admin->id));
         }
-        $svc->refund($payment->fresh(), 50_000, 'part', $this->admin->id, false);
-        $svc->refund($payment->fresh(), $payment->amount - 50_000, 'rest', $this->admin->id, false);
-        $this->expectExceptionCount(fn () => $svc->refund($payment->fresh(), 1, 'again', $this->admin->id, false));
+        $svc->refund($payment->fresh(), 50_000, 'part', $this->admin->id);
+        $svc->refund($payment->fresh(), $payment->amount - 50_000, 'rest', $this->admin->id);
+        $this->expectExceptionCount(fn () => $svc->refund($payment->fresh(), 1, 'again', $this->admin->id));
 
         $this->assertSame(1, DB::table('journal_entries')->where('type', 'payment.received')->count());
         $this->assertLedgerBalances();
@@ -171,7 +144,7 @@ class BreakItTest extends ReferralTestCase
         $parts = [1_111, 33_333, 7, 50_001, 2_222, 9_999];
         $parts[] = $payment->amount - array_sum($parts);
         foreach ($parts as $i => $amount) {
-            $svc->refund($payment->fresh(), $amount, "part $i", $this->admin->id, false);
+            $svc->refund($payment->fresh(), $amount, "part $i", $this->admin->id);
         }
 
         foreach ([$l1, $l2, $l3] as $u) {
@@ -214,7 +187,7 @@ class BreakItTest extends ReferralTestCase
         $o1 = $this->buyProducts(123_457, null, $l1->referral_code);
         $o2 = $this->buyProducts(99_999, $buyer->fresh());
         $p1 = Payment::query()->where('payable_id', $o1->id)->where('payable_type', $o1->getMorphClass())->firstOrFail();
-        app(PaymentService::class)->refund($p1, 12_345, 'damaged', $this->admin->id, false);
+        app(PaymentService::class)->refund($p1, 12_345, 'damaged', $this->admin->id);
         $this->travel(15)->days();
         app(CommissionEngine::class)->releaseDue();
 

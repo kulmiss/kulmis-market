@@ -146,7 +146,6 @@ export function PaymentRow({ payment: p }: { payment: Payment }) {
         <span className='ms-auto flex gap-2'>
           {p.proof_path && <Button size='sm' variant='outline' asChild><a href={`/api/v1/admin/payments/${p.id}/proof`} target='_blank' rel='noreferrer'><ExternalLink /> Proof</a></Button>}
           {['paid', 'partially_refunded', 'refunded'].includes(p.status) && <Button size='sm' variant='outline' asChild><a href={`/api/v1/admin/payments/${p.id}/receipt`}><FileDown /> Receipt</a></Button>}
-          {p.provider === 'chapa' && p.status === 'pending' && <Button size='sm' variant='outline' onClick={() => act.mutate({ path: `/payments/${p.id}/check` })}>Check with Chapa</Button>}
         </span>
       </div>
       {p.status === 'awaiting_review' && !canApprove && <p className='text-xs text-muted-foreground'>Waiting for Finance or a Manager to approve this transfer.</p>}

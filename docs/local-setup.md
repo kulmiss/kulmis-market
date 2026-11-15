@@ -89,10 +89,6 @@ cd admin && npm run dev                                   # admin dev server wit
 Commit the rebuilt `public/build` / `public/admin-app` with your change.
 
 ## Try the payment flows without real money
-- **Chapa:** put your Chapa **test** secret key in `CHAPA_SECRET_KEY`. Test
-  payments in Chapa's checkout call back to your machine only through a
-  tunnel (e.g. `cloudflared`). Without one, use **Admin → Payments → Check
-  with Chapa** after paying.
 - **Transfer + proof:** pay "by Telebirr" on `/pay/{order}`, upload any image,
   then approve it in **Admin → Payments**.
 

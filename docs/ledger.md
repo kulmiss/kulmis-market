@@ -21,7 +21,7 @@
 ## Accounts
 | Code | Type | Meaning |
 |------|------|---------|
-| `asset:cash` | asset | Money received (Chapa, bank, Telebirr) |
+| `asset:cash` | asset | Money received (bank, Telebirr) |
 | `expense:commissions` | expense | Referral commissions |
 | `expense:loyalty` | expense | Loyalty rewards |
 | `income:wallet_sales` | income | Orders and memberships paid from a wallet |

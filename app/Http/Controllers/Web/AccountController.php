@@ -123,36 +123,44 @@ class AccountController extends Controller
         return back(fallback: url('/account/badges'));
     }
 
-    public function payMembership(Request $request, MembershipService $memberships, PaymentService $payments, WalletPayments $wallet): RedirectResponse
+    /** Pay a month fully from the wallet. */
+    public function payMembership(Request $request, MembershipService $memberships, WalletPayments $wallet): RedirectResponse
     {
-        $data = $request->validate(['method' => ['required', Rule::in(['chapa', 'wallet', 'wallet_chapa'])]]);
+        $request->validate(['method' => ['required', Rule::in(['wallet'])]]);
         try {
             $purchase = $memberships->newPurchase($request->user());
-            if (in_array($data['method'], ['wallet', 'wallet_chapa'], true)) {
-                $wallet->apply($purchase, $request->user());
-                if ($purchase->fresh()->isSettled()) {
-                    return redirect('/account')->with('status', 'Membership paid from your wallet. Welcome!');
-                }
-                if ($data['method'] === 'wallet') {
-                    throw new InvalidArgumentException('Not enough in your wallet — pay the rest with Chapa.');
-                }
+            $wallet->apply($purchase, $request->user());
+            if (! $purchase->fresh()->isSettled()) {
+                throw new InvalidArgumentException('Not enough in your wallet. Tick "use my wallet" and transfer the rest.');
             }
-            $payment = $payments->startChapa($purchase, url('/account?paid=1'));
         } catch (InvalidArgumentException|\RuntimeException $e) {
             return back()->withErrors(['membership' => $e->getMessage()]);
         }
 
-        return redirect()->away((string) $payment->checkout_url);
+        return redirect('/account')->with('status', 'Membership paid from your wallet. Welcome!');
     }
 
-    public function membershipProof(Request $request, MembershipService $memberships, PaymentService $payments): RedirectResponse
+    /** Bank / Telebirr transfer with a receipt, optionally after using the wallet for part of it. */
+    public function membershipProof(Request $request, MembershipService $memberships, PaymentService $payments, WalletPayments $wallet): RedirectResponse
     {
         $data = $request->validate([
             'method' => ['required', Rule::in([Payment::BANK, Payment::TELEBIRR])],
             'proof' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:5120'],
             'reference' => ['nullable', 'string', 'max:120'],
+            'use_wallet' => ['nullable', 'boolean'],
         ]);
-        $payments->submitProof($memberships->newPurchase($request->user()), $data['method'], $request->file('proof'), $data['reference'] ?? null, $request->user()->phone);
+        try {
+            $purchase = $memberships->newPurchase($request->user());
+            if ($request->boolean('use_wallet')) {
+                $wallet->apply($purchase, $request->user());
+                if ($purchase->fresh()->isSettled()) {
+                    return redirect('/account')->with('status', 'Membership paid from your wallet. Welcome!');
+                }
+            }
+            $payments->submitProof($purchase->fresh(), $data['method'], $request->file('proof'), $data['reference'] ?? null, $request->user()->phone);
+        } catch (InvalidArgumentException $e) {
+            return back()->withErrors(['membership' => $e->getMessage()]);
+        }
 
         return redirect('/account')->with('status', 'Thank you! We will confirm your payment shortly.');
     }

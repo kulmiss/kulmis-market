@@ -69,7 +69,7 @@ class WalletCashOutTest extends ReferralTestCase
         $this->assertSame(190_000, app(Ledger::class)->balance('income:sales'));
     }
 
-    public function test_partial_wallet_then_chapa_for_the_rest(): void
+    public function test_partial_wallet_then_transfer_for_the_rest(): void
     {
         $buyer = $this->member(null, 'Dawit');
         $this->credit($buyer, 50_000);

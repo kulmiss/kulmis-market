@@ -30,7 +30,7 @@ change any of them.
 | 21 | Ship the admin build in git? | Yes. `public/admin-app` is committed, so shared hosting needs no Node. CI rebuilds it to make sure it compiles. | Decided (recommended) |
 | 22 | Guests and sessions | Public pages never start a session for guests, so the only cookies are `km_cart` and `km_ref`. Guest checkout uses the stateless API. Signed-in customers get a normal session. | Decided (recommended) |
 | 23 | Storefront look | Clay, sand and coffee colours, serif headings with the system font stack (no web fonts, for speed and privacy). Change the colours in `resources/css/app.css` (`@theme`). | Decided (recommended), easy to change |
-| 24 | Security headers | Strict CSP (one hashed inline script, nothing third-party), plus a meta CSP so cached pages keep it. `form-action` allows `checkout.chapa.co` for the payment redirect. | Decided (recommended) |
+| 24 | Security headers | Strict CSP (one hashed inline script, nothing third-party), plus a meta CSP so cached pages keep it. `form-action` is `'self'` only (no payment gateway to redirect to). | Decided (recommended) |
 | 25 | Backups | Nightly encrypted backup (libsodium) of the DB, proofs and uploads, kept 14 days on the server. **You still need to copy them off the server.** | Decided (recommended) |
 | 26 | Database name | `kulmis-market` (you asked, 15 Nov). | Decided (you) |
 | 27 | Password length | Staff ≥ 12, customers ≥ 10, plus a common-password list (your security review asked for strong rules, which replaces the 5-character minimum from earlier). Set by `ADMIN_PASSWORD_MIN` / `CUSTOMER_PASSWORD_MIN`; `km:doctor` turns red if staff is below 12. | Decided (review) |
@@ -51,7 +51,7 @@ change any of them.
 | 42 | Sign-up in the referrer's own browser | Linked (team is right) + flag: the referrer's earnings wait for review. Before, the link was silently refused, which looked like "referral not working". | Decided (bug #7) |
 | 43 | Many sign-ups from one network | Review-only (soft) flag at 10 in 24 h; no hold, because mobile carriers share IPs. Local/private IPs are ignored. | Decided (bug #7) |
 | 44 | Currency change and existing amounts | Nothing is converted: amounts keep their numbers, only the symbol/format changes. Admin must confirm. | Decided (you) |
-| 45 | "Block checkout" when Chapa can't take the currency | Only the Chapa option is blocked, with a message; bank/Telebirr transfer with a receipt stays open so customers can still buy. Tell me if you want the whole checkout closed instead. | Decided (round 2) |
+| 45 | ~~"Block checkout" when Chapa can't take the currency~~ | No longer applies: Chapa was removed (#56). Transfers work in any currency. | Obsolete |
 | 46 | Currency decimals | Choice of "only when needed" (default, as today), never, or always 2. Amounts are still stored to 1/100. | Decided (round 2) |
 | 47 | "Team size" badges | Count **active** members you invited yourself (as before), so fake sign-ups don't earn badges. "Total team" counts active members in all 3 levels. | Decided (round 2) |
 | 48 | Badge messages | In-app notification + celebration always. SMS/email/Telegram for badges are off by default (`badges.messages`) because SMS costs money. | Decided (round 2) |
@@ -62,12 +62,12 @@ change any of them.
 | 53 | Demo contacts | Demo phones use +251 900 1… and emails end in .test; messages to them are never sent, so a staging server with a real SMS provider can't text strangers. | Decided (round 2) |
 | 54 | Member area look | Its own green & white layout (sidebar / bottom bar), accent editable in Settings → Appearance. The Super Admin dashboard is unchanged. | Decided (you) |
 | 55 | "Newest in your team" privacy | Level 1 by first name + initial; levels 2 and 3 show as "New member" (as before: counts only for levels 2–3). | Decided (round 2) |
+| 56 | Payment methods | **No Chapa / no online gateway.** Orders, membership and guest signals are paid by Telebirr or bank transfer with a receipt that staff approve, and members can use their wallet (all or part). Refunds of transfers are sent back by hand and recorded; wallet payments go back to the wallet. Existing page texts that mentioned Chapa are updated by a migration (only sentences you never edited). | Decided (you) |
 
 ## Still open: needs you
 | # | What | Why |
 |---|------|-----|
 | A | **SMS provider**: which one, plus its API details | Until then SMS only go to the log. Email and Telegram work. |
 | B | **Domain + hosting** | Set `APP_URL`, `MAIL_FROM_ADDRESS`. Note: Proclamation 1321/2024 has rules on keeping personal data on servers in Ethiopia, so this may matter when you choose hosting. |
-| C | **Chapa account** (test, then live keys + webhook secret) | Card / Telebirr payments. |
 | D | **Telegram bot + private channel** | Signals access. |
 | E | **Look & feel** | Logo A (smiling mesob) is in. Colours and texts still fit "warm, handcrafted"; tell me what to change. |

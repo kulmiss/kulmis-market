@@ -44,8 +44,6 @@ class DashboardController extends Controller
             'debug' => (bool) config('app.debug'),
             'https' => str_starts_with((string) config('app.url'), 'https://'),
             'integrations' => [
-                'chapa' => (bool) config('services.chapa.secret_key'),
-                'chapa_webhook' => (bool) config('services.chapa.webhook_secret'),
                 'telegram' => (bool) config('services.telegram.bot_token'),
                 'sms' => config('services.sms.driver'),
                 'mail' => config('mail.default'),
