@@ -70,6 +70,7 @@ class GoLiveTest extends TestCase
 
     public function test_doctor_runs(): void
     {
+        config(['shop.backup_key' => '']); // like a fresh dev machine (CI has no backup key)
         $this->artisan('km:doctor')->expectsOutputToContain('APP_KEY set')->assertSuccessful();
     }
 }
