@@ -36,7 +36,8 @@
 <body class="flex min-h-full flex-col">
 <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:p-2">Skip to content</a>
 @if ($topBar)
-    <div class="bg-ink-900 px-4 py-2 text-center text-sm text-mist-100">
+    {{-- Announcement bar. data-ends: the page may be a saved copy, so the browser hides it on time too. --}}
+    <div class="{{ \App\Models\Banner::COLORS[$topBar->color ?? 'dark'] ?? \App\Models\Banner::COLORS['dark'] }} px-4 py-2 text-center text-sm" data-announce @if ($topBar->ends_at) data-ends="{{ $topBar->ends_at->toIso8601String() }}" @endif>
         {{ $topBar->title }} @if ($topBar->link_url)<a class="ms-2 underline" href="{{ $topBar->link_url }}">{{ $topBar->link_text ?? 'Learn more' }}</a>@endif
     </div>
 @endif

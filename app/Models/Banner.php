@@ -20,7 +20,9 @@ class Banner extends Model
     /** @var array<string, mixed> */
     protected $attributes = ['is_active' => true, 'position' => 0, 'placement' => 'home'];
 
-    protected $fillable = ['placement', 'title', 'text', 'link_url', 'link_text', 'image_path', 'starts_at', 'ends_at', 'is_active', 'position'];
+    protected $fillable = ['placement', 'title', 'text', 'link_url', 'link_text', 'image_path', 'starts_at', 'ends_at', 'is_active', 'position', 'color'];
+
+    public const COLORS = ['green' => 'bg-brand-600 text-white', 'gold' => 'bg-gold-500 text-white', 'dark' => 'bg-ink-900 text-mist-100', 'red' => 'bg-danger-600 text-white'];
 
     protected $dispatchesEvents = ['saved' => CatalogChanged::class, 'deleted' => CatalogChanged::class];
 

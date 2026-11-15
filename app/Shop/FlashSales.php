@@ -2,6 +2,7 @@
 
 namespace App\Shop;
 
+use App\Models\Banner;
 use App\Models\FlashSale;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -80,7 +81,9 @@ class FlashSales
             return false;
         }
         $last = Carbon::parse($stored);
-        $changed = FlashSale::query()->where(fn ($q) => $q->whereBetween('starts_at', [$last, $now])->orWhereBetween('ends_at', [$last, $now]))->exists();
+        $changed = FlashSale::query()->where(fn ($q) => $q->whereBetween('starts_at', [$last, $now])->orWhereBetween('ends_at', [$last, $now]))->exists()
+            // Banners (announcement bar) that start or end now, too.
+            || Banner::query()->where(fn ($q) => $q->whereBetween('starts_at', [$last, $now])->orWhereBetween('ends_at', [$last, $now]))->exists();
         if ($changed) {
             PageCache::clear();
         }

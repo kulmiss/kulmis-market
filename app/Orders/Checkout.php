@@ -17,6 +17,7 @@ use App\Pricing\Quote;
 use App\Shipping\ShippingQuoter;
 use App\Shop\Deposits;
 use App\Shop\FlashSales;
+use App\Shop\LowStock;
 use App\Storefront\PageCache;
 use App\Support\Features;
 use Illuminate\Support\Facades\DB;
@@ -149,6 +150,7 @@ class Checkout
                     $line->variant
                         ? ProductVariant::query()->whereKey($line->variant->id)->decrement('stock', $line->quantity)
                         : Product::query()->whereKey($line->product->id)->decrement('stock', $line->quantity);
+                    LowStock::afterSale($line->product, $line->variant, $line->quantity);
                 }
             }
 

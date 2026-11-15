@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Catalog\ImageProcessor;
+use App\Catalog\ProductCsv;
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductFile;
 use App\Models\ProductImage;
@@ -18,6 +20,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProductController extends Controller
 {
@@ -124,21 +128,52 @@ class ProductController extends Controller
     {
         $data = $request->validate([
             'ids' => ['required', 'array', 'min:1', 'max:500'], 'ids.*' => ['integer'],
-            'action' => ['required', Rule::in(['activate', 'archive', 'draft', 'feature', 'unfeature'])],
+            'action' => ['required', Rule::in(['activate', 'archive', 'draft', 'feature', 'unfeature', 'category', 'price_percent', 'stock'])],
+            'value' => ['nullable', 'numeric'],
         ]);
-        $changes = match ($data['action']) {
-            'activate' => ['status' => 'active'], 'archive' => ['status' => 'archived'], 'draft' => ['status' => 'draft'],
-            'feature' => ['is_featured' => true], 'unfeature' => ['is_featured' => false],
-            default => abort(422),
-        };
+        $value = $data['value'] ?? null;
+        if (in_array($data['action'], ['price_percent', 'stock'], true) && $value === null) {
+            throw ValidationException::withMessages(['value' => 'Type a number.']);
+        }
+        if ($data['action'] === 'price_percent' && ($value < -90 || $value > 500)) {
+            throw ValidationException::withMessages(['value' => 'Change prices by −90% to +500%.']);
+        }
+        if ($data['action'] === 'category' && $value !== null && ! Category::query()->whereKey((int) $value)->exists()) {
+            throw ValidationException::withMessages(['value' => 'Choose a category.']);
+        }
         $count = 0;
-        Product::query()->whereKey($data['ids'])->each(function (Product $p) use ($changes, &$count) {
-            $p->update($changes);
-            $count++;
+        DB::transaction(function () use ($data, $value, &$count) {
+            Product::query()->whereKey($data['ids'])->each(function (Product $p) use ($data, $value, &$count) {
+                $p->update(match ($data['action']) {
+                    'activate' => ['status' => 'active'], 'archive' => ['status' => 'archived'], 'draft' => ['status' => 'draft'],
+                    'feature' => ['is_featured' => true], 'unfeature' => ['is_featured' => false],
+                    'category' => ['category_id' => $value !== null ? (int) $value : null],
+                    // Round to whole ETB so prices stay tidy.
+                    'price_percent' => ['price' => max(100, (int) round($p->price * (100 + (float) $value) / 100 / 100) * 100)],
+                    'stock' => ['stock' => max(0, (int) $value)],
+                    default => [],
+                });
+                $count++;
+            });
         });
-        Activity::log('product.bulk_'.$data['action'], null, ['ids' => $data['ids']]);
+        Activity::log('product.bulk_'.$data['action'], null, ['ids' => $data['ids'], 'value' => $value]);
 
         return response()->json(['updated' => $count]);
+    }
+
+    public function export(ProductCsv $csv): StreamedResponse
+    {
+        Activity::log('product.csv_exported', null);
+
+        return $csv->export();
+    }
+
+    /** Preview (apply=0) or save (apply=1) a CSV of products. */
+    public function import(Request $request, ProductCsv $csv): JsonResponse
+    {
+        $data = $request->validate(['file' => ['required', 'file', 'mimes:csv,txt', 'max:2048'], 'apply' => ['nullable', 'boolean']]);
+
+        return response()->json(['data' => $csv->import($request->file('file'), (bool) ($data['apply'] ?? false), (int) $request->user()->id)]);
     }
 
     public function uploadImage(Request $request, Product $product, ImageProcessor $images): JsonResponse
@@ -181,6 +216,7 @@ class ProductController extends Controller
             'booking_at' => ['nullable', 'date'],
             'preorder_deposit_bps' => ['nullable', 'integer', 'min:1000', 'max:9000'],
             'preorder_ships_on' => ['nullable', 'date'],
+            'low_stock_alert' => ['nullable', 'integer', 'min:0', 'max:100000'],
             'is_featured' => ['boolean'], 'is_members_only' => ['boolean'],
             'release_at' => ['nullable', 'date'],
             'status' => ['required', Rule::in(Product::STATUSES)],

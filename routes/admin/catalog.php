@@ -12,6 +12,8 @@ Route::middleware(['feature:shop', 'can:manage-products'])->group(function () {
     Route::put('products/{product}', [ProductController::class, 'update']);
     Route::post('products/{product}/images', [ProductController::class, 'uploadImage']);
     Route::delete('products/{product}/images/{image}', [ProductController::class, 'deleteImage']);
+    Route::get('products-export.csv', [ProductController::class, 'export'])->middleware('throttle:10,1');
+    Route::post('products-import', [ProductController::class, 'import'])->middleware('throttle:20,1');
     Route::get('products/{product}/files', [ProductController::class, 'files']);
     Route::post('products/{product}/files', [ProductController::class, 'addFile'])->middleware('throttle:30,1');
     Route::delete('products/{product}/files/{file}', [ProductController::class, 'deleteFile']);

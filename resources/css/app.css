@@ -2,6 +2,7 @@
 
 @source '../views/**/*.blade.php';
 @source '../js/**/*.js';
+@source '../../app/Models/Banner.php';
 
 @custom-variant dark (&:where(.dark, .dark *));
 

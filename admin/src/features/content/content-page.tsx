@@ -16,7 +16,7 @@ import { DataTable, type DataColumn } from '@/components/km/data-table'
 import { Page } from '@/components/km/page'
 
 type PageRow = { id: number; slug: string; title: string; body: string; seo_description: string | null; is_published: boolean; in_footer: boolean; position: number; updated_at: string }
-type BannerRow = { id: number; placement: string; title: string; text: string | null; link_url: string | null; link_text: string | null; starts_at: string | null; ends_at: string | null; is_active: boolean; position: number }
+type BannerRow = { id: number; color?: string | null; placement: string; title: string; text: string | null; link_url: string | null; link_text: string | null; starts_at: string | null; ends_at: string | null; is_active: boolean; position: number }
 
 const pageColumns: DataColumn<PageRow>[] = [
   { header: 'Title', accessorKey: 'title', cell: ({ row }) => <span>{row.original.title}{!row.original.is_published && <span className='ms-2 text-xs text-muted-foreground'>(hidden)</span>}</span>, meta: { sort: 'title' } },
@@ -80,7 +80,7 @@ function PageDialog({ page }: { page?: PageRow }) {
 }
 
 function BannerDialog({ banner }: { banner?: BannerRow }) {
-  const [d, setD] = useState({ placement: banner?.placement ?? 'home', title: banner?.title ?? '', text: banner?.text ?? '', link_url: banner?.link_url ?? '',
+  const [d, setD] = useState({ color: banner?.color ?? 'dark', placement: banner?.placement ?? 'home', title: banner?.title ?? '', text: banner?.text ?? '', link_url: banner?.link_url ?? '',
     link_text: banner?.link_text ?? '', starts_at: banner?.starts_at?.slice(0, 10) ?? '', ends_at: banner?.ends_at?.slice(0, 10) ?? '', is_active: banner?.is_active ?? true })
   const save = useMutate(banner ? 'put' : 'post', ['banners'], 'Banner saved')
   return (
@@ -89,9 +89,17 @@ function BannerDialog({ banner }: { banner?: BannerRow }) {
       <div className='grid gap-1.5'><Label>Where</Label>
         <Select value={d.placement} onValueChange={(v) => setD({ ...d, placement: v })}>
           <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>{['top_bar', 'home', 'shop', 'membership', 'signals'].map((p) => <SelectItem key={p} value={p}>{p.replace('_', ' ')}</SelectItem>)}</SelectContent>
+          <SelectContent>{['top_bar', 'home', 'shop', 'membership', 'signals'].map((p) => <SelectItem key={p} value={p}>{p === 'top_bar' ? 'Announcement bar (top of every page)' : p.replace('_', ' ')}</SelectItem>)}</SelectContent>
         </Select>
       </div>
+      {d.placement === 'top_bar' && (
+        <div className='grid gap-1.5'><Label>Colour</Label>
+          <Select value={d.color ?? 'dark'} onValueChange={(v) => setD({ ...d, color: v })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>{[['green', 'Green'], ['gold', 'Gold'], ['dark', 'Dark'], ['red', 'Red (urgent)']].map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
+      )}
       <label className='grid gap-1.5 text-sm leading-none font-medium'>Title<Input value={d.title} onChange={(e) => setD({ ...d, title: e.target.value })} /></label>
       <label className='grid gap-1.5 text-sm leading-none font-medium'>Text<Input value={d.text} onChange={(e) => setD({ ...d, text: e.target.value })} /></label>
       <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>

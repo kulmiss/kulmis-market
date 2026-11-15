@@ -31,6 +31,7 @@ use Illuminate\Support\Carbon;
  * @property bool $member_discount
  * @property ?Carbon $booking_at
  * @property ?int $preorder_deposit_bps
+ * @property ?int $low_stock_alert
  * @property ?Carbon $preorder_ships_on
  * @property ?int $stock
  * @property ?int $making_days
@@ -75,7 +76,7 @@ class Product extends Model
 
     protected $fillable = [
         'name', 'slug', 'short_description', 'description', 'category_id', 'price',
-        'cost_materials', 'cost_labour', 'cost_packaging', 'weight_grams', 'stock_mode', 'stock', 'kind', 'member_discount', 'booking_at', 'preorder_deposit_bps', 'preorder_ships_on',
+        'cost_materials', 'cost_labour', 'cost_packaging', 'weight_grams', 'stock_mode', 'stock', 'kind', 'member_discount', 'booking_at', 'preorder_deposit_bps', 'preorder_ships_on', 'low_stock_alert',
         'making_days', 'is_featured', 'is_members_only', 'release_at', 'status', 'seo_title', 'seo_description',
     ];
 
@@ -90,7 +91,7 @@ class Product extends Model
             'price' => 'integer', 'cost_materials' => 'integer', 'cost_labour' => 'integer',
             'cost_packaging' => 'integer', 'weight_grams' => 'integer', 'stock' => 'integer',
             'making_days' => 'integer', 'is_featured' => 'boolean', 'is_members_only' => 'boolean',
-            'release_at' => 'datetime', 'member_discount' => 'boolean', 'booking_at' => 'datetime', 'preorder_deposit_bps' => 'integer', 'preorder_ships_on' => 'date',
+            'release_at' => 'datetime', 'member_discount' => 'boolean', 'booking_at' => 'datetime', 'preorder_deposit_bps' => 'integer', 'preorder_ships_on' => 'date', 'low_stock_alert' => 'integer', 'low_stock_alerted_at' => 'datetime',
         ];
     }
 

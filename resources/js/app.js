@@ -77,6 +77,9 @@ $$('[data-share]').forEach((b) => {
     b.addEventListener('click', () => navigator.share({ url: b.dataset.shareUrl, text: b.dataset.shareText }).catch(() => {}));
 });
 
+/* Announcement bar past its end date (on a saved copy of the page): hide it. */
+$$('[data-announce][data-ends]').forEach((b) => { if (Date.parse(b.dataset.ends) <= Date.now()) b.remove(); });
+
 /* ---------- theme ---------- */
 $$('[data-theme-toggle]').forEach((b) =>
     b.addEventListener('click', () => {

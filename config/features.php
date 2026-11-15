@@ -30,6 +30,7 @@ return [
     'shop.addons' => ['Paid add-ons', 'Shop', true, 'shop', 'Extras like a session or workshop: price, member price, seats, an optional date and their own team-earning rates.'],
     'shop.preorders' => ['Pre-orders', 'Shop', true, 'shop', 'Products marked "pre-order" are paid in two parts: a share now and the rest before shipping.'],
     'shop.custom_orders' => ['Custom orders', 'Shop', true, 'shop', 'People describe what they want (photos, budget). You send a quote; they pay a deposit, then the rest before shipping.'],
+    'shop.low_stock_alerts' => ['Low-stock alerts', 'Shop', true, 'shop', 'A Telegram/email message to you when a product falls to its low-stock number after an order.'],
     'shop.winback' => ['Win-back offers', 'Shop', true, 'shop', 'One personal discount code, sent once, to customers who have not ordered for a while (Settings).'],
     'shop.gift_cards' => ['Gift cards', 'Shop', true, 'shop', 'People buy gift cards (fixed amounts) and spend them at checkout. Each code is secret and works until the money is used.'],
     'shop.extras.gift_wrap' => ['Gift wrapping (paid extra)', 'Shop', false, 'shop', 'A tick box at checkout for gift wrapping. Price in Settings → Checkout extras.'],

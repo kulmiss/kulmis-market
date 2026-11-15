@@ -182,6 +182,7 @@ export function ProductEditor({ id }: { id: string }) {
             {d.stock_mode === 'made_to_order'
               ? <Field label='Making days'><Input type='number' min={1} value={d.making_days ?? ''} onChange={(e) => set('making_days', Number(e.target.value))} /></Field>
               : d.variants.length === 0 && <Field label='Stock'><Input type='number' min={0} value={d.stock ?? 0} onChange={(e) => set('stock', Number(e.target.value))} /></Field>}
+            {d.stock_mode !== 'made_to_order' && <Field label='Tell me when only this many are left (empty = Settings)'><Input type='number' min={0} value={d.low_stock_alert ?? ''} onChange={(e) => set('low_stock_alert', e.target.value === '' ? null : Number(e.target.value))} /></Field>}
             <Field label={d.kind === 'addon' ? 'Weight (grams, 0 if nothing is shipped)' : 'Weight (grams)'}><Input type='number' min={0} value={d.weight_grams} onChange={(e) => set('weight_grams', Number(e.target.value))} /></Field>
             </>}
           </CardContent>

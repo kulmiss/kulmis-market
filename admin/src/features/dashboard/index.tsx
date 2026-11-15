@@ -13,7 +13,8 @@ import { PageSkeleton } from '@/components/km/page-skeleton'
 type D = {
   revenue: { products: number; memberships: number; signals: number; total: number }
   gross_profit: number
-  costs: { products: number; commissions: number; loyalty: number; badge_bonuses: number; payment_fees: number }
+  costs: { products: number; commissions: number; loyalty: number; badge_bonuses: number; payment_fees: number; rewards?: number }
+  rewards?: Record<string, number>
   discounts: { member: number; coupons: number; free_shipping: number; total: number }
   shipping: { charged: number; free_given: number }
   orders: { paid: number; average: number }
@@ -32,6 +33,8 @@ type D = {
 }
 
 const ranges = [{ label: '7 days', short: '7 d', days: 7 }, { label: '30 days', short: '30 d', days: 30 }, { label: '90 days', short: '90 d', days: 90 }, { label: '12 months', short: '1 year', days: 365 }]
+
+const REWARD_NAMES: Record<string, string> = { first_payment: 'First-payment bonuses', contest: 'Contest prizes', challenge: 'Challenge rewards', comeback: 'Welcome-back rewards' }
 
 export function Dashboard() {
   const [days, setDays] = useState(30)
@@ -65,7 +68,7 @@ export function Dashboard() {
             <Kpi icon={TrendingUp} title='Revenue' value={formatMoney(d.revenue.total)}
               sub={`Shop ${formatMoney(d.revenue.products)} · Membership ${formatMoney(d.revenue.memberships)} · Signals ${formatMoney(d.revenue.signals)}`} />
             <Kpi icon={Banknote} title='Gross profit' value={formatMoney(d.gross_profit)}
-              sub={`after product cost ${formatMoney(d.costs.products)}, commissions ${formatMoney(d.costs.commissions)}, loyalty ${formatMoney(d.costs.loyalty)}, badge bonuses ${formatMoney(d.costs.badge_bonuses)}, fees ${formatMoney(d.costs.payment_fees)}`} />
+              sub={`after product cost ${formatMoney(d.costs.products)}, commissions ${formatMoney(d.costs.commissions)}, loyalty ${formatMoney(d.costs.loyalty)}, badge bonuses ${formatMoney(d.costs.badge_bonuses)}, rewards and prizes ${formatMoney(d.costs.rewards ?? 0)}, fees ${formatMoney(d.costs.payment_fees)}`} />
             <Kpi icon={Crown} title='Membership MRR' value={formatMoney(d.membership.mrr)}
               sub={`${d.membership.active} active · ${d.membership.new} new · ${d.membership.churned} churned (${d.membership.churn_rate}%)`} />
             <Kpi icon={Radio} title='Signals subscribers' value={String(d.signals.subscribers)} sub={`${d.signals.guests_paying} paying guests, the rest are members`} />
@@ -98,6 +101,9 @@ export function Dashboard() {
                 <Line label='Paid out all time' value={formatMoney(d.commissions.paid_out_all_time)} />
                 <Line label='Loyalty rewards in period' value={formatMoney(d.loyalty_rewards)} />
                 <Line label='Badge bonuses in period' value={formatMoney(d.badge_bonuses)} />
+                {Object.entries(d.rewards ?? {}).filter(([, v]) => v !== 0).map(([k, v]) => <Line key={k} label={`${REWARD_NAMES[k] ?? k} in period`} value={formatMoney(v)} />)}
+                {d.revenue.total > 0 && <Line label='Paid out vs money in' value={`${(((d.costs.commissions + d.costs.loyalty + d.costs.badge_bonuses + (d.costs.rewards ?? 0)) * 100) / d.revenue.total).toFixed(1)}%`} />}
+                <a href='/admin/reports' className='mt-1 text-xs underline'>See every source in Reports →</a>
               </CardContent>
             </Card>
             <Card>

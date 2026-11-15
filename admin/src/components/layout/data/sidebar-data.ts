@@ -1,5 +1,6 @@
 import {
   Activity,
+  BarChart3,
   Hammer,
   Gift,
   Share2,
@@ -47,6 +48,7 @@ export const sidebarData: SidebarData = {
       title: 'General',
       items: [
         { title: 'Dashboard', url: '/', icon: LayoutDashboard, ability: 'view-reports' },
+        { title: 'Reports', url: '/reports', icon: BarChart3, ability: 'view-reports' },
         { title: 'Feature switches', url: '/features', icon: ToggleRight, ability: 'manage-features' },
       ],
     },
