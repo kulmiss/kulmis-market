@@ -1,0 +1,65 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Handle X-XSRF-Token Header
+    RewriteCond %{HTTP:x-xsrf-token} .
+    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Never serve the static page cache, dotfiles (except .well-known) or dumps directly
+    RewriteRule ^page-cache/ - [F,L]
+    RewriteRule (^|/)\.(?!well-known/) - [F,L]
+    RewriteRule \.(env|log|sql|sqlite|bak|zip|tar|gz)$ - [F,L,NC]
+
+    # Static page cache: guests (no km_session cookie), plain GET, no query string
+    RewriteCond %{REQUEST_METHOD} GET
+    RewriteCond %{QUERY_STRING} ^$
+    RewriteCond %{HTTP_COOKIE} !km_session
+    RewriteCond %{DOCUMENT_ROOT}/page-cache/index.html -f
+    RewriteRule ^$ page-cache/index.html [END,E=KM_CACHED:1]
+
+    RewriteCond %{REQUEST_METHOD} GET
+    RewriteCond %{QUERY_STRING} ^$
+    RewriteCond %{HTTP_COOKIE} !km_session
+    RewriteCond %{DOCUMENT_ROOT}/page-cache/$1.html -f
+    RewriteRule ^([a-z0-9/_-]+)$ page-cache/$1.html [END,E=KM_CACHED:1]
+
+    # Send Requests To Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Security headers for everything, including cached pages served without PHP.
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+    Header always set Cross-Origin-Opener-Policy "same-origin"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+    Header always unset X-Powered-By
+    # Cached guest pages are served without PHP: send the CSP here too.
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-Xw+iXV1g6Uwe+/grlE5MEUAXKtap/VwHEZMIn78C1Zg='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; form-action 'self' https://checkout.chapa.co; frame-ancestors 'none'; base-uri 'self'; object-src 'none'" env=KM_CACHED
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-Xw+iXV1g6Uwe+/grlE5MEUAXKtap/VwHEZMIn78C1Zg='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; form-action 'self' https://checkout.chapa.co; frame-ancestors 'none'; base-uri 'self'; object-src 'none'" env=REDIRECT_KM_CACHED
+    <FilesMatch "\.(css|js|webp|avif|jpg|jpeg|png|svg|woff2)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_deflate.c>
+    # Compress text (HTML, CSS, JS, JSON, SVG) — faster on mobile data.
+    AddOutputFilterByType DEFLATE text/html text/plain text/css application/javascript application/json image/svg+xml application/xml text/xml
+</IfModule>

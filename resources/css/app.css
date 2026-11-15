@@ -1,0 +1,46 @@
+@import 'tailwindcss' source(none);
+
+@source '../views/**/*.blade.php';
+@source '../js/**/*.js';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Warm, handcrafted palette: clay, sand, coffee, a touch of gold. No web fonts. */
+@theme {
+    --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans Ethiopic', 'Nyala', sans-serif;
+    --font-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, 'Noto Serif Ethiopic', serif;
+    --color-sand-50: #fbf8f3;
+    --color-sand-100: #f6efe6;
+    --color-sand-200: #ecdfcd;
+    --color-sand-300: #dcc6a8;
+    --color-clay-500: #b5532b;
+    --color-clay-600: #9c4422;
+    --color-clay-700: #7f361b;
+    --color-coffee-700: #4a3a2c;
+    --color-coffee-800: #35291f;
+    --color-coffee-900: #241b14;
+    --color-gold-500: #c9952b;
+    --color-leaf-600: #3f6b45;
+}
+
+@layer base {
+    html { -webkit-tap-highlight-color: transparent; }
+    body { @apply bg-sand-50 text-coffee-900 antialiased dark:bg-coffee-900 dark:text-sand-100; }
+    h1, h2, h3 { @apply font-serif tracking-tight; }
+    :focus-visible { @apply outline-2 outline-offset-2 outline-clay-500; }
+    [x-cloak] { display: none !important; }
+}
+
+@utility container-km { @apply mx-auto w-full max-w-6xl px-4 sm:px-6; }
+@utility btn { @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition disabled:opacity-50; }
+@utility btn-primary { @apply btn bg-clay-500 text-white hover:bg-clay-600; }
+@utility btn-dark { @apply btn bg-coffee-900 text-sand-50 hover:bg-coffee-800 dark:bg-sand-100 dark:text-coffee-900; }
+@utility btn-ghost { @apply btn border border-sand-300 hover:bg-sand-100 dark:border-coffee-700 dark:hover:bg-coffee-800; }
+@utility card { @apply rounded-2xl border border-sand-200 bg-white/70 p-5 dark:border-coffee-700 dark:bg-coffee-800/60; }
+@utility input { @apply w-full rounded-xl border border-sand-300 bg-white px-3.5 py-2.5 text-base outline-none focus:border-clay-500 dark:border-coffee-700 dark:bg-coffee-800; }
+@utility label { @apply mb-1 block text-sm font-medium; }
+@utility muted { @apply text-coffee-700/80 dark:text-sand-200/80; }
+@utility badge { @apply inline-flex items-center rounded-full bg-sand-200 px-2.5 py-0.5 text-xs font-semibold text-coffee-800 dark:bg-coffee-700 dark:text-sand-100; }
+@utility badge-gold { @apply badge bg-gold-500/15 text-gold-500; }
+@utility prose-km { @apply space-y-4 leading-relaxed [&_a]:text-clay-600 [&_a]:underline [&_h2]:mt-8 [&_h2]:text-2xl [&_h3]:mt-6 [&_h3]:text-xl [&_li]:ms-5 [&_ol]:list-decimal [&_ul]:list-disc; }
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/tailwind.blade.php';

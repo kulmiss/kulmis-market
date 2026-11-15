@@ -1,0 +1,130 @@
+name: CI
+
+# Stacked PRs are opened as drafts and skipped; only the top (ready) PR
+# and pushes to main run CI.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: kulmis_test
+          MYSQL_ROOT_PASSWORD: root
+        ports: ["3306:3306"]
+        options: --health-cmd="mysqladmin ping -proot" --health-interval=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, bcmath, intl, gd, zip, mbstring
+          coverage: none
+      - uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: cp .env.example .env && php artisan key:generate
+      - name: Lint (Pint)
+        run: vendor/bin/pint --test
+      - name: Static analysis (Larastan, level 5)
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+      - name: Tests (MySQL — money paths must pass on the real engine)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: kulmis_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: php artisan test
+
+  secrets:
+    # Secret scan of the whole git history (every branch and commit).
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Gitleaks
+        run: |
+          curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz | tar xz gitleaks
+          ./gitleaks git --log-opts="--all" --redact --no-banner --exit-code 1 .
+      - name: Dependency audits
+        run: |
+          composer audit --locked --no-interaction || (echo "composer audit found advisories" && exit 1)
+          cd admin && npm audit --audit-level=moderate
+
+  admin:
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+      - run: npm ci --ignore-scripts
+      - name: Typecheck
+        run: npx tsc -b
+      - name: Lint
+        run: npx eslint .
+      - name: Build
+        run: npx vite build
+
+  lighthouse:
+    # Storefront must score ≥ 95 in all four categories and LCP ≤ 1.5 s.
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    needs: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_sqlite, bcmath, intl, gd, zip, mbstring
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist --no-progress --no-dev --optimize-autoloader
+      - name: Prepare app (SQLite + demo catalog, production mode)
+        run: |
+          cp .env.example .env
+          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=sqlite/; s/^DB_HOST=.*//; s/^APP_ENV=.*/APP_ENV=production/; s/^APP_DEBUG=.*/APP_DEBUG=false/; s#^APP_URL=.*#APP_URL=http://127.0.0.1:8000#; s/^MAIL_MAILER=.*/MAIL_MAILER=log/' .env
+          touch database/database.sqlite
+          php artisan key:generate
+          php artisan migrate --force
+          php artisan db:seed --force
+          php artisan db:seed --class=DemoSeeder --force
+          php artisan storage:link
+          php artisan config:cache && php artisan route:cache && php artisan view:cache
+      - name: Serve
+        run: |
+          (PHP_CLI_SERVER_WORKERS=4 php artisan serve --host=127.0.0.1 --port=8000 > /tmp/serve.log 2>&1 &)
+          sleep 3
+          curl -fsS http://127.0.0.1:8000/ > /dev/null || (cat /tmp/serve.log; tail -50 storage/logs/*.log; exit 1)
+      - name: Lighthouse CI
+        run: npx --yes @lhci/cli@0.14.x autorun
+      - name: Show failed Lighthouse audits
+        if: failure()
+        run: |
+          for f in .lighthouseci/lhr-*.json; do
+            jq -r '.finalDisplayedUrl as $u | .categories as $c | .audits | to_entries[]
+              | select(.value.score != null and .value.score < 0.9 and (.value.scoreDisplayMode == "binary" or .value.scoreDisplayMode == "numeric"))
+              | "\($u)  \(.key): \(.value.title) [\(.value.score)]"' "$f"
+          done | sort -u
