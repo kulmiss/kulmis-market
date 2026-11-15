@@ -51,6 +51,23 @@ jobs:
           DB_PASSWORD: root
         run: php artisan test
 
+  secrets:
+    # Secret scan of the whole git history (every branch and commit).
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Gitleaks
+        run: |
+          curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz | tar xz gitleaks
+          ./gitleaks git --log-opts="--all" --redact --no-banner --exit-code 1 .
+      - name: Dependency audits
+        run: |
+          composer audit --locked --no-interaction || (echo "composer audit found advisories" && exit 1)
+          cd admin && npm audit --audit-level=moderate
+
   admin:
     if: github.event_name == 'push' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest

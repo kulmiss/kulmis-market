@@ -8,6 +8,7 @@ use App\Notify\Message;
 use App\Support\Activity;
 use App\Support\Settings;
 use App\Telegram\TelegramClient;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -36,6 +37,21 @@ class SecurityAlerts
         // old email address when the email is being changed.
         SendCustomerMessage::dispatch(new Message('Security notice: '.Settings::string('site.name'), $text,
             $user->phone, $toEmail ?? $user->email, $user->telegram_user_id), null, true);
+    }
+
+    /**
+     * Something keeps sending bad webhook signatures (someone guessing, or a
+     * wrong secret after a deploy). Alert at most once an hour.
+     */
+    public function badSignature(string $source): void
+    {
+        $key = 'alert:bad-signature:'.$source;
+        Cache::add($key, 0, now()->addHour());
+        $n = (int) Cache::increment($key);
+        Activity::log('security.bad_webhook_signature', null, ['source' => $source, 'count_this_hour' => $n]);
+        if ($n === 5) {
+            $this->critical("5+ $source webhooks with a wrong signature in the last hour. Check the webhook secret.", ['source' => $source]);
+        }
     }
 
     /** Owner alert on Telegram (and log) for events that need a human now. */

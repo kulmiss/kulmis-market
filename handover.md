@@ -1,6 +1,6 @@
 # Handover — Kulmis Market
 
-_Last updated: PR 24._
+_Last updated: PR 25._
 
 Kulmis Market is an online shop for handcrafted Ethiopian products, plus a
 trading-signals service (private Telegram channel) and a paid monthly
@@ -43,6 +43,7 @@ English (ready for Amharic) and aimed at customers in Ethiopia.
 | 22 | `pr/22-account-security` | Draft. Account security: password rules + common list, 10-try pause, customer 2FA, 'Was this you?' notices, email change by link, admin idle timeout, sign out everywhere ([docs/account-security.md](docs/account-security.md)) |
 | 23 | `pr/23-money-safety` | Draft. Money safety: saved payout account + 48 h wait + verification, daily limits, idempotent cash-outs, Chapa double-click reuse; fake-account checks, sign-up limits |
 | 24 | `pr/24-access-control` | Draft. Access control: every route × every role test, IDOR tests, 'approve-payments' ability for transfers |
+| 25 | `pr/25-web-security` | Draft. Web security: headers also from nginx/Apache, CORS, security.txt, per-route rate limits, proof re-encoding, log scrubbing, gitleaks + audits in CI, owner alerts, log retention ([docs/web-security.md](docs/web-security.md)) |
 
 **Merge order:** 1 → 2 → … → 20. Each PR targets the previous branch. After
 merging one into `main`, change the next PR's base to `main` (GitHub offers
@@ -66,7 +67,7 @@ All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
 See [docs/local-setup.md](docs/local-setup.md).
 
 ## Test status
-- 278 backend tests pass on SQLite and MariaDB 10.11 (every money path in
+- 293 backend tests pass on SQLite and MariaDB 10.11 (every money path in
   the brief is covered).
 - The admin passes typecheck, lint (0 errors) and build. The storefront
   builds.

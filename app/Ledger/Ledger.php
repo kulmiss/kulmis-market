@@ -3,6 +3,7 @@
 namespace App\Ledger;
 
 use App\Models\User;
+use App\Security\SecurityAlerts;
 use App\Support\Activity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
@@ -95,6 +96,8 @@ class Ledger
                 if (str_starts_with($type, 'manual.')) {
                     Activity::log('ledger.manual_entry', $entry, ['type' => $type, 'lines' => array_map(
                         fn ($l) => [$this->resolve($l[0])->code, $l[1]], $lines)], $reason, $actorId);
+                    DB::afterCommit(fn () => app(SecurityAlerts::class)->critical(
+                        "Manual ledger entry ($type) by user #".($actorId ?? 0).': '.$reason, ['entry' => $entry->id]));
                 }
 
                 return $entry;

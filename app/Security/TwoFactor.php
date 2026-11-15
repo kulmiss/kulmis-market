@@ -61,6 +61,9 @@ class TwoFactor
         }
         $user->forceFill(['two_factor_secret' => null, 'two_factor_confirmed_at' => null, 'two_factor_recovery_codes' => null, 'two_factor_last_step' => null])->save();
         $this->alerts->notify($user, 'two_factor_off');
+        if ($user->isStaff()) {
+            $this->alerts->critical("Two-step sign-in was reset on admin account {$user->name}", ['user' => $user->id]);
+        }
     }
 
     /** A current TOTP code (never the same one twice) or an unused recovery code. */

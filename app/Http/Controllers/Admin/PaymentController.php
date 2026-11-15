@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Orders\OrderService;
 use App\Payments\PaymentService;
 use App\Payments\Receipt;
+use App\Support\Activity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -42,11 +43,20 @@ class PaymentController extends Controller
         return response()->json(['data' => $payment->load(['payable', 'refunds'])->makeVisible('meta')]);
     }
 
+    /** Sent as an inert file: no scripts, no sniffing, never cached by proxies. */
     public function proof(Payment $payment): StreamedResponse
     {
         abort_unless($payment->proof_path && Storage::disk('local')->exists($payment->proof_path), 404);
+        $pdf = str_ends_with($payment->proof_path, '.pdf');
+        $type = $pdf ? 'application/pdf' : (str_ends_with($payment->proof_path, '.jpg') ? 'image/jpeg' : 'application/octet-stream');
+        Activity::log('payment.proof_viewed', $payment);
 
-        return Storage::disk('local')->response($payment->proof_path);
+        return Storage::disk('local')->response($payment->proof_path, 'proof-'.$payment->id.($pdf ? '.pdf' : '.jpg'), [
+            'Content-Type' => $type,
+            'X-Content-Type-Options' => 'nosniff',
+            'Content-Security-Policy' => "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox",
+            'Cache-Control' => 'private, no-store',
+        ], 'inline');
     }
 
     public function approve(Request $request, Payment $payment): JsonResponse

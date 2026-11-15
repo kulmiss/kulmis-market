@@ -55,7 +55,7 @@ class PaymentService
         }
         $this->assertPayable($payable);
         $payment = $this->create($payable, $provider);
-        $path = $proof->store('payment-proofs/'.now()->format('Y/m'), 'local');
+        $path = app(ProofStorage::class)->store($proof);
         $payment->update(['status' => Payment::AWAITING_REVIEW, 'proof_path' => $path,
             'proof_reference' => $reference, 'payer_account' => $payerAccount]);
         Activity::log('payment.proof_submitted', $payment, ['provider' => $provider]);

@@ -7,6 +7,7 @@ use App\Models\FraudFlag;
 use App\Models\Order;
 use App\Models\PayoutRequest;
 use App\Models\User;
+use App\Security\SecurityAlerts;
 use App\Support\Activity;
 use App\Support\Phone;
 use App\Support\Settings;
@@ -30,6 +31,7 @@ class FraudGuard
         }
         $flag = FraudFlag::query()->create(['user_id' => $id, 'type' => $type, 'details' => $details, 'status' => 'open']);
         Activity::log('fraud.flagged', $flag, ['type' => $type]);
+        app(SecurityAlerts::class)->critical('Fraud check: '.str_replace('_', ' ', $type)." (member #$id) — earnings and cash-outs are on hold until you review it.", ['flag' => $flag->id]);
 
         return $flag;
     }

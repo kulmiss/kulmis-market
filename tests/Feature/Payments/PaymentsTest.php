@@ -186,7 +186,7 @@ class PaymentsTest extends TestCase
         $this->postJson("/api/v1/orders/{$order->number}/payment-proof", ['phone' => '0933445566', 'method' => 'bank_transfer',
             'proof' => UploadedFile::fake()->create('x.exe', 10)])->assertUnprocessable();
         $this->postJson("/api/v1/orders/{$order->number}/payment-proof", ['phone' => '0933445566', 'method' => 'bank_transfer',
-            'proof' => UploadedFile::fake()->create('slip.pdf', 100, 'application/pdf')])->assertCreated();
+            'proof' => UploadedFile::fake()->createWithContent('slip.pdf', "%PDF-1.4\n%%EOF")])->assertCreated();
 
         $this->actingAsAdmin();
         $payment = Payment::query()->firstOrFail();

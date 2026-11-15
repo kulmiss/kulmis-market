@@ -9,6 +9,7 @@ use App\Http\Middleware\EnsureTwoFactor;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\ShareErrorsIfSession;
 use App\Http\Middleware\StartSessionIfPresent;
+use App\Http\Middleware\ThrottlePerRoute;
 use App\Pricing\PricingException;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -48,6 +49,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'staff' => EnsureStaff::class,
             'admin.2fa' => EnsureTwoFactor::class,
             'admin.timeout' => AdminSessionTimeout::class,
+            'throttle' => ThrottlePerRoute::class,
         ]);
         $middleware->throttleApi();
         // Essential cookies only (cart token, referral code) — also readable by the API.

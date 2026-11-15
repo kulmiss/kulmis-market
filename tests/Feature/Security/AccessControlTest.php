@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Security;
 
+use App\Http\Middleware\ThrottlePerRoute;
 use App\Ledger\Account;
 use App\Ledger\Ledger;
 use App\Ledger\Wallet;
@@ -30,7 +31,7 @@ class AccessControlTest extends ReferralTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutMiddleware([ThrottleRequests::class, ValidateCsrfToken::class]);
+        $this->withoutMiddleware([ThrottleRequests::class, ThrottlePerRoute::class, ValidateCsrfToken::class]);
     }
 
     /** @return list<Route> */

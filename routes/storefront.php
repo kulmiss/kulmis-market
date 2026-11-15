@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web\StorefrontController as S;
 use App\Referral\Attribution;
+use App\Support\Settings;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,6 +25,14 @@ Route::get('/pay/{number}', [S::class, 'pay'])->name('pay');
 Route::get('/track', [S::class, 'track'])->name('track');
 Route::get('/sitemap.xml', [S::class, 'sitemap'])->name('sitemap');
 Route::get('/robots.txt', [S::class, 'robots'])->name('robots');
+// RFC 9116: how to report a security problem.
+Route::get('/.well-known/security.txt', fn () => response(implode("\n", [
+    'Contact: mailto:'.Settings::string('site.support_email'),
+    'Expires: '.now()->addYear()->startOfMonth()->toIso8601ZuluString(),
+    'Preferred-Languages: en, am',
+    'Canonical: '.url('/.well-known/security.txt'),
+    'Policy: '.url('/p/terms'),
+])."\n", 200, ['Content-Type' => 'text/plain; charset=utf-8', 'Cache-Control' => 'public, max-age=86400']))->name('security.txt');
 
 // Referral link: /r/ABDI25 → remembers the code for 30 days (essential cookie, code only).
 Route::get('/r/{code}', function (string $code, Attribution $attribution) {

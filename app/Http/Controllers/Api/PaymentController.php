@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Payments\ChapaGateway;
 use App\Payments\PaymentService;
 use App\Payments\Receipt;
+use App\Security\SecurityAlerts;
 use App\Support\Features;
 use App\Support\Phone;
 use App\Support\Settings;
@@ -80,6 +81,8 @@ class PaymentController extends Controller
     {
         $raw = (string) $request->getContent();
         if (! $chapa->validSignature($raw, $request->header('x-chapa-signature'), $request->header('chapa-signature'))) {
+            app(SecurityAlerts::class)->badSignature('Chapa');
+
             return response()->json(['message' => 'Invalid signature'], 401);
         }
         $ref = (string) ($request->input('tx_ref') ?? $request->input('trx_ref') ?? '');

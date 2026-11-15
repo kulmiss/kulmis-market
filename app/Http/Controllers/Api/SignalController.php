@@ -8,6 +8,7 @@ use App\Models\Signal;
 use App\Models\User;
 use App\Payments\PaymentService;
 use App\Referral\Attribution;
+use App\Security\SecurityAlerts;
 use App\Signals\SignalAccess;
 use App\Signals\TelegramBot;
 use App\Support\Features;
@@ -15,6 +16,7 @@ use App\Support\Phone;
 use App\Support\Settings;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
@@ -102,7 +104,14 @@ class SignalController extends Controller
     {
         $secret = (string) config('services.telegram.webhook_secret');
         if ($secret === '' || ! hash_equals($secret, (string) $request->header('X-Telegram-Bot-Api-Secret-Token'))) {
+            app(SecurityAlerts::class)->badSignature('Telegram');
+
             return response()->json(['message' => 'Forbidden'], 403);
+        }
+        // Telegram retries deliveries: each update_id is handled once.
+        $updateId = $request->input('update_id');
+        if (is_int($updateId) && ! Cache::add('telegram:update:'.$updateId, 1, now()->addDays(2))) {
+            return response()->json(['ok' => true, 'duplicate' => true]);
         }
         if (Features::enabled('telegram_bot')) {
             $bot->handle($request->all());

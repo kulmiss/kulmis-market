@@ -28,6 +28,7 @@ final class Csp
             "frame-ancestors 'none'",
             "base-uri 'self'",
             "object-src 'none'",
+            ...self::upgrade(),
         ]);
     }
 
@@ -43,6 +44,13 @@ final class Csp
             "base-uri 'self'",
             "form-action 'self'",
             "object-src 'none'",
+            ...self::upgrade(),
         ]);
+    }
+
+    /** @return list<string> */
+    private static function upgrade(): array
+    {
+        return str_starts_with((string) config('app.url'), 'https://') ? ['upgrade-insecure-requests'] : [];
     }
 }

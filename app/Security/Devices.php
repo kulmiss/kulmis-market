@@ -39,6 +39,9 @@ class Devices
         if (! $first) { // the very first sign-in (right after sign-up) is expected
             $this->alerts->notify($user, 'new_sign_in', ['device' => $label, 'channel' => $channel]);
         }
+        if ($user->isStaff() && ! $first) {
+            $this->alerts->critical("Admin sign-in from a new browser: {$user->name} ({$label})", ['user' => $user->id]);
+        }
     }
 
     /** New app sign-in (API token): always worth a notice. */

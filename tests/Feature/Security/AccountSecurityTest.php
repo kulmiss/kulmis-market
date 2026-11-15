@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Security;
 
+use App\Http\Middleware\ThrottlePerRoute;
 use App\Jobs\SendCustomerMessage;
 use App\Models\User;
 use App\Security\EmailChange;
@@ -26,7 +27,7 @@ class AccountSecurityTest extends TestCase
         parent::setUp();
         Bus::fake([SendCustomerMessage::class]);
         // The per-IP throttles are tested elsewhere; here we test the per-account pause.
-        $this->withoutMiddleware(ThrottleRequests::class);
+        $this->withoutMiddleware([ThrottleRequests::class, ThrottlePerRoute::class]);
     }
 
     private function customer(array $attrs = []): User

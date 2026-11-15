@@ -1,0 +1,15 @@
+# Secret scan of the full git history (CI job "secrets").
+title = "Kulmis Market"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Dummy values used by the test suite (not real secrets)"
+regexes = [
+  '''abc-12345-xyz-go''',
+  '''quiet river at dawn 7''',
+  '''JBSWY3DPEHPK3PXP''',
+  '''whsec(_test)?''',
+  '''CHASECK_TEST-x''',
+]
