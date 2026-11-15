@@ -18,4 +18,5 @@ Start here:
 - [docs/deploy.md](docs/deploy.md): shared hosting and VPS, connecting
   Chapa, Telegram and SMS
 - [QUESTIONS.md](QUESTIONS.md): every decision taken, and what's still open
+- [SECURITY_REPORT.md](SECURITY_REPORT.md): the security and quality review, scores and remaining risks
 - `docs/`: one page per area (ledger, payments, referrals, signals…)
