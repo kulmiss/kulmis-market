@@ -220,7 +220,8 @@ export function ProductEditor({ id }: { id: string }) {
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div className='grid gap-1.5'><Label>{label}</Label>{children}</div>
+  // A real <label> around the field, so it is named for screen readers and clicking the text focuses it.
+  return <label className='grid gap-1.5 text-sm leading-none font-medium'>{label}{children}</label>
 }
 
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {

@@ -86,8 +86,8 @@ export function OrderDetail({ id }: { id: string }) {
                   <SelectContent>{couriers.data?.filter((c) => c.is_active).map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div className='grid gap-1'><Label>Tracking number</Label><Input value={tracking} placeholder={o.tracking_number ?? ''} onChange={(e) => setTracking(e.target.value)} /></div>
-              <div className='grid gap-1'><Label>Note (sent with cancel)</Label><Input value={note} onChange={(e) => setNote(e.target.value)} /></div>
+              <div className='grid gap-1'><Label htmlFor='od-tracking'>Tracking number</Label><Input id='od-tracking' value={tracking} placeholder={o.tracking_number ?? ''} onChange={(e) => setTracking(e.target.value)} /></div>
+              <div className='grid gap-1'><Label htmlFor='od-note'>Note (sent with cancel)</Label><Input id='od-note' value={note} onChange={(e) => setNote(e.target.value)} /></div>
             </div>
             <div className='flex flex-wrap gap-2'>
               {(o.allowed_next ?? []).filter((s) => !['paid', 'refunded'].includes(s)).map((s) => (

@@ -111,7 +111,7 @@ export function MemberDetail({ id }: { id: string }) {
           <CardContent className='grid gap-3'>
             <Input placeholder='Reason' value={reason} onChange={(e) => setReason(e.target.value)} />
             <div className='flex flex-wrap items-center gap-2'>
-              <Input type='number' className='w-28' value={days} onChange={(e) => setDays(Number(e.target.value))} />
+              <Input type='number' className='w-28' aria-label='Days to add (negative to remove)' value={days} onChange={(e) => setDays(Number(e.target.value))} />
               <Button variant='outline' disabled={!reason} onClick={() => adjust.mutate({ path: `/members/${id}/membership`, body: { days, reason } })}>Extend membership by {days} days</Button>
               <Button variant='outline' disabled={!reason} onClick={() => adjust.mutate({ path: `/members/${id}/membership`, body: { days: -3650, reason } })}>End membership now</Button>
               {u.status === 'active'

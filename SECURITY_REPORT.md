@@ -51,9 +51,9 @@ Result: **358 tests** pass on SQLite and MariaDB; Larastan level 6 with 0 errors
 | Build & deploy | Committed CSS older than its source; deploys served cached pages pointing at deleted CSS/JS | ✅ (+ CI check) | 7.5 → 9.5 |
 | CSP | Storefront allowed inline `<style>` blocks | ✅ (attributes only) | 9 → 9.5 |
 | Concurrency (stock, coupons, wallet) | none (verified with real parallel requests) | — | 9.5 → 9.5 |
-| Accessibility | Button contrast 4.37:1 (stale CSS), prohibited ARIA in shop pagination | ✅ | 9 → 9.5 |
+| Accessibility | Button contrast 4.37:1 (stale CSS), prohibited ARIA in shop pagination, ~50 admin fields without an accessible name | ✅ | 9 → 9.5 |
 | Code quality | 26 type issues at Larastan level 6 | ✅ | 9 → 9.5 |
-| Performance | N+1 on member pages, uncached dashboard, heavy photos | ✅ | 9 → 9.5 |
+| Performance | N+1 on member pages, uncached dashboard, heavy photos; the new dashboard cache broke lists on the second load (caught by the final check) | ✅ | 9 → 9.5 |
 | Dependencies | 8 Dependabot updates (4 broke CI) | ✅ #46 | 9 → 9.5 |
 
 ### Every bug found in round 3
@@ -79,6 +79,8 @@ Result: **358 tests** pass on SQLite and MariaDB; Larastan level 6 with 0 errors
 | 17 | Security | Admin sign-in accepted any `redirect=` value (defence in depth: only /admin paths now) | Low | pr/42 |
 | 18 | Deploy | After an update, cached pages kept pointing to the old CSS/JS file names (deleted by the new build) for up to 15 minutes: unstyled pages. `php artisan optimize` now empties the page cache; deploy steps use it | Medium | pr/43 |
 | 19 | Accessibility | Shop pagination used prohibited ARIA (Lighthouse a11y 96) | Low | pr/43 |
+| 20 | Admin | (found in the final check) The new dashboard cache returned lists as broken objects on the second load ("top_products.map is not a function"); stored as plain arrays now, test uses the real cache store | High (caught before merge) | pr/43 |
+| 21 | Accessibility | ~50 admin fields had no accessible name (placeholder-only filters, labels not linked to their inputs) | Low | pr/44 |
 
 ### Speed (before → after, Docker + nginx, demo data)
 

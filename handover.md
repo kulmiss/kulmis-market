@@ -102,7 +102,7 @@ See [docs/local-setup.md](docs/local-setup.md).
   slow 4G), gitleaks.
 - Round 3 review (15 Nov): every screen and flow re-tested in a browser as
   every member type and staff role, attack tests and real parallel requests;
-  19 bugs found and fixed. See SECURITY_REPORT.md.
+  21 bugs found and fixed. See SECURITY_REPORT.md.
 - Layout checked in headless Chrome (15 Nov): every admin page and every
   storefront page at 1440 px and 390 px, plus the sign-in/2FA screens at
   610 px. No page scrolls sideways; wide admin tables scroll inside their box.

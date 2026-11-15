@@ -70,11 +70,11 @@ function PageDialog({ page }: { page?: PageRow }) {
     <FormDialog title={page ? `Edit ${page.title}` : 'New page'} trigger={page ? <Button size='icon' variant='ghost'><Pencil /></Button> : <Button><Plus /> New page</Button>}
       onSave={() => save.mutateAsync({ path: page ? `/pages/${page.id}` : '/pages', body: d })}>
       <div className='grid grid-cols-2 gap-3'>
-        <div className='grid gap-1.5'><Label>Title</Label><Input value={d.title} onChange={(e) => setD({ ...d, title: e.target.value })} /></div>
-        <div className='grid gap-1.5'><Label>Address (/p/…)</Label><Input value={d.slug} onChange={(e) => setD({ ...d, slug: e.target.value })} /></div>
+        <label className='grid gap-1.5 text-sm leading-none font-medium'>Title<Input value={d.title} onChange={(e) => setD({ ...d, title: e.target.value })} /></label>
+        <label className='grid gap-1.5 text-sm leading-none font-medium'>Address (/p/…)<Input value={d.slug} onChange={(e) => setD({ ...d, slug: e.target.value })} /></label>
       </div>
-      <div className='grid gap-1.5'><Label>Text (Markdown: ## heading, - list, **bold**)</Label><Textarea rows={14} className='font-mono text-xs' value={d.body} onChange={(e) => setD({ ...d, body: e.target.value })} /></div>
-      <div className='grid gap-1.5'><Label>Search description</Label><Input value={d.seo_description} onChange={(e) => setD({ ...d, seo_description: e.target.value })} /></div>
+      <label className='grid gap-1.5 text-sm leading-none font-medium'>Text (Markdown: ## heading, - list, **bold**)<Textarea rows={14} className='font-mono text-xs' value={d.body} onChange={(e) => setD({ ...d, body: e.target.value })} /></label>
+      <label className='grid gap-1.5 text-sm leading-none font-medium'>Search description<Input value={d.seo_description} onChange={(e) => setD({ ...d, seo_description: e.target.value })} /></label>
       <div className='flex gap-6 text-sm'>
         <label className='flex items-center gap-2'><Switch checked={d.is_published} onCheckedChange={(v) => setD({ ...d, is_published: v })} /> Published</label>
         <label className='flex items-center gap-2'><Switch checked={d.in_footer} onCheckedChange={(v) => setD({ ...d, in_footer: v })} /> Link in footer</label>
@@ -96,13 +96,13 @@ function BannerDialog({ banner }: { banner?: BannerRow }) {
           <SelectContent>{['top_bar', 'home', 'shop', 'membership', 'signals'].map((p) => <SelectItem key={p} value={p}>{p.replace('_', ' ')}</SelectItem>)}</SelectContent>
         </Select>
       </div>
-      <div className='grid gap-1.5'><Label>Title</Label><Input value={d.title} onChange={(e) => setD({ ...d, title: e.target.value })} /></div>
-      <div className='grid gap-1.5'><Label>Text</Label><Input value={d.text} onChange={(e) => setD({ ...d, text: e.target.value })} /></div>
+      <label className='grid gap-1.5 text-sm leading-none font-medium'>Title<Input value={d.title} onChange={(e) => setD({ ...d, title: e.target.value })} /></label>
+      <label className='grid gap-1.5 text-sm leading-none font-medium'>Text<Input value={d.text} onChange={(e) => setD({ ...d, text: e.target.value })} /></label>
       <div className='grid grid-cols-2 gap-3'>
-        <div className='grid gap-1.5'><Label>Link (/shop or https://…)</Label><Input value={d.link_url} onChange={(e) => setD({ ...d, link_url: e.target.value })} /></div>
-        <div className='grid gap-1.5'><Label>Button text</Label><Input value={d.link_text} onChange={(e) => setD({ ...d, link_text: e.target.value })} /></div>
-        <div className='grid gap-1.5'><Label>From</Label><Input type='date' value={d.starts_at} onChange={(e) => setD({ ...d, starts_at: e.target.value })} /></div>
-        <div className='grid gap-1.5'><Label>Until</Label><Input type='date' value={d.ends_at} onChange={(e) => setD({ ...d, ends_at: e.target.value })} /></div>
+        <label className='grid gap-1.5 text-sm leading-none font-medium'>Link (/shop or https://…)<Input value={d.link_url} onChange={(e) => setD({ ...d, link_url: e.target.value })} /></label>
+        <label className='grid gap-1.5 text-sm leading-none font-medium'>Button text<Input value={d.link_text} onChange={(e) => setD({ ...d, link_text: e.target.value })} /></label>
+        <label className='grid gap-1.5 text-sm leading-none font-medium'>From<Input type='date' value={d.starts_at} onChange={(e) => setD({ ...d, starts_at: e.target.value })} /></label>
+        <label className='grid gap-1.5 text-sm leading-none font-medium'>Until<Input type='date' value={d.ends_at} onChange={(e) => setD({ ...d, ends_at: e.target.value })} /></label>
       </div>
       <label className='flex items-center gap-2 text-sm'><Switch checked={d.is_active} onCheckedChange={(v) => setD({ ...d, is_active: v })} /> Active</label>
     </FormDialog>
