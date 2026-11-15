@@ -30,7 +30,7 @@
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
     <link rel="manifest" href="{{ asset('site.webmanifest') }}">
-    <script>{!! \App\Support\Csp::THEME_SCRIPT !!}</script>
+    @feature('appearance.theme_switch')<script>{!! \App\Support\Csp::THEME_SCRIPT !!}</script>@endfeature
     <style>:root { --m-accent: {{ $accent }}; }</style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -47,7 +47,7 @@
         </nav>
         <div class="mt-auto grid gap-1 border-t pt-3" style="border-color: var(--m-line)">
             <a href="{{ url('/shop') }}" class="m-nav-link">{!! I::svg('store', 19) !!}Shop</a>
-            <button type="button" data-theme-toggle class="m-nav-link text-start">{!! I::svg('moon', 19) !!}Light / dark</button>
+            @feature('appearance.theme_switch')<button type="button" data-theme-toggle class="m-nav-link text-start">{!! I::svg('moon', 19) !!}Light / dark</button>@endfeature
             <form method="post" action="{{ url('/logout') }}">@csrf<button class="m-nav-link w-full text-start">{!! I::svg('log-out', 19) !!}Sign out</button></form>
         </div>
     </aside>
@@ -57,7 +57,8 @@
         <header class="sticky top-0 z-30 flex h-14 items-center gap-2 border-b px-4 backdrop-blur lg:hidden" style="border-color: var(--m-line); background: color-mix(in srgb, var(--m-surface) 88%, transparent)">
             <a href="{{ url('/') }}" aria-label="{{ $site }} home">@include('partials.logo-mark', ['size' => 28])</a>
             <span class="font-semibold">{{ $title ?? 'My account' }}</span>
-            <button type="button" data-theme-toggle class="ms-auto rounded-full p-2" aria-label="Switch light/dark">{!! I::svg('moon', 20) !!}</button>
+            <span class="ms-auto"></span>
+            @feature('appearance.theme_switch')<button type="button" data-theme-toggle class="rounded-full p-2" aria-label="Switch light/dark">{!! I::svg('moon', 20) !!}</button>@endfeature
             <a href="{{ url('/account/security') }}" class="grid size-8 place-items-center rounded-full text-sm font-bold text-white" style="background: var(--m-accent)" aria-label="My profile and security">{{ mb_substr($u->first_name, 0, 1) }}</a>
         </header>
 

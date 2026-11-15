@@ -66,6 +66,8 @@ change any of them.
 | 57 | Logo colour | Green `#1f8a4c` (the member-area accent default) with the gold knob and sand basket, everywhere the logo appears. The storefront is white and green too (#23). If you change the member accent in Settings, the logo stays this green (it is also in the favicon and app icons). | Decided (you) |
 | 58 | Religious images | None. Demo photos and products avoid religious symbols and festivals (the cross pendant and Meskel print were replaced by a quartz bracelet and a macramé wall hanging; a photo with evil-eye beads was cropped). Keep this in mind for your own product photos. | Decided (you) |
 | 59 | PHP version | **PHP 8.3** on the live server, in Docker and in CI, because almost every host offers it. phpunit 13 and the PHP 8.5 Docker image need PHP 8.4+, so Dependabot skips them for now (`.github/dependabot.yml`). TypeScript 7 is skipped too until typescript-eslint supports it. To move to PHP 8.4 later: change `composer.json`, the Dockerfile and CI together, then remove those ignore rules. | Decided (you) |
+| 60 | Light/dark switch off | When the Super Admin turns it off, the shop and member area are always light (device dark mode is ignored too) and the button is hidden. The admin panel keeps its own light/dark setting for staff. | Decided (you + recommended) |
+| 61 | Header account button | Far right. Guests: person icon → Sign in. Signed in: initial + first name (name hidden on small phones, initial only) → My account. | Decided (you) |
 
 ## Still open: needs you
 | # | What | Why |

@@ -98,6 +98,16 @@ White and green, set once in `resources/css/app.css` (`@theme`):
 - `gold-500`: small accents only.
 
 In dark mode, green text switches to a lighter green so it stays readable.
+
+**Light / dark switch:** Super Admin → Features → *Appearance → Light / dark
+switch for customers*. On (default): the moon button shows in the shop and
+the member area, and the device setting is followed until someone picks one.
+Off: no button and no dark mode at all, the shop and member area are always
+light. (The admin keeps its own theme setting.)
+
+**Header:** menu (phones), light/dark, cart, then the account at the far
+right: a person icon (Sign in) for guests, or the member's initial and first
+name when signed in.
 Emails, PDF receipts, the social preview (`resources/brand/og-default.html`)
 and the browser theme colour use the same palette.
 

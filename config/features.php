@@ -42,5 +42,7 @@ return [
 
     'notifications.sms' => ['SMS notifications', 'Notifications', true, null],
     'notifications.email' => ['Email notifications', 'Notifications', true, null],
+    'appearance.theme_switch' => ['Light / dark switch for customers (off: always light)', 'Appearance', true, null],
+
     'notifications.telegram' => ['Telegram notifications', 'Notifications', true, 'telegram_bot'],
 ];
