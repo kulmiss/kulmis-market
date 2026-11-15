@@ -1,5 +1,6 @@
 import {
   Activity,
+  Share2,
   Trophy,
   LifeBuoy,
   Package,
@@ -92,6 +93,7 @@ export const sidebarData: SidebarData = {
       title: 'System',
       items: [
         { title: 'Pages & banners', url: '/content', icon: FileText, ability: 'manage-content' },
+        { title: 'Share kit', url: '/share-kit', icon: Share2, ability: 'manage-content', feature: 'referral.share_kit' },
         { title: 'Help centre', url: '/help', icon: LifeBuoy, ability: 'answer-help', feature: 'site.help_centre' },
         { title: 'Settings', url: '/config', icon: SlidersHorizontal, ability: 'manage-settings' },
         { title: 'Demo data', url: '/demo', icon: FlaskConical, ability: 'manage-settings' },

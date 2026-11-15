@@ -107,6 +107,25 @@
             @endauth
         @endfeature
 
+        @if (auth()->check() && \App\Support\Features::enabled('referral') && \App\Support\Features::enabled('referral.product_links') && auth()->user()->referral_code)
+            @php
+                $me = auth()->user();
+                $shareLink = \App\Referral\ShareLinks::for($me, 'shop/'.$product->slug);
+                $shareText = $product->name.' — '.\App\Support\Money::format($sale && $sale->product_variant_id === null ? $sale->price : $product->price).' at '.\App\Support\Settings::string('site.name').'. Code '.$me->referral_code.':';
+                $img = $product->images->first();
+            @endphp
+            <details class="card mt-4" data-product-share>
+                <summary class="flex min-h-12 cursor-pointer items-center justify-between font-semibold">Share and earn <span class="muted text-sm font-normal">your link for this product</span></summary>
+                <div class="mt-3 km-member" style="--m-accent: var(--color-brand-600)">
+                    @include('member.partials.share-card', ['text' => $shareText.' '.$shareLink, 'buttons' => \App\Referral\ShareLinks::buttons($shareLink, $shareText),
+                        'image' => $img ? $img->url(in_array(1200, $img->widths, true) ? 1200 : max($img->widths), in_array('jpg', $img->formats, true) ? 'jpg' : $img->formats[0]) : asset('og-default.png'),
+                        'title' => $product->name, 'line' => \App\Support\Money::format($sale && $sale->product_variant_id === null ? $sale->price : $product->price),
+                        'code' => $me->referral_code, 'link' => $shareLink,
+                        'qr' => \App\Support\Features::enabled('referral.qr_codes') ? url('/account/referral-qr.svg').'?to=shop/'.$product->slug : ''])
+                </div>
+            </details>
+        @endif
+
         @feature('shop.stock_alerts')
             @php $soldOutVariants = $variants->filter(fn ($v) => ! $product->isMadeToOrder() && (int) $v->stock < 1); @endphp
             @if (! $product->isMadeToOrder() && (($variants->isEmpty() && (int) $stock < 1) || $soldOutVariants->isNotEmpty()))

@@ -39,6 +39,7 @@ import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedReferralsRouteImport } from './routes/_authenticated/referrals'
 import { Route as AuthenticatedReviewsRouteImport } from './routes/_authenticated/reviews'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
+import { Route as AuthenticatedShareKitRouteImport } from './routes/_authenticated/share-kit'
 import { Route as AuthenticatedShippingRouteImport } from './routes/_authenticated/shipping'
 import { Route as AuthenticatedStatusRouteImport } from './routes/_authenticated/status'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
@@ -205,6 +206,11 @@ const AuthenticatedSettingsRouteRoute =
     path: '/settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedShareKitRoute = AuthenticatedShareKitRouteImport.update({
+  id: '/share-kit',
+  path: '/share-kit',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedShippingRoute = AuthenticatedShippingRouteImport.update({
   id: '/shipping',
   path: '/shipping',
@@ -315,6 +321,7 @@ export interface FileRoutesByFullPath {
   '/payments': typeof AuthenticatedPaymentsRoute
   '/referrals': typeof AuthenticatedReferralsRoute
   '/reviews': typeof AuthenticatedReviewsRoute
+  '/share-kit': typeof AuthenticatedShareKitRoute
   '/shipping': typeof AuthenticatedShippingRoute
   '/status': typeof AuthenticatedStatusRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
@@ -358,6 +365,7 @@ export interface FileRoutesByTo {
   '/payments': typeof AuthenticatedPaymentsRoute
   '/referrals': typeof AuthenticatedReferralsRoute
   '/reviews': typeof AuthenticatedReviewsRoute
+  '/share-kit': typeof AuthenticatedShareKitRoute
   '/shipping': typeof AuthenticatedShippingRoute
   '/status': typeof AuthenticatedStatusRoute
   '/': typeof AuthenticatedIndexRoute
@@ -405,6 +413,7 @@ export interface FileRoutesById {
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/referrals': typeof AuthenticatedReferralsRoute
   '/_authenticated/reviews': typeof AuthenticatedReviewsRoute
+  '/_authenticated/share-kit': typeof AuthenticatedShareKitRoute
   '/_authenticated/shipping': typeof AuthenticatedShippingRoute
   '/_authenticated/status': typeof AuthenticatedStatusRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
@@ -453,6 +462,7 @@ export interface FileRouteTypes {
     | '/payments'
     | '/referrals'
     | '/reviews'
+    | '/share-kit'
     | '/shipping'
     | '/status'
     | '/errors/$error'
@@ -496,6 +506,7 @@ export interface FileRouteTypes {
     | '/payments'
     | '/referrals'
     | '/reviews'
+    | '/share-kit'
     | '/shipping'
     | '/status'
     | '/'
@@ -542,6 +553,7 @@ export interface FileRouteTypes {
     | '/_authenticated/payments'
     | '/_authenticated/referrals'
     | '/_authenticated/reviews'
+    | '/_authenticated/share-kit'
     | '/_authenticated/shipping'
     | '/_authenticated/status'
     | '/_authenticated/'
@@ -782,6 +794,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/share-kit': {
+      id: '/_authenticated/share-kit'
+      path: '/share-kit'
+      fullPath: '/share-kit'
+      preLoaderRoute: typeof AuthenticatedShareKitRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/shipping': {
       id: '/_authenticated/shipping'
       path: '/shipping'
@@ -921,6 +940,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedReferralsRoute: typeof AuthenticatedReferralsRoute
   AuthenticatedReviewsRoute: typeof AuthenticatedReviewsRoute
+  AuthenticatedShareKitRoute: typeof AuthenticatedShareKitRoute
   AuthenticatedShippingRoute: typeof AuthenticatedShippingRoute
   AuthenticatedStatusRoute: typeof AuthenticatedStatusRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
@@ -958,6 +978,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedReferralsRoute: AuthenticatedReferralsRoute,
   AuthenticatedReviewsRoute: AuthenticatedReviewsRoute,
+  AuthenticatedShareKitRoute: AuthenticatedShareKitRoute,
   AuthenticatedShippingRoute: AuthenticatedShippingRoute,
   AuthenticatedStatusRoute: AuthenticatedStatusRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,

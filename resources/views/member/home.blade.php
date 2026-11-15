@@ -203,6 +203,27 @@
 @endif
 
 {{-- Referral + team --}}
+@php $tips = $ref ? \App\Referral\Tips::for($user, $ref) : []; @endphp
+@if (count($tips))
+<section class="m-card mt-3" aria-labelledby="tips-h">
+    <h2 id="tips-h" class="font-semibold">{!! I::svg('sparkles', 18) !!} Earn more: tips for you</h2>
+    <ul class="mt-3 grid gap-3">
+        @foreach ($tips as $t)
+            <li class="rounded-xl p-3 text-sm m-soft">
+                <p>{{ $t['text'] }}</p>
+                @if (isset($t['share']))
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <a class="m-btn-ghost" href="{{ $t['share']['whatsapp'] }}" target="_blank" rel="noopener">{!! I::svg('message-circle', 16) !!}WhatsApp</a>
+                        <a class="m-btn-ghost" href="{{ $t['share']['telegram'] }}" target="_blank" rel="noopener">{!! I::svg('send', 16) !!}Telegram</a>
+                    </div>
+                @elseif (isset($t['link']))
+                    <a class="mt-1 inline-flex min-h-12 items-center font-semibold m-accent-text" href="{{ url($t['link']) }}">{{ $t['link_text'] }} →</a>
+                @endif
+            </li>
+        @endforeach
+    </ul>
+</section>
+@endif
 <section class="mt-3 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
     <div class="m-card lg:col-span-2" id="referral">
         <h2 class="font-semibold">Your referral link</h2>

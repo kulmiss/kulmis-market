@@ -107,6 +107,10 @@ change any of them.
 | 98 | Contests | Rules: "most new paying members" or "most shop sales through your link". Fixed prizes for places 1–10, shown as "up to". Paid automatically 14 days after the end, counting only payments not refunded; anyone with an open fraud check is skipped. If the prizes are more than the contest budget (2% of the membership money paid during the contest, editable), all prizes are cut by the same share. Once a contest starts only its name/text can change. Leaderboard: first name + badge only. Ties: whoever joined first. | Decided (recommended) |
 | 99 | Team challenges | "Bring N new paying members this month → X". Counted per calendar month, paid after the month + 14 days, only for still-paid money, within the challenge's monthly cap and the challenge budget (2% of that month's membership money). Over the cap, everyone who made it gets the same smaller amount. | Decided (recommended) |
 | 100 | Prize winners must be members | A winner must have been a member at the end of the contest/month (not necessarily today) and have an active account. | Decided (recommended) |
+| 101 | Product share links | Members get /r/CODE/shop/<product> (and /r/CODE/membership, /r/CODE/signals). The link remembers the code like any referral link, so a purchase is a normal referral sale. Links can only lead to our own pages. | Decided (recommended) |
+| 102 | Picture cards | Made on the member's phone (no upload, no server load): product or kit picture, name, price, code and QR. On phones it opens the share sheet (WhatsApp, Telegram…); on computers it downloads. | Decided (recommended) |
+| 103 | Share kit | Three starter posts (shop, membership, signals) you can edit, with {name}, {code} and {link}; {link} is required. Pictures optional (re-encoded). | Decided (recommended) |
+| 104 | Earnings tips | Up to 3 tips picked from the member's situation (no team yet, people who signed up but didn't pay, a challenge almost done, a running contest, product links) with one-tap WhatsApp/Telegram messages. No phone numbers of team members are shown or used. | Decided (recommended) |
 
 ## Still open: needs you
 | # | What | Why |

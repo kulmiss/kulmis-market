@@ -7,9 +7,11 @@ use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\PushController;
 use App\Http\Controllers\Web\ReviewController;
 use App\Http\Controllers\Web\SecurityController;
+use App\Http\Controllers\Web\ShareController;
 use App\Http\Controllers\Web\ShopAccountController;
 use App\Referral\Engagement;
 use App\Referral\ReferralCodes;
+use App\Referral\ShareLinks;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -46,6 +48,7 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
     Route::post('payout-account', [AccountController::class, 'payoutAccount'])->middleware(['feature:wallet', 'feature:wallet.cashout', 'throttle:5,10'])->name('payout-account');
     Route::post('referral-code', [AccountController::class, 'referralCode'])->middleware('feature:referral')->name('referral-code');
     Route::get('contests', [ContestController::class, 'index'])->name('contests');
+    Route::get('share', [ShareController::class, 'index'])->name('share');
     Route::get('badges', [AccountController::class, 'badges'])->middleware('feature:badges')->name('badges');
     Route::post('badges/seen', [AccountController::class, 'badgesSeen'])->middleware(['feature:badges', 'throttle:30,1'])->name('badges.seen');
 
@@ -88,6 +91,8 @@ Route::post('/checkout', [AccountController::class, 'checkout'])->middleware(['a
 
 Route::get('/account/referral-qr.svg', function (Request $request, Engagement $engagement) {
     app(ReferralCodes::class)->assign($request->user());
+    $to = (string) $request->query('to', '');
+    abort_if(ShareLinks::target($to) === null, 404);
 
-    return response($engagement->qrSvg(url('/r/'.$request->user()->referral_code)), 200, ['Content-Type' => 'image/svg+xml', 'Cache-Control' => 'private, max-age=86400']);
+    return response($engagement->qrSvg(ShareLinks::for($request->user(), $to)), 200, ['Content-Type' => 'image/svg+xml', 'Cache-Control' => 'private, max-age=86400']);
 })->middleware(['auth', 'feature:referral', 'feature:referral.qr_codes'])->name('account.qr');
