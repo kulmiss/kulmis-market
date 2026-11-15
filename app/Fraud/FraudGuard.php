@@ -36,11 +36,18 @@ class FraudGuard
         return $flag;
     }
 
+    /**
+     * Review-only flags: shown in the fraud queue but they don't hold money.
+     * Network matches are weak evidence in Ethiopia (many mobile users share
+     * one carrier IP), so they never block earnings on their own.
+     */
+    public const SOFT = ['same_network_signups'];
+
     public function isOnHold(User|int $user): bool
     {
         $id = $user instanceof User ? $user->id : $user;
 
-        return FraudFlag::query()->where('user_id', $id)->where('status', 'open')->exists();
+        return FraudFlag::query()->where('user_id', $id)->where('status', 'open')->whereNotIn('type', self::SOFT)->exists();
     }
 
     /** Same device as the referrer (hashed cart token, no tracking cookie). */
@@ -83,7 +90,8 @@ class FraudGuard
      * linked (they may be real people), but the referrer's earnings and
      * cash-outs wait for review:
      * - two or more of their sign-ups came from the same browser (cart token hash);
-     * - three or more sign-ups for them from the same network within 24 hours.
+     * - many sign-ups for them from the same public network within 24 hours
+     *   (review only — see SOFT).
      *   The network is only kept as a keyed hash in the cache for 24 hours —
      *   never written to the database.
      */
@@ -96,12 +104,13 @@ class FraudGuard
                 $this->flag($referrer, 'shared_device_signups', ['users' => $sameDevice, 'latest' => $newUser->id]);
             }
         }
-        if ($ip !== '') {
+        // Local/private networks (your own PC, office Wi-Fi, a proxy) say nothing about people.
+        if ($ip !== '' && filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false) {
             $net = str_contains($ip, ':') ? implode(':', array_slice(explode(':', $ip), 0, 4)) : implode('.', array_slice(explode('.', $ip), 0, 3));
             $key = 'fraud:signup-net:'.$referrer->id.':'.hash_hmac('sha256', $net, (string) config('app.key'));
             Cache::add($key, 0, now()->addDay());
             $count = (int) Cache::increment($key);
-            if ($count >= max(2, Settings::int('referral.same_network_signups'))) {
+            if ($count >= max(3, Settings::int('referral.same_network_signups'))) {
                 $this->flag($referrer, 'same_network_signups', ['count_24h' => $count, 'latest' => $newUser->id]);
             }
         }

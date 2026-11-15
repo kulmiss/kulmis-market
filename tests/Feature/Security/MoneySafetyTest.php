@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Security;
 
+use App\Fraud\FraudGuard;
 use App\Jobs\SendCustomerMessage;
 use App\Ledger\Account;
 use App\Ledger\Ledger;
@@ -188,15 +189,18 @@ class MoneySafetyTest extends ReferralTestCase
         }
         $this->assertTrue(FraudFlag::query()->where('user_id', $ref->id)->where('type', 'shared_device_signups')->exists());
 
+        $this->flushHeaders(); // new people, new browsers
         $ref2 = $this->member(null, 'Other');
-        foreach (['0911000011', '0911000012', '0911000013'] as $i => $phone) {
+        foreach (array_map(fn ($n) => '09110000'.(11 + $n), range(0, 9)) as $i => $phone) {
             $this->withServerVariables(['REMOTE_ADDR' => '196.188.10.'.(20 + $i)])->postJson('/api/v1/auth/register', ['first_name' => 'Net', 'last_name' => (string) $i,
                 'phone' => $phone, 'password' => 'quiet river at dawn 7', 'referral_code' => $ref2->referral_code])->assertCreated();
             $this->app['auth']->forgetGuards();
         }
         $flag = FraudFlag::query()->where('user_id', $ref2->id)->where('type', 'same_network_signups')->firstOrFail();
-        $this->assertSame(3, $flag->details['count_24h']);
-        $this->assertSame(3, $ref2->referrals()->count(), 'still linked — they may be real people — but held for review');
+        $this->assertSame(10, $flag->details['count_24h']);
+        $this->assertSame(10, $ref2->referrals()->count(), 'still linked — they may be real people');
+        // Review only: many Ethiopian mobile users share one carrier IP, so this never holds money.
+        $this->assertFalse(app(FraudGuard::class)->isOnHold($ref2));
         $this->assertDatabaseMissing('users', ['signup_device_hash' => '196.188.10.20']); // no IP stored anywhere
     }
 

@@ -39,7 +39,7 @@ return [
     'referral.cookie_days' => ['int', 30, 'Referral link memory (days)', 'Referral'],
     'referral.pending_days' => ['int', 14, 'Earnings pending period (days)', 'Referral'],
     'referral.daily_signup_limit' => ['int', 20, 'Max referred sign-ups per member per day', 'Referral'],
-    'referral.same_network_signups' => ['int', 3, 'Sign-ups for one referrer from the same network in 24 h that trigger a review', 'Referral'],
+    'referral.same_network_signups' => ['int', 10, 'Sign-ups for one referrer from the same public network in 24 h that are shown for review (no hold)', 'Referral'],
 
     // Wallet
     'wallet.cashout_min' => ['money', 100_000, 'Minimum cash out', 'Wallet'],

@@ -48,6 +48,8 @@ change any of them.
 | 39 | Local Docker port | 8090 by default (8080 is used by your other project). | Decided (you) |
 | 40 | Admin IP lock | Optional `ADMIN_ALLOWED_IPS`. Off by default because your IP may change; 2FA is always required. | Decided (review) |
 | 41 | `km:doctor` | Fails (exit 1) when anything is unsafe, so deploy scripts can stop. Missing setup (SMS, mail…) is a warning only. | Decided (review) |
+| 42 | Sign-up in the referrer's own browser | Linked (team is right) + flag: the referrer's earnings wait for review. Before, the link was silently refused, which looked like "referral not working". | Decided (bug #7) |
+| 43 | Many sign-ups from one network | Review-only (soft) flag at 10 in 24 h; no hold, because mobile carriers share IPs. Local/private IPs are ignored. | Decided (bug #7) |
 
 ## Still open: needs you
 | # | What | Why |

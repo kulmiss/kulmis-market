@@ -26,8 +26,19 @@ Commissions round down to the santim.
   subscription at the first purchase.
 - **Code change:** a member can change their code **once** (4–12 letters or
   numbers, unique, no offensive or reserved words, l33t spellings included).
-- **Self-referral:** the same account, phone or email is skipped. Device and
-  payment-account checks come in PR 12.
+- **Self-referral:** the same account, phone or email is skipped. A sign-up
+  in the referrer's own browser (shared family phone) **is linked** but the
+  referrer's earnings wait for review; see
+  [wallet-cashout-fraud.md](wallet-cashout-fraud.md#referral-abuse).
+- **Team view:** a new sign-up shows in the referrer's level 1 straight away
+  as "not active" and turns active once they pay. The admin tree
+  (`/api/v1/admin/referrals/tree/{id}`) and the member team
+  (`/api/v1/referral`) read the same `referrer_id` chain, and a test checks
+  they match.
+- **Tested end to end** (`tests/Feature/Referral/ReferralEndToEndTest.php`):
+  A → B (`/r/` link) → C (`?ref=`) → D (typed code), every level's
+  commission pending 14 days then available, and a guest buying through A's
+  link.
 
 ## Money flow
 1. `PaymentSucceeded` creates one commission row per level

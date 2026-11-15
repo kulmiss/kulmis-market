@@ -2,6 +2,7 @@
 
 namespace App\Referral;
 
+use App\Fraud\FraudGuard;
 use App\Ledger\Wallet;
 use App\Membership\Members;
 use App\Models\Commission;
@@ -33,6 +34,8 @@ class TeamView
             'link' => url('/r/'.$member->referral_code),
             'can_change_code' => $member->referral_code_changed_at === null,
             'earning' => Members::isActive($member),
+            // Earnings wait while our team checks something (shown to the member, without details).
+            'under_review' => app(FraudGuard::class)->isOnHold($member),
             'team' => [
                 'level1' => $l1->map(fn (User $u) => [
                     'name' => $u->publicName(),

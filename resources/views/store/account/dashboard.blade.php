@@ -51,7 +51,8 @@
         <section class="card lg:col-span-2" id="referral">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div><h2 class="text-2xl">Your referral link</h2>
-                    @if (!$referral['earning'])<p class="mt-1 text-sm text-clay-600">Become an active member to earn from your team.</p>@endif</div>
+                    @if (!$referral['earning'])<p class="mt-1 text-sm text-clay-600">Become an active member to earn from your team.</p>@endif
+                    @if ($referral['under_review'])<p class="mt-1 text-sm text-clay-600">Some of your earnings are being checked by our team. They stay safe and will be released after the check.</p>@endif</div>
                 @if ($referral['badge']['badge'])<span class="badge-gold text-sm capitalize">{{ $referral['badge']['badge'] }} badge</span>@endif
             </div>
             <div class="mt-4 grid gap-4 sm:grid-cols-[1fr_auto]">

@@ -32,7 +32,8 @@
 | Check | When | Effect |
 |-------|------|--------|
 | Same phone / email | sign-up, every commission | not linked / level skipped |
-| Same device (hashed cart token, no tracking cookie) | sign-up, guest orders | not linked / skipped + flag |
+| Same device at sign-up (hashed cart token, no tracking cookie) | sign-up | **linked** + flag (earnings wait for review) |
+| Same device on a guest order | guest orders | commission skipped + flag |
 | Paid with the recipient's own phone or payout account | every commission | skipped + flag |
 | More than `referral.daily_signup_limit` sign-ups in a day | sign-up | flag (still linked) |
 | Payout account used by another member | cash-out | both flagged |
@@ -65,11 +66,21 @@ Clearing releases the holds. You can also flag someone by hand.
   the same checkout, so a customer can't pay twice by accident.
 
 ## Referral abuse
-- Self-referral: same phone, email, browser (cart token hash) or payment
-  account. The link is refused, or the commission is skipped and flagged.
-- Fake accounts: 2+ of a referrer's sign-ups from the same browser, or 3+
-  from the same network within 24 h (`referral.same_network_signups`), flag
-  the referrer. Their earnings and cash-outs wait for review. The network is
-  kept only as a keyed hash in the cache for 24 h, never in the database.
-- Sign-up rate limit: 5 per hour and 20 per day per network.
+- Self-referral: same phone, email or payment account. The link is refused,
+  or the commission is skipped and flagged.
+- Same browser at sign-up (a family phone, an internet café): the new member
+  **is linked** to the referrer, so the team is right, and the referrer gets
+  a `same_browser_signup` flag. Their earnings wait for Super Admin's review;
+  the member sees "Some of your earnings are being checked by our team".
+  (Before PR 29 the link was silently refused. That was the "referral not
+  working" bug.)
+- Fake accounts: 2+ of a referrer's sign-ups from the same browser flag the
+  referrer (earnings wait for review).
+- Same network: `referral.same_network_signups` (10) sign-ups for one
+  referrer from one public network in 24 h show up in the review queue as a
+  **soft** flag: nothing is held, because many Ethiopian mobile users share
+  one carrier IP. Private/local IPs are ignored. The network is kept only as
+  a keyed hash in the cache for 24 h, never in the database.
+- Sign-up rate limit: 5 per hour and 20 per day per network (60/min when
+  `APP_ENV=local`, so you can test on one PC).
 - Shared payout account between members: both are flagged.

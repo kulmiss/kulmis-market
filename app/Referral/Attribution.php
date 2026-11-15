@@ -70,12 +70,14 @@ class Attribution
         $code = $this->codeFrom($request);
         [$referrer, $refused] = $this->validReferrer($code, $user, $user->phone, $user->email);
         $guard = app(FraudGuard::class);
-        if ($referrer && $guard->sameDevice($referrer, $device)) {
-            $guard->flag($referrer, 'self_referral_device', ['new_user' => $user->id]);
-            $referrer = null;
-            $refused = 'self_referral';
-        }
         if ($referrer) {
+            // Same browser as the referrer (shared family phone, internet café, or
+            // the same person twice): still link them so the team is right, but
+            // the referrer's earnings wait for Super Admin's review.
+            if ($guard->sameDevice($referrer, $device)) {
+                $guard->flag($referrer, 'same_browser_signup', ['new_user' => $user->id]);
+                Activity::log('referral.same_browser_linked', $user, ['referrer' => $referrer->id], null, $user->id);
+            }
             $user->forceFill(['referrer_id' => $referrer->id, 'referred_at' => now()])->save();
             $guard->checkDailyLimit($referrer);
             $guard->checkFakeSignups($referrer, $user, $device, (string) $request->ip());

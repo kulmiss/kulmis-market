@@ -1,6 +1,6 @@
 # Handover — Kulmis Market
 
-_Last updated: PR 28._
+_Last updated: PR 29._
 
 Kulmis Market is an online shop for handcrafted Ethiopian products, plus a
 trading-signals service (private Telegram channel) and a paid monthly
@@ -46,12 +46,17 @@ English (ready for Amharic) and aimed at customers in Ethiopia.
 | 25 | `pr/25-web-security` | Draft. Web security: headers also from nginx/Apache, CORS, security.txt, per-route rate limits, proof re-encoding, log scrubbing, gitleaks + audits in CI, owner alerts, log retention ([docs/web-security.md](docs/web-security.md)) |
 | 26 | `pr/26-ops` | Draft. Ops: Docker runs PHP as your user, port 8090, pinned images, Dependabot, km:doctor security checks (fails when unsafe), km:backup-verify restore test, optional admin IP lock, production checklist ([docs/deploy.md](docs/deploy.md)) |
 | 27 | `pr/27-screens` | Draft. Screen review: branded error pages, dark-mode badge, admin logo, phone overflow, labels, heading order, gzip; Lighthouse before/after |
-| 28 | `pr/28-security-report` | **Top PR, targets main, ready for review (CI runs here).** SECURITY_REPORT.md: audit, scores before → after, remaining risks |
+| 28 | `pr/28-security-report` | **Merged into main.** SECURITY_REPORT.md: audit, scores before → after, remaining risks |
 
-**Merge:** the top PR (#28) targets `main` and contains every commit of
-#1–#27, so **one merge brings in everything**. Merge #28, then close
-#1–#27 (GitHub shows them as already merged/contained). If you prefer to
-merge step by step instead: 1 → 2 → … → 28, each into the previous branch.
+PRs 1–28 are merged into `main`.
+
+### Round 2 (stacked on `main`)
+| PR | Branch | Status |
+|----|--------|--------|
+| 29 | `pr/29-referral-fix` | Draft. Bug #7 "referral not working": same-browser sign-ups are linked + held for review (were silently refused), soft network flag, local sign-up limit; end-to-end tests A→B→C→D + guest via link + admin tree == member team |
+
+**Merge:** the top PR of round 2 targets `main` and contains every commit
+below it, so one merge brings in everything.
 
 ## Key decisions
 All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
@@ -70,7 +75,7 @@ All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
 See [docs/local-setup.md](docs/local-setup.md).
 
 ## Test status
-- 303 backend tests pass on SQLite and MariaDB 10.11 (every money path in
+- 307 backend tests pass on SQLite and MariaDB 10.11 (every money path in
   the brief is covered).
 - The admin passes typecheck, lint (0 errors) and build. The storefront
   builds.
