@@ -1,0 +1,1 @@
+import{A as e,D as t}from"./index-BTSSRXZ_.js";var n=e()((e,n)=>({rows:[],loaded:!1,load:async()=>{try{let{data:n}=await t.get(`/features`);e({rows:n.data,loaded:!0})}catch{e({loaded:!0})}},setRows:t=>e({rows:t}),on:e=>{if(!e)return!0;let t=n().rows.find(t=>t.key===e);return!t||t.effective}}));export{n as t};

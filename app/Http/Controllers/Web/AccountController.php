@@ -7,11 +7,13 @@ use App\Cart\CartManager;
 use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Controller;
 use App\Ledger\Wallet;
+use App\Member\MemberDashboard;
 use App\Membership\MembershipService;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PayoutRequest;
 use App\Models\Product;
+use App\Models\Signal;
 use App\Models\User;
 use App\Orders\Checkout;
 use App\Orders\CheckoutExtras;
@@ -38,28 +40,73 @@ use InvalidArgumentException;
 /** The member area: dashboard, referral, wallet, cash-out, orders. */
 class AccountController extends Controller
 {
-    public function dashboard(Request $request, TeamView $team): View
+    public function dashboard(Request $request, MemberDashboard $dashboard): View
     {
         /** @var User $user */
         $user = $request->user();
         $member = $user->isActiveMember();
-        $signals = $member && Features::enabled('signals') ? app(SignalAccess::class)->grantMember($user) : null;
+        $chart = $request->query('chart') === 'monthly' ? 'monthly' : 'daily';
 
-        return view('store.account.dashboard', [
+        return view('member.home', [
             'user' => $user,
-            'membership' => $user->membership()->first(),
             'isMember' => $member,
-            'referral' => Features::enabled('referral') ? $team->for($user) : null,
-            'history' => Features::enabled('referral') ? $team->history($user, 20) : collect(),
+            'dash' => $dashboard->for($user, $chart),
             'wallet' => Wallet::for($user)->summary(),
-            'cashouts' => PayoutRequest::query()->where('user_id', $user->id)->latest('id')->limit(10)->get(),
-            'payoutAccount' => app(PayoutAccounts::class)->current($user),
-            'orders' => Order::query()->where('user_id', $user->id)->latest('id')->limit(10)->get(),
-            'signalsLink' => $signals?->deepLink(),
-            'badges' => Features::enabled('badges') ? app(BadgeEngine::class)->summary($user) : null,
+            'signalsLink' => $this->signalsLink($user, $member),
             'earlyAccess' => $member && Features::enabled('shop.early_access')
                 ? Product::query()->visibleTo(true)->where('release_at', '>', now())->with(['images', 'variants'])->limit(6)->get() : collect(),
         ]);
+    }
+
+    public function team(Request $request, TeamView $team): View
+    {
+        abort_if(Features::disabled('referral'), 404);
+
+        return view('member.team', ['ref' => $team->for($request->user())]);
+    }
+
+    public function earnings(Request $request, MemberDashboard $dashboard, TeamView $team): View
+    {
+        abort_if(Features::disabled('referral'), 404);
+        $user = $request->user();
+
+        return view('member.earnings', ['dash' => ['money' => $dashboard->money($user)], 'monthly' => $dashboard->monthly($user), 'history' => $team->history($user, 100)]);
+    }
+
+    public function wallet(Request $request): View
+    {
+        abort_if(Features::disabled('wallet'), 404);
+        /** @var User $user */
+        $user = $request->user();
+
+        return view('member.wallet', [
+            'user' => $user,
+            'wallet' => Wallet::for($user)->summary(),
+            'cashouts' => PayoutRequest::query()->where('user_id', $user->id)->latest('id')->limit(20)->get(),
+            'payoutAccount' => app(PayoutAccounts::class)->current($user),
+        ]);
+    }
+
+    public function orders(Request $request): View
+    {
+        return view('member.orders', ['orders' => Order::query()->where('user_id', $request->user()->id)->latest('id')->limit(50)->get()]);
+    }
+
+    public function signals(Request $request): View
+    {
+        abort_if(Features::disabled('signals'), 404);
+        $user = $request->user();
+
+        return view('member.signals', [
+            'isMember' => $user->isActiveMember(),
+            'signalsLink' => $this->signalsLink($user, $user->isActiveMember()),
+            'signals' => Signal::query()->latest('posted_at')->limit(15)->get(),
+        ]);
+    }
+
+    private function signalsLink(User $user, bool $member): ?string
+    {
+        return $member && Features::enabled('signals') ? app(SignalAccess::class)->grantMember($user)->deepLink() : null;
     }
 
     public function badges(Request $request, BadgeEngine $engine): View

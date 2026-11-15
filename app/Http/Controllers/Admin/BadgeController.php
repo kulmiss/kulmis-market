@@ -21,7 +21,7 @@ class BadgeController extends Controller
         return response()->json([
             'data' => Badge::query()->withCount('holders')->orderBy('rule')->orderBy('threshold')->get(),
             'rules' => collect(BadgeRules::RULES)->map(fn ($r, $k) => ['key' => $k, 'label' => $r['label'], 'unit' => $r['unit']])->values(),
-            'icons' => array_keys(BadgeIcons::ICONS),
+            'icons' => BadgeIcons::BADGE_ICONS,
         ]);
     }
 
@@ -65,7 +65,7 @@ class BadgeController extends Controller
         return $request->validate([
             'name' => [$req, 'string', 'max:60'],
             'description' => ['sometimes', 'nullable', 'string', 'max:200'],
-            'icon' => [$req, Rule::in(array_keys(BadgeIcons::ICONS))],
+            'icon' => [$req, Rule::in(BadgeIcons::BADGE_ICONS)],
             'color' => [$req, 'regex:/^#[0-9a-fA-F]{6}$/'],
             'rule' => [$req, Rule::in(array_keys(BadgeRules::RULES))],
             'threshold' => [$req, 'integer', 'min:1', 'max:1000000000000'],

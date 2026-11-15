@@ -60,6 +60,8 @@ change any of them.
 | 51 | Demo data and money totals | The admin dashboard shows demo OR real numbers (a switch), never both added together. The ledger page shows real balances, with demo balances apart. | Decided (round 2) |
 | 52 | Demo photos | Real free photos from Pexels (no attribution needed; credited in CREDITS.md). They are craft photos that fit each product, not photos of your own products. | Decided (round 2) |
 | 53 | Demo contacts | Demo phones use +251 900 1… and emails end in .test; messages to them are never sent, so a staging server with a real SMS provider can't text strangers. | Decided (round 2) |
+| 54 | Member area look | Its own green & white layout (sidebar / bottom bar), accent editable in Settings → Appearance. The Super Admin dashboard is unchanged. | Decided (you) |
+| 55 | "Newest in your team" privacy | Level 1 by first name + initial; levels 2 and 3 show as "New member" (as before: counts only for levels 2–3). | Decided (round 2) |
 
 ## Still open: needs you
 | # | What | Why |

@@ -1,12 +1,9 @@
 @php $d = fn ($c) => $c ? \Illuminate\Support\Carbon::parse($c)->timezone(config('app.timezone'))->format('d M Y, H:i') : '—'; @endphp
-@extends('layouts.store', ['title' => 'Security'])
+@extends('layouts.member', ['title' => 'Security'])
 @section('content')
-<div class="container-km max-w-3xl py-10">
-    <p class="text-sm"><a class="underline" href="{{ url('/account') }}">← My account</a></p>
-    <h1 class="mt-2 text-4xl">Security</h1>
+<div class="max-w-3xl">
+    <h1 class="font-serif text-3xl font-semibold">Security</h1>
     <p class="muted mt-1">Keep your account, your wallet and your earnings safe.</p>
-    @if (session('status'))<div class="mt-4 rounded-xl bg-emerald-500/10 p-3 text-sm text-emerald-800 dark:text-emerald-300" role="status">{{ session('status') }}</div>@endif
-    @if ($errors->any())<div class="mt-4 rounded-xl bg-clay-500/10 p-3 text-sm text-clay-700 dark:text-clay-300" role="alert">{{ $errors->first() }}</div>@endif
 
     <section class="card mt-6" id="password">
         <h2 class="text-2xl">Password</h2>

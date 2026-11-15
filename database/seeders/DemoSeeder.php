@@ -262,6 +262,11 @@ class DemoSeeder extends Seeder
             $this->moneyEvents($day);
             $this->at($start->copy()->addDays($day), 23);
             app(CommissionEngine::class)->releaseDue();
+            if ($day % 15 === 14) {                                  // badges unlock over time, like in real life
+                foreach ($this->members as [$u]) {
+                    app(BadgeEngine::class)->evaluate($u);
+                }
+            }
             $memberships->sweep(now());
             $memberships->grantLoyaltyRewards(now());
             $this->cancelStaleOrders();
@@ -360,7 +365,7 @@ class DemoSeeder extends Seeder
             $add(mt_rand(5, 170), "shopper-$k", $n($i++), null, false);
         }
         $add($this->days, 'new', ['Dawit', 'Haile'], null);        // brand-new member today: empty states
-        $add($this->days - 9, null, ['Lensa', 'Abdi'], 'member');   // joined recently, not paid yet
+        $add($this->days - 9, null, ['Lensa', 'Abdi'], 'member', false); // joined recently, not paid yet: "not active"
 
         return $plan;
     }

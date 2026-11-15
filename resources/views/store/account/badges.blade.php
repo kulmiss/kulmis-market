@@ -8,13 +8,12 @@
     ];
     $rows = collect($badges);
 @endphp
-@extends('layouts.store', ['title' => 'My badges'])
+@extends('layouts.member', ['title' => 'My badges'])
 @section('content')
-<div class="container-km py-10">
-    <a class="text-sm underline" href="{{ url('/account') }}">← My account</a>
+<div>
     <div class="mt-2 flex flex-wrap items-end justify-between gap-4">
         <div>
-            <h1 class="text-4xl">My badges</h1>
+            <h1 class="font-serif text-3xl font-semibold">My badges</h1>
             <p class="muted mt-1">{{ $summary['unlocked'] }} of {{ $summary['total'] }} unlocked</p>
         </div>
         @if ($summary['highest'])<div class="text-sm">Highest: @include('store.partials.badge-chip', ['b' => $summary['highest'], 'size' => 16])</div>@endif

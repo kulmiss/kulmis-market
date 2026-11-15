@@ -5,7 +5,8 @@
 | key => [type, default, label, group]
 | Types: money (integer santim), bps (basis points, 1500 = 15%),
 |        ratio (×100, 250 = 2.5×), int, bool, string, text,
-|        choice (5th item = allowed values), currency_code (3 capital letters).
+|        choice (5th item = allowed values), currency_code (3 capital letters),
+|        color (#RRGGBB).
 */
 
 use App\Support\Currency;
@@ -18,6 +19,9 @@ return [
     'currency.decimals' => ['choice', 'auto', 'Decimals (auto = only when not whole)', 'General', Currency::DECIMALS],
     'currency.thousands' => ['choice', ',', 'Thousands separator', 'General', Currency::THOUSANDS],
     'currency.decimal_point' => ['choice', '.', 'Decimal separator', 'General', Currency::DECIMAL_POINTS],
+
+    // Appearance: the member area (the admin keeps its own look).
+    'appearance.member_accent' => ['color', '#1f8a4c', 'Member area accent colour (green by default; light and dark mode follow it)', 'Appearance'],
 
     // Demo data (Super Admin → Demo data). Off hides every demo record everywhere.
     'demo.show' => ['bool', true, 'Show demo data (storefront, member areas, admin lists and dashboards)', 'Demo data'],

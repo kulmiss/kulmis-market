@@ -28,6 +28,11 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware('auth')->prefix('account')->name('account.')->group(function () {
     Route::get('/', [AccountController::class, 'dashboard'])->name('dashboard');
+    Route::get('team', [AccountController::class, 'team'])->name('team');
+    Route::get('earnings', [AccountController::class, 'earnings'])->name('earnings');
+    Route::get('wallet', [AccountController::class, 'wallet'])->name('wallet');
+    Route::get('orders', [AccountController::class, 'orders'])->name('orders');
+    Route::get('signals', [AccountController::class, 'signals'])->name('signals');
     Route::post('membership/pay', [AccountController::class, 'payMembership'])->middleware('feature:membership')->name('membership.pay');
     Route::post('membership/proof', [AccountController::class, 'membershipProof'])->middleware(['feature:membership', 'feature:payments.manual'])->name('membership.proof');
     Route::post('cash-out', [AccountController::class, 'cashOut'])->middleware(['feature:wallet', 'feature:wallet.cashout', 'throttle:5,1'])->name('cashout');

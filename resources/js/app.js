@@ -46,6 +46,13 @@ const say = (el, text, ok = false) => {
 
 const formData = (form) => Object.fromEntries(new FormData(form).entries());
 
+/* ---------- share (phones with a share sheet) ---------- */
+$$('[data-share]').forEach((b) => {
+    if (!navigator.share) return;
+    b.classList.remove('hidden');
+    b.addEventListener('click', () => navigator.share({ url: b.dataset.shareUrl, text: b.dataset.shareText }).catch(() => {}));
+});
+
 /* ---------- theme ---------- */
 $$('[data-theme-toggle]').forEach((b) =>
     b.addEventListener('click', () => {

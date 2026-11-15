@@ -16,6 +16,26 @@ wallet, cash-out, orders, early access) · `/sitemap.xml` · `/robots.txt`
 Every product shows the **member price** next to the guest price. The cart
 shows **Join & save** with the exact amount a guest would save.
 
+## Member area (`/account`)
+A separate, app-like area with its own layout (`layouts/member.blade.php`):
+a sidebar on desktop and a bottom bar on phones, green & white with a
+matching dark mode. The accent colour is **Settings → Appearance → Member
+area accent colour** (default `#1f8a4c`); every shade (soft backgrounds,
+dark mode) is mixed from it. The admin keeps its own look.
+
+| Page | What's on it |
+|------|--------------|
+| Home `/account` | membership status, quick actions (cash out, shop, renew), total earned / pending / available / paid out, this month vs last month, earnings chart (daily 30 days / monthly 12 months, SVG, no JS), earnings per level and by type, next badge, referral link + code + copy + QR + Telegram/WhatsApp/share, team per level with active / not active, newest in your team, membership + loyalty streak, signals + Telegram button, recent activity, early access |
+| Team `/account/team` | level 1 names (first name + initial) with active / not active; levels 2–3 as counts |
+| Earnings `/account/earnings` | totals, 12-month chart, full history |
+| Wallet `/account/wallet` | balances, cash-out account, cash-out form, cash-out history |
+| Badges, Orders, Signals, Security | as named |
+
+New members see friendly empty states ("share your link"). Everything is
+server-rendered (fast on slow phones); the only JS is copy/share and the
+light/dark switch. Data: `App\Member\MemberDashboard` (same privacy rules
+as `TeamView`).
+
 ## Privacy: no session for guests
 Public pages use the `storefront` middleware group. It starts a session
 **only if a session cookie already exists** (i.e. after signing in). Guests

@@ -86,6 +86,7 @@ class Settings
                 && (int) $value >= 0 && (int) $value <= 10_000 ? (int) $value : $fail('Must be between 0 and 10000 (0–100%).'),
             'bool' => is_bool($value) ? $value : (in_array($value, [0, 1, '0', '1'], true) ? (bool) $value : $fail('Must be true or false.')),
             'string' => is_string($value) && mb_strlen($value) <= 255 ? trim($value) : $fail('Must be text up to 255 characters.'),
+            'color' => is_string($value) && preg_match('/^#[0-9a-fA-F]{6}$/', $value) ? strtolower($value) : $fail('Must be a colour like #1f8a4c.'),
             'currency_code' => is_string($value) && preg_match('/^[A-Za-z]{3}$/', trim($value)) ? strtoupper(trim($value)) : $fail('Must be a 3-letter currency code, like ETB or USD.'),
             'choice' => is_string($value) && in_array($value, self::definition($key)[4] ?? [], true) ? $value : $fail('Pick one of: '.implode(', ', self::definition($key)[4] ?? []).'.'),
             'text' => is_string($value) && mb_strlen($value) <= 20_000 ? $value : $fail('Must be text up to 20000 characters.'),

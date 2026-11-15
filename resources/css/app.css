@@ -62,3 +62,28 @@
 .km-pop { animation: km-pop .6s cubic-bezier(.2, 1.6, .4, 1) both; }
 @keyframes km-pop { from { transform: scale(.3); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .km-confetti { display: none; } .km-pop { animation: none; } }
+
+/* ---------- Member area: green & white (accent from Settings → Appearance), with its own dark mode ---------- */
+.km-member { --m-bg: #f4f8f5; --m-surface: #ffffff; --m-line: rgb(0 0 0 / 0.06); --m-ink: #13241a; --m-muted: #5b6b61;
+    --m-soft: color-mix(in srgb, var(--m-accent) 10%, white); --m-strong: color-mix(in srgb, var(--m-accent) 82%, black); }
+.dark .km-member, .km-member.dark { --m-bg: #0b130e; --m-surface: #111c15; --m-line: rgb(255 255 255 / 0.07); --m-ink: #e7f1ea; --m-muted: #9db1a4;
+    --m-soft: color-mix(in srgb, var(--m-accent) 20%, #0b130e); --m-strong: color-mix(in srgb, var(--m-accent) 65%, white); }
+.km-member { background: var(--m-bg); color: var(--m-ink); }
+@utility m-card { @apply rounded-2xl border p-5 shadow-[0_1px_2px_rgb(0_0_0/0.04)]; background: var(--m-surface); border-color: var(--m-line); }
+@utility m-muted { color: var(--m-muted); }
+@utility m-accent-text { color: var(--m-strong); }
+@utility m-soft { background: var(--m-soft); }
+@utility m-btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-50; background: var(--m-accent); }
+@utility m-btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition; border-color: var(--m-line); background: var(--m-surface); }
+@utility m-input { @apply w-full rounded-xl border px-3.5 py-2.5 text-base outline-none; background: var(--m-surface); border-color: var(--m-line); color: var(--m-ink); }
+@utility m-nav-link { @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition; }
+.m-nav-link:hover { background: var(--m-soft); }
+.m-nav-link[aria-current="page"] { background: var(--m-soft); color: var(--m-strong); font-weight: 650; }
+.m-bottom a[aria-current="page"] { color: var(--m-strong); }
+.m-bar { background: var(--m-accent); }
+.m-bar-muted { background: color-mix(in srgb, var(--m-accent) 25%, transparent); }
+.km-member .input { background: var(--m-surface); border-color: var(--m-line); color: var(--m-ink); }
+.km-member .card { background: var(--m-surface); border-color: var(--m-line); }
+.km-member .muted { color: var(--m-muted); }
+.km-member .btn-primary { background: var(--m-accent); }
+.km-member .btn-ghost { border-color: var(--m-line); }

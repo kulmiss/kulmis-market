@@ -139,6 +139,14 @@ function Field({ row, value, onChange, preview }: { row: SettingRow; value: unkn
           </SelectContent>
         </Select>
       )
+    case 'color':
+      return (
+        <div className='flex items-center gap-2'>
+          <Input id={row.key} type='color' className='h-9 w-14 p-1' value={String(value)} onChange={(e) => onChange(e.target.value)} />
+          <Input aria-label={`${row.label} (hex)`} className='w-32 font-mono' value={String(value)} onChange={(e) => onChange(e.target.value)} />
+          <span className='rounded-md px-3 py-1.5 text-sm font-medium text-white' style={{ background: String(value) }}>Preview</span>
+        </div>
+      )
     case 'currency_code':
       return <Input id={row.key} maxLength={3} className='uppercase' value={String(value ?? '')} onChange={(e) => onChange(e.target.value.toUpperCase())} />
     case 'money':
