@@ -69,6 +69,8 @@ return [
     'accounts.two_factor' => ['Two-step sign-in for customers', 'Accounts', true, null, 'Customers can turn on a code from an app. Off: no new set-ups; people who already use it keep it.'],
     'account.notifications' => ['Notification centre (bell)', 'Accounts', true, null, 'A bell in the account area with news: earnings, team joins, badges, bonuses, orders, membership and cash-outs.'],
     'account.goals' => ['Monthly goals', 'Accounts', true, 'referral', 'Members can set "Earn X this month" and see a progress bar on their home page.'],
+    'account.push' => ['Phone notifications', 'Accounts', true, 'account.notifications', 'Members can say yes to a phone notification for earnings, orders, bonuses and cash-outs. No amounts on the lock screen.'],
+    'account.app' => ['Member app (home-screen icon)', 'Accounts', true, null, 'Members can add the account area to their phone home screen like an app.'],
 
     // Notification channels
     'notifications.sms' => ['SMS', 'Notification channels', true, null, 'Send customer messages by SMS.'],

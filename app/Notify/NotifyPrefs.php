@@ -16,7 +16,7 @@ final class NotifyPrefs
         'bell.order' => true, 'bell.renewal' => true, 'bell.cashout' => true, 'bell.goal' => true,
         'bell.signal' => false,
         'cart_reminder' => true,
-        'push.earning' => false, 'push.order' => false,
+        'push.earning' => false, 'push.order' => false, 'push.bonus' => false, 'push.cashout' => false, 'push.signal' => false,
     ];
 
     public static function on(User $user, string $key): bool

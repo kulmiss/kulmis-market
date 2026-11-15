@@ -33,7 +33,10 @@
     <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="32x32">
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
-    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
+    <link rel="manifest" href="{{ asset(\App\Support\Features::enabled('account.app') ? 'account.webmanifest' : 'site.webmanifest') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    @if (\App\Support\Features::enabled('account.push') && \App\Notify\WebPush::configured())<meta name="km-push-key" content="{{ \App\Notify\WebPush::publicKey() }}">@endif
+    <meta name="apple-mobile-web-app-capable" content="yes">
     @feature('appearance.theme_switch')<script>{!! \App\Support\Csp::THEME_SCRIPT !!}</script>@endfeature
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>

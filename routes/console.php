@@ -1,6 +1,7 @@
 <?php
 
 use App\Notify\Inbox;
+use App\Notify\WebPush;
 use App\Shop\CartReminders;
 use App\Shop\FlashSales;
 use App\Storefront\PageCache;
@@ -55,3 +56,10 @@ if (config('shop.backup_key')) {
 Schedule::call(fn () => app(FlashSales::class)->tick())->everyMinute()->name('flash-sales:tick')->withoutOverlapping();
 Schedule::call(fn () => app(CartReminders::class)->run())->hourly()->name('carts:remind')->withoutOverlapping();
 Schedule::call(fn () => Inbox::prune())->dailyAt('03:37')->name('notifications:prune');
+
+Artisan::command('km:push-keys', function () {
+    $k = WebPush::newKeys();
+    $this->info('Add these two lines to .env (keep the second one secret), then restart:');
+    $this->line('WEBPUSH_PUBLIC_KEY='.$k['public']);
+    $this->line('WEBPUSH_PRIVATE_KEY='.$k['private']);
+})->purpose('Make the keys for phone notifications (Web Push)');

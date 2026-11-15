@@ -3,6 +3,7 @@
 use App\Http\Controllers\Web\AccountController;
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\NotificationController;
+use App\Http\Controllers\Web\PushController;
 use App\Http\Controllers\Web\ReviewController;
 use App\Http\Controllers\Web\SecurityController;
 use App\Http\Controllers\Web\ShopAccountController;
@@ -51,6 +52,11 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
     // Notification centre (bell), what to hear about, monthly goal
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications');
     Route::post('notifications/settings', [NotificationController::class, 'settings'])->middleware('throttle:20,1')->name('notifications.settings');
+    Route::middleware('feature:account.push')->group(function () {
+        Route::post('push', [PushController::class, 'store'])->middleware('throttle:10,1')->name('push.store');
+        Route::delete('push', [PushController::class, 'destroy'])->middleware('throttle:10,1')->name('push.destroy');
+        Route::get('notifications/latest', [PushController::class, 'latest'])->middleware('throttle:60,1')->name('notifications.latest');
+    });
     Route::post('signals/alerts', [NotificationController::class, 'signalAlerts'])->middleware('throttle:20,1')->name('signals.alerts');
     Route::post('goal', [NotificationController::class, 'goal'])->middleware('throttle:20,1')->name('goal');
 

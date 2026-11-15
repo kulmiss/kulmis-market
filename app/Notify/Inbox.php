@@ -2,6 +2,7 @@
 
 namespace App\Notify;
 
+use App\Jobs\SendWebPush;
 use App\Models\User;
 use App\Models\UserNotification;
 use App\Support\Features;
@@ -20,6 +21,9 @@ final class Inbox
         'cashout' => 'My cash-outs', 'goal' => 'My monthly goal', 'signal' => 'New trading signals',
     ];
 
+    /** Kinds of news that can also go to the phone. */
+    public const PUSH = ['earning', 'order', 'bonus', 'cashout', 'signal'];
+
     /** Older type names that share a setting. */
     private const PREF = ['badge_unlocked' => 'badge'];
 
@@ -29,11 +33,25 @@ final class Inbox
             return;
         }
         // "Ignore" = the same event (same key) is never shown twice, even on a retry.
-        UserNotification::query()->insertOrIgnore([
+        $added = UserNotification::query()->insertOrIgnore([
             'user_id' => $user->id, 'type' => $type, 'title' => mb_substr($title, 0, 120),
             'body' => mb_substr((string) $body, 0, 500), 'url' => $url,
             'dedupe_key' => $key, 'created_at' => now(),
         ]);
+        // Phone notification (if the person turned it on for this kind of news).
+        if ($added > 0 && in_array($type, self::PUSH, true) && NotifyPrefs::on($user, "push.$type")
+            && Features::enabled('account.push') && WebPush::configured()) {
+            SendWebPush::dispatch($user->id)->afterCommit();
+        }
+    }
+
+    /** Safe words for the phone's lock screen: never an amount or a name. */
+    public static function lockScreenTitle(string $type): string
+    {
+        return match ($type) {
+            'earning' => 'New team earnings', 'order' => 'Order update', 'bonus' => 'Badge bonus', 'cashout' => 'Cash-out update',
+            'team' => 'Your team grew', 'goal' => 'Goal reached', 'signal' => 'New trading signal', default => 'You have news',
+        };
     }
 
     public static function unread(User $user): int

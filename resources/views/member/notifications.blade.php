@@ -34,6 +34,31 @@
     <div class="mt-4">{{ $items->links('store.partials.pagination') }}</div>
 @endif
 
+@if (\App\Support\Features::enabled('account.push') && \App\Notify\WebPush::configured())
+<section class="m-card mt-6" aria-labelledby="push-h" data-push hidden>
+    <h2 id="push-h" class="font-semibold">Phone notifications</h2>
+    <p class="mt-1 text-sm m-muted">Your phone shows a short note like “New team earnings”. Amounts and names never show on the lock screen.</p>
+    <div class="mt-3 grid gap-1" data-push-kinds>
+        @foreach (['earning' => 'Team earnings', 'order' => 'My orders', 'bonus' => 'Badge bonus', 'cashout' => 'Cash-outs', 'signal' => 'New trading signals'] as $k => $label)
+            <label class="flex min-h-12 items-center gap-3 text-sm"><input type="checkbox" class="size-5" value="{{ $k }}" @checked(\App\Notify\NotifyPrefs::on($user, 'push.'.$k) || (! \App\Notify\NotifyPrefs::on($user, 'push.earning') && $k !== 'signal'))> {{ $label }}</label>
+        @endforeach
+    </div>
+    <div class="mt-2 flex flex-wrap gap-2">
+        <button type="button" class="m-btn" data-push-on>Turn on for this phone</button>
+        <button type="button" class="m-btn-ghost" data-push-off hidden>Turn off</button>
+    </div>
+    <p class="mt-2 text-sm" data-push-msg role="status" aria-live="polite"></p>
+</section>
+@endif
+@feature('account.app')
+<section class="m-card mt-6" data-install hidden>
+    <h2 class="font-semibold">Add to your home screen</h2>
+    <p class="mt-1 text-sm m-muted">Open your account with one tap, like an app.</p>
+    <button type="button" class="m-btn mt-3" data-install-btn hidden>Add to home screen</button>
+    <p class="mt-2 text-sm m-muted" data-install-ios hidden>On iPhone: tap the Share button, then “Add to Home Screen”.</p>
+</section>
+@endfeature
+
 <section class="m-card mt-6" aria-labelledby="prefs-h">
     <h2 id="prefs-h" class="font-semibold">What do you want to hear about?</h2>
     <form method="post" action="{{ url('/account/notifications/settings') }}" class="mt-3 grid gap-1">@csrf

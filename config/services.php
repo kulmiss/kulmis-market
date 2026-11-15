@@ -44,6 +44,13 @@ return [
         'sender' => env('SMS_SENDER', 'KulmisMkt'),
     ],
 
+    // Phone notifications (Web Push, no message content is sent). Make keys with: php artisan km:push-keys
+    'webpush' => [
+        'public_key' => env('WEBPUSH_PUBLIC_KEY'),   // base64url, 65-byte P-256 point
+        'private_key' => env('WEBPUSH_PRIVATE_KEY'), // base64 of the PEM private key
+        'subject' => env('WEBPUSH_SUBJECT'),          // mailto:… or https://… (defaults to the support email)
+    ],
+
     'telegram' => [
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
         'bot_username' => env('TELEGRAM_BOT_USERNAME'),

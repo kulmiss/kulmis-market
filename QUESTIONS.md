@@ -98,6 +98,8 @@ change any of them.
 | 89 | Signal results chart | Win rate per month for the last 12 months = wins ÷ (wins + losses); "no gain, no loss" isn't counted. Same chart on the public results page and in the member area, with a filter per pair. | Decided (recommended) |
 | 90 | Signal notes | Off by default. A member can turn on a bell note for each new signal and pick pairs (none picked = all). The note only says the pair and side; the details stay in the private Telegram channel. | Decided (recommended) |
 | 91 | Help centre | /help with 8 starter answers in easy English (edit or delete them in Admin → Help centre), live search, WhatsApp / Telegram / email links and a contact form (5 per 10 minutes, hidden spam trap). Each message is emailed to the support email. Support staff can answer messages; only content editors change the answers. | Decided (recommended) |
+| 92 | Phone notifications | The push carries no message at all; the phone then asks our site (signed in) and shows safe words like "New team earnings" — never an amount or a name on the lock screen. Members choose kinds (earnings, orders, bonus, cash-outs, signals). Several pieces of news in one minute = one push. Needs keys once: `php artisan km:push-keys` → .env. Only Google/Mozilla/Apple/Microsoft push addresses are ever called. | Decided (recommended) |
+| 93 | Member app | The account area has its own home-screen icon (opens straight to "My account", with shortcuts to Earnings, Wallet, Notifications). Private pages and money data are never saved on the phone (the service worker skips /account, /api, cart, checkout, pay). | Decided (recommended) |
 
 ## Still open: needs you
 | # | What | Why |
