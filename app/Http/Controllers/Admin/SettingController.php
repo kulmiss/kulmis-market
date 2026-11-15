@@ -40,7 +40,7 @@ class SettingController extends Controller
                 foreach ($data['settings'] as $key => $value) {
                     Settings::set((string) $key, $value, $request->user()?->id, $data['reason'] ?? null);
                 }
-                if (array_filter(array_keys($data['settings']), fn ($k) => preg_match('/^(referral\.rate\.membership\.|membership\.price|loyalty\.|bonus\.)/', (string) $k))) {
+                if (array_filter(array_keys($data['settings']), fn ($k) => preg_match(ProfitGuard::PATTERN, (string) $k))) {
                     ProfitGuard::assertSafe(); // you always keep at least 65% of every membership
                 }
                 if (Settings::string('currency.thousands') === Settings::string('currency.decimal_point')) {

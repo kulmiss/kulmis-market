@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Badges\ProfitGuard;
 use App\Http\Controllers\Controller;
 use App\Support\Features;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class FeatureController extends Controller
@@ -32,8 +34,18 @@ class FeatureController extends Controller
                 throw ValidationException::withMessages(["features.$key" => 'Unknown feature or not true/false.']);
             }
         }
-        foreach ($data['features'] as $key => $enabled) {
-            Features::set((string) $key, $enabled, $request->user()?->id);
+        try {
+            DB::transaction(function () use ($data, $request) {
+                foreach ($data['features'] as $key => $enabled) {
+                    Features::set((string) $key, $enabled, $request->user()?->id);
+                }
+                // Turning on a payout must still leave you at least 65% of every membership.
+                if (array_filter($data['features'], fn ($on, $k) => $on && in_array((string) $k, ProfitGuard::PAYOUT_SWITCHES, true), ARRAY_FILTER_USE_BOTH)) {
+                    ProfitGuard::assertSafe('features');
+                }
+            });
+        } finally {
+            Features::flush(); // a rolled-back switch must not stay cached
         }
 
         return $this->index();

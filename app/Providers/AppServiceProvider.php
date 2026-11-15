@@ -19,6 +19,7 @@ use App\Notify\Sms\SmsGateway;
 use App\Orders\CheckoutExtras;
 use App\Referral\Attribution;
 use App\Referral\ReferralListener;
+use App\Rewards\MembershipRewards;
 use App\Session\PrivacySessionHandler;
 use App\Shipping\ShippingQuoter;
 use App\Shipping\ZoneShippingQuoter;
@@ -115,6 +116,8 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(PaymentSucceeded::class, [ReferralListener::class, 'paid']);
         Event::listen(PaymentSucceeded::class, [BadgeListener::class, 'paid']); // after commissions exist
         Event::listen(PaymentRefunded::class, [ReferralListener::class, 'refunded']);
+        Event::listen(PaymentSucceeded::class, [MembershipRewards::class, 'paid']);
+        Event::listen(PaymentRefunded::class, [MembershipRewards::class, 'refunded']);
         Event::listen(CustomerRegistered::class,
             fn (CustomerRegistered $e) => app(Attribution::class)->attachAtSignup($e->request, $e->user));
         $this->app->make(CheckoutExtras::class)->add(

@@ -74,6 +74,9 @@ return [
     // Badge bonus (amounts per badge: Badges page). Safety limits keep the shop in profit.
     'bonus.budget' => ['bps', 500, 'Most of a month\'s membership money that goes to badge bonuses', 'Badge bonus'],
     'bonus.team_limit' => ['bps', 200, 'Most per member: share of the membership money their own invited people paid that month', 'Badge bonus'],
+    'bonus.first_payment' => ['money', 25_000, 'First-payment bonus: paid to the inviter when someone they brought pays for the first time', 'Badge bonus'],
+    'reward.comeback' => ['money', 0, 'Welcome-back reward for a member who comes back (0 = off)', 'Engagement'],
+    'reward.comeback_days' => ['int', 30, 'Welcome-back reward: away for at least (days)', 'Engagement'],
     'bonus.pending_days' => ['int', 14, 'Days a badge bonus is on the way before it can be used', 'Badge bonus'],
 
     // Site

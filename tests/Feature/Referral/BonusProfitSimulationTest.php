@@ -72,20 +72,22 @@ class BonusProfitSimulationTest extends TestCase
         $bonuses = app(Ledger::class)->balance(Account::BADGE_BONUSES);
         $guard = ProfitGuard::worstCase();
         $loyalty = intdiv($revenue * $guard['loyalty'], 10_000);
-        $kept = $revenue - $commissions - $bonuses - $loyalty;
+        $newPayouts = $this->worstCaseNewPayouts($users);
+        $kept = $revenue - $commissions - $bonuses - $loyalty - $newPayouts;
 
         if (getenv('SIM_REPORT')) {
-            fwrite(STDERR, sprintf("\n%d: money %s, team earnings %s, bonuses %s to %d members (budget %s%s), loyalty %s → kept %.2f%%\n", $seed,
+            fwrite(STDERR, sprintf("\n%d: money %s, team earnings %s, bonuses %s to %d members (budget %s%s), loyalty %s, new payouts %s → kept %.2f%%\n", $seed,
                 number_format($revenue / 100), number_format($commissions / 100), number_format($bonuses / 100), $run->members,
-                number_format($run->budget / 100), $run->adjusted ? ', adjusted' : '', number_format($loyalty / 100), $kept * 100 / $revenue));
+                number_format($run->budget / 100), $run->adjusted ? ', adjusted' : '', number_format($loyalty / 100), number_format($newPayouts / 100), $kept * 100 / $revenue));
         }
         $this->assertSame($run->paid, $bonuses);
         $this->assertLessThanOrEqual($run->budget, $bonuses, 'never more than the monthly budget');
         $this->assertLessThanOrEqual(intdiv($revenue * Settings::int('bonus.budget'), 10_000), $bonuses);
         $this->assertGreaterThanOrEqual($revenue * (10_000 - $guard['total']) / 10_000, $kept, 'the guard\'s promise holds');
         $this->assertGreaterThanOrEqual($revenue * (10_000 - ProfitGuard::MAX_BPS) / 10_000, $kept, 'always at least 65%');
+        $this->assertGreaterThanOrEqual(0.75, $kept / $revenue, 'with every new payout on: the shop keeps at least 75%');
         if ($setup === null) {
-            $this->assertGreaterThanOrEqual(0.7966, $kept / $revenue, 'default numbers: you keep at least 79.66%');
+            $this->assertGreaterThanOrEqual(0.79, $kept / $revenue, 'default numbers: you keep at least 79%');
             $this->assertFalse($run->adjusted, 'the default table never needs the budget cut');
         }
         if ($seed === 404) {
@@ -161,6 +163,32 @@ class BonusProfitSimulationTest extends TestCase
         DB::table('user_badges')->insertOrIgnore($unlocks);
 
         return $tree;
+    }
+
+    /**
+     * New payouts paid from October's membership money, at their worst:
+     * first-payment bonus for every first real payment with an inviter, and
+     * the welcome-back reward for every member who came back (none here: all
+     * paid in September or are new).
+     *
+     * @param  array<int, ?int>  $tree
+     */
+    private function worstCaseNewPayouts(array $tree): int
+    {
+        $bonus = Settings::int('bonus.first_payment');
+        $price = Settings::int('membership.price');
+        $total = 0;
+        $rows = DB::table('membership_purchases')->where('status', 'paid')->where('amount', '>', 0)
+            ->where('paid_at', '>=', '2026-10-01 00:00:00')->where('paid_at', '<', '2026-11-01 00:00:00')->get(['user_id', 'amount', 'wallet_used', 'paid_at']);
+        foreach ($rows as $r) {
+            $first = ! DB::table('membership_purchases')->where('user_id', $r->user_id)->where('paid_at', '<', $r->paid_at)->where('amount', '>', 0)->exists();
+            if ($first && ($tree[(int) $r->user_id] ?? null) !== null) {
+                $real = (int) $r->amount - (int) $r->wallet_used;
+                $total += min($bonus, intdiv($bonus * $real, $price));
+            }
+        }
+
+        return $total;
     }
 
     /** Every level paid on every October membership, as if all referrers were active (worst case). @param array<int, ?int> $tree */

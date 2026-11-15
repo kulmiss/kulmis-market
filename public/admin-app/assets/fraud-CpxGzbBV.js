@@ -1,0 +1,1 @@
+import{r as e}from"./money-pages-B9ziGNO2.js";var t=e;export{t as component};

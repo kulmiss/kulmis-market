@@ -438,9 +438,10 @@ class BadgeBonusTest extends TestCase
         $this->assertSame(1_700, $w['commissions']);
         $this->assertSame(134, $w['bonus'], '200 ÷ (3 × 5,000), rounded up');
         $this->assertSame(200, $w['loyalty'], '300 ÷ (3 × 5,000)');
-        $this->assertSame(2_034, $w['total']);
-        $this->assertSame(398_300, $w['keep'], 'you keep at least 3,983 ETB of 5,000 ETB');
-        $this->assertStringContainsString('3,983', ProfitGuard::keepLine());
+        $this->assertSame(500, $w['first_payment'], '250 ÷ 5,000');
+        $this->assertSame(2_534, $w['total']);
+        $this->assertSame(373_300, $w['keep'], 'you keep at least 3,733 ETB of 5,000 ETB');
+        $this->assertStringContainsString('3,733', ProfitGuard::keepLine());
     }
 
     public function test_unsafe_numbers_cannot_be_saved(): void

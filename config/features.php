@@ -37,6 +37,7 @@ return [
     'membership' => ['Membership', 'Membership', true, null, 'People can buy a monthly membership.'],
     'membership.member_discount' => ['Member discount on products', 'Membership', true, 'membership', 'Members pay a lower price in the shop.'],
     'loyalty_reward' => ['Loyalty reward', 'Membership', true, 'wallet', 'Members who stay long get money in their wallet (amount in Settings).'],
+    'membership.comeback_reward' => ['Welcome-back reward', 'Membership', true, 'membership', 'Members who come back after some time get a thank-you in their wallet. Set the amount in Settings (0 = none).'],
 
     // Referral
     'referral' => ['Referral program', 'Referral', true, 'membership', 'Members get a link and earn when people join with it.'],
@@ -49,6 +50,7 @@ return [
     'top_referrers' => ['Top referrers list', 'Referral', true, 'referral', 'The public list of the best inviters this month (first name only).'],
     'referral.share_buttons' => ['Share buttons', 'Referral', true, 'referral', 'Telegram, WhatsApp and "More" buttons to share the referral link.'],
     'referral.qr_codes' => ['QR codes', 'Referral', true, 'referral', 'A QR code of the referral link that friends can scan.'],
+    'referral.first_payment_bonus' => ['First-payment bonus', 'Referral', true, 'referral', 'The inviter gets a bonus (Settings) when someone they brought pays for the first time. A refund takes it back.'],
 
     // Badges
     'badges' => ['Badges', 'Badges', true, null, 'Members unlock badges for their team, loyalty, earnings and orders.'],

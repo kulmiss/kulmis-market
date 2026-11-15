@@ -3,6 +3,7 @@
 namespace App\Badges;
 
 use App\Models\Badge;
+use App\Support\Features;
 use App\Support\Money;
 use App\Support\Settings;
 use Illuminate\Validation\ValidationException;
@@ -16,13 +17,24 @@ use Illuminate\Validation\ValidationException;
  *                    than the per-member team limit, never more than the
  *                    monthly budget (one-time bonuses count against the budget)
  *   loyalty reward = reward ÷ (months × price)
- * The Super Admin can't save numbers that would pay out more than MAX_BPS.
+ *   first-payment bonus = bonus ÷ price (as if every membership were someone's first)
+ *   welcome-back reward = reward ÷ price (as if every membership were a come-back)
+ *   contest prizes  = the contest budget (prizes are cut to fit it)
+ *   team challenges = the highest "reward ÷ (target × price)", never more than the challenge budget
+ * The Super Admin can't save numbers (or turn on a switch) that would pay out more than MAX_BPS.
  */
 final class ProfitGuard
 {
     public const MAX_BPS = 3_500;
 
-    /** @return array{price:int, commissions:int, bonus:int, loyalty:int, total:int, keep:int, max:int} */
+    /** Switches that turn on a payout: turning one on is checked too. */
+    public const PAYOUT_SWITCHES = ['referral', 'referral.level1', 'referral.level2', 'referral.level3', 'referral.commission.membership',
+        'badges', 'badges.bonus', 'loyalty_reward', 'referral.first_payment_bonus', 'membership.comeback_reward'];
+
+    /** Settings whose change is checked. */
+    public const PATTERN = '/^(referral\.rate\.membership\.|membership\.price|loyalty\.|bonus\.|reward\.|contest\.|challenge\.)/';
+
+    /** @return array{price:int, commissions:int, bonus:int, loyalty:int, first_payment:int, comeback:int, contests:int, challenges:int, total:int, keep:int, max:int} */
     public static function worstCase(): array
     {
         $price = Settings::int('membership.price');
@@ -42,10 +54,15 @@ final class ProfitGuard
             : min($budget, Settings::int('bonus.team_limit'), $monthly);
 
         $loyalty = self::share(Settings::int('loyalty.reward'), max(1, Settings::int('loyalty.every_months')) * $price);
-        $total = $commissions + $bonus + $loyalty;
+        $first = Features::enabled('referral.first_payment_bonus') ? self::share(Settings::int('bonus.first_payment'), $price) : 0;
+        $comeback = Features::enabled('membership.comeback_reward') ? self::share(Settings::int('reward.comeback'), $price) : 0;
+        $contests = 0;   // contests: next change
+        $challenges = 0; // team challenges: next change
+        $total = $commissions + $bonus + $loyalty + $first + $comeback + $contests + $challenges;
 
         return [
             'price' => $price, 'commissions' => $commissions, 'bonus' => $bonus, 'loyalty' => $loyalty,
+            'first_payment' => $first, 'comeback' => $comeback, 'contests' => $contests, 'challenges' => $challenges,
             'total' => $total, 'keep' => max(0, $price - intdiv($price * $total + 9_999, 10_000)), 'max' => self::MAX_BPS,
         ];
     }
@@ -55,9 +72,12 @@ final class ProfitGuard
     {
         $w = self::worstCase();
         if ($w['total'] > self::MAX_BPS) {
+            $parts = array_filter(['team earnings' => $w['commissions'], 'badge bonus' => $w['bonus'], 'loyalty' => $w['loyalty'],
+                'first-payment bonus' => $w['first_payment'], 'welcome-back reward' => $w['comeback'], 'contest prizes' => $w['contests'],
+                'team challenges' => $w['challenges']]);
             throw ValidationException::withMessages([$field => sprintf(
-                'Not saved: with these numbers you could pay out up to %s of every membership (team earnings %s, badge bonus %s, loyalty %s). The most allowed is %s, so you always keep at least %s. Lower one of them.',
-                self::pct($w['total']), self::pct($w['commissions']), self::pct($w['bonus']), self::pct($w['loyalty']),
+                'Not saved: with these numbers you could pay out up to %s of every membership (%s). The most allowed is %s, so you always keep at least %s. Lower one of them.',
+                self::pct($w['total']), implode(', ', array_map(fn ($k, $v) => $k.' '.self::pct($v), array_keys($parts), $parts)),
                 self::pct(self::MAX_BPS), self::pct(10_000 - self::MAX_BPS),
             )]);
         }

@@ -18,6 +18,13 @@ use App\Support\Settings;
 
 class CommissionsTest extends ReferralTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // These tests check team earnings alone (the first-payment bonus has its own tests).
+        Features::set('referral.first_payment_bonus', false);
+    }
+
     public function test_membership_commissions_on_three_levels(): void
     {
         [$l3, $l2, $l1] = $this->chain();

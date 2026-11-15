@@ -8,8 +8,10 @@ use App\Models\Membership;
 use App\Models\Order;
 use App\Models\PayoutRequest;
 use App\Models\Product;
+use App\Models\Reward;
 use App\Models\SignalSubscription;
 use App\Referral\Engagement;
+use App\Rewards\Rewards;
 use App\Support\Settings;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -53,6 +55,11 @@ class Dashboard
         $loyalty = $this->flow(Account::LOYALTY, $from, $to);
         $bonuses = $this->flow(Account::BADGE_BONUSES, $from, $to);
         $fees = $this->flow('expense:payment_fees', $from, $to);
+        $rewardsByKind = [];
+        foreach (array_keys(Reward::KINDS) as $kind) {
+            $rewardsByKind[$kind] = $this->flow(Rewards::account($kind), $from, $to);
+        }
+        $rewards = array_sum($rewardsByKind);
 
         $discounts = [
             'member' => (int) (clone $paidOrders)->sum('member_discount'),
@@ -77,8 +84,10 @@ class Dashboard
             'dataset' => $demo ? 'demo' : 'real',
             'period' => ['from' => $from->toDateString(), 'to' => $to->toDateString()],
             'revenue' => $revenue + ['total' => $netRevenue],
-            'gross_profit' => $netRevenue - $productCost - $commissions - $loyalty - $bonuses - $fees,
-            'costs' => ['products' => $productCost, 'commissions' => $commissions, 'loyalty' => $loyalty, 'badge_bonuses' => $bonuses, 'payment_fees' => $fees],
+            'gross_profit' => $netRevenue - $productCost - $commissions - $loyalty - $bonuses - $rewards - $fees,
+            'costs' => ['products' => $productCost, 'commissions' => $commissions, 'loyalty' => $loyalty, 'badge_bonuses' => $bonuses,
+                'rewards' => $rewards, 'payment_fees' => $fees],
+            'rewards' => $rewardsByKind,
             'discounts' => $discounts + ['total' => array_sum($discounts)],
             'shipping' => [
                 'charged' => (int) (clone $paidOrders)->sum(DB::raw('shipping - shipping_discount')),

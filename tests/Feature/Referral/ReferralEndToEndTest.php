@@ -76,9 +76,10 @@ class ReferralEndToEndTest extends ReferralTestCase
         }
         // D paid 5,000: C (L1) 10% = 500, B (L2) 5% = 250, A (L3) 2% = 100 ETB …
         // C paid: B 500, A 250. B paid: A 500.
-        $this->assertSame(50_000 + 25_000 + 10_000, Wallet::for($a)->pending());
-        $this->assertSame(50_000 + 25_000, Wallet::for($b)->pending());
-        $this->assertSame(50_000, Wallet::for($c)->pending());
+        // Plus a 250 ETB first-payment bonus for each inviter (A for B, B for C, C for D).
+        $this->assertSame(50_000 + 25_000 + 10_000 + 25_000, Wallet::for($a)->pending());
+        $this->assertSame(50_000 + 25_000 + 25_000, Wallet::for($b)->pending());
+        $this->assertSame(50_000 + 25_000, Wallet::for($c)->pending());
         $this->assertSame(0, Wallet::for($d)->pending());
         $this->assertSame(0, Wallet::for($a)->available(), 'pending for 14 days');
         $this->assertSame([1 => 1, 2 => 1, 3 => 1], Commission::query()->where('recipient_id', $a->id)->pluck('level')->countBy()->sortKeys()->all());

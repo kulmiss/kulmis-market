@@ -17,7 +17,8 @@ type Line = { user_id: number; name: string; badge: string; kind: string; wanted
 type Pool = { revenue: number; budget: number; wanted: number; paid: number; adjusted: boolean; members: number; lines: Line[] }
 type Run = { month: string; label: string; status: 'paid' | 'skipped'; revenue: number; budget: number; wanted: number; paid: number; members: number; adjusted: boolean; note: string | null; at: string | null }
 type Data = {
-  guard: { price: number; commissions: number; bonus: number; loyalty: number; total: number; keep: number; max: number; keep_line: string }
+  guard: { price: number; commissions: number; bonus: number; loyalty: number; first_payment?: number; comeback?: number; contests?: number; challenges?: number
+    total: number; keep: number; max: number; keep_line: string }
   settings: { budget: number; team_limit: number; pending_days: number }
   ladder: { id: number; name: string; color: string; threshold: number; monthly_bonus: number }[]
   first_payout_done: boolean
@@ -78,6 +79,10 @@ export function BonusPage() {
             <Row label='Team earnings (3 levels)' value={formatBps(d.guard.commissions)} />
             <Row label='Badge bonus, at most' value={formatBps(d.guard.bonus)} />
             <Row label='Loyalty reward, at most' value={formatBps(d.guard.loyalty)} />
+            {!!d.guard.first_payment && <Row label='First-payment bonus, at most' value={formatBps(d.guard.first_payment)} />}
+            {!!d.guard.comeback && <Row label='Welcome-back reward, at most' value={formatBps(d.guard.comeback)} />}
+            {!!d.guard.contests && <Row label='Contest prizes, at most' value={formatBps(d.guard.contests)} />}
+            {!!d.guard.challenges && <Row label='Team challenges, at most' value={formatBps(d.guard.challenges)} />}
             <Row label='Most that can go out' value={`${formatBps(d.guard.total)} of ${formatBps(d.guard.max)} allowed`} strong />
             <ul className='mt-2 grid gap-1 text-xs text-muted-foreground'>
               <li>• Each member: at most {formatBps(d.settings.team_limit)} of what their own invited people paid that month.</li>

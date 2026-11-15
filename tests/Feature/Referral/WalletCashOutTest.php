@@ -12,9 +12,11 @@ use App\Models\Order;
 use App\Models\PayoutAccount;
 use App\Models\PayoutRequest;
 use App\Models\Product;
+use App\Models\Reward;
 use App\Models\User;
 use App\Payments\PaymentService;
 use App\Referral\CommissionEngine;
+use App\Rewards\Rewards;
 use App\Support\Features;
 use App\Support\Settings;
 use Illuminate\Http\UploadedFile;
@@ -196,8 +198,10 @@ class WalletCashOutTest extends ReferralTestCase
         $this->payMembership(User::factory()->create(['referrer_id' => $l1->id]));
         $this->travel(15)->days();
         app(CommissionEngine::class)->releaseDue();
-        $this->assertSame(50_000, Wallet::for($l1)->pending());
+        app(Rewards::class)->releaseDue();
+        $this->assertSame(50_000 + 25_000, Wallet::for($l1)->pending()); // team earnings + first-payment bonus, both held
         $this->assertTrue(Commission::query()->where('recipient_id', $l1->id)->firstOrFail()->on_hold);
+        $this->assertTrue(Reward::query()->where('user_id', $l1->id)->firstOrFail()->on_hold);
     }
 
     public function test_paying_with_own_payout_account_is_self_referral(): void

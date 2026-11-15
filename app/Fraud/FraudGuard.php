@@ -8,6 +8,7 @@ use App\Models\FraudFlag;
 use App\Models\Order;
 use App\Models\PayoutRequest;
 use App\Models\User;
+use App\Rewards\Rewards;
 use App\Security\SecurityAlerts;
 use App\Support\Activity;
 use App\Support\Phone;
@@ -128,6 +129,7 @@ class FraudGuard
                 ->update(['status' => 'requested', 'hold_reason' => null]);
             Commission::query()->where('recipient_id', $flag->user_id)->where('on_hold', true)->update(['on_hold' => false]);
             BonusRun::releaseHolds($flag->user_id);
+            Rewards::releaseHolds($flag->user_id);
         }
         if ($decision === 'confirmed' && $suspend) {
             $user = User::query()->findOrFail($flag->user_id);

@@ -1,0 +1,1 @@
+import{t as e}from"./promotions-page-DTFPGBCJ.js";var t=e;export{t as component};
