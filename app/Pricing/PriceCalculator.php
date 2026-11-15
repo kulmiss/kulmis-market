@@ -70,7 +70,7 @@ class PriceCalculator
                     $saleId = $sale->id;
                 }
             }
-            $memberUnit = $this->memberPrice($list);
+            $memberUnit = $product->member_discount === false ? $list : $this->memberPrice($list);
             $lines[] = new Line($product, $variant, $qty, $list, $member ? $memberUnit : $list, $memberUnit,
                 $saleId !== null ? $regular : null, $saleId);
         }

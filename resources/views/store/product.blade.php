@@ -45,7 +45,7 @@
     <div>
         @if ($product->category)<a href="{{ url('/c/'.$product->category->slug) }}" class="inline-flex min-h-12 items-center text-sm font-semibold text-brand-600 sm:min-h-0">{{ $product->category->name }}</a>@endif
         <h1 class="mt-1 text-4xl">{{ $product->name }}</h1>
-        <div class="mt-4 text-xl" data-price>@include('store.partials.price', ['price' => $product->price, 'sale' => $sale && $sale->product_variant_id === null ? $sale : null])</div>
+        <div class="mt-4 text-xl" data-price>@include('store.partials.price', ['price' => $product->price, 'sale' => $sale && $sale->product_variant_id === null ? $sale : null, 'noMemberPrice' => $product->member_discount === false])</div>
         @if ($sale)
             <div class="mt-3 rounded-2xl border border-mist-200 p-4 dark:border-ink-700" data-flash-sale>
                 <p class="font-semibold">Flash sale{{ $sale->variant ? ' on '.$sale->variant->name : '' }}: {{ \App\Support\Money::format($sale->price) }}</p>
@@ -59,7 +59,9 @@
         <div class="mt-3 flex flex-wrap gap-2">
             @if ($product->is_members_only)<span class="badge-gold">Members-only product</span>@endif
             @if ($product->inEarlyAccess())<span class="badge">Members early access — public on {{ $product->release_at->timezone(config('app.timezone'))->format('d M') }}</span>@endif
-            @if ($product->isMadeToOrder())<span class="badge">Made to order · about {{ $product->making_days }} days</span>
+            @if ($product->isDigital())<span class="badge">Digital · download links right after payment</span>
+            @elseif ($product->isAddon())<span class="badge">Add-on{{ $product->booking_at ? ' · '.$product->booking_at->timezone(config('app.timezone'))->format('D d M, H:i') : '' }}{{ $stock !== null ? ' · '.$stock.' seats left' : '' }}</span>
+            @elseif ($product->isMadeToOrder())<span class="badge">Made to order · about {{ $product->making_days }} days</span>
             @elseif ($stock !== null && $stock > 0 && $stock <= 3)<span class="badge">Only {{ $stock }} left</span>@endif
         </div>
         @if ($product->short_description)<p class="muted mt-5 text-lg">{{ $product->short_description }}</p>@endif

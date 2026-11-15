@@ -1,0 +1,1 @@
+import{t as e}from"./promotions-page-B2qcfo2R.js";var t=e;export{t as component};

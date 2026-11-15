@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Catalog\ImageProcessor;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\ProductFile;
 use App\Models\ProductImage;
 use App\Models\Tag;
 use App\Pricing\ProfitCheck;
@@ -14,6 +15,7 @@ use App\Support\TableQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -45,6 +47,45 @@ class ProductController extends Controller
         $page->getCollection()->transform(fn (Product $p) => $this->present($p));
 
         return response()->json($page);
+    }
+
+    /** Files and private video links of a digital product. */
+    public function files(Product $product): JsonResponse
+    {
+        return response()->json(['data' => $product->files()->get()->map(fn (ProductFile $f) => $f->only(['id', 'kind', 'title', 'size', 'position'])
+            + ['has_link' => $f->video_url !== null])]);
+    }
+
+    public function addFile(Request $request, Product $product): JsonResponse
+    {
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:160'],
+            'file' => ['required_without:video_url', 'nullable', 'file', 'max:204800', 'mimes:pdf,zip,epub,mp3,m4a,mp4,jpg,jpeg,png,webp,docx,xlsx,pptx'],
+            'video_url' => ['required_without:file', 'nullable', 'url:https', 'max:500'],
+        ]);
+        $file = new ProductFile(['product_id' => $product->id, 'title' => strip_tags($data['title']), 'position' => $product->files()->count()]);
+        if ($request->hasFile('file')) {
+            $upload = $request->file('file');
+            $file->fill(['kind' => 'file', 'size' => $upload->getSize(),
+                'path' => $upload->storeAs('digital/'.$product->id, Str::random(32).'.'.strtolower($upload->getClientOriginalExtension()), 'local')]);
+        } else {
+            $file->fill(['kind' => 'video', 'video_url' => $data['video_url']]);
+        }
+        $file->save();
+        Activity::log('product.file_added', $product, ['file' => $file->id]);
+
+        return response()->json(['data' => $file->only(['id', 'kind', 'title', 'size'])], 201);
+    }
+
+    public function deleteFile(Product $product, ProductFile $file): JsonResponse
+    {
+        abort_if($file->product_id !== $product->id, 404);
+        if ($file->path) {
+            Storage::disk('local')->delete($file->path);
+        }
+        $file->delete();
+
+        return response()->json(['data' => ['ok' => true]]);
     }
 
     public function show(Product $product): JsonResponse
@@ -134,7 +175,10 @@ class ProductController extends Controller
             'weight_grams' => ['required', 'integer', 'min:0', 'max:100000'],
             'stock_mode' => ['required', Rule::in([Product::STOCK, Product::MADE_TO_ORDER])],
             'stock' => ['nullable', 'integer', 'min:0'],
-            'making_days' => ['nullable', 'required_if:stock_mode,made_to_order', 'integer', 'min:1', 'max:365'],
+            'making_days' => ['nullable', Rule::requiredIf(fn () => $request->input('stock_mode') === Product::MADE_TO_ORDER && $request->input('kind') !== Product::DIGITAL), 'integer', 'min:1', 'max:365'],
+            'kind' => ['nullable', Rule::in([Product::PHYSICAL, Product::DIGITAL, Product::ADDON])],
+            'member_discount' => ['boolean'],
+            'booking_at' => ['nullable', 'date'],
             'is_featured' => ['boolean'], 'is_members_only' => ['boolean'],
             'release_at' => ['nullable', 'date'],
             'status' => ['required', Rule::in(Product::STATUSES)],
@@ -151,6 +195,16 @@ class ProductController extends Controller
             'variants.*.is_active' => ['boolean'],
         ]);
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']).'-'.Str::lower(Str::random(4));
+        $data['kind'] ??= Product::PHYSICAL;
+        if ($data['kind'] === Product::DIGITAL) {
+            // Nothing to keep in stock or to ship.
+            $data['stock_mode'] = Product::MADE_TO_ORDER;
+            $data['making_days'] = null;
+            $data['weight_grams'] = 0;
+        }
+        if ($data['kind'] !== Product::ADDON) {
+            $data['booking_at'] = null;
+        }
 
         return $data;
     }

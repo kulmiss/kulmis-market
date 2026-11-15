@@ -27,6 +27,9 @@ use Illuminate\Support\Carbon;
  * @property int $cost_packaging
  * @property int $weight_grams
  * @property string $stock_mode
+ * @property string $kind
+ * @property bool $member_discount
+ * @property ?Carbon $booking_at
  * @property ?int $stock
  * @property ?int $making_days
  * @property bool $is_featured
@@ -57,14 +60,20 @@ class Product extends Model
 
     public const MADE_TO_ORDER = 'made_to_order';
 
+    public const PHYSICAL = 'physical';
+
+    public const DIGITAL = 'digital';   // files or a private video link, delivered after payment
+
+    public const ADDON = 'addon';       // a paid extra like a session or workshop: seats, a date, its own team-earning rates
+
     public const STATUSES = ['draft', 'active', 'archived'];
 
     /** @var array<string, mixed> */
-    protected $attributes = ['stock_mode' => self::STOCK, 'status' => 'draft', 'is_featured' => false, 'is_members_only' => false, 'weight_grams' => 0, 'cost_materials' => 0, 'cost_labour' => 0, 'cost_packaging' => 0];
+    protected $attributes = ['kind' => self::PHYSICAL, 'member_discount' => true, 'stock_mode' => self::STOCK, 'status' => 'draft', 'is_featured' => false, 'is_members_only' => false, 'weight_grams' => 0, 'cost_materials' => 0, 'cost_labour' => 0, 'cost_packaging' => 0];
 
     protected $fillable = [
         'name', 'slug', 'short_description', 'description', 'category_id', 'price',
-        'cost_materials', 'cost_labour', 'cost_packaging', 'weight_grams', 'stock_mode', 'stock',
+        'cost_materials', 'cost_labour', 'cost_packaging', 'weight_grams', 'stock_mode', 'stock', 'kind', 'member_discount', 'booking_at',
         'making_days', 'is_featured', 'is_members_only', 'release_at', 'status', 'seo_title', 'seo_description',
     ];
 
@@ -79,8 +88,14 @@ class Product extends Model
             'price' => 'integer', 'cost_materials' => 'integer', 'cost_labour' => 'integer',
             'cost_packaging' => 'integer', 'weight_grams' => 'integer', 'stock' => 'integer',
             'making_days' => 'integer', 'is_featured' => 'boolean', 'is_members_only' => 'boolean',
-            'release_at' => 'datetime',
+            'release_at' => 'datetime', 'member_discount' => 'boolean', 'booking_at' => 'datetime',
         ];
+    }
+
+    /** @return HasMany<ProductFile, $this> */
+    public function files(): HasMany
+    {
+        return $this->hasMany(ProductFile::class)->orderBy('position')->orderBy('id');
     }
 
     /** @return BelongsTo<Category, $this> */
@@ -110,6 +125,16 @@ class Product extends Model
     public function totalCost(): int
     {
         return $this->cost_materials + $this->cost_labour + $this->cost_packaging;
+    }
+
+    public function isDigital(): bool
+    {
+        return $this->kind === self::DIGITAL;
+    }
+
+    public function isAddon(): bool
+    {
+        return $this->kind === self::ADDON;
     }
 
     public function isMadeToOrder(): bool

@@ -26,6 +26,8 @@ return [
     'shop.flash_sales' => ['Flash sales', 'Shop', true, 'shop', 'A lower price for a short time, with a countdown and (if you want) limited pieces. Members still get their member price on top.'],
     'shop.bundles' => ['Bundles', 'Shop', true, 'shop', 'Sets of products at one price. When every piece of a set is in the cart, the saving comes off by itself.'],
     'shop.upsells' => ['"Bought together" and "You may also like"', 'Shop', true, 'shop', 'Matching products on product pages, in the cart and at checkout, with a one-tap "Add" button.'],
+    'shop.digital' => ['Digital products', 'Shop', true, 'shop', 'Files or private video links, sent as a safe link that ends after some days and a few downloads.'],
+    'shop.addons' => ['Paid add-ons', 'Shop', true, 'shop', 'Extras like a session or workshop: price, member price, seats, an optional date and their own team-earning rates.'],
     'shop.gift_cards' => ['Gift cards', 'Shop', true, 'shop', 'People buy gift cards (fixed amounts) and spend them at checkout. Each code is secret and works until the money is used.'],
     'shop.extras.gift_wrap' => ['Gift wrapping (paid extra)', 'Shop', false, 'shop', 'A tick box at checkout for gift wrapping. Price in Settings → Checkout extras.'],
     'shop.extras.express' => ['Express making and delivery (paid extra)', 'Shop', false, 'shop', 'A tick box at checkout to have the order made and sent first. Price in Settings.'],

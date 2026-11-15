@@ -11,6 +11,7 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ShippingZone;
 use App\Models\User;
+use App\Orders\OrderService;
 use App\Payments\PaymentService;
 use App\Shop\GiftCards;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -84,6 +85,12 @@ class GiftCardsTest extends TestCase
         $this->assertSame(0, $card->fresh()->balance);
         $this->assertSame('used', $card->fresh()->status);
         $this->assertSame(0, app(Ledger::class)->balance(GiftCard::ACCOUNT));
+
+        // Not paid in time → cancelled: the card gets its money back.
+        app(OrderService::class)->cancel($order->fresh(), 'not paid');
+        $this->assertSame(100_000, $card->fresh()->balance);
+        $this->assertSame('active', $card->fresh()->status);
+        $this->assertSame(100_000, app(Ledger::class)->balance(GiftCard::ACCOUNT));
     }
 
     public function test_full_payment_by_card_and_refund_goes_back_on_the_card(): void

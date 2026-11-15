@@ -17,15 +17,16 @@ class ProfitCheck
 {
     public function __construct(private readonly PriceCalculator $prices) {}
 
-    public function maxProductCommissionBps(): int
+    public function maxProductCommissionBps(?Product $product = null): int
     {
         if (Features::disabled('referral') || Features::disabled('referral.commission.products')) {
             return 0;
         }
+        $type = $product?->isAddon() ? 'addons' : 'products';
         $bps = 0;
         foreach ([1, 2, 3] as $level) {
             if (Features::enabled("referral.level$level")) {
-                $bps += Settings::int("referral.rate.products.l$level");
+                $bps += Settings::int("referral.rate.$type.l$level");
             }
         }
 
@@ -36,8 +37,8 @@ class ProfitCheck
     public function worstCase(Product $product, ?int $price = null): array
     {
         $price ??= $product->price;
-        $memberPrice = Features::enabled('membership') ? $this->prices->memberPrice($price) : $price;
-        $commission = Money::bpsRound($memberPrice, min(10_000, $this->maxProductCommissionBps()));
+        $memberPrice = Features::enabled('membership') && $product->member_discount !== false ? $this->prices->memberPrice($price) : $price;
+        $commission = Money::bpsRound($memberPrice, min(10_000, $this->maxProductCommissionBps($product)));
         $fee = Money::bpsRound($memberPrice, Settings::int('payments.fee_bps'));
         $cost = $product->totalCost();
 

@@ -158,7 +158,7 @@ class CommissionEngine
         if ($existing) {
             return $existing; // idempotent: never twice for the same sale
         }
-        $rate = Settings::int("referral.rate.$type.l$level");
+        $rate = $source instanceof Order ? $this->orderRate($source, $level) : Settings::int("referral.rate.$type.l$level");
         $amount = Money::bpsFloor($base, $rate);
         $guard = app(FraudGuard::class);
         $device = $source instanceof Order ? $source->device_hash : null;
@@ -206,6 +206,20 @@ class CommissionEngine
 
             return $c;
         });
+    }
+
+    /** Add-ons have their own rates: an order with both gets the mix, line by line. */
+    private function orderRate(Order $order, int $level): int
+    {
+        $products = Settings::int("referral.rate.products.l$level");
+        $items = $order->items()->with('product:id,kind')->get(['product_id', 'line_total']);
+        $all = (int) $items->sum('line_total');
+        $addons = (int) $items->filter(fn ($i) => $i->product?->isAddon())->sum('line_total');
+        if ($all <= 0 || $addons === 0) {
+            return $products;
+        }
+
+        return intdiv($products * ($all - $addons) + Settings::int("referral.rate.addons.l$level") * $addons, $all);
     }
 
     private function paidTotal(Model $source, Payment $payment): int

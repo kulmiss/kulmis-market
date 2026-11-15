@@ -8,6 +8,7 @@ use App\Events\CatalogChanged;
 use App\Events\CustomerRegistered;
 use App\Events\MembershipActivated;
 use App\Events\MembershipEnded;
+use App\Events\OrderPaid;
 use App\Events\OrderStatusChanged;
 use App\Events\PaymentRefunded;
 use App\Events\PaymentSucceeded;
@@ -24,6 +25,7 @@ use App\Session\PrivacySessionHandler;
 use App\Shipping\ShippingQuoter;
 use App\Shipping\ZoneShippingQuoter;
 use App\Shop\Bundles;
+use App\Shop\DigitalDelivery;
 use App\Shop\FlashSales;
 use App\Signals\MembershipSignalsListener;
 use App\Storefront\PageCache;
@@ -117,6 +119,7 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(PaymentSucceeded::class, [BadgeListener::class, 'paid']); // after commissions exist
         Event::listen(PaymentRefunded::class, [ReferralListener::class, 'refunded']);
         Event::listen(PaymentSucceeded::class, [MembershipRewards::class, 'paid']);
+        Event::listen(OrderPaid::class, [DigitalDelivery::class, 'paid']);
         Event::listen(PaymentRefunded::class, [MembershipRewards::class, 'refunded']);
         Event::listen(CustomerRegistered::class,
             fn (CustomerRegistered $e) => app(Attribution::class)->attachAtSignup($e->request, $e->user));

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Web\AccountController;
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\ContestController;
+use App\Http\Controllers\Web\DownloadController;
 use App\Http\Controllers\Web\GiftController;
 use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\PushController;
@@ -34,6 +35,7 @@ Route::middleware('guest')->group(function () {
 Route::get('/gift/{code}', [GiftController::class, 'show'])->where('code', '[A-Za-z0-9]{1,32}')->middleware('throttle:30,1')->name('gift.show');
 Route::get('/gift/{code}/start', [GiftController::class, 'show'])->where('code', '[A-Za-z0-9]{1,32}')->middleware(['auth', 'throttle:30,1'])->name('gift.start');
 Route::post('/gift/{code}', [GiftController::class, 'redeem'])->where('code', '[A-Za-z0-9]{1,32}')->middleware(['auth', 'throttle:10,1'])->name('gift.redeem');
+Route::get('/downloads/{token}', DownloadController::class)->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:20,1')->name('downloads');
 Route::get('/cart/resume/{cart}', [NotificationController::class, 'resumeCart'])->middleware(['signed', 'throttle:20,1'])->name('cart.resume');
 Route::get('/cart-reminders/stop/{user}', [NotificationController::class, 'stopCartReminders'])->middleware(['signed', 'throttle:20,1'])->name('cart-reminders.stop');
 Route::get('/account/email/confirm/{token}', [SecurityController::class, 'confirmEmail'])
@@ -46,6 +48,7 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
     Route::get('earnings', [AccountController::class, 'earnings'])->name('earnings');
     Route::get('wallet', [AccountController::class, 'wallet'])->name('wallet');
     Route::get('orders', [AccountController::class, 'orders'])->name('orders');
+    Route::post('downloads/{grant}', [AccountController::class, 'download'])->middleware('throttle:20,1')->name('downloads');
     Route::get('signals', [AccountController::class, 'signals'])->name('signals');
     Route::post('membership/pay', [AccountController::class, 'payMembership'])->middleware('feature:membership')->name('membership.pay');
     Route::post('membership/proof', [AccountController::class, 'membershipProof'])->middleware(['feature:membership', 'feature:payments.manual'])->name('membership.proof');

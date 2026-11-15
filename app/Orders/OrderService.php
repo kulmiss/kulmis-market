@@ -12,6 +12,7 @@ use App\Models\OrderStatusChange;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Shop\FlashSales;
+use App\Shop\GiftCards;
 use App\Storefront\PageCache;
 use App\Support\Activity;
 use App\Wallet\WalletPayments;
@@ -44,6 +45,9 @@ class OrderService
                 $this->releaseCoupon($locked);
                 if ($locked->wallet_used > 0 && $from === Order::PENDING_PAYMENT) {
                     app(WalletPayments::class)->releaseFor($locked, 'Order cancelled');
+                }
+                if ($locked->gift_card_used > 0 && $from === Order::PENDING_PAYMENT) {
+                    app(GiftCards::class)->releaseFor($locked, 'Order cancelled'); // the money goes back on the card
                 }
             }
             $change = $locked->history()->create(['from' => $from, 'to' => $to, 'note' => $note, 'actor_id' => $actorId]);

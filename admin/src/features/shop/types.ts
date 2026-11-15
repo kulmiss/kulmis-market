@@ -10,6 +10,7 @@ export type Product = {
   price: number; cost_materials: number; cost_labour: number; cost_packaging: number; total_cost: number
   weight_grams: number; stock_mode: 'stock' | 'made_to_order'; stock: number | null; making_days: number | null
   is_featured: boolean; is_members_only: boolean; release_at: string | null; status: 'draft' | 'active' | 'archived'
+  kind?: 'physical' | 'digital' | 'addon'; member_discount?: boolean; booking_at?: string | null
   seo_title: string | null; seo_description: string | null
   tags?: { name: string }[]; variants: Variant[]; images: ProductImage[]
   available_stock: number | null; warnings: Warning[]

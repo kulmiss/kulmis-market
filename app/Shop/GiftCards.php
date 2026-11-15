@@ -172,6 +172,14 @@ class GiftCards
         return $payment;
     }
 
+    /** An unpaid order was cancelled: what the card paid goes back on it. */
+    public function releaseFor(Order $order, string $reason): void
+    {
+        Payment::query()->where('payable_type', $order->getMorphClass())->where('payable_id', $order->getKey())
+            ->where('provider', Payment::GIFT_CARD)->whereIn('status', [Payment::PAID, Payment::PARTIALLY_REFUNDED])
+            ->each(fn (Payment $p) => app(PaymentService::class)->refund($p, $p->refundable(), $reason));
+    }
+
     /** A refund of a gift-card payment goes back on the card. */
     public function refundToCard(Payment $payment, int $amount): void
     {

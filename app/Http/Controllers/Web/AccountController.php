@@ -11,6 +11,7 @@ use App\Member\MemberDashboard;
 use App\Member\MemberTables;
 use App\Membership\MembershipService;
 use App\Models\Address;
+use App\Models\DownloadGrant;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
@@ -22,6 +23,7 @@ use App\Payments\PaymentService;
 use App\Pricing\PricingException;
 use App\Referral\ReferralCodes;
 use App\Referral\TeamView;
+use App\Shop\DigitalDelivery;
 use App\Shop\GiftCards;
 use App\Signals\SignalAccess;
 use App\Signals\SignalStats;
@@ -105,8 +107,19 @@ class AccountController extends Controller
     public function orders(Request $request): View|StreamedResponse
     {
         $table = MemberTables::orders($request, $request->user());
+        $downloads = Features::enabled('shop.digital') ? DownloadGrant::query()->with(['file', 'order'])
+            ->whereHas('order', fn ($q) => $q->where('user_id', $request->user()->id))->latest('id')->limit(50)->get()
+            ->filter(fn (DownloadGrant $g) => DigitalDelivery::usable($g))->values() : collect();
 
-        return $table->wantsCsv($request) ? $table->csv() : view('member.orders', ['table' => $table]);
+        return $table->wantsCsv($request) ? $table->csv() : view('member.orders', ['table' => $table, 'downloads' => $downloads]);
+    }
+
+    /** A fresh private link to one of my downloads. */
+    public function download(Request $request, DownloadGrant $grant): RedirectResponse
+    {
+        abort_if(Features::disabled('shop.digital') || $grant->order->user_id !== $request->user()->id || ! DigitalDelivery::usable($grant), 404);
+
+        return redirect(DigitalDelivery::newLink($grant));
     }
 
     public function signals(Request $request): View|StreamedResponse

@@ -31,13 +31,19 @@ class Checkout
         private readonly CartManager $carts,
     ) {}
 
+    /** @param list<array{0: Product, 1: ?ProductVariant, 2: int}> $items  Nothing to ship → no delivery fee. */
+    public static function onlyDigital(array $items): bool
+    {
+        return $items !== [] && count(array_filter($items, fn ($i) => ! $i[0]->isDigital())) === 0;
+    }
+
     /** Price the cart for display (no locks, no changes). */
     public function preview(Cart $cart, ?User $user, ?int $zoneId = null, ?string $city = null, ?string $phone = null): Quote
     {
         $items = $this->carts->pricingItems($cart);
         $member = (bool) $user?->isActiveMember();
         $weight = array_sum(array_map(fn ($i) => ($i[1]->weight_grams ?? $i[0]->weight_grams) * $i[2], $items));
-        $fee = $items && ($zoneId || $city) ? $this->shipping->quote($zoneId, (string) $city, $weight) : 0;
+        $fee = $items && ($zoneId || $city) && ! self::onlyDigital($items) ? $this->shipping->quote($zoneId, (string) $city, $weight) : 0;
 
         return $this->prices->quote($items, $member, $cart->coupon_code, $fee, $this->couponUses($user, $phone), true, (array) ($cart->extras ?? []));
     }
@@ -78,7 +84,7 @@ class Checkout
 
             $member = (bool) $user?->isActiveMember();
             $weight = array_sum(array_map(fn ($i) => ($i[1]->weight_grams ?? $i[0]->weight_grams) * $i[2], $items));
-            $fee = $this->shipping->quote($customer['shipping_zone_id'] ?? null, $customer['city'], $weight);
+            $fee = self::onlyDigital($items) ? 0 : $this->shipping->quote($customer['shipping_zone_id'] ?? null, $customer['city'], $weight);
             $quote = $this->prices->quote($items, $member, $cart->coupon_code, $fee, $this->couponUses($user, $customer['phone']), true, (array) ($cart->extras ?? []));
 
             $order = Order::query()->create(array_merge([
