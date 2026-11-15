@@ -2,7 +2,7 @@
 @if ($paginator->hasPages())
 <nav class="mt-10 flex flex-wrap items-center justify-center gap-2 text-sm" aria-label="Pages">
     @if ($paginator->onFirstPage())
-        <span class="btn-ghost opacity-50">← Previous</span>
+        <span class="btn-ghost muted cursor-default" aria-hidden="true">← Previous</span>
     @else
         <a class="btn-ghost" href="{{ $paginator->previousPageUrl() }}" rel="prev">← Previous</a>
     @endif
@@ -22,7 +22,7 @@
     @if ($paginator->hasMorePages())
         <a class="btn-ghost" href="{{ $paginator->nextPageUrl() }}" rel="next">Next →</a>
     @else
-        <span class="btn-ghost opacity-50">Next →</span>
+        <span class="btn-ghost muted cursor-default" aria-hidden="true">Next →</span>
     @endif
 </nav>
 @endif

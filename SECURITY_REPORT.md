@@ -115,7 +115,7 @@ Security changes were measured as they went in: the host check, the query normal
 | Virtualised admin tables | Every list is paged on the server (25–50 rows), so there is nothing long to virtualise | — |
 | Optimistic UI in the admin | Money actions must wait for the server; lists refresh in ~10–20 ms anyway | Could add for non-money toggles |
 | Larastan level 7+ | 108 findings at level 7, mostly union-type strictness, none found to be bugs | Raise gradually |
-| Lighthouse budgets in CI | Phone LCP budget is 1.8 s (CI runners are slower than this machine), desktop 1.0 s | Tighten once CI numbers are known |
+| Lighthouse budgets in CI | CI serves PHP directly (no gzip, no page cache), so its phone numbers are slower (shop 2.3 s, product 2.0–2.3 s); budget 2.5 s on phones, 1.0 s on desktop | Run CI behind nginx to use the real numbers |
 
 ---
 
@@ -235,5 +235,5 @@ php artisan km:backup && php artisan km:backup-verify
 ```
 CI (on the top PR) runs Pint, Larastan (level 6), the tests on MySQL 8, the admin
 build, a check that the committed builds match the sources, server-time budgets,
-Lighthouse on desktop (≥ 95, LCP ≤ 1.0 s) and phone (LCP ≤ 1.8 s on slow 4G),
+Lighthouse on desktop (≥ 95, LCP ≤ 1.0 s) and phone (LCP ≤ 2.5 s on slow 4G in CI, which serves PHP without gzip or page cache),
 gitleaks over the whole history and the dependency audits.

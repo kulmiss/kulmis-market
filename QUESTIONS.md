@@ -71,7 +71,7 @@ change any of them.
 | 62 | Who sees Payments in the admin | Anyone who handles orders, approves transfers (Finance) or does refunds. Only Finance/Manager/Super Admin can approve. | Decided (bug fix, round 3) |
 | 63 | A second receipt while one is being checked | Refused with "We already have your receipt and are checking it"; after a rejection the customer can send a new one. | Decided (recommended) |
 | 64 | Service worker | On: faster repeat visits and an offline page. It never stores account, admin, cart, checkout, pay or API pages. To switch it off, replace `public/sw.js` with one that unregisters. | Decided (recommended) |
-| 65 | Phone speed target | Text pages are under 1.0 s LCP on Lighthouse's slow-4G phone test; photo pages are 1.1–1.5 s because of the photo download. CI fails above 1.8 s on phones and 1.0 s on desktop. | Decided (measured) |
+| 65 | Phone speed target | Text pages are under 1.0 s LCP on Lighthouse's slow-4G phone test; photo pages are 1.1–1.5 s because of the photo download. CI fails above 2.5 s on phones (CI has no gzip/page cache) and 1.0 s on desktop. | Decided (measured) |
 
 ## Still open: needs you
 | # | What | Why |

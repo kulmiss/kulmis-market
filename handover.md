@@ -98,7 +98,7 @@ See [docs/local-setup.md](docs/local-setup.md).
   builds.
 - CI (on the top PR): Pint, Larastan level 6, PHPUnit on MySQL 8, admin
   typecheck/lint/build, committed builds match the sources, server-time
-  budgets, Lighthouse desktop (≥ 95, LCP ≤ 1.0 s) and phone (LCP ≤ 1.8 s,
+  budgets, Lighthouse desktop (≥ 95, LCP ≤ 1.0 s) and phone (LCP ≤ 2.5 s in CI,
   slow 4G), gitleaks.
 - Round 3 review (15 Nov): every screen and flow re-tested in a browser as
   every member type and staff role, attack tests and real parallel requests;

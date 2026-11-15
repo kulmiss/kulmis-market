@@ -56,7 +56,7 @@ releases show up on time). Turn it off with `PAGE_CACHE=false`.
 
 ## Performance
 Checked in CI (`lighthouse` job): Lighthouse ≥ 95 in all four categories,
-desktop LCP ≤ 1.0 s, phone LCP ≤ 1.8 s on simulated slow 4G, CLS ≤ 0.01, and
+desktop LCP ≤ 1.0 s, phone LCP ≤ 2.5 s on simulated slow 4G in CI (CI serves PHP without gzip or page cache; behind nginx the pages measure 0.9–1.5 s), CLS ≤ 0.01, and
 server time (`scripts/perf-budget.sh`): uncached pages p95 < 150 ms, API p95
 < 100 ms. Query budgets per page are tests (`PerformanceTest`).
 - Static page cache (above): guest pages in < 1 ms, without PHP
