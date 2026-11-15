@@ -19,6 +19,7 @@
     @if ($products->isEmpty())
         <p class="muted mt-12 text-center">Nothing here yet — new pieces are on their way.</p>
     @else
+        <h2 class="sr-only">Products</h2>
         <div class="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 lg:grid-cols-4">
             @foreach ($products as $i => $p)@include('store.partials.product-card', ['p' => $p, 'eager' => $i < 2])@endforeach
         </div>

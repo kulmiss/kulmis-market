@@ -78,7 +78,7 @@ export function MemberDetail({ id }: { id: string }) {
         <Button variant='outline' asChild><Link to='/members'><ArrowLeft /> Members</Link></Button>
         {can('manage-referrals') && <Button variant='outline' asChild><Link to='/referrals' search={{ user: u.id }}><Network /> Referral tree</Link></Button>}
       </>}>
-      <div className='grid gap-4 lg:grid-cols-3'>
+      <div className='grid grid-cols-1 gap-4 lg:grid-cols-3'>
         <Card>
           <CardHeader><CardTitle className='text-base'>Membership</CardTitle></CardHeader>
           <CardContent className='grid gap-1 text-sm'>

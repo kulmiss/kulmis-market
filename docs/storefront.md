@@ -55,3 +55,17 @@ membership, signals, with dates) are edited in **Admin → Pages & banners**.
 ## Demo data
 `php artisan db:seed --class=DemoSeeder` adds 4 categories and 8 products
 with generated photos, plus shipping zones and couriers.
+
+## Screen review (security review, 15 Nov)
+Every storefront page (phone + desktop, light + dark, guest + member) and
+every admin page (desktop light/dark + phone) was checked in headless Chrome
+with realistic data. Fixed: branded error pages (404/403/419/429/500/503,
+no database needed), invisible "Made to order" badge in dark mode, admin
+template logo/favicons replaced with the Kulmis mark, readable fraud-flag
+details, member page overflowing on phones (grid columns), missing labels,
+heading order on /shop, and text compression (gzip/deflate) in nginx and
+`.htaccess`.
+
+Lighthouse (desktop, as in CI): 100 / 98–100 / 100 / 100 on all key pages
+(best practices up from 96). Phone through nginx with the page cache:
+LCP 1.2–1.4 s. Cached pages answer in < 1 ms; uncached in ~30 ms.

@@ -38,7 +38,7 @@ export function OrderDetail({ id }: { id: string }) {
   return (
     <Page title={`Order ${o.number}`} description={`${formatDate(o.created_at, true)} · ${o.is_member_order ? 'Member order' : 'Guest order'}`}
       actions={<Button variant='outline' asChild><Link to='/orders'><ArrowLeft /> Orders</Link></Button>}>
-      <div className='grid gap-4 lg:grid-cols-3'>
+      <div className='grid grid-cols-1 gap-4 lg:grid-cols-3'>
         <Card className='lg:col-span-2'>
           <CardHeader className='flex-row items-center justify-between'>
             <CardTitle className='text-base'>Items</CardTitle><StatusBadge status={o.status} />
@@ -77,7 +77,7 @@ export function OrderDetail({ id }: { id: string }) {
         <Card className='lg:col-span-2'>
           <CardHeader><CardTitle className='text-base'>Next step</CardTitle></CardHeader>
           <CardContent className='grid gap-3'>
-            <div className='grid gap-3 sm:grid-cols-3'>
+            <div className='grid grid-cols-1 gap-3 sm:grid-cols-3'>
               <div className='grid gap-1'>
                 <Label>Courier</Label>
                 <Select value={courier || (o.courier_id ? String(o.courier_id) : '')} onValueChange={setCourier}>

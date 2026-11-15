@@ -58,7 +58,7 @@ export function SettingsPage() {
       </div>
       <Card>
         <CardHeader><CardTitle className='text-base'>{current}</CardTitle></CardHeader>
-        <CardContent className='grid gap-5 md:grid-cols-2'>
+        <CardContent className='grid grid-cols-1 gap-5 md:grid-cols-2'>
           {rows.filter((r) => r.group === current).map((r) => (
             <div key={r.key} className={r.type === 'text' ? 'grid gap-2 md:col-span-2' : 'grid gap-2'}>
               <Label htmlFor={r.key} className='flex justify-between gap-2'>

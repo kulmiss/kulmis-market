@@ -160,7 +160,7 @@ export function TelegramPage() {
   return (
     <Page title='Telegram bot' description='Bot settings live in the server .env (secrets never go in the database).'>
       {t && (
-        <div className='grid gap-4 md:grid-cols-2'>
+        <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
           <Card>
             <CardHeader><CardTitle className='text-base'>Status</CardTitle></CardHeader>
             <CardContent className='grid gap-2 text-sm'>

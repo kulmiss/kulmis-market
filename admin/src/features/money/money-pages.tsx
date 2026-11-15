@@ -136,7 +136,11 @@ export function FraudPage() {
     { header: 'When', cell: ({ row }) => formatDate(row.original.created_at, true) },
     { header: 'Member', cell: ({ row }) => <a className='underline' href={`/admin/members/${row.original.user.id}`}>{row.original.user.first_name} {row.original.user.last_name}</a> },
     { header: 'Signal', cell: ({ row }) => row.original.type.replaceAll('_', ' ') },
-    { header: 'Details', cell: ({ row }) => <code className='text-xs'>{JSON.stringify(row.original.details)}</code> },
+    { header: 'Details', cell: ({ row }) => (
+      <span className='text-xs text-muted-foreground'>
+        {Object.entries(row.original.details ?? {}).map(([k, v]) => `${k.replaceAll('_', ' ')}: ${Array.isArray(v) ? v.join(', ') : String(v)}`).join(' · ') || '—'}
+      </span>
+    ) },
     { header: 'Status', cell: ({ row }) => <StatusBadge status={row.original.status} /> },
     { header: '', id: 'act', cell: ({ row }) => row.original.status === 'open' && <Review flag={row.original} /> },
   ]

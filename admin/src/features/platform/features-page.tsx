@@ -34,7 +34,7 @@ export function FeaturesPage() {
 
   return (
     <Page title='Feature switches' description={`${onCount} of ${rows.length} features are live. Turning one off hides it everywhere (pages, app, admin) — no data is deleted.`}>
-      <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-3'>
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3'>
         {groups.map((g) => (
           <Card key={g}>
             <CardHeader className='pb-2'><CardTitle className='text-base'>{g}</CardTitle></CardHeader>

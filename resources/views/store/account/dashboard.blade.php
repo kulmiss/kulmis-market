@@ -32,9 +32,9 @@
             <details class="mt-3 text-sm"><summary class="cursor-pointer">Paid by bank or Telebirr transfer?</summary>
                 <form method="post" action="{{ url('/account/membership/proof') }}" enctype="multipart/form-data" class="mt-3 grid gap-2">
                     @csrf
-                    <select name="method" class="input"><option value="telebirr">Telebirr</option><option value="bank_transfer">Bank transfer</option></select>
+                    <select name="method" class="input" aria-label="How you paid"><option value="telebirr">Telebirr</option><option value="bank_transfer">Bank transfer</option></select>
                     <input name="reference" class="input" placeholder="Transaction reference">
-                    <input name="proof" type="file" accept="image/*,application/pdf" class="input" required>
+                    <input name="proof" type="file" accept="image/*,application/pdf" class="input" required aria-label="Receipt photo or PDF">
                     <button class="btn-ghost">Send receipt</button>
                 </form>
             </details>

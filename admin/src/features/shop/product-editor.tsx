@@ -96,14 +96,14 @@ export function ProductEditor({ id }: { id: string }) {
           <AlertTriangle /><AlertDescription>{w.message}</AlertDescription>
         </Alert>
       ))}
-      <div className='grid gap-4 lg:grid-cols-3'>
+      <div className='grid grid-cols-1 gap-4 lg:grid-cols-3'>
         <Card className='lg:col-span-2'>
           <CardHeader><CardTitle className='text-base'>Details</CardTitle></CardHeader>
           <CardContent className='grid gap-3'>
             <Field label='Name'><Input value={d.name} onChange={(e) => set('name', e.target.value)} /></Field>
             <Field label='Short description'><Input value={d.short_description ?? ''} onChange={(e) => set('short_description', e.target.value)} /></Field>
             <Field label='Description'><Textarea rows={6} value={d.description ?? ''} onChange={(e) => set('description', e.target.value)} /></Field>
-            <div className='grid gap-3 sm:grid-cols-2'>
+            <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
               <Field label='Category'>
                 <Select value={d.category_id ? String(d.category_id) : 'none'} onValueChange={(v) => set('category_id', v === 'none' ? null : Number(v))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
@@ -208,7 +208,7 @@ export function ProductEditor({ id }: { id: string }) {
 
         <Card className='lg:col-span-3'>
           <CardHeader><CardTitle className='text-base'>SEO</CardTitle></CardHeader>
-          <CardContent className='grid gap-3 sm:grid-cols-2'>
+          <CardContent className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
             <Field label='SEO title'><Input value={d.seo_title ?? ''} onChange={(e) => set('seo_title', e.target.value)} /></Field>
             <Field label='SEO description'><Input value={d.seo_description ?? ''} onChange={(e) => set('seo_description', e.target.value)} /></Field>
           </CardContent>

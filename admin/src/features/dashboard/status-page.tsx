@@ -15,7 +15,7 @@ export function StatusPage() {
   return (
     <Page title='System status' description='Is cron running, are messages going out, what is switched off.'>
       {s && (
-        <div className='grid gap-4 md:grid-cols-2'>
+        <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
           <Card>
             <CardHeader><CardTitle className='text-base'>Background work</CardTitle></CardHeader>
             <CardContent className='grid gap-2 text-sm'>
