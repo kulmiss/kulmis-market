@@ -27,6 +27,7 @@ English (ready for Amharic) and aimed at customers in Ethiopia.
 | 6 | `pr/06-cart-checkout` | Draft. Cart, guest checkout, tracking, unpaid auto-cancel ([docs/checkout.md](docs/checkout.md)) |
 | 7 | `pr/07-shipping-notify` | Draft. Zones, couriers, status flow, SMS/email/Telegram ([docs/shipping-notifications.md](docs/shipping-notifications.md)) |
 | 8 | `pr/08-payments` | Draft. Chapa, manual proof, exactly-once, refunds, receipts ([docs/payments.md](docs/payments.md)) |
+| 36 | `pr/36-green-logo` | **Top PR, targets main, ready for review, CI runs here.** Logo in the member-area green (#1f8a4c) everywhere: storefront, member area, errors, admin, emails, PDF receipts, favicon/ico/touch/app icons, social preview; manifest theme colour green ([docs/storefront.md](docs/storefront.md#logo-and-icons)) |
 | 9 | `pr/09-membership` | Draft. Accounts, membership, grace, reminders, loyalty ([docs/membership.md](docs/membership.md)) |
 | 10 | `pr/10-signals` | Draft. Signals, Telegram bot access control, locked results ([docs/signals.md](docs/signals.md)) |
 | 11 | `pr/11-referrals` | Draft. 3-level commissions, link/code, locked referrer ([docs/referrals.md](docs/referrals.md)) |
@@ -59,7 +60,7 @@ PRs 1–28 are merged into `main`.
 | 32 | `pr/32-logo` | Draft (#40). New logo (A, smiling mesob) everywhere: storefront, errors, admin, emails, PDF receipts, favicon/ico/touch/manifest icons, social preview ([docs/storefront.md](docs/storefront.md#logo-and-icons)) |
 | 33 | `pr/33-demo-data` | Draft (#41). Demo data for every section (6 months simulated through the real services, real Pexels photos + CREDITS.md), `is_demo` everywhere, Show demo data switch, Delete all demo data, never mixed into real totals, refuses production ([docs/local-setup.md](docs/local-setup.md#demo-data)) |
 | 34 | `pr/34-member-dashboard` | Draft (#42). New member area: app-like layout (sidebar / bottom bar), green & white + dark mode, accent in Settings → Appearance; home with money cards, month vs month, chart, per level/type, team, newest, badge, referral tools, membership + streak, signals, activity; Team, Earnings, Wallet, Orders, Signals pages; empty states ([docs/storefront.md](docs/storefront.md#member-area-account)) |
-| 35 | `pr/35-remove-chapa` | **Top PR, targets main, ready for review, CI runs here.** Chapa removed completely: payments are Telebirr/bank transfer + receipt (staff approve) and the wallet; membership = wallet or transfer (+ part wallet); guest signals = transfer + receipt; manual/wallet refunds; CSP `form-action 'self'`; page texts updated by a migration ([docs/payments.md](docs/payments.md)) |
+| 35 | `pr/35-remove-chapa` | Draft (#43). Chapa removed completely: payments are Telebirr/bank transfer + receipt (staff approve) and the wallet; membership = wallet or transfer (+ part wallet); guest signals = transfer + receipt; manual/wallet refunds; CSP `form-action 'self'`; page texts updated by a migration ([docs/payments.md](docs/payments.md)) |
 
 **Merge:** the top PR of round 2 targets `main` and contains every commit
 below it, so one merge brings in everything.

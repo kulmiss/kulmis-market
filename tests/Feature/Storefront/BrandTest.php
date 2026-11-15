@@ -22,6 +22,10 @@ class BrandTest extends TestCase
     {
         $source = (string) file_get_contents(resource_path('brand/logo-mark.svg'));
         $this->assertStringContainsString(self::SMILE, $source);
+        $this->assertStringContainsString('fill="#1f8a4c"', $source, 'the logo uses the member-area green');
+        $this->assertStringNotContainsString('#b5532b', $source);
+        $this->assertStringNotContainsString('#b5532b', (string) file_get_contents(resource_path('views/partials/logo-mark.blade.php')));
+        $this->assertStringContainsString("fill='#1f8a4c'", (string) file_get_contents(base_path('admin/src/assets/logo.tsx')));
         $this->assertSame($source, file_get_contents(public_path('favicon.svg')));
         $this->assertStringContainsString("d='".self::SMILE."'", (string) file_get_contents(base_path('admin/src/assets/logo.tsx')));
         $this->assertStringNotContainsString('M8 20c4-8 12-8 16 0', (string) file_get_contents(base_path('admin/src/assets/logo.tsx')));
@@ -43,6 +47,8 @@ class BrandTest extends TestCase
         $this->assertSame([180, 180], [$w, $h]);
         $manifest = json_decode((string) file_get_contents(public_path('site.webmanifest')), true);
         $this->assertSame('/brand/icon-512.png', $manifest['icons'][1]['src']);
+        $this->assertSame('#1f8a4c', $manifest['theme_color']);
+        $this->assertSame([31, 138, 76], $this->pixel('brand/icon-192.png', 20, 96), 'app icon is green');
     }
 
     public function test_emails_and_receipts_carry_the_logo(): void
@@ -61,5 +67,15 @@ class BrandTest extends TestCase
         $receipt = view('pdf.receipt', ['payment' => $payment, 'payable' => $order, 'order' => $order,
             'customer' => $order->payableCustomer(), 'title' => $order->payableTitle()])->render();
         $this->assertStringContainsString('data:image/png;base64,'.base64_encode((string) file_get_contents(public_path('brand/logo-96.png'))), $receipt);
+    }
+
+    /** @return array{int, int, int} */
+    private function pixel(string $file, int $x, int $y): array
+    {
+        $img = imagecreatefrompng(public_path($file));
+        $this->assertNotFalse($img);
+        $rgb = imagecolorat($img, $x, $y);
+
+        return [($rgb >> 16) & 0xFF, ($rgb >> 8) & 0xFF, $rgb & 0xFF];
     }
 }

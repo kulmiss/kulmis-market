@@ -90,7 +90,10 @@ Lighthouse (desktop, as in CI): 100 / 98–100 / 100 / 100 on all key pages
 LCP 1.2–1.4 s. Cached pages answer in < 1 ms; uncached in ~30 ms.
 
 ## Logo and icons
-Logo A, the "smiling mesob" (chosen from [three options](logo-options.png)).
+Logo A, the "smiling mesob" (chosen from [three options](logo-options.png)), in
+the member-area green (`#1f8a4c`, the default of Settings → Appearance →
+member accent) with the gold knob and sand basket. The web-app manifest uses
+the same green as its theme colour.
 One source file: `resources/brand/logo-mark.svg`. It is used in:
 - the storefront header (`partials/logo-mark.blade.php`), error pages, and
   the admin (`admin/src/assets/logo.tsx`)

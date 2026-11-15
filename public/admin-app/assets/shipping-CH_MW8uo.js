@@ -1,1 +1,0 @@
-import{r as e}from"./catalog-pages-QuPgVLCi.js";var t=e;export{t as component};

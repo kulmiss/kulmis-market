@@ -61,6 +61,8 @@ class DemoSeeder extends Seeder
 
     private int $days = self::DAYS;
 
+    private int $placed = 0;
+
     private User $admin;
 
     private string $hash;
@@ -460,6 +462,9 @@ class DemoSeeder extends Seeder
             ], $buyer, (string) Str::uuid(), $extra);
 
             $roll = mt_rand(1, 100);
+            if (++$this->placed === 3) {
+                return; // always at least one never-paid order (auto-cancelled later)
+            }
             if ($day >= $this->days - 1 && $roll <= 35) {
                 return; // waiting for payment
             }
