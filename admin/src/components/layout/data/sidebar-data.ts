@@ -57,8 +57,8 @@ export const sidebarData: SidebarData = {
       title: 'Members',
       items: [
         { title: 'Members', url: '/members', icon: Users, ability: 'manage-members' },
-        { title: 'Referral tree', url: '/referrals', icon: Network, ability: 'manage-referrals', feature: 'referral' },
-        { title: 'Commissions', url: '/commissions', icon: BookOpen, ability: 'manage-referrals', feature: 'referral' },
+        { title: 'Team tree', url: '/referrals', icon: Network, ability: 'manage-referrals', feature: 'referral' },
+        { title: 'Team earnings', url: '/commissions', icon: BookOpen, ability: 'manage-referrals', feature: 'referral' },
         { title: 'Badges', url: '/badges', icon: Medal, ability: 'manage-settings', feature: 'badges' },
         { title: 'Badge bonus', url: '/badge-bonus', icon: PiggyBank, ability: 'manage-settings', feature: 'badges.bonus' },
       ],
@@ -67,8 +67,8 @@ export const sidebarData: SidebarData = {
       title: 'Money',
       items: [
         { title: 'Cash-outs', url: '/cash-outs', icon: Banknote, ability: 'approve-cashouts', feature: 'wallet' },
-        { title: 'Ledger', url: '/ledger', icon: Wallet, ability: 'manage-ledger' },
-        { title: 'Fraud queue', url: '/fraud', icon: ShieldAlert, ability: 'review-fraud' },
+        { title: 'Money history', url: '/ledger', icon: Wallet, ability: 'manage-ledger' },
+        { title: 'Fraud checks', url: '/fraud', icon: ShieldAlert, ability: 'review-fraud' },
       ],
     },
     {

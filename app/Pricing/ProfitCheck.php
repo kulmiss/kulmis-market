@@ -53,7 +53,7 @@ class ProfitCheck
             $w = $this->worstCase($product, (int) $price);
             if ($w['profit'] < 0) {
                 $warnings[] = ['code' => 'unprofitable_member_order', 'message' => sprintf(
-                    'At %s a member order loses %s after discount, commissions and payment fee.',
+                    'At %s a member order loses %s after the member price cut, team earnings and the payment fee.',
                     Money::format((int) $price), Money::format(-$w['profit']))];
                 break;
             }

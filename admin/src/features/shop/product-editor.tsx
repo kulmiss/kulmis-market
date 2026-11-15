@@ -90,7 +90,7 @@ export function ProductEditor({ id }: { id: string }) {
     <Page title={isNew ? 'New product' : d.name} description={p ? `/${p.slug}` : undefined}
       actions={<>
         <Button variant='outline' asChild><Link to='/products'><ArrowLeft /> Products</Link></Button>
-        <Button onClick={save} disabled={saving}><Save /> Save</Button>
+        <Button onClick={save} disabled={saving}><Save /> {isNew ? 'Add product' : 'Save changes'}</Button>
       </>}>
       {p?.warnings.map((w) => (
         <Alert key={w.code} className='mb-3 border-amber-300 bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200'>

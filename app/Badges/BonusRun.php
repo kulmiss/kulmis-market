@@ -199,14 +199,14 @@ final class BonusRun
                     $pendingAccount = $this->ledger->userAccount($locked->user_id, Wallet::PENDING);
                     if ($cut > 0) {
                         $this->ledger->post('badge.bonus.reduced', [[$pendingAccount, $cut], [Account::BADGE_BONUSES, -$cut]],
-                            "badge-bonus:{$locked->id}:reduced", $locked, 'Membership refunded or ended', description: 'Badge bonus lowered');
+                            "badge-bonus:{$locked->id}:reduced", $locked, 'Membership refunded or ended', description: 'Badge bonus taken back (money given back)');
                         $locked->reduced_amount += $cut;
                     }
                     if ($allowed > 0) {
                         $this->ledger->post('badge.bonus.released', [
                             [$pendingAccount, $allowed],
                             [$this->ledger->userAccount($locked->user_id, Wallet::AVAILABLE), -$allowed],
-                        ], "badge-bonus:{$locked->id}:released", $locked, description: 'Badge bonus ready');
+                        ], "badge-bonus:{$locked->id}:released", $locked, description: 'Badge bonus ready to use');
                         $locked->status = BadgeBonus::AVAILABLE;
                         $locked->released_at = now();
                         $count++;

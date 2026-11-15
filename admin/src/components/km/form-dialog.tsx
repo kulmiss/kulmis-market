@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 
 /** Small dialog with a form body and a save button. */
-export function FormDialog({ title, trigger, onSave, children, saveText = 'Save' }: {
+export function FormDialog({ title, trigger, onSave, children, saveText = 'Save changes' }: {
   title: string; trigger: React.ReactNode; onSave: () => Promise<unknown>; children: React.ReactNode; saveText?: string
 }) {
   const [open, setOpen] = useState(false)

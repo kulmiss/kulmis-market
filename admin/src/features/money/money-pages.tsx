@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Check, Copy, Eye, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { useMutate } from '@/hooks/use-mutate'
+import { accountName, entryType, goesUp } from '@/lib/money-words'
 import { api } from '@/lib/api'
 import { formatDate, formatMoney } from '@/lib/money'
 import { Button } from '@/components/ui/button'
@@ -38,7 +39,7 @@ export function CashOutsPage() {
     { header: '', id: 'act', meta: { label: 'Actions' }, cell: ({ row }) => ['requested', 'on_hold'].includes(row.original.status) && <PayoutActions payout={row.original} /> },
   ]
   return (
-    <Page title='Cash-outs' description='Pay within 3 days. Open a request to see the full account number, send the money, then record the reference.'>
+    <Page title='Cash-outs' description='Pay within 3 days. Open a request to see the full account number, send the money, then type the reference from your bank or Telebirr.'>
       <ResourceTable<Payout> queryKey='cash-outs' path='/cash-outs' params={{ overdue: overdue ? 1 : undefined }} columns={columns}
         search={{ placeholder: 'Member, phone or reference' }}
         filters={[{ key: 'status', label: 'Status', default: 'requested', options: opts('requested', 'on_hold', 'paid', 'rejected') }]}
@@ -77,7 +78,7 @@ function PayoutActions({ payout }: { payout: Payout }) {
         )}
         <Input placeholder='Transfer reference (required)' value={reference} onChange={(e) => setReference(e.target.value)} />
       </FormDialog>
-      <FormDialog title='Reject cash-out' saveText='Reject' trigger={<Button size='sm' variant='ghost'><X /></Button>}
+      <FormDialog title='Do not pay this cash-out' saveText='Do not pay, put money back' trigger={<Button size='sm' variant='ghost'><X /></Button>}
         onSave={() => reject.mutateAsync({ path: `/cash-outs/${payout.id}/reject`, body: { reason } })}>
         <Input placeholder='Reason (sent to the member)' value={reason} onChange={(e) => setReason(e.target.value)} />
       </FormDialog>
@@ -95,18 +96,23 @@ export function LedgerPage() {
   const accounts = useQuery({ queryKey: ['ledger-accounts'], queryFn: async () => (await api.get<{ data: { code: string; name: string; type: string; balance: number }[] }>('/ledger/accounts')).data.data })
   const columns: ResourceColumn<Entry>[] = [
     { header: 'When', cell: ({ row }) => formatDate(row.original.created_at, true), meta: { sort: 'when', csv: (e) => e.created_at } },
-    { header: 'Type', cell: ({ row }) => <code className='text-xs'>{row.original.type}</code>, meta: { sort: 'type', csv: (e) => e.type } },
+    { header: 'What', cell: ({ row }) => <span>{entryType(row.original.type)}<code className='block text-[11px] text-muted-foreground'>{row.original.type}</code></span>, meta: { sort: 'type', csv: (e) => e.type } },
     { header: 'Description', cell: ({ row }) => <span>{row.original.description}{row.original.reason && <span className='block text-xs text-muted-foreground'>Reason: {row.original.reason}</span>}</span>, meta: { csv: (e) => `${e.description ?? ''}${e.reason ? ` (${e.reason})` : ''}` } },
-    { header: 'Postings (+ debit / − credit)', cell: ({ row }) => (
-      <div className='grid text-xs'>{row.original.postings.map((p) => <span key={p.id} className='font-mono'>{p.account.code}: {p.amount > 0 ? '+' : ''}{formatMoney(p.amount, false)}</span>)}</div>
+    { header: 'Money moved (+ goes up, − goes down)', meta: { label: 'Money moved', csv: (e) => e.postings.map((p) => `${p.account.code} ${p.amount / 100}`).join('; ') }, cell: ({ row }) => (
+      <div className='grid gap-0.5 text-xs'>{row.original.postings.map((p) => (
+        <span key={p.id} title={`${p.account.code}: ${p.amount > 0 ? '+' : ''}${p.amount / 100}`}>
+          {accountName(p.account.code)} <b className={goesUp(p.account.code, p.amount) ? 'text-emerald-700 tabular-nums dark:text-emerald-400' : 'tabular-nums text-muted-foreground'}>
+            {goesUp(p.account.code, p.amount) ? '+' : '−'}{formatMoney(Math.abs(p.amount))}</b>
+        </span>
+      ))}</div>
     ) },
   ]
   return (
-    <Page title='Ledger' description='Double-entry, integer santim. Balances are calculated from postings and never edited.'>
+    <Page title='Money history' description='Every time money moves, in and out. Each line shows which totals went up (+) and down (−). Nothing here can be changed or deleted.'>
       <div className='mb-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-6'>
         {accounts.data?.map((a) => (
           <Card key={a.code} className='gap-1 py-3'>
-            <CardHeader className='px-3'><CardTitle className='text-xs font-normal text-muted-foreground'>{a.code}</CardTitle></CardHeader>
+            <CardHeader className='px-3'><CardTitle className='text-xs font-normal text-muted-foreground' title={a.code}>{accountName(a.code)}</CardTitle></CardHeader>
             <CardContent className='px-3 font-semibold'>{formatMoney(a.balance)}</CardContent>
           </Card>
         ))}
@@ -138,7 +144,7 @@ export function FraudPage() {
     { header: '', id: 'act', meta: { label: 'Actions' }, cell: ({ row }) => row.original.status === 'open' && <Review flag={row.original} /> },
   ]
   return (
-    <Page title='Fraud queue' description="An open flag holds the member's earnings and cash-outs until you clear it.">
+    <Page title='Fraud checks' description="An open flag holds the member's earnings and cash-outs until you clear it.">
       <ResourceTable<Flag> queryKey='fraud' path='/fraud' columns={columns} search={{ placeholder: 'Member name or phone' }}
         filters={[{ key: 'status', label: 'Status', default: 'open', sendAll: true, options: opts('open', 'cleared', 'confirmed') }]} />
     </Page>
@@ -167,22 +173,24 @@ type CommissionRow = { id: number; type: string; level: number; base_amount: num
   status: string; skip_reason: string | null; available_at: string | null; on_hold: boolean; created_at: string
   recipient: { id: number; first_name: string; last_name: string } }
 
+const SALE: Record<string, string> = { membership: 'Membership', products: 'Shop order', signals: 'Signals' }
+
 export function CommissionsPage() {
   const columns: ResourceColumn<CommissionRow>[] = [
     { header: 'When', cell: ({ row }) => formatDate(row.original.created_at, true), meta: { sort: 'created', csv: (c) => c.created_at } },
     { header: 'Recipient', cell: ({ row }) => `${row.original.recipient.first_name} ${row.original.recipient.last_name}`, meta: { csv: (c) => `${c.recipient.first_name} ${c.recipient.last_name}` } },
-    { header: 'Sale', cell: ({ row }) => `${row.original.type} · L${row.original.level}`, meta: { sort: 'level', csv: (c) => `${c.type} L${c.level}` } },
-    { header: 'Base', cell: ({ row }) => formatMoney(row.original.base_amount), meta: { align: 'end', csv: (c) => c.base_amount / 100 } },
+    { header: 'From', cell: ({ row }) => `${SALE[row.original.type] ?? row.original.type} · level ${row.original.level}`, meta: { sort: 'level', csv: (c) => `${c.type} L${c.level}` } },
+    { header: 'Sale amount', cell: ({ row }) => formatMoney(row.original.base_amount), meta: { align: 'end', csv: (c) => c.base_amount / 100 } },
     { header: 'Rate', cell: ({ row }) => `${row.original.rate_bps / 100}%`, meta: { align: 'end', csv: (c) => c.rate_bps / 100 } },
     { header: 'Amount', cell: ({ row }) => <span>{formatMoney(row.original.amount)}{row.original.reversed_amount > 0 && <span className='ms-1 text-xs text-red-600'>−{formatMoney(row.original.reversed_amount)}</span>}</span>, meta: { sort: 'amount', align: 'end', csv: (c) => (c.amount - c.reversed_amount) / 100 } },
-    { header: 'Status', cell: ({ row }) => <span><StatusBadge status={row.original.on_hold ? 'on_hold' : row.original.status} />{row.original.skip_reason && <span className='ms-1 text-xs text-muted-foreground'>{row.original.skip_reason.replaceAll('_', ' ')}</span>}</span>, meta: { sort: 'status', csv: (c) => (c.on_hold ? 'on_hold' : c.status) } },
-    { header: 'Available', cell: ({ row }) => formatDate(row.original.available_at), meta: { sort: 'available', csv: (c) => c.available_at } },
+    { header: 'Status', cell: ({ row }) => <span><StatusBadge context='money' status={row.original.on_hold ? 'on_hold' : row.original.status} />{row.original.skip_reason && <span className='ms-1 text-xs text-muted-foreground'>{row.original.skip_reason === 'not_active_member' ? 'was not an active member' : row.original.skip_reason.replaceAll('_', ' ')}</span>}</span>, meta: { sort: 'status', csv: (c) => (c.on_hold ? 'on_hold' : c.status) } },
+    { header: 'Ready on', cell: ({ row }) => formatDate(row.original.available_at), meta: { sort: 'available', csv: (c) => c.available_at } },
   ]
   return (
-    <Page title='Commissions' description='Pending for 14 days, then available. Skipped = recipient was not an active member (the shop keeps it).'>
+    <Page title='Team earnings' description='Earnings are on the way for 14 days (in case of a refund), then ready to use. "Not paid out" means the person was not an active member, so the shop keeps it.'>
       <ResourceTable<CommissionRow> queryKey='commissions' path='/referrals/commissions' columns={columns} search={{ placeholder: 'Recipient name or phone' }}
         filters={[
-          { key: 'status', label: 'Status', options: opts('pending', 'available', 'reversed', 'skipped') },
+          { key: 'status', label: 'Status', options: [{ value: 'pending', label: 'On the way' }, { value: 'available', label: 'Ready to use' }, { value: 'reversed', label: 'Taken back' }, { value: 'skipped', label: 'Not paid out' }] },
           { key: 'type', label: 'Type', options: opts('membership', 'signals', 'products') },
           { key: 'level', label: 'Level', options: [1, 2, 3].map((l) => ({ value: String(l), label: `Level ${l}` })) },
         ]} />
@@ -203,7 +211,7 @@ export function ReferralTreePage({ initialUser }: { initialUser?: number }) {
     queryFn: async () => (await api.get<{ data: { upline: { id: number; name: string; code: string }[]; node: Node } }>(`/referrals/tree/${show}`)).data.data,
   })
   return (
-    <Page title='Referral tree' description='Full view for Super Admin: 3 levels down, upline, wallets.'>
+    <Page title='Team tree' description='Who invited whom: 3 levels down, who is above, and their wallets.'>
       <FilterBar>
         <Input className='h-9 w-full sm:w-48' placeholder='Member ID' value={userId} onChange={(e) => setUserId(e.target.value)} />
         <Button size='sm' onClick={() => setShow(userId)}>Show</Button>

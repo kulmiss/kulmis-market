@@ -101,7 +101,7 @@ class MemberDashboardTest extends ReferralTestCase
         $me = $this->member(null, 'Abdi');
         $me->membership()->update(['status' => 'grace', 'current_period_end' => now()->subDay(), 'grace_ends_at' => now()->addDays(2)]);
         $this->actingAs($me->fresh(), 'web');
-        $this->get('/account')->assertSee('Grace period until');
+        $this->get('/account')->assertSee('Please pay: your benefits stop on');
 
         app(MembershipService::class)->adjust($me, -3650, 'test', $this->admin->id);
         $this->get('/account')->assertSee('Membership ended')->assertSee('Become an active member to earn from your team.');

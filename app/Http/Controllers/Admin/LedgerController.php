@@ -72,7 +72,7 @@ class LedgerController extends Controller
         $entry = $this->ledger->post('manual.adjustment', [
             [$wallet, -$amount],
             [Account::ADJUSTMENTS, $amount],
-        ], reason: $data['reason'], actorId: $request->user()?->id, reference: $user, description: 'Manual wallet adjustment');
+        ], reason: $data['reason'], actorId: $request->user()?->id, reference: $user, description: 'Wallet fixed by hand');
 
         return response()->json(['data' => ['entry' => $entry->uuid, 'wallet' => Wallet::for($user)->summary()]], 201);
     }

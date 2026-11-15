@@ -8,7 +8,7 @@
     $ref = $dash['referral'];
     $badges = $dash['badges'];
     $statusChip = match (true) {
-        $m['status'] === 'grace' => ['Grace period until '.$day($m['grace_until']), 'warn'],
+        $m['status'] === 'grace' => ['Please pay: your benefits stop on '.$day($m['grace_until']), 'warn'],
         $m['active'] => ['Active member · renews '.$day($m['ends']), 'ok'],
         $m['status'] === 'none' => ['Not a member yet', 'muted'],
         default => ['Membership ended '.$day($m['ends']), 'warn'],
@@ -56,10 +56,10 @@
 {{-- Money --}}
 @if (F::enabled('wallet') || $ref)
 <section class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Your money">
-    @include('member.partials.stat', ['label' => 'Total earned', 'value' => $fmt($money['earned']), 'icon' => 'coins', 'tone' => 'accent', 'sub' => 'All time, after refunds'])
-    @include('member.partials.stat', ['label' => 'Pending', 'value' => $fmt($money['pending']), 'icon' => 'clock', 'sub' => \App\Support\Settings::int('referral.pending_days').'-day refund window'])
-    @include('member.partials.stat', ['label' => 'Available', 'value' => $fmt($money['available']), 'icon' => 'wallet', 'sub' => 'Ready to cash out'])
-    @include('member.partials.stat', ['label' => 'Paid out', 'value' => $fmt($money['paid_out']), 'icon' => 'banknote', 'sub' => $money['requested'] > 0 ? $fmt($money['requested']).' requested' : 'To Telebirr / bank'])
+    @include('member.partials.stat', ['label' => 'Total earned', 'value' => $fmt($money['earned']), 'icon' => 'coins', 'tone' => 'accent', 'sub' => 'Since you joined, after money given back'])
+    @include('member.partials.stat', ['label' => 'On the way', 'value' => $fmt($money['pending']), 'icon' => 'clock', 'sub' => 'Ready to use in '.\App\Support\Settings::int('referral.pending_days').' days'])
+    @include('member.partials.stat', ['label' => 'Ready to use', 'value' => $fmt($money['available']), 'icon' => 'wallet', 'sub' => 'You can cash it out or spend it'])
+    @include('member.partials.stat', ['label' => 'Paid out', 'value' => $fmt($money['paid_out']), 'icon' => 'banknote', 'sub' => $money['requested'] > 0 ? $fmt($money['requested']).' asked for' : 'To Telebirr / bank'])
 </section>
 @endif
 
@@ -240,7 +240,7 @@
     <div class="m-card" id="membership">
         <h2 class="font-semibold">Membership</h2>
         @if ($m['active'])
-            <p class="mt-1 text-sm">Active until <b>{{ $day($m['ends']) }}</b>@if ($m['grace_until']) · grace until {{ $day($m['grace_until']) }}@endif</p>
+            <p class="mt-1 text-sm">Active until <b>{{ $day($m['ends']) }}</b>@if ($m['grace_until']) · if you pay late, benefits stop on {{ $day($m['grace_until']) }}@endif</p>
             <div class="mt-3 flex items-center gap-3 rounded-xl p-3 m-soft">
                 <span class="text-2xl">🔥</span>
                 <div class="text-sm"><b>{{ $m['streak_months'] }} {{ \Illuminate\Support\Str::plural('month', $m['streak_months']) }}</b> in a row

@@ -48,7 +48,7 @@ export function Dashboard() {
   const d = q.data
 
   return (
-    <Page title='Dashboard' description='Money from the ledger, so refunds are already taken off.'
+    <Page title='Dashboard' description='Money really received and paid. Money given back is already taken off.'
       actions={<div className='grid w-full grid-cols-4 gap-2 sm:flex sm:w-auto' role='group' aria-label='Time range'>{ranges.map((r) => <Button key={r.days} size='sm' className='px-1 sm:px-3' aria-pressed={days === r.days} variant={days === r.days ? 'default' : 'outline'} onClick={() => setDays(r.days)}><span className='sm:hidden'>{r.short}</span><span className='hidden sm:inline'>{r.label}</span></Button>)}</div>}>
       {!d ? <PageSkeleton /> : (
         <div className='grid gap-4'>

@@ -156,9 +156,9 @@ export function TelegramPage() {
             <CardContent className='grid gap-2 text-sm'>
               <div className='flex justify-between'>Bot token {ok(t.configured)}</div>
               <div className='flex justify-between'>Bot username <span>{t.bot_username ? `@${t.bot_username}` : '—'}</span></div>
-              <div className='flex justify-between'>Private channel id {ok(t.channel_id_set)}</div>
-              <div className='flex justify-between'>Webhook secret {ok(t.webhook_secret_set)}</div>
-              <div className='flex justify-between'>Webhook URL <span className='max-w-[60%] truncate'>{t.webhook?.url || '—'}</span></div>
+              <div className='flex justify-between'>Private channel {ok(t.channel_id_set)}</div>
+              <div className='flex justify-between'>Secret key for Telegram messages {ok(t.webhook_secret_set)}</div>
+              <div className='flex justify-between'>Address Telegram sends to <span className='max-w-[60%] truncate'>{t.webhook?.url || '—'}</span></div>
               {t.webhook?.last_error && <div className='text-red-600'>Last error: {t.webhook.last_error}</div>}
               {t.error && <div className='text-red-600'>{t.error}</div>}
             </CardContent>

@@ -60,7 +60,7 @@ export function SettingsPage() {
     <Page title='Settings' description='Prices, rates, minimums, periods and texts. Changes are logged.'
       actions={<>
         <Input className='h-9 w-full sm:w-64' placeholder='Reason (optional, logged)' value={reason} onChange={(e) => setReason(e.target.value)} />
-        <Button onClick={() => save()} disabled={changed.length === 0}><Save /> Save {changed.length > 0 ? `(${changed.length})` : ''}</Button>
+        <Button onClick={() => save()} disabled={changed.length === 0}><Save /> {changed.length > 1 ? `Save ${changed.length} changes` : 'Save change'}</Button>
       </>}>
       <div className='mb-4 flex flex-wrap gap-2'>
         {groups.map((g) => (

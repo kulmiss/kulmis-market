@@ -81,7 +81,7 @@ class CommissionEngine
                     $this->ledger->post('commission.released', [
                         [$this->ledger->userAccount($locked->recipient_id, Wallet::PENDING), $amount],
                         [$this->ledger->userAccount($locked->recipient_id, Wallet::AVAILABLE), -$amount],
-                    ], "commission:{$locked->id}:released", $locked, description: 'Earnings available');
+                    ], "commission:{$locked->id}:released", $locked, description: 'Team earnings ready to use');
                     $locked->update(['status' => Commission::AVAILABLE, 'released_at' => now()]);
                     $count++;
                 });
@@ -113,7 +113,7 @@ class CommissionEngine
                     $this->ledger->post('commission.reversed', [
                         [$this->ledger->userAccount($locked->recipient_id, $bucket), $reverse],
                         [Account::COMMISSIONS, -$reverse],
-                    ], "commission:{$locked->id}:refund:$refundId", $locked, 'Refund', description: 'Commission reversed (refund)');
+                    ], "commission:{$locked->id}:refund:$refundId", $locked, 'Refund', description: 'Team earnings taken back (money given back)');
                     $total = $locked->reversed_amount + $reverse;
                     $locked->update(['reversed_amount' => $total, 'status' => $total >= $locked->amount ? Commission::REVERSED : $locked->status]);
                     $count++;
@@ -189,7 +189,9 @@ class CommissionEngine
                 $this->ledger->post('commission.earned', [
                     [Account::COMMISSIONS, $amount],
                     [$this->ledger->userAccount($recipient, Wallet::PENDING), -$amount],
-                ], "commission:{$c->id}:earned", $c, description: ucfirst($type)." commission L$level");
+                ], "commission:{$c->id}:earned", $c, description: "Team earnings, level $level, from ".match ($type) {
+                    'membership' => 'a membership', 'products' => 'a shop order', 'signals' => 'signals', default => $type
+                });
             } elseif ($skip === 'self_referral') {
                 Activity::log('referral.self_referral_skipped', $c, ['level' => $level]);
             }

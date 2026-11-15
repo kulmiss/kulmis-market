@@ -94,7 +94,7 @@ class CashOuts
                 $this->ledger->post('payout.requested', [
                     [$availableAccount, $amount],
                     [$this->ledger->userAccount($user, Wallet::PAYOUT), -$amount],
-                ], "payout:{$request->id}:requested", $request, description: 'Cash-out requested', nonNegative: [$availableAccount]);
+                ], "payout:{$request->id}:requested", $request, description: 'Cash-out asked', nonNegative: [$availableAccount]);
                 Activity::log('payout.requested', $request, ['amount' => $amount, 'hold' => $hold], null, $user->id);
 
                 return $request;
@@ -129,7 +129,7 @@ class CashOuts
             $account = $r->payout_account_id ? PayoutAccount::query()->lockForUpdate()->find($r->payout_account_id) : null;
             if ($account && ! $account->verified_at) {
                 if (! $accountChecked) {
-                    throw new InvalidArgumentException('First payout to this account: check that the name on the Telebirr/bank account is '
+                    throw new InvalidArgumentException('First cash-out to this account: check that the name on the Telebirr/bank account is '
                         .$r->account_name.', then tick "I checked the account".');
                 }
                 $account->update(['verified_at' => now(), 'verified_by' => $actorId]);
@@ -138,7 +138,7 @@ class CashOuts
             $this->ledger->post('payout.paid', [
                 [$this->ledger->userAccount($r->user_id, Wallet::PAYOUT), $r->amount],
                 [Account::CASH, -$r->amount],
-            ], "payout:{$r->id}:paid", $r, description: 'Cash-out paid', actorId: $actorId);
+            ], "payout:{$r->id}:paid", $r, description: 'Cash-out sent', actorId: $actorId);
             $r->update(['status' => 'paid', 'processed_by' => $actorId, 'processed_at' => now(), 'payout_reference' => $reference]);
             Activity::log('payout.paid', $r, ['reference' => $reference], null, $actorId);
             DB::afterCommit(fn () => $this->notify($r, Settings::string('notify.payout_paid'), null, 'payout_paid'));
