@@ -9,19 +9,21 @@ return [
     'abilities' => [
         'manage-settings', 'manage-features', 'manage-products', 'manage-orders',
         'manage-members', 'manage-signals', 'manage-referrals', 'manage-ledger',
-        'approve-cashouts', 'review-fraud', 'manage-content', 'view-reports', 'view-activity',
+        'approve-cashouts', 'approve-payments', 'review-fraud', 'manage-content', 'view-reports', 'view-activity',
     ],
 
     'roles' => [
         'super_admin' => ['label' => 'Super Admin', 'abilities' => ['*']],
         'manager' => ['label' => 'Manager', 'abilities' => [
             'manage-products', 'manage-orders', 'manage-members', 'manage-signals',
-            'manage-content', 'view-reports',
+            'manage-content', 'view-reports', 'approve-payments',
         ]],
+        // Fulfilment and Support see payments but can't approve transfers
+        // (approving gives value: membership, commissions, goods).
         'fulfilment' => ['label' => 'Fulfilment', 'abilities' => ['manage-orders']],
         'support' => ['label' => 'Support', 'abilities' => ['manage-orders', 'manage-members']],
         'finance' => ['label' => 'Finance', 'abilities' => [
-            'manage-ledger', 'approve-cashouts', 'review-fraud', 'view-reports',
+            'manage-ledger', 'approve-cashouts', 'approve-payments', 'review-fraud', 'view-reports',
         ]],
     ],
 

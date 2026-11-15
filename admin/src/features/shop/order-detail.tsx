@@ -4,6 +4,7 @@ import { Link } from '@tanstack/react-router'
 import { ArrowLeft, Check, ExternalLink, FileDown, RotateCcw, X } from 'lucide-react'
 import { useMutate } from '@/hooks/use-mutate'
 import { api } from '@/lib/api'
+import { useAuthStore } from '@/stores/auth-store'
 import { formatDate, formatETB } from '@/lib/money'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -127,6 +128,7 @@ function Row({ label, value, strong }: { label: string; value: string; strong?: 
 
 /** Approve / reject proofs, refund (full or partial), receipt. Used on orders and the payments page. */
 export function PaymentRow({ payment: p }: { payment: Payment }) {
+  const canApprove = useAuthStore((st) => st.can('approve-payments'))
   const act = useMutate('post', ['payments', 'order', 'orders'], 'Done')
   const [reason, setReason] = useState('')
   const [amount, setAmount] = useState(p.amount - p.refunded_amount)
@@ -147,7 +149,8 @@ export function PaymentRow({ payment: p }: { payment: Payment }) {
           {p.provider === 'chapa' && p.status === 'pending' && <Button size='sm' variant='outline' onClick={() => act.mutate({ path: `/payments/${p.id}/check` })}>Check with Chapa</Button>}
         </span>
       </div>
-      {p.status === 'awaiting_review' && (
+      {p.status === 'awaiting_review' && !canApprove && <p className='text-xs text-muted-foreground'>Waiting for Finance or a Manager to approve this transfer.</p>}
+      {p.status === 'awaiting_review' && canApprove && (
         <div className='flex flex-wrap items-center gap-2'>
           <Button size='sm' onClick={() => act.mutate({ path: `/payments/${p.id}/approve` })}><Check /> Approve</Button>
           <Input className='h-8 w-full sm:w-64' placeholder='Reason to reject' value={reason} onChange={(e) => setReason(e.target.value)} />

@@ -8,8 +8,10 @@ Route::middleware('can:manage-orders')->group(function () {
     Route::get('payments/{payment}', [PaymentController::class, 'show']);
     Route::get('payments/{payment}/proof', [PaymentController::class, 'proof']);
     Route::get('payments/{payment}/receipt', [PaymentController::class, 'receipt']);
+    Route::post('payments/{payment}/check', [PaymentController::class, 'check']);
+});
+Route::middleware('can:approve-payments')->group(function () {
     Route::post('payments/{payment}/approve', [PaymentController::class, 'approve']);
     Route::post('payments/{payment}/reject', [PaymentController::class, 'reject']);
-    Route::post('payments/{payment}/check', [PaymentController::class, 'check']);
 });
 Route::middleware('can:manage-ledger')->post('payments/{payment}/refund', [PaymentController::class, 'refund']);

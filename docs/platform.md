@@ -22,6 +22,19 @@
 Fulfilment, Support and Finance, ready for future staff. Routes check
 abilities with `->can('manage-orders')`.
 
+| Role | Can |
+|---|---|
+| Super Admin | Everything, incl. feature switches, settings, activity log, changing a referrer |
+| Manager | Products, orders, payments (incl. approving transfers), members, signals, content, reports |
+| Fulfilment | Orders and shipping; sees payments but can't approve transfers |
+| Support | Orders and members; sees payments but can't approve transfers |
+| Finance | Ledger, refunds, approving transfers, cash-outs, fraud queue, reports |
+
+Changing a member's referrer is Super Admin only, even if a role is given
+`manage-referrals`. `tests/Feature/Security/AccessControlTest.php` checks
+every route against guest, customer, member, expired member, each staff
+role and Super Admin, plus the "someone else's data" (IDOR) cases.
+
 ## Admin auth and 2FA
 - The admin API lives at `/api/v1/admin/*` and uses a same-domain session
   with the CSRF cookie. Personal API tokens can't reach it.

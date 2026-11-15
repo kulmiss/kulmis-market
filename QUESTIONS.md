@@ -44,6 +44,7 @@ change any of them.
 | 35 | Daily cash-out limits | 2 requests and 50,000 ETB per member per 24 h (editable). | Decided (review) |
 | 36 | First cash-out of a new member | Held for review if they joined less than 30 days ago (editable). | Decided (review) |
 | 37 | Fake-account detection without storing IPs | The network is kept only as a keyed hash in the cache for 24 h. | Decided (review) |
+| 38 | Who can approve a bank/Telebirr transfer? | Finance, Manager and Super Admin (new `approve-payments` ability). Fulfilment and Support can see payments but not approve them, because approving gives value. | Decided (review) |
 
 ## Still open: needs you
 | # | What | Why |
