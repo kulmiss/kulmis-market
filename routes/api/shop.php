@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['feature:shop', EncryptCookies::class, AddQueuedCookiesToResponse::class])->group(function () {
     Route::get('cart', [CartController::class, 'show'])->name('cart.show');
     Route::post('cart/items', [CartController::class, 'add'])->middleware('throttle:60,1')->name('cart.add');
+    Route::post('cart/bundles/{bundle}', [CartController::class, 'addBundle'])->whereNumber('bundle')->middleware(['throttle:30,1', 'feature:shop.bundles'])->name('cart.bundle');
     Route::patch('cart/items/{item}', [CartController::class, 'update'])->whereNumber('item')->middleware('throttle:60,1')->name('cart.update');
     // Coupon guessing is slow: 10 tries a minute.
     Route::put('cart/coupon', [CartController::class, 'coupon'])->middleware('throttle:10,1')->name('cart.coupon');

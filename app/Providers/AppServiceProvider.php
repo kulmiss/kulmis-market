@@ -22,6 +22,8 @@ use App\Referral\ReferralListener;
 use App\Session\PrivacySessionHandler;
 use App\Shipping\ShippingQuoter;
 use App\Shipping\ZoneShippingQuoter;
+use App\Shop\Bundles;
+use App\Shop\FlashSales;
 use App\Signals\MembershipSignalsListener;
 use App\Storefront\PageCache;
 use App\Support\Currency;
@@ -47,6 +49,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // One per request / queue job, so it can remember what it already worked out.
         $this->app->scoped(BadgeEngine::class);
+        $this->app->scoped(FlashSales::class);
+        $this->app->scoped(Bundles::class);
         $this->app->singleton(CheckoutExtras::class);
         $this->app->bind(ShippingQuoter::class, ZoneShippingQuoter::class);
         $this->app->bind(SmsGateway::class, fn () => match (config('services.sms.driver')) {
@@ -115,7 +119,10 @@ class AppServiceProvider extends ServiceProvider
             fn ($request, $cart, $user, $data) => app(Attribution::class)->forOrder($request, $user, $data));
 
         // Static page cache: anything shown on public pages changed → purge.
-        Event::listen(CatalogChanged::class, fn () => PageCache::clear());
+        Event::listen(CatalogChanged::class, function (): void {
+            PageCache::clear();
+            app(Bundles::class)->forget(); // bundles keep product names, prices and costs in their cache
+        });
 
         Blade::if('feature', fn (string $key) => Features::enabled($key));
 

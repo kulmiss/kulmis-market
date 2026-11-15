@@ -19,12 +19,15 @@ final class Quote
         public readonly int $shipping,           // before free-shipping
         public readonly int $shippingDiscount,
         public readonly int $memberSavingsPreview, // what a guest would save as a member ("Join & save")
+        public readonly int $bundleDiscount = 0,
+        /** @var list<array{bundle_id:int,name:string,sets:int,saving:int}> */
+        public readonly array $bundles = [],
     ) {}
 
-    /** Goods after member discount and coupon (commission base for products). */
+    /** Goods after member discount, bundle saving and coupon (commission base for products). */
     public function merchandiseTotal(): int
     {
-        return $this->listSubtotal - $this->memberDiscount - $this->couponDiscount;
+        return $this->listSubtotal - $this->memberDiscount - $this->bundleDiscount - $this->couponDiscount;
     }
 
     public function shippingPayable(): int
@@ -52,9 +55,12 @@ final class Quote
                 'name' => $l->product->name.($l->variant ? ' — '.$l->variant->name : ''),
                 'quantity' => $l->quantity, 'list_unit_price' => $l->listUnitPrice,
                 'unit_price' => $l->unitPrice, 'member_unit_price' => $l->memberUnitPrice, 'total' => $l->total(),
+                'regular_unit_price' => $l->regularUnitPrice, 'flash_sale' => $l->flashSaleId !== null,
             ], $this->lines),
             'list_subtotal' => $this->listSubtotal,
             'member_discount' => $this->memberDiscount,
+            'bundle_discount' => $this->bundleDiscount,
+            'bundles' => $this->bundles,
             'coupon' => $this->coupon?->code,
             'coupon_discount' => $this->couponDiscount,
             'merchandise_total' => $this->merchandiseTotal(),

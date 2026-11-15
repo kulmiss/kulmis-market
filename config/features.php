@@ -23,6 +23,9 @@ return [
     'shop.buy_again' => ['Buy again', 'Shop', true, 'shop', 'A "Buy again" button on past orders puts the same items in the cart (today\'s prices).'],
     'shop.saved_addresses' => ['Saved addresses', 'Shop', true, 'shop', 'Signed-in customers can save several delivery addresses and pick one at checkout.'],
     'shop.reviews' => ['Product reviews', 'Shop', true, 'shop', 'People who bought and received a product can rate it and add photos. You approve each one first.'],
+    'shop.flash_sales' => ['Flash sales', 'Shop', true, 'shop', 'A lower price for a short time, with a countdown and (if you want) limited pieces. Members still get their member price on top.'],
+    'shop.bundles' => ['Bundles', 'Shop', true, 'shop', 'Sets of products at one price. When every piece of a set is in the cart, the saving comes off by itself.'],
+    'shop.upsells' => ['"Bought together" and "You may also like"', 'Shop', true, 'shop', 'Matching products on product pages, in the cart and at checkout, with a one-tap "Add" button.'],
     'shop.order_tracking' => ['Order tracking page', 'Shop', true, 'shop', 'The "Track order" page and its links in menus and messages.'],
 
     // Payments

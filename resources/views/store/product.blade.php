@@ -11,6 +11,10 @@
         'offers' => ['@type' => 'Offer', 'priceCurrency' => \App\Support\Currency::code(), 'price' => number_format($product->price / 100, 2, '.', ''),
             'availability' => $stock === null || $stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock', 'url' => url('/shop/'.$product->slug)],
     ];
+    if ($sale && $sale->product_variant_id === null && $sale->price < $product->price) {
+        $jsonLd['offers']['price'] = number_format($sale->price / 100, 2, '.', '');
+        $jsonLd['offers']['priceValidUntil'] = $sale->ends_at->toDateString();
+    }
     if (\App\Support\Features::enabled('shop.reviews') && $product->rating_count > 0) {
         $jsonLd['aggregateRating'] = ['@type' => 'AggregateRating', 'ratingValue' => (string) $product->rating_avg, 'reviewCount' => $product->rating_count];
     }
@@ -41,7 +45,17 @@
     <div>
         @if ($product->category)<a href="{{ url('/c/'.$product->category->slug) }}" class="inline-flex min-h-12 items-center text-sm font-semibold text-brand-600 sm:min-h-0">{{ $product->category->name }}</a>@endif
         <h1 class="mt-1 text-4xl">{{ $product->name }}</h1>
-        <div class="mt-4 text-xl" data-price>@include('store.partials.price', ['price' => $product->price])</div>
+        <div class="mt-4 text-xl" data-price>@include('store.partials.price', ['price' => $product->price, 'sale' => $sale && $sale->product_variant_id === null ? $sale : null])</div>
+        @if ($sale)
+            <div class="mt-3 rounded-2xl border border-mist-200 p-4 dark:border-ink-700" data-flash-sale>
+                <p class="font-semibold">Flash sale{{ $sale->variant ? ' on '.$sale->variant->name : '' }}: {{ \App\Support\Money::format($sale->price) }}</p>
+                <p class="muted mt-1 text-sm">
+                    Ends in <span class="font-semibold tabular-nums" data-countdown="{{ $sale->ends_at->toIso8601String() }}">{{ $sale->ends_at->diffForHumans(null, \Carbon\CarbonInterface::DIFF_ABSOLUTE) }}</span>
+                    @if ($sale->stock_limit) · only {{ $sale->stock_limit }} pieces at this price @endif
+                    @if (\App\Support\Features::enabled('membership')) · members pay {{ \App\Support\Money::format(app(\App\Pricing\PriceCalculator::class)->memberPrice($sale->price)) }} @endif
+                </p>
+            </div>
+        @endif
         <div class="mt-3 flex flex-wrap gap-2">
             @if ($product->is_members_only)<span class="badge-gold">Members-only product</span>@endif
             @if ($product->inEarlyAccess())<span class="badge">Members early access — public on {{ $product->release_at->timezone(config('app.timezone'))->format('d M') }}</span>@endif
@@ -56,7 +70,8 @@
                     <label class="label" for="variant">Choose</label>
                     <select id="variant" name="variant_id" class="input" required>
                         @foreach ($variants as $v)
-                            <option value="{{ $v->id }}" @disabled(!$product->isMadeToOrder() && (int) $v->stock < 1)>{{ $v->name }}@if ($v->price) — {{ \App\Support\Money::format($v->price) }}@endif @if (!$product->isMadeToOrder() && (int) $v->stock < 1) (sold out)@endif</option>
+                            @php $vSale = app(\App\Shop\FlashSales::class)->for($product, $v); $vPrice = $v->price ?? $product->price; @endphp
+                            <option value="{{ $v->id }}" @disabled(!$product->isMadeToOrder() && (int) $v->stock < 1)>{{ $v->name }}@if ($vSale && $vSale->price < $vPrice) — sale {{ \App\Support\Money::format($vSale->price) }} (was {{ \App\Support\Money::format($vPrice) }})@elseif ($v->price) — {{ \App\Support\Money::format($v->price) }}@endif @if (!$product->isMadeToOrder() && (int) $v->stock < 1) (sold out)@endif</option>
                         @endforeach
                     </select>
                 </div>
@@ -123,7 +138,33 @@
         @if ($product->description)<div class="prose-km mt-8">{!! \Illuminate\Support\Str::markdown($product->description, ['html_input' => 'escape', 'allow_unsafe_links' => false]) !!}</div>@endif
     </div>
 </div>
+@if ($bundles->isNotEmpty())
+<section class="container-km mt-6" aria-labelledby="bundles-h">
+    <h2 id="bundles-h" class="mb-4 text-2xl">Save with a set</h2>
+    <div class="grid gap-4 md:grid-cols-2">
+        @foreach ($bundles as $b)
+            <div class="card grid gap-3">
+                <p class="font-semibold">{{ $b->name }}</p>
+                @if ($b->description)<p class="muted -mt-2 text-sm">{{ $b->description }}</p>@endif
+                <ul class="grid gap-1 text-sm">
+                    @foreach ($b->items as $i)<li>{{ $i->quantity }} × <a class="underline" href="{{ url('/shop/'.$i->product->slug) }}">{{ $i->product->name }}{{ $i->variant ? ' — '.$i->variant->name : '' }}</a></li>@endforeach
+                </ul>
+                <div>@include('store.partials.price', ['price' => $b->price])</div>
+                <p class="muted -mt-2 text-sm">One by one: {{ \App\Support\Money::format($b->regularPrice()) }} · you save {{ \App\Support\Money::format($b->regularPrice() - $b->price) }}</p>
+                <button type="button" class="btn-dark" data-add-bundle="{{ $b->id }}">Add the set to cart</button>
+                <p class="text-sm" data-bundle-message role="status" aria-live="polite"></p>
+            </div>
+        @endforeach
+    </div>
+</section>
+@endif
 @feature('shop.reviews')@include('store.partials.reviews')@endfeature
+@if ($together->isNotEmpty())
+<section class="container-km mt-6">
+    <h2 class="mb-5 text-2xl">Frequently bought together</h2>
+    <div class="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4">@foreach ($together as $p)@include('store.partials.product-card', ['p' => $p])@endforeach</div>
+</section>
+@endif
 @if ($related->isNotEmpty())
 <section class="container-km mt-6">
     <h2 class="mb-5 text-2xl">You may also like</h2>

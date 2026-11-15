@@ -2,6 +2,7 @@
 
 namespace App\Pricing;
 
+use App\Models\Bundle;
 use App\Models\Product;
 use App\Support\Features;
 use App\Support\Money;
@@ -60,5 +61,30 @@ class ProfitCheck
         }
 
         return $warnings;
+    }
+
+    /**
+     * Worst case for one bundle set sold to a member at the bundle price.
+     *
+     * @return array{price:int, member_price:int, commission:int, payment_fee:int, cost:int, profit:int}
+     */
+    public function bundle(Bundle $bundle): array
+    {
+        $price = $bundle->price;
+        $memberPrice = Features::enabled('membership') ? $this->prices->memberPrice($price) : $price;
+        $commission = Money::bpsRound($memberPrice, min(10_000, $this->maxProductCommissionBps()));
+        $fee = Money::bpsRound($memberPrice, Settings::int('payments.fee_bps'));
+        $cost = $bundle->cost();
+
+        return ['price' => $price, 'member_price' => $memberPrice, 'commission' => $commission,
+            'payment_fee' => $fee, 'cost' => $cost, 'profit' => $memberPrice - $commission - $fee - $cost];
+    }
+
+    /** Easy-English line for the admin: "You keep X per member order" or "Loses X per member order". */
+    public static function line(int $profit): string
+    {
+        return $profit >= 0
+            ? 'You keep at least '.Money::format($profit).' per member order (after the member price, team earnings, payment fee and cost).'
+            : 'This loses '.Money::format(-$profit).' on every member order (after the member price, team earnings, payment fee and cost).';
     }
 }

@@ -88,6 +88,10 @@ change any of them.
 | 79 | Buy again | Uses today's prices and skips items that are no longer sold, and says which ones. | Decided (recommended) |
 | 80 | Saved addresses | Up to 10 per person; the first one is the default; "Save this address for next time" at checkout skips duplicates. | Decided (recommended) |
 | 81 | Reviews | Only buyers whose order was delivered; one review per product; up to 3 photos (re-encoded, no hidden data); nothing shows before you press "Show it"; names show as "Abebe K."; demo reviews show only while demo data is on and never count in the real star average. | Decided (recommended) |
+| 82 | Flash sales: price rules | The sale price is the new guest price; members get their member price on top. If a cart asks for more pieces than are left at the sale price, the whole line is the normal price (never a mix). Only one sale per product (or option) at a time. A sale for one option beats a sale for the whole product. | Decided (recommended) |
+| 83 | Flash sales and bundles that lose money | The admin shows "You keep at least X per member order" while you type. Saving a loss needs an extra tick ("I know it loses money"); it is never blocked silently. | Decided (recommended) |
+| 84 | Bundles | No special cart line: when every piece of a set is in the cart, the saving comes off by itself (biggest saving first, each piece counts once). The set price gets the member price on top; coupons apply after the set saving; team earnings use the price after the saving. | Decided (recommended) |
+| 85 | "Bought together" and "You may also like" | Worked out automatically: "bought together" from real paid orders, "also like" from the same category, best rated first. Cached for 6 hours. One-tap "Add" only for products without options; others say "Choose". | Decided (recommended) |
 
 ## Still open: needs you
 | # | What | Why |

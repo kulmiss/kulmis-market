@@ -1,0 +1,1 @@
+import{n as e}from"./promotions-page-DMq2DsvA.js";var t=e;export{t as component};

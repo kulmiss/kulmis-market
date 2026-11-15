@@ -5,6 +5,8 @@ namespace App\Pricing;
 use App\Models\Coupon;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Shop\Bundles;
+use App\Shop\FlashSales;
 use App\Support\Features;
 use App\Support\Money;
 use App\Support\Settings;
@@ -14,7 +16,8 @@ use Closure;
  * The single source of truth for what a customer pays.
  *
  * Order of operations:
- *   guest price → member discount (15%) → coupon → + shipping → free shipping
+ *   guest price (or live flash-sale price) → member discount (15%) → bundle saving
+ *   → coupon → + shipping → free shipping
  *   for members when goods ≥ 3,000 ETB.
  */
 class PriceCalculator
@@ -48,25 +51,43 @@ class PriceCalculator
             throw new PricingException('Your cart is empty.');
         }
         $lines = [];
+        $flash = app(FlashSales::class);
+        $saleQty = [];
         foreach ($items as [$product, $variant, $qty]) {
             $this->assertPurchasable($product, $variant, $qty, $member, $checkStock);
-            $list = $this->unitListPrice($product, $variant);
+            $regular = $this->unitListPrice($product, $variant);
+            $list = $regular;
+            $saleId = null;
+            // Flash sale: server-side price only, and only while pieces are left at that price.
+            $sale = $flash->for($product, $variant);
+            if ($sale !== null && $sale->price < $regular) {
+                $wanted = ($saleQty[$sale->id] ?? 0) + $qty;
+                if ($sale->remaining() === null || $sale->remaining() >= $wanted) {
+                    $saleQty[$sale->id] = $wanted;
+                    $list = $sale->price;
+                    $saleId = $sale->id;
+                }
+            }
             $memberUnit = $this->memberPrice($list);
-            $lines[] = new Line($product, $variant, $qty, $list, $member ? $memberUnit : $list, $memberUnit);
+            $lines[] = new Line($product, $variant, $qty, $list, $member ? $memberUnit : $list, $memberUnit,
+                $saleId !== null ? $regular : null, $saleId);
         }
 
         $listSubtotal = array_sum(array_map(fn (Line $l) => $l->listTotal(), $lines));
         $afterMember = array_sum(array_map(fn (Line $l) => $l->total(), $lines));
         $memberDiscount = $listSubtotal - $afterMember;
 
+        $bundles = app(Bundles::class)->apply($lines, $member);
+        $afterBundles = $afterMember - $bundles['discount'];
+
         $coupon = null;
         $couponDiscount = 0;
         if ($couponCode !== null && trim($couponCode) !== '') {
-            $coupon = $this->resolveCoupon($couponCode, $member, $afterMember, $customerUses);
-            $couponDiscount = $this->couponDiscount($coupon, $afterMember);
+            $coupon = $this->resolveCoupon($couponCode, $member, $afterBundles, $customerUses);
+            $couponDiscount = $this->couponDiscount($coupon, $afterBundles);
         }
 
-        $merchandise = $afterMember - $couponDiscount;
+        $merchandise = $afterBundles - $couponDiscount;
         $shippingDiscount = $member && $this->freeShippingApplies($merchandise) ? $shipping : 0;
 
         $preview = 0;
@@ -78,7 +99,8 @@ class PriceCalculator
             }
         }
 
-        return new Quote($lines, $member, $listSubtotal, $memberDiscount, $couponDiscount, $coupon, $shipping, $shippingDiscount, $preview);
+        return new Quote($lines, $member, $listSubtotal, $memberDiscount, $couponDiscount, $coupon, $shipping, $shippingDiscount, $preview,
+            $bundles['discount'], $bundles['applied']);
     }
 
     public function freeShippingApplies(int $merchandiseTotal): bool

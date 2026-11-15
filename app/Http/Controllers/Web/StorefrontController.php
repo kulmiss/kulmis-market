@@ -12,6 +12,9 @@ use App\Models\Signal;
 use App\Models\User;
 use App\Pricing\PriceCalculator;
 use App\Referral\Engagement;
+use App\Shop\Bundles;
+use App\Shop\FlashSales;
+use App\Shop\Recommendations;
 use App\Support\Features;
 use App\Support\Phone;
 use App\Support\Settings;
@@ -66,12 +69,21 @@ class StorefrontController extends Controller
         abort_if(Features::disabled('shop'), 404);
         $member = $this->isMember($request);
         $product = Product::query()->visibleTo($member)->where('slug', $slug)->with(['images', 'variants', 'category', 'tags'])->firstOrFail();
-        $related = Product::query()->visibleTo($member)->where('id', '!=', $product->id)
-            ->when($product->category_id, fn ($q) => $q->where('category_id', $product->category_id))
-            ->with(['images', 'variants'])->inRandomOrder()->limit(4)->get();
+        $together = collect();
+        if (Features::enabled('shop.upsells')) {
+            $reco = app(Recommendations::class);
+            $together = $reco->boughtTogether($product, $member);
+            $related = $reco->alsoLike($product, $member, 4, $together->modelKeys());
+        } else {
+            $related = Product::query()->visibleTo($member)->where('id', '!=', $product->id)
+                ->when($product->category_id, fn ($q) => $q->where('category_id', $product->category_id))
+                ->with(['images', 'variants'])->inRandomOrder()->limit(4)->get();
+        }
 
-        return view('store.product', ['product' => $product, 'related' => $related, 'isMember' => $member,
-            'memberPrice' => app(PriceCalculator::class)->memberPrice($product->price)]);
+        return view('store.product', ['product' => $product, 'related' => $related, 'together' => $together, 'isMember' => $member,
+            'memberPrice' => app(PriceCalculator::class)->memberPrice($product->price),
+            'sale' => app(FlashSales::class)->forDisplay($product),
+            'bundles' => app(Bundles::class)->containing($product->id)]);
     }
 
     public function membership(): View

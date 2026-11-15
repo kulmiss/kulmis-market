@@ -103,7 +103,10 @@ final class Reviews
             ->when(! Demo::visible(), fn ($x) => $x->where('is_demo', false));
         $stars = (clone $q)->selectRaw('rating, COUNT(*) as c')->groupBy('rating')->pluck('c', 'rating')->map(fn ($c) => (int) $c)->all();
         $count = array_sum($stars);
-        $avg = $count ? round(array_sum(array_map(fn ($r, $c) => $r * $c, array_keys($stars), $stars)) / $count, 1) : null;
+        if ($count === 0) {
+            return ['avg' => null, 'count' => 0, 'stars' => [], 'items' => new \Illuminate\Database\Eloquent\Collection];
+        }
+        $avg = round(array_sum(array_map(fn ($r, $c) => $r * $c, array_keys($stars), $stars)) / $count, 1);
 
         return ['avg' => $avg, 'count' => $count, 'stars' => $stars,
             'items' => $q->with('user:id,first_name,last_name')->latest('id')->limit($limit)->get()];

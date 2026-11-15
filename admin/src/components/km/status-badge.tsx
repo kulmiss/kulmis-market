@@ -15,6 +15,7 @@ const map: Record<string, keyof typeof tones> = {
   shipped: 'info', on_hold: 'warn', partially_refunded: 'warn', breakeven: 'muted', draft: 'muted', archived: 'muted',
   cancelled: 'muted', ended: 'muted', skipped: 'muted', closed: 'muted', expired: 'bad', failed: 'bad', rejected: 'bad',
   refunded: 'bad', reversed: 'bad', loss: 'bad', suspended: 'bad', confirmed: 'bad',
+  live: 'good', scheduled: 'info', sold_out: 'muted', off: 'muted',
 }
 
 /** Easy words for statuses (the data keeps its codes; CSV keeps the codes too). */
@@ -25,6 +26,7 @@ export const WORDS: Record<string, string> = {
   draft: 'Draft (hidden)', archived: 'Archived (hidden)', cancelled: 'Cancelled', ended: 'Ended', skipped: 'Not paid out', closed: 'Closed',
   expired: 'Ended', failed: 'Failed', rejected: 'Not approved', refunded: 'Money given back', reversed: 'Taken back', loss: 'Loss',
   suspended: 'Blocked', confirmed: 'Fraud (confirmed)', none: 'Not a member', not_active: 'Not active',
+  live: 'Running now', scheduled: 'Starts later', sold_out: 'Sold out', off: 'Off',
 }
 
 /** In money lists "pending" means the money is on its way to the member. */

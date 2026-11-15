@@ -6,6 +6,7 @@ use App\Cart\CartManager;
 use App\Events\OrderPlaced;
 use App\Models\Cart;
 use App\Models\Coupon;
+use App\Models\FlashSale;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -14,6 +15,8 @@ use App\Pricing\PriceCalculator;
 use App\Pricing\PricingException;
 use App\Pricing\Quote;
 use App\Shipping\ShippingQuoter;
+use App\Shop\FlashSales;
+use App\Storefront\PageCache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -49,7 +52,8 @@ class Checkout
             return $existing; // double-click / retry → same order
         }
 
-        $order = DB::transaction(function () use ($cart, $customer, $user, $checkoutKey, $extra) {
+        $flashTouched = false; // true when a sale sold out with this order
+        $order = DB::transaction(function () use ($cart, $customer, $user, $checkoutKey, $extra, &$flashTouched) {
             $cartItems = $cart->items()->get();
             if ($cartItems->isEmpty()) {
                 throw new PricingException('Your cart is empty.');
@@ -92,6 +96,7 @@ class Checkout
                 'is_member_order' => $member,
                 'list_subtotal' => $quote->listSubtotal,
                 'member_discount' => $quote->memberDiscount,
+                'bundle_discount' => $quote->bundleDiscount,
                 'coupon_id' => $quote->coupon?->id,
                 'coupon_code' => $quote->coupon?->code,
                 'coupon_discount' => $quote->couponDiscount,
@@ -116,7 +121,19 @@ class Checkout
                     'line_total' => $line->total(),
                     'made_to_order' => $line->product->isMadeToOrder(),
                     'making_days' => $line->product->making_days,
+                    'flash_sale_id' => $line->flashSaleId,
                 ]);
+                if ($line->flashSaleId !== null) {
+                    // Atomic: two checkouts can't both take the last pieces at the sale price.
+                    $taken = FlashSale::query()->whereKey($line->flashSaleId)
+                        ->where(fn ($q) => $q->whereNull('stock_limit')->orWhereRaw('sold + ? <= stock_limit', [$line->quantity]))
+                        ->increment('sold', $line->quantity);
+                    if ($taken === 0) {
+                        throw new PricingException("The sale price for “{$line->product->name}” just ran out. Please check your cart again.");
+                    }
+                    $flashTouched = $flashTouched || FlashSale::query()->whereKey($line->flashSaleId)
+                        ->whereNotNull('stock_limit')->whereColumn('sold', '>=', 'stock_limit')->exists();
+                }
                 if (! $line->product->isMadeToOrder()) {
                     $line->variant
                         ? ProductVariant::query()->whereKey($line->variant->id)->decrement('stock', $line->quantity)
@@ -143,6 +160,10 @@ class Checkout
             return $order;
         });
 
+        if ($flashTouched) {
+            app(FlashSales::class)->forget();
+            PageCache::clear(); // a sale just sold out: cached guest pages must stop showing it
+        }
         OrderPlaced::dispatch($order);
 
         return $order;

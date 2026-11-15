@@ -5,11 +5,14 @@ namespace App\Orders;
 use App\Events\OrderPaid;
 use App\Events\OrderStatusChanged;
 use App\Jobs\NotifyBackInStock;
+use App\Models\FlashSale;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderStatusChange;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Shop\FlashSales;
+use App\Storefront\PageCache;
 use App\Support\Activity;
 use App\Wallet\WalletPayments;
 use Illuminate\Support\Facades\DB;
@@ -72,8 +75,14 @@ class OrderService
 
     public function restock(Order $order): void
     {
+        $flash = false;
         foreach ($order->items as $item) {
             /** @var OrderItem $item */
+            if ($item->flash_sale_id) {
+                // The pieces go back to the sale too (if it is still running).
+                FlashSale::query()->whereKey($item->flash_sale_id)->where('sold', '>=', $item->quantity)->decrement('sold', $item->quantity);
+                $flash = true;
+            }
             if ($item->made_to_order) {
                 continue;
             }
@@ -91,6 +100,10 @@ class OrderService
                     NotifyBackInStock::dispatch($item->product_id, null)->afterCommit();
                 }
             }
+        }
+        if ($flash) {
+            app(FlashSales::class)->forget();
+            PageCache::clear(); // a sold-out sale may be open again
         }
     }
 

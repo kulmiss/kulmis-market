@@ -113,6 +113,35 @@ $$('[data-add-to-cart]').forEach((form) =>
     }),
 );
 
+$$('[data-add-bundle]').forEach((b) => b.addEventListener('click', async () => {
+    if (b.disabled) return;
+    b.disabled = true;
+    const msg = b.parentElement.querySelector('[data-bundle-message]');
+    try {
+        await api(`/cart/bundles/${Number(b.dataset.addBundle)}`, { method: 'POST' });
+        msg.innerHTML = 'The set is in your cart. <a class="underline" href="/cart">View cart</a>';
+        msg.className = 'text-sm text-leaf-600';
+        refreshCount();
+    } catch (err) { say(msg, err.message); }
+    b.disabled = false;
+}));
+
+/* Flash-sale countdown. When it reaches zero the sale box goes away (the server
+   price is the only one that counts, so a stale page can't sell at the sale price). */
+$$('[data-countdown]').forEach((el) => {
+    const end = Date.parse(el.dataset.countdown);
+    if (Number.isNaN(end)) return;
+    const pad = (n) => String(n).padStart(2, '0');
+    const tick = () => {
+        const left = Math.max(0, Math.floor((end - Date.now()) / 1000));
+        const d = Math.floor(left / 86400), h = Math.floor((left % 86400) / 3600), m = Math.floor((left % 3600) / 60), sec = left % 60;
+        el.textContent = (d ? `${d}d ` : '') + `${pad(h)}:${pad(m)}:${pad(sec)}`;
+        if (left === 0) { clearInterval(timer); el.closest('[data-flash-sale]')?.remove(); }
+    };
+    const timer = setInterval(tick, 1000);
+    tick();
+});
+
 const zoom = $('[data-zoom]');
 if (zoom) {
     const img = $('img', zoom);
@@ -136,10 +165,30 @@ function totalsHtml(q) {
     return [
         row('Subtotal', etb(q.list_subtotal)),
         q.member_discount ? row('Member discount', '−' + etb(q.member_discount), 'text-brand-600') : '',
+        q.bundle_discount ? row('Set saving' + (q.bundles?.length ? ' (' + q.bundles.map((b) => esc(b.name)).join(', ') + ')' : ''), '−' + etb(q.bundle_discount), 'text-brand-600') : '',
         q.coupon_discount ? row(`Coupon ${esc(q.coupon)}`, '−' + etb(q.coupon_discount), 'text-brand-600') : '',
         q.shipping ? row('Shipping', q.shipping_discount ? 'Free' : etb(q.shipping_payable)) : row('Shipping', 'at checkout'),
         row('Total', etb(q.total), 'mt-1 text-base font-semibold'),
     ].join('');
+}
+
+/** "You may also like" with a one-tap Add (cart page and checkout). */
+function renderSuggestions(box, items, after) {
+    if (!box) return;
+    if (!items?.length) { box.innerHTML = ''; return; }
+    box.innerHTML = `<h2 class="mb-3 font-sans text-base font-semibold">You may also like</h2><div class="grid gap-2">${items.map((s) => `
+        <div class="flex items-center gap-3 rounded-2xl border border-mist-200 p-2 dark:border-ink-700">
+            ${s.image ? `<img src="${esc(s.image)}" alt="" width="56" height="56" loading="lazy" class="size-14 rounded-xl object-cover">` : '<div class="size-14 rounded-xl bg-mist-200"></div>'}
+            <div class="min-w-0 flex-1"><a class="block truncate font-medium hover:underline" href="/shop/${esc(s.slug)}">${esc(s.name)}</a>
+                <span class="muted text-sm">${s.price < s.regular_price ? `<s>${etb(s.regular_price)}</s> ` : ''}${etb(s.price)}</span></div>
+            ${s.one_tap ? `<button type="button" class="btn-ghost" data-quick-add="${s.product_id}">Add</button>` : `<a class="btn-ghost" href="/shop/${esc(s.slug)}">Choose</a>`}
+        </div>`).join('')}</div>`;
+    $$('[data-quick-add]', box).forEach((b) => b.addEventListener('click', async () => {
+        if (b.disabled) return;
+        b.disabled = true;
+        try { await api('/cart/items', { method: 'POST', body: { product_id: Number(b.dataset.quickAdd), quantity: 1 } }); refreshCount(); after(); }
+        catch (err) { b.disabled = false; alert(err.message); }
+    }));
 }
 
 async function renderCart() {
@@ -156,12 +205,13 @@ async function renderCart() {
         return `<div class="card flex items-center gap-4 p-3">
             ${i.image ? `<img src="${esc(i.image)}" alt="" width="64" height="64" class="size-16 rounded-xl object-cover">` : '<div class="size-16 rounded-xl bg-mist-200"></div>'}
             <div class="flex-1"><a class="font-medium hover:underline" href="/shop/${esc(i.slug)}">${esc(i.name)}</a>
-              ${l ? `<div class="muted text-sm">${etb(l.unit_price)} each${!cart.is_member && l.member_unit_price < l.unit_price ? ` · <span class="text-brand-600">member price ${etb(l.member_unit_price)}</span>` : ''}</div>` : ''}</div>
+              ${l ? `<div class="muted text-sm">${l.regular_unit_price ? `<s>${etb(l.regular_unit_price)}</s> <b class="text-ink-900 dark:text-mist-100">Sale</b> ` : ''}${etb(l.unit_price)} each${!cart.is_member && l.member_unit_price < l.unit_price ? ` · <span class="text-brand-600">member price ${etb(l.member_unit_price)}</span>` : ''}</div>` : ''}</div>
             <input type="number" min="0" max="99" value="${i.quantity}" class="input w-20" data-qty="${i.id}" aria-label="Quantity">
         </div>`;
     }).join('');
     if (cart.problem) lines.insertAdjacentHTML('beforeend', `<p class="text-sm text-danger-600">${esc(cart.problem)}</p>`);
     if (q) $('[data-totals]', body).innerHTML = totalsHtml(q);
+    renderSuggestions($('[data-suggestions]', body), cart.suggestions, renderCart);
     if (q && q.member_savings_preview > 0) {
         const js = $('[data-join-save]', body);
         js.classList.remove('hidden');
@@ -195,6 +245,7 @@ if (checkoutForm) {
             if (!cart.items.length) { summary.innerHTML = '<p>Your cart is empty. <a class="underline" href="/shop">Shop</a></p>'; return; }
             summary.innerHTML = cart.items.map((i) => `<div class="flex justify-between"><span>${i.quantity} × ${esc(i.name)}</span></div>`).join('')
                 + '<hr class="my-2 border-mist-200">' + (cart.quote ? totalsHtml(cart.quote) : `<p class="text-danger-600">${esc(cart.problem)}</p>`);
+            renderSuggestions($('[data-checkout-suggestions]'), cart.suggestions, refreshSummary);
         } catch (e) { summary.textContent = e.message; }
     };
     // Back button after placing an order: the page comes from the browser's memory, so show the real (now empty) cart.

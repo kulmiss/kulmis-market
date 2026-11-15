@@ -54,6 +54,6 @@
             </form>
         @endif
     </div>
-    <aside class="md:col-span-2"><div class="card sticky top-24 grid gap-1 text-sm" data-checkout-summary><p class="muted">Loading your cart…</p></div></aside>
+    <aside class="md:col-span-2"><div class="sticky top-24 grid gap-6"><div class="card grid gap-1 text-sm" data-checkout-summary><p class="muted">Loading your cart…</p></div><div data-checkout-suggestions></div></div></aside>
 </div>
 @endsection

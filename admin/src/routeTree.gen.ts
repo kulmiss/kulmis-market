@@ -21,6 +21,7 @@ import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as AuthenticatedBadgeBonusRouteImport } from './routes/_authenticated/badge-bonus'
 import { Route as AuthenticatedBadgesRouteImport } from './routes/_authenticated/badges'
+import { Route as AuthenticatedBundlesRouteImport } from './routes/_authenticated/bundles'
 import { Route as AuthenticatedCashOutsRouteImport } from './routes/_authenticated/cash-outs'
 import { Route as AuthenticatedCategoriesRouteImport } from './routes/_authenticated/categories'
 import { Route as AuthenticatedCommissionsRouteImport } from './routes/_authenticated/commissions'
@@ -29,6 +30,7 @@ import { Route as AuthenticatedContentRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedCouponsRouteImport } from './routes/_authenticated/coupons'
 import { Route as AuthenticatedDemoRouteImport } from './routes/_authenticated/demo'
 import { Route as AuthenticatedFeaturesRouteImport } from './routes/_authenticated/features'
+import { Route as AuthenticatedFlashSalesRouteImport } from './routes/_authenticated/flash-sales'
 import { Route as AuthenticatedFraudRouteImport } from './routes/_authenticated/fraud'
 import { Route as AuthenticatedLedgerRouteImport } from './routes/_authenticated/ledger'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
@@ -109,6 +111,11 @@ const AuthenticatedBadgesRoute = AuthenticatedBadgesRouteImport.update({
   path: '/badges',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBundlesRoute = AuthenticatedBundlesRouteImport.update({
+  id: '/bundles',
+  path: '/bundles',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCashOutsRoute = AuthenticatedCashOutsRouteImport.update({
   id: '/cash-outs',
   path: '/cash-outs',
@@ -148,6 +155,11 @@ const AuthenticatedDemoRoute = AuthenticatedDemoRouteImport.update({
 const AuthenticatedFeaturesRoute = AuthenticatedFeaturesRouteImport.update({
   id: '/features',
   path: '/features',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFlashSalesRoute = AuthenticatedFlashSalesRouteImport.update({
+  id: '/flash-sales',
+  path: '/flash-sales',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedFraudRoute = AuthenticatedFraudRouteImport.update({
@@ -274,6 +286,7 @@ export interface FileRoutesByFullPath {
   '/activity': typeof AuthenticatedActivityRoute
   '/badge-bonus': typeof AuthenticatedBadgeBonusRoute
   '/badges': typeof AuthenticatedBadgesRoute
+  '/bundles': typeof AuthenticatedBundlesRoute
   '/cash-outs': typeof AuthenticatedCashOutsRoute
   '/categories': typeof AuthenticatedCategoriesRoute
   '/commissions': typeof AuthenticatedCommissionsRoute
@@ -282,6 +295,7 @@ export interface FileRoutesByFullPath {
   '/coupons': typeof AuthenticatedCouponsRoute
   '/demo': typeof AuthenticatedDemoRoute
   '/features': typeof AuthenticatedFeaturesRoute
+  '/flash-sales': typeof AuthenticatedFlashSalesRoute
   '/fraud': typeof AuthenticatedFraudRoute
   '/ledger': typeof AuthenticatedLedgerRoute
   '/payments': typeof AuthenticatedPaymentsRoute
@@ -313,6 +327,7 @@ export interface FileRoutesByTo {
   '/activity': typeof AuthenticatedActivityRoute
   '/badge-bonus': typeof AuthenticatedBadgeBonusRoute
   '/badges': typeof AuthenticatedBadgesRoute
+  '/bundles': typeof AuthenticatedBundlesRoute
   '/cash-outs': typeof AuthenticatedCashOutsRoute
   '/categories': typeof AuthenticatedCategoriesRoute
   '/commissions': typeof AuthenticatedCommissionsRoute
@@ -321,6 +336,7 @@ export interface FileRoutesByTo {
   '/coupons': typeof AuthenticatedCouponsRoute
   '/demo': typeof AuthenticatedDemoRoute
   '/features': typeof AuthenticatedFeaturesRoute
+  '/flash-sales': typeof AuthenticatedFlashSalesRoute
   '/fraud': typeof AuthenticatedFraudRoute
   '/ledger': typeof AuthenticatedLedgerRoute
   '/payments': typeof AuthenticatedPaymentsRoute
@@ -356,6 +372,7 @@ export interface FileRoutesById {
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
   '/_authenticated/badge-bonus': typeof AuthenticatedBadgeBonusRoute
   '/_authenticated/badges': typeof AuthenticatedBadgesRoute
+  '/_authenticated/bundles': typeof AuthenticatedBundlesRoute
   '/_authenticated/cash-outs': typeof AuthenticatedCashOutsRoute
   '/_authenticated/categories': typeof AuthenticatedCategoriesRoute
   '/_authenticated/commissions': typeof AuthenticatedCommissionsRoute
@@ -364,6 +381,7 @@ export interface FileRoutesById {
   '/_authenticated/coupons': typeof AuthenticatedCouponsRoute
   '/_authenticated/demo': typeof AuthenticatedDemoRoute
   '/_authenticated/features': typeof AuthenticatedFeaturesRoute
+  '/_authenticated/flash-sales': typeof AuthenticatedFlashSalesRoute
   '/_authenticated/fraud': typeof AuthenticatedFraudRoute
   '/_authenticated/ledger': typeof AuthenticatedLedgerRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
@@ -400,6 +418,7 @@ export interface FileRouteTypes {
     | '/activity'
     | '/badge-bonus'
     | '/badges'
+    | '/bundles'
     | '/cash-outs'
     | '/categories'
     | '/commissions'
@@ -408,6 +427,7 @@ export interface FileRouteTypes {
     | '/coupons'
     | '/demo'
     | '/features'
+    | '/flash-sales'
     | '/fraud'
     | '/ledger'
     | '/payments'
@@ -439,6 +459,7 @@ export interface FileRouteTypes {
     | '/activity'
     | '/badge-bonus'
     | '/badges'
+    | '/bundles'
     | '/cash-outs'
     | '/categories'
     | '/commissions'
@@ -447,6 +468,7 @@ export interface FileRouteTypes {
     | '/coupons'
     | '/demo'
     | '/features'
+    | '/flash-sales'
     | '/fraud'
     | '/ledger'
     | '/payments'
@@ -481,6 +503,7 @@ export interface FileRouteTypes {
     | '/_authenticated/activity'
     | '/_authenticated/badge-bonus'
     | '/_authenticated/badges'
+    | '/_authenticated/bundles'
     | '/_authenticated/cash-outs'
     | '/_authenticated/categories'
     | '/_authenticated/commissions'
@@ -489,6 +512,7 @@ export interface FileRouteTypes {
     | '/_authenticated/coupons'
     | '/_authenticated/demo'
     | '/_authenticated/features'
+    | '/_authenticated/flash-sales'
     | '/_authenticated/fraud'
     | '/_authenticated/ledger'
     | '/_authenticated/payments'
@@ -608,6 +632,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBadgesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/bundles': {
+      id: '/_authenticated/bundles'
+      path: '/bundles'
+      fullPath: '/bundles'
+      preLoaderRoute: typeof AuthenticatedBundlesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/cash-outs': {
       id: '/_authenticated/cash-outs'
       path: '/cash-outs'
@@ -662,6 +693,13 @@ declare module '@tanstack/react-router' {
       path: '/features'
       fullPath: '/features'
       preLoaderRoute: typeof AuthenticatedFeaturesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/flash-sales': {
+      id: '/_authenticated/flash-sales'
+      path: '/flash-sales'
+      fullPath: '/flash-sales'
+      preLoaderRoute: typeof AuthenticatedFlashSalesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/fraud': {
@@ -828,6 +866,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
   AuthenticatedBadgeBonusRoute: typeof AuthenticatedBadgeBonusRoute
   AuthenticatedBadgesRoute: typeof AuthenticatedBadgesRoute
+  AuthenticatedBundlesRoute: typeof AuthenticatedBundlesRoute
   AuthenticatedCashOutsRoute: typeof AuthenticatedCashOutsRoute
   AuthenticatedCategoriesRoute: typeof AuthenticatedCategoriesRoute
   AuthenticatedCommissionsRoute: typeof AuthenticatedCommissionsRoute
@@ -836,6 +875,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCouponsRoute: typeof AuthenticatedCouponsRoute
   AuthenticatedDemoRoute: typeof AuthenticatedDemoRoute
   AuthenticatedFeaturesRoute: typeof AuthenticatedFeaturesRoute
+  AuthenticatedFlashSalesRoute: typeof AuthenticatedFlashSalesRoute
   AuthenticatedFraudRoute: typeof AuthenticatedFraudRoute
   AuthenticatedLedgerRoute: typeof AuthenticatedLedgerRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
@@ -861,6 +901,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedActivityRoute: AuthenticatedActivityRoute,
   AuthenticatedBadgeBonusRoute: AuthenticatedBadgeBonusRoute,
   AuthenticatedBadgesRoute: AuthenticatedBadgesRoute,
+  AuthenticatedBundlesRoute: AuthenticatedBundlesRoute,
   AuthenticatedCashOutsRoute: AuthenticatedCashOutsRoute,
   AuthenticatedCategoriesRoute: AuthenticatedCategoriesRoute,
   AuthenticatedCommissionsRoute: AuthenticatedCommissionsRoute,
@@ -869,6 +910,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCouponsRoute: AuthenticatedCouponsRoute,
   AuthenticatedDemoRoute: AuthenticatedDemoRoute,
   AuthenticatedFeaturesRoute: AuthenticatedFeaturesRoute,
+  AuthenticatedFlashSalesRoute: AuthenticatedFlashSalesRoute,
   AuthenticatedFraudRoute: AuthenticatedFraudRoute,
   AuthenticatedLedgerRoute: AuthenticatedLedgerRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,

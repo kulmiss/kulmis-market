@@ -1,5 +1,6 @@
 <?php
 
+use App\Shop\FlashSales;
 use App\Storefront\PageCache;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -49,3 +50,4 @@ Artisan::command('km:clear-page-cache', function () {
 if (config('shop.backup_key')) {
     Schedule::command('km:backup')->dailyAt('02:17')->withoutOverlapping();
 }
+Schedule::call(fn () => app(FlashSales::class)->tick())->everyMinute()->name('flash-sales:tick')->withoutOverlapping();
