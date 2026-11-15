@@ -16,7 +16,7 @@ English (ready for Amharic) and aimed at customers in Ethiopia.
 - **API:** REST `/api/v1`, ready for the Flutter app (Sanctum tokens)
 - Built assets are committed, so the server needs no Node
 
-## PRs (everything up to #37 is merged into main)
+## PRs (everything up to #37 is merged into main; #38–#44 are a stack — merge the top one)
 | PR | Branch | Status |
 |----|--------|--------|
 | 1 | `pr/01-scaffold` | Merged. Laravel 13, Docker, CI, docs |
@@ -62,7 +62,13 @@ PRs 1–28 are merged into `main`.
 | 35 | `pr/35-remove-chapa` | Merged via #44 (#43). Chapa removed completely: payments are Telebirr/bank transfer + receipt (staff approve) and the wallet; membership = wallet or transfer (+ part wallet); guest signals = transfer + receipt; manual/wallet refunds; CSP `form-action 'self'`; page texts updated by a migration ([docs/payments.md](docs/payments.md)) |
 | 36 | `pr/36-green-logo` | Merged (#44). Logo in the member-area green (#1f8a4c) everywhere: storefront, member area, errors, admin, emails, PDF receipts, favicon/ico/touch/app icons, social preview; manifest theme colour green ([docs/storefront.md](docs/storefront.md#logo-and-icons)) |
 | 37 | `pr/37-green-store` | Merged (#45). Shop in white & green (same green as the logo/member area; dark mode readable; emails, PDF, social preview match); no religious images in the demo data (cross pendant and Meskel print replaced, evil-eye beads cropped) ([docs/storefront.md](docs/storefront.md#colours)) |
-| 38 | `pr/38-deps` | **Top PR, targets main, ready for review, CI runs here.** Dependency updates: GitHub Actions (checkout 7, cache 6, setup-node 7), admin @tanstack/react-table 9 (tables migrated to the v9 API), react-day-picker 10, @types/node 26, prettier-plugin-tailwindcss 0.8; unused table helpers removed; Dependabot skips PHP 8.4+, phpunit 13 and TypeScript 7 (QUESTIONS #59) |
+| 38 | `pr/38-deps` | Draft (#46). Dependency updates: GitHub Actions (checkout 7, cache 6, setup-node 7), admin @tanstack/react-table 9 (tables migrated to the v9 API), react-day-picker 10, @types/node 26, prettier-plugin-tailwindcss 0.8; unused table helpers removed; Dependabot skips PHP 8.4+, phpunit 13 and TypeScript 7 (QUESTIONS #59) |
+| 39 | `pr/39-host-assets` | Draft (#47). Host-header cache poisoning fixed (canonical URLs, host check, trusted hosts); committed CSS rebuilt; CI checks committed builds match the sources |
+| 40 | `pr/40-header-theme` | Draft (#48). Header: theme, cart, account at the far right showing the signed-in member; Super Admin light/dark switch; no stale guest page after sign-in |
+| 41 | `pr/41-bugs` | Draft (#49). Bug hunt: Finance can open Payments, one receipt under review at a time, role-aware admin (403 / first allowed page), feature state for all staff, red errors, double-submit protection, control-character stripping, pay-from-wallet takes nothing unless full |
+| 42 | `pr/42-security` | Draft (#50). Security re-audit: AttackTest (XSS, query strings, mass assignment, redirects, enumeration, stock), array query strings no longer crash, membership API fix, storefront CSP without inline styles, Larastan level 6 |
+| 43 | `pr/43-perf` | Draft (#51). Speed: speculation rules, LCP preload, lighter photos, service worker + offline page, fewer queries, cached dashboard, skeletons, deploy clears the page cache, CI budgets (phone Lighthouse, server time) |
+| 44 | `pr/44-report` | **Top PR, targets main, ready for review, CI runs here.** SECURITY_REPORT round 3 (scores, every bug, speed before → after), docs, handover |
 
 **Merge:** the top PR targets `main` and contains every commit
 below it, so one merge brings in everything.
@@ -86,19 +92,22 @@ All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
 See [docs/local-setup.md](docs/local-setup.md).
 
 ## Test status
-- 333 backend tests pass on SQLite and MariaDB 10.11 (every money path in
+- 358 backend tests pass on SQLite and MariaDB 10.11 (every money path in
   the brief is covered).
 - The admin passes typecheck, lint (0 errors) and build. The storefront
   builds.
-- CI (on the top PR): Pint + PHPUnit on MySQL 8, admin
-  typecheck/lint/build, and Lighthouse ≥ 95 + LCP ≤ 1.5 s.
+- CI (on the top PR): Pint, Larastan level 6, PHPUnit on MySQL 8, admin
+  typecheck/lint/build, committed builds match the sources, server-time
+  budgets, Lighthouse desktop (≥ 95, LCP ≤ 1.0 s) and phone (LCP ≤ 1.8 s,
+  slow 4G), gitleaks.
+- Round 3 review (15 Nov): every screen and flow re-tested in a browser as
+  every member type and staff role, attack tests and real parallel requests;
+  19 bugs found and fixed. See SECURITY_REPORT.md.
 - Layout checked in headless Chrome (15 Nov): every admin page and every
   storefront page at 1440 px and 390 px, plus the sign-in/2FA screens at
   610 px. No page scrolls sideways; wide admin tables scroll inside their box.
 
 ## Not done / next ideas
-- Larastan isn't installed (the build machine couldn't download it). Add
-  it with `composer require --dev larastan/larastan`.
 - Amharic: all texts go through settings, pages or Blade, so adding `lang/am`
   plus a language switch is the next step.
 - Product reviews: the `shop.reviews` switch exists (off), but the feature

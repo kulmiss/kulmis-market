@@ -54,14 +54,26 @@ The cache is cleared whenever products, categories, pages, banners,
 settings or feature switches change, and every 15 minutes (so early-access
 releases show up on time). Turn it off with `PAGE_CACHE=false`.
 
-## Performance target
-LCP ≤ 1.5 s and Lighthouse ≥ 95 in all four categories, checked by the
-`lighthouse` CI job (`lighthouserc.json`, demo catalog seeded):
-- Responsive AVIF/WebP images with fixed dimensions (no layout shift), a
-  high-priority hero image, lazy loading below the fold
-- One CSS file (about 7 KB gzipped), one small deferred JS module
-- System fonts; light/dark follows the device, with a toggle saved in
-  `localStorage` (not a cookie)
+## Performance
+Checked in CI (`lighthouse` job): Lighthouse ≥ 95 in all four categories,
+desktop LCP ≤ 1.0 s, phone LCP ≤ 1.8 s on simulated slow 4G, CLS ≤ 0.01, and
+server time (`scripts/perf-budget.sh`): uncached pages p95 < 150 ms, API p95
+< 100 ms. Query budgets per page are tests (`PerformanceTest`).
+- Static page cache (above): guest pages in < 1 ms, without PHP
+- Responsive AVIF/WebP images (AVIF quality 45) with width/height (no layout
+  shift); the main photo is preloaded before the CSS; lazy below the fold
+- One CSS file (~9 KB gzipped), one small deferred JS module, system fonts
+- **Instant navigation:** Speculation Rules prefetch a public page when the
+  pointer rests on its link or a finger touches it (Chrome/Edge; a tiny
+  `<link rel=prefetch>` fallback elsewhere). Account, admin, cart, checkout,
+  pay, API and sign-in pages are never prefetched
+- **Service worker** (`public/sw.js`): versioned files and photos come from
+  the cache; public pages always from the network, with a saved copy only when
+  offline, then `public/offline.html`. Private pages and non-public responses
+  are never stored. To turn it off, replace `sw.js` with one that unregisters
+- Light/dark follows the device, with a toggle saved in `localStorage`
+- After every deploy run `php artisan optimize`: it caches config, routes,
+  views and events **and empties the page cache** (new CSS/JS file names)
 
 ## SEO
 Per-page title and description, canonical URL, Open Graph and Twitter
