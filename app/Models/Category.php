@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use App\Events\CatalogChanged;
 use Database\Factories\CategoryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,6 +19,8 @@ class Category extends Model
 {
     /** @use HasFactory<CategoryFactory> */
     use HasFactory;
+
+    use HidesDemo;
 
     /** @var array<string, mixed> */
     protected $attributes = ['is_active' => true, 'position' => 0];

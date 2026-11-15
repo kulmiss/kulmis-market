@@ -49,7 +49,6 @@ class Doctor extends Command
             ['PHP errors not shown to visitors', ! filter_var(ini_get('display_errors'), FILTER_VALIDATE_BOOLEAN) || $local, 'display_errors=Off in php.ini'],
             ['PHP version hidden', ! filter_var(ini_get('expose_php'), FILTER_VALIDATE_BOOLEAN) || $local, 'expose_php=Off in php.ini'],
             ['Log level not debug', config('logging.channels.'.config('logging.default').'.level', 'debug') !== 'debug' || ! $prod, 'LOG_LEVEL=info'],
-            ['Chapa webhook secret (when Chapa is on)', Features::disabled('payments.chapa') || (string) config('services.chapa.webhook_secret') !== '' || ! $prod, 'CHAPA_WEBHOOK_SECRET=… (same as in the Chapa dashboard)'],
             ['Telegram webhook secret (when the bot is on)', Features::disabled('telegram_bot') || (string) config('services.telegram.webhook_secret') !== '' || ! $prod, 'TELEGRAM_WEBHOOK_SECRET=<long random>'],
         ];
         $setup = [
@@ -57,7 +56,6 @@ class Doctor extends Command
             ['Cron is running (scheduler heartbeat < 5 min)', $beat && Carbon::parse($beat)->gt(now()->subMinutes(5)), '* * * * * php /path/to/artisan schedule:run'],
             ['Storage link', is_link(public_path('storage')) || is_dir(public_path('storage')), 'php artisan storage:link'],
             ['A Super Admin exists', DB::table('users')->where('role', 'super_admin')->exists(), 'php artisan km:create-admin you@example.com'],
-            ['Chapa secret key', (string) config('services.chapa.secret_key') !== '', 'CHAPA_SECRET_KEY=…'],
             ['Telegram bot token + channel', (string) config('services.telegram.bot_token') !== '' && (string) config('services.telegram.channel_id') !== '', 'TELEGRAM_BOT_TOKEN / TELEGRAM_CHANNEL_ID'],
             ['Owner alerts chat (Telegram)', (string) config('services.telegram.admin_chat_id') !== '', 'TELEGRAM_ADMIN_CHAT_ID=<your chat id>'],
             ['SMS provider (not log)', config('services.sms.driver') !== 'log', 'SMS_DRIVER=http + SMS_URL / SMS_TOKEN'],

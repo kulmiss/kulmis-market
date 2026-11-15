@@ -7,7 +7,7 @@ import { Flag } from '@/components/km/status-badge'
 
 type S = { scheduler_last_run: string | null; scheduler_ok: boolean; queue_waiting: number; queue_failed: number; features_off: string[]
   php: string; laravel: string; environment: string; debug: boolean; https: boolean
-  integrations: { chapa: boolean; chapa_webhook: boolean; telegram: boolean; sms: string; mail: string } }
+  integrations: { telegram: boolean; sms: string; mail: string } }
 
 export function StatusPage() {
   const q = useQuery({ queryKey: ['status'], queryFn: async () => (await api.get<{ data: S }>('/status')).data.data, refetchInterval: 30_000 })
@@ -29,8 +29,6 @@ export function StatusPage() {
           <Card>
             <CardHeader><CardTitle className='text-base'>Integrations</CardTitle></CardHeader>
             <CardContent className='grid gap-2 text-sm'>
-              <div className='flex flex-wrap items-center justify-between gap-x-3 gap-y-1'>Chapa key <Flag ok={s.integrations.chapa} /></div>
-              <div className='flex flex-wrap items-center justify-between gap-x-3 gap-y-1'>Chapa webhook secret <Flag ok={s.integrations.chapa_webhook} /></div>
               <div className='flex flex-wrap items-center justify-between gap-x-3 gap-y-1'>Telegram bot <Flag ok={s.integrations.telegram} /></div>
               <div className='flex flex-wrap items-center justify-between gap-x-3 gap-y-1'>SMS driver <span>{s.integrations.sms}</span></div>
               <div className='flex flex-wrap items-center justify-between gap-x-3 gap-y-1'>Mail <span>{s.integrations.mail}</span></div>

@@ -183,9 +183,9 @@ class WebSecurityTest extends ReferralTestCase
 
     public function test_secrets_are_scrubbed_from_logs(): void
     {
-        $line = RedactSecrets::clean('Chapa failed key=CHASECK_TEST-abcDEF123 bot 123456789:AAFabcdefghijklmnopqrstuvwxyz0123456 '
+        $line = RedactSecrets::clean('SMS failed bot 123456789:AAFabcdefghijklmnopqrstuvwxyz0123456 '
             .'Authorization: Bearer 1|abcdefghijklmnop "password":"hunter2-long" card 4111 1111 1111 1111 app base64:'.str_repeat('A', 44));
-        foreach (['CHASECK_TEST-abc', 'AAFabcdefghij', '1|abcdefghijklmnop', 'hunter2-long', '4111 1111 1111 1111', str_repeat('A', 44)] as $secret) {
+        foreach (['AAFabcdefghij', '1|abcdefghijklmnop', 'hunter2-long', '4111 1111 1111 1111', str_repeat('A', 44)] as $secret) {
             $this->assertStringNotContainsString($secret, $line);
         }
         // And it's wired into the log channels.
@@ -207,7 +207,7 @@ class WebSecurityTest extends ReferralTestCase
         app(Ledger::class)->post('manual.adjustment', [[Account::ADJUSTMENTS, 100], [Account::CASH, -100]], reason: 'Bank fee correction', actorId: $this->admin->id);
         app(FraudGuard::class)->flag($this->member(), 'manual');
         for ($i = 0; $i < 6; $i++) {
-            $this->postJson('/api/v1/webhooks/chapa', ['tx_ref' => 'x'], ['x-chapa-signature' => 'forged'])->assertStatus(401);
+            $this->postJson('/api/v1/webhooks/telegram', ['update_id' => $i], ['X-Telegram-Bot-Api-Secret-Token' => 'forged'])->assertForbidden();
         }
         $titles = DB::table('activity_log')->where('action', 'security.critical')->pluck('properties')->map(fn ($p) => json_decode((string) $p, true)['title'])->all();
         $this->assertCount(3, $titles, implode(' | ', $titles));

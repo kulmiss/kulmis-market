@@ -44,3 +44,46 @@
 @utility badge-gold { @apply badge bg-gold-500/15 text-gold-500; }
 @utility prose-km { @apply space-y-4 leading-relaxed [&_a]:text-clay-600 [&_a]:underline [&_h2]:mt-8 [&_h2]:text-2xl [&_h3]:mt-6 [&_h3]:text-xl [&_li]:ms-5 [&_ol]:list-decimal [&_ul]:list-disc; }
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/tailwind.blade.php';
+
+/* Badge unlock celebration */
+.km-confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.km-confetti i { position: absolute; top: -12px; width: 9px; height: 14px; border-radius: 2px; opacity: .9; animation: km-fall 2.6s ease-in forwards; }
+.km-confetti i:nth-child(4n) { background: var(--color-clay-500); } .km-confetti i:nth-child(4n+1) { background: var(--color-gold-500); }
+.km-confetti i:nth-child(4n+2) { background: #3f8a4e; } .km-confetti i:nth-child(4n+3) { background: #f6efe6; }
+.km-confetti i:nth-child(1){left:4%;animation-delay:.0s}.km-confetti i:nth-child(2){left:9%;animation-delay:.3s}.km-confetti i:nth-child(3){left:14%;animation-delay:.1s}
+.km-confetti i:nth-child(4){left:19%;animation-delay:.5s}.km-confetti i:nth-child(5){left:24%;animation-delay:.2s}.km-confetti i:nth-child(6){left:29%;animation-delay:.6s}
+.km-confetti i:nth-child(7){left:34%;animation-delay:.15s}.km-confetti i:nth-child(8){left:39%;animation-delay:.45s}.km-confetti i:nth-child(9){left:44%;animation-delay:.05s}
+.km-confetti i:nth-child(10){left:49%;animation-delay:.35s}.km-confetti i:nth-child(11){left:54%;animation-delay:.25s}.km-confetti i:nth-child(12){left:59%;animation-delay:.55s}
+.km-confetti i:nth-child(13){left:64%;animation-delay:.1s}.km-confetti i:nth-child(14){left:69%;animation-delay:.4s}.km-confetti i:nth-child(15){left:74%;animation-delay:.2s}
+.km-confetti i:nth-child(16){left:79%;animation-delay:.6s}.km-confetti i:nth-child(17){left:84%;animation-delay:.3s}.km-confetti i:nth-child(18){left:89%;animation-delay:.05s}
+.km-confetti i:nth-child(19){left:94%;animation-delay:.5s}.km-confetti i:nth-child(20){left:7%;animation-delay:.7s}.km-confetti i:nth-child(21){left:37%;animation-delay:.8s}
+.km-confetti i:nth-child(22){left:57%;animation-delay:.75s}.km-confetti i:nth-child(23){left:77%;animation-delay:.85s}.km-confetti i:nth-child(24){left:97%;animation-delay:.65s}
+@keyframes km-fall { to { transform: translateY(105vh) rotate(540deg); opacity: .2; } }
+.km-pop { animation: km-pop .6s cubic-bezier(.2, 1.6, .4, 1) both; }
+@keyframes km-pop { from { transform: scale(.3); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .km-confetti { display: none; } .km-pop { animation: none; } }
+
+/* ---------- Member area: green & white (accent from Settings → Appearance), with its own dark mode ---------- */
+.km-member { --m-bg: #f4f8f5; --m-surface: #ffffff; --m-line: rgb(0 0 0 / 0.06); --m-ink: #13241a; --m-muted: #5b6b61;
+    --m-soft: color-mix(in srgb, var(--m-accent) 10%, white); --m-strong: color-mix(in srgb, var(--m-accent) 82%, black); }
+.dark .km-member, .km-member.dark { --m-bg: #0b130e; --m-surface: #111c15; --m-line: rgb(255 255 255 / 0.07); --m-ink: #e7f1ea; --m-muted: #9db1a4;
+    --m-soft: color-mix(in srgb, var(--m-accent) 20%, #0b130e); --m-strong: color-mix(in srgb, var(--m-accent) 65%, white); }
+.km-member { background: var(--m-bg); color: var(--m-ink); }
+@utility m-card { @apply rounded-2xl border p-5 shadow-[0_1px_2px_rgb(0_0_0/0.04)]; background: var(--m-surface); border-color: var(--m-line); }
+@utility m-muted { color: var(--m-muted); }
+@utility m-accent-text { color: var(--m-strong); }
+@utility m-soft { background: var(--m-soft); }
+@utility m-btn { @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl px-3 sm:px-4 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-50; background: var(--m-accent); }
+@utility m-btn-ghost { @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl border px-3 sm:px-4 py-2.5 text-sm font-semibold transition; border-color: var(--m-line); background: var(--m-surface); }
+@utility m-input { @apply w-full rounded-xl border px-3.5 py-2.5 text-base outline-none; background: var(--m-surface); border-color: var(--m-line); color: var(--m-ink); }
+@utility m-nav-link { @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition; }
+.m-nav-link:hover { background: var(--m-soft); }
+.m-nav-link[aria-current="page"] { background: var(--m-soft); color: var(--m-strong); font-weight: 650; }
+.m-bottom a[aria-current="page"] { color: var(--m-strong); }
+.m-bar { background: var(--m-accent); }
+.m-bar-muted { background: color-mix(in srgb, var(--m-accent) 25%, transparent); }
+.km-member .input { background: var(--m-surface); border-color: var(--m-line); color: var(--m-ink); }
+.km-member .card { background: var(--m-surface); border-color: var(--m-line); }
+.km-member .muted { color: var(--m-muted); }
+.km-member .btn-primary { background: var(--m-accent); }
+.km-member .btn-ghost { border-color: var(--m-line); }

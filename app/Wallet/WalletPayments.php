@@ -16,7 +16,7 @@ use Illuminate\Support\Str;
 /**
  * Pay (part of) an order or membership month from the wallet's available
  * balance. The wallet part is its own Payment row (provider "wallet"), so
- * refunds and commission reversals work the same way as for Chapa.
+ * refunds and commission reversals work the same way as for transfers.
  */
 class WalletPayments
 {
@@ -82,6 +82,6 @@ class WalletPayments
     {
         Payment::query()->where('payable_type', $payable->getMorphClass())->where('payable_id', $payable->getKey())
             ->where('provider', Payment::WALLET)->whereIn('status', [Payment::PAID, Payment::PARTIALLY_REFUNDED])
-            ->each(fn (Payment $p) => $this->payments->refund($p, $p->refundable(), $reason, null, false));
+            ->each(fn (Payment $p) => $this->payments->refund($p, $p->refundable(), $reason));
     }
 }

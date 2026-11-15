@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use App\Payments\Payable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -31,7 +32,12 @@ use Illuminate\Support\Carbon;
  */
 class Payment extends Model
 {
-    public const CHAPA = 'chapa';
+    use HidesDemo;
+
+    protected static function demoMorphParent(): ?string
+    {
+        return 'payable';
+    }
 
     public const BANK = 'bank_transfer';
 

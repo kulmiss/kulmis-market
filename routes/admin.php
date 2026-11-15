@@ -26,6 +26,13 @@ Route::middleware(['auth', 'staff', 'admin.timeout'])->group(function () {
         Route::put('features', [Admin\FeatureController::class, 'update'])->can('manage-features');
         Route::get('settings', [Admin\SettingController::class, 'index'])->can('manage-settings');
         Route::put('settings', [Admin\SettingController::class, 'update'])->can('manage-settings');
+        Route::get('demo', [Admin\DemoController::class, 'show'])->can('manage-settings');
+        Route::put('demo', [Admin\DemoController::class, 'update'])->can('manage-settings');
+        Route::delete('demo', [Admin\DemoController::class, 'destroy'])->can('manage-settings')->middleware('throttle:5,1');
+        Route::get('badges', [Admin\BadgeController::class, 'index'])->can('manage-settings');
+        Route::post('badges', [Admin\BadgeController::class, 'store'])->can('manage-settings');
+        Route::put('badges/{badge}', [Admin\BadgeController::class, 'update'])->can('manage-settings');
+        Route::delete('badges/{badge}', [Admin\BadgeController::class, 'destroy'])->can('manage-settings');
         Route::get('activity', [Admin\ActivityLogController::class, 'index'])->can('view-activity');
 
         foreach (glob(__DIR__.'/admin/*.php') ?: [] as $file) {

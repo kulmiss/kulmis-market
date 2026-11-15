@@ -44,14 +44,6 @@ return [
         'sender' => env('SMS_SENDER', 'KulmisMkt'),
     ],
 
-    // Chapa: test keys start with CHASECK_TEST-. Webhook secret is set in the Chapa dashboard.
-    'chapa' => [
-        'secret_key' => env('CHAPA_SECRET_KEY'),
-        'webhook_secret' => env('CHAPA_WEBHOOK_SECRET'),
-        'base_url' => env('CHAPA_BASE_URL', 'https://api.chapa.co/v1'),
-        'refund_api' => (bool) env('CHAPA_REFUND_API', true),
-    ],
-
     'telegram' => [
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
         'bot_username' => env('TELEGRAM_BOT_USERNAME'),

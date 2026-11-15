@@ -33,7 +33,9 @@ class LoginGuard
 
         // Always run a hash check so response time doesn't reveal whether the account exists.
         $ok = Hash::check($password, $user->password ?? '$2y$12$1TKy4OhOHQo0c/kNlEjCf.l/JRfEZbNNua28UeG3RqEFS18tMEG4W');
-        if (! $user || ! $ok || ! $allowed($user) || ! $user->isActiveAccount()) {
+        // Demo accounts (known passwords in docs/local-setup.md) never sign in on a live shop.
+        $demoBlocked = $user && $user->getAttribute('is_demo') && app()->environment('production');
+        if (! $user || ! $ok || ! $allowed($user) || ! $user->isActiveAccount() || $demoBlocked) {
             if ($user && ! $ok) {
                 $this->failed($user, $channel);
             }

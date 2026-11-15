@@ -3,7 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { type ColumnDef } from '@tanstack/react-table'
 import { Crown } from 'lucide-react'
 import { useMutate } from '@/hooks/use-mutate'
-import { formatDate, formatETB } from '@/lib/money'
+import { formatDate, formatMoney } from '@/lib/money'
 import { Button } from '@/components/ui/button'
 import { FilterBar, SearchInput, SelectFilter, opts } from '@/components/km/filter-bar'
 import { Page } from '@/components/km/page'
@@ -23,7 +23,7 @@ const columns: ColumnDef<Order, unknown>[] = [
   { header: 'Phone', accessorKey: 'phone' },
   { header: 'City', accessorKey: 'city' },
   { header: 'Items', accessorKey: 'items_count' },
-  { header: 'Total', cell: ({ row }) => formatETB(row.original.total) },
+  { header: 'Total', cell: ({ row }) => formatMoney(row.original.total) },
   { header: 'Status', cell: ({ row }) => <StatusBadge status={row.original.status} /> },
 ]
 

@@ -15,10 +15,10 @@ export function PaymentsPage() {
   const list = useQuery({ queryKey: ['payments', params], queryFn: async () => (await api.get<Paginated<Payment>>('/payments', { params: { ...params, per_page: 50 } })).data })
 
   return (
-    <Page title='Payments' description='Approve bank / Telebirr proofs, check Chapa, refund, download receipts.'>
+    <Page title='Payments' description='Approve bank / Telebirr receipts, refund, download receipts.'>
       <FilterBar>
         <SelectFilter value={status} onChange={setStatus} placeholder='Status' options={opts('awaiting_review', 'pending', 'paid', 'partially_refunded', 'refunded', 'rejected', 'failed')} />
-        <SelectFilter value={provider} onChange={setProvider} placeholder='Method' options={opts('chapa', 'telebirr', 'bank_transfer', 'wallet')} />
+        <SelectFilter value={provider} onChange={setProvider} placeholder='Method' options={opts('telebirr', 'bank_transfer', 'wallet')} />
         <SearchInput value={q} onChange={setQ} placeholder='Reference' />
       </FilterBar>
       <div className='grid gap-3'>

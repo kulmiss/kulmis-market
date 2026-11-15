@@ -8,7 +8,7 @@
         'description' => $product->short_description ?? strip_tags((string) $product->description),
         'image' => $product->images->map(fn ($i) => $i->url(min(1600, max($i->widths)), in_array('jpg', $i->formats, true) ? 'jpg' : $i->formats[0]))->all(),
         'sku' => (string) $product->id, 'brand' => ['@type' => 'Brand', 'name' => \App\Support\Settings::string('site.name')],
-        'offers' => ['@type' => 'Offer', 'priceCurrency' => 'ETB', 'price' => number_format($product->price / 100, 2, '.', ''),
+        'offers' => ['@type' => 'Offer', 'priceCurrency' => \App\Support\Currency::code(), 'price' => number_format($product->price / 100, 2, '.', ''),
             'availability' => $stock === null || $stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock', 'url' => url('/shop/'.$product->slug)],
     ];
 @endphp

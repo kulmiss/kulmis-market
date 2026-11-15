@@ -3,6 +3,7 @@
 namespace App\Pricing;
 
 use App\Models\Coupon;
+use App\Support\Currency;
 
 /** A full price breakdown. Every amount is integer santim. */
 final class Quote
@@ -63,7 +64,7 @@ final class Quote
             'total' => $this->total(),
             'weight_grams' => $this->weightGrams(),
             'member_savings_preview' => $this->memberSavingsPreview,
-            'currency' => config('shop.currency'),
+            'currency' => Currency::code(),
         ];
     }
 }

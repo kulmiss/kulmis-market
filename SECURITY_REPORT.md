@@ -61,8 +61,8 @@ and MariaDB; Larastan 0 errors; gitleaks no real secrets; both audits clean.
   - Every change goes through the double-entry ledger, in a transaction with
     row locks and idempotency keys.
   - Amounts are always calculated on the server.
-  - Chapa webhook: signature, then re-verified for amount, currency and the
-    same reference. Replays give nothing.
+  - Transfers are approved by staff with the `approve-payments` ability;
+    approving twice gives value once.
   - Cash-out account: a 48 h wait after any change, plus an alert. The first
     payout needs Super Admin to verify the account.
   - Daily limits, and idempotent requests.
@@ -94,7 +94,7 @@ and MariaDB; Larastan 0 errors; gitleaks no real secrets; both audits clean.
 ## Remaining risks (not fixed, and why)
 | Risk | Why it's still open | What to do |
 |---|---|---|
-| Chapa, Telegram and SMS tested only with fakes | No accounts/keys yet | Run one test-mode payment, one bot join and one SMS when keys exist (`km:doctor` shows what's missing) |
+| Telegram and SMS tested only with fakes | No accounts/keys yet | Run one bot join and one SMS when keys exist (`km:doctor` shows what's missing) |
 | No SMS provider | Your choice (QUESTIONS A) | Until then security notices go by email and Telegram only |
 | Backups stay on the same server until copied | Needs a storage account (e.g. Backblaze/S3) | Copy daily off the server; run `km:backup-verify` monthly |
 | No WAF / DDoS shield | Hosting decision | Put the site behind a CDN/WAF with tracking features off |

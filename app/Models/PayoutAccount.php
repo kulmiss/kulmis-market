@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -22,6 +23,8 @@ use Illuminate\Support\Carbon;
  */
 class PayoutAccount extends Model
 {
+    use HidesDemo;
+
     protected $guarded = ['id'];
 
     protected $hidden = ['account_number', 'account_fingerprint'];

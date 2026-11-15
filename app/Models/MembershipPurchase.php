@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use App\Membership\MembershipService;
 use App\Payments\Payable;
 use Illuminate\Database\Eloquent\Model;
@@ -24,6 +25,8 @@ use Illuminate\Support\Carbon;
  */
 class MembershipPurchase extends Model implements Payable
 {
+    use HidesDemo;
+
     protected $fillable = ['user_id', 'amount', 'wallet_used', 'status', 'period_start', 'period_end', 'paid_at'];
 
     protected function casts(): array
@@ -80,7 +83,7 @@ class MembershipPurchase extends Model implements Payable
 
     public function refundedFrom(Payment $payment, int $amount, bool $full): void
     {
-        // Wallet + Chapa can share one purchase: revoke when everything is refunded.
+        // Wallet + transfer can share one purchase: revoke when everything is refunded.
         if ((int) $this->payments()->sum('refunded_amount') >= $this->amount) {
             app(MembershipService::class)->revoke($this, 'Refunded');
         }

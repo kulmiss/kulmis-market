@@ -10,8 +10,8 @@ use App\Ledger\Wallet;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Support\Activity;
+use App\Support\Currency;
 use App\Support\Money;
-use App\Support\Settings;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -19,33 +19,14 @@ use Illuminate\Support\Str;
 use InvalidArgumentException;
 
 /**
- * Every payment goes through here: Chapa, manual transfer with proof, wallet.
- * markPaid() is idempotent and locks the payment row, so webhooks, redirects
- * and admin approvals can race safely: value is given exactly once.
+ * Every payment goes through here: bank / Telebirr transfer with a receipt
+ * (checked by staff) and the member wallet. markPaid() is idempotent and
+ * locks the payment row, so double clicks and two admins approving at the
+ * same time give value exactly once.
  */
 class PaymentService
 {
-    public function __construct(private readonly ChapaGateway $chapa, private readonly Ledger $ledger) {}
-
-    /** @param Model&Payable $payable */
-    public function startChapa(Model $payable, string $returnUrl): Payment
-    {
-        $this->assertPayable($payable);
-        // Double click / refresh / app retry: reuse the open checkout instead of
-        // starting a second one that could also be paid.
-        $open = Payment::query()->where('payable_type', $payable->getMorphClass())->where('payable_id', $payable->getKey())
-            ->where('provider', Payment::CHAPA)->where('status', Payment::PENDING)->whereNotNull('checkout_url')
-            ->where('amount', $payable->payableAmount())->where('created_at', '>=', now()->subMinutes(30))->latest('id')->first();
-        if ($open) {
-            return $open;
-        }
-        $payment = $this->create($payable, Payment::CHAPA);
-        $url = $this->chapa->initialize($payment, $payable->payableCustomer(), $payable->payableTitle(), $returnUrl,
-            route('api.payments.chapa.callback'));
-        $payment->update(['checkout_url' => $url]);
-
-        return $payment;
-    }
+    public function __construct(private readonly Ledger $ledger) {}
 
     /** @param Model&Payable $payable */
     public function submitProof(Model $payable, string $provider, UploadedFile $proof, ?string $reference, ?string $payerAccount): Payment
@@ -61,29 +42,6 @@ class PaymentService
         Activity::log('payment.proof_submitted', $payment, ['provider' => $provider]);
 
         return $payment;
-    }
-
-    /** Re-check with Chapa (called from webhook, callback and the admin "check" button). */
-    public function confirmChapa(string $txRef): ?Payment
-    {
-        $payment = Payment::query()->where('tx_ref', $txRef)->where('provider', Payment::CHAPA)->first();
-        if (! $payment || $payment->isPaid()) {
-            return $payment;
-        }
-        $result = $this->chapa->verify($txRef);
-        if ($result['status'] === 'success' && $result['currency'] === 'ETB' && $result['amount'] >= $payment->amount) {
-            $this->markPaid($payment, $result['charge'] ?: null, $result['reference'], $result['payer'], ['chapa' => $result['raw']]);
-        } elseif ($result['status'] === 'mismatch') {
-            Activity::log('payment.reference_mismatch', $payment, ['asked' => $txRef]);
-        } elseif (in_array($result['status'], ['failed', 'cancelled'], true)) {
-            $payment->update(['status' => Payment::FAILED, 'meta' => ['chapa' => $result['raw']]]);
-        } elseif ($result['status'] === 'success') {
-            // Paid less than expected or wrong currency: never give value automatically.
-            $payment->update(['meta' => ['chapa' => $result['raw'], 'mismatch' => true]]);
-            Activity::log('payment.amount_mismatch', $payment, ['expected' => $payment->amount, 'got' => $result['amount'], 'currency' => $result['currency']]);
-        }
-
-        return $payment->fresh();
     }
 
     public function approveProof(Payment $payment, int $actorId, ?string $note = null): Payment
@@ -121,7 +79,7 @@ class PaymentService
             if ($locked->isPaid()) {
                 return false;
             }
-            $fee ??= $locked->provider === Payment::CHAPA ? Money::bpsRound($locked->amount, Settings::int('payments.fee_bps')) : 0;
+            $fee ??= 0;
             $locked->update([
                 'status' => Payment::PAID, 'paid_at' => now(), 'fee' => $fee,
                 'provider_reference' => $reference ?? $locked->provider_reference,
@@ -155,25 +113,18 @@ class PaymentService
     }
 
     /** Full or partial refund. Commission reversal listens to PaymentRefunded. */
-    public function refund(Payment $payment, int $amount, string $reason, ?int $actorId = null, bool $viaProvider = true): Refund
+    public function refund(Payment $payment, int $amount, string $reason, ?int $actorId = null): Refund
     {
-        $refund = DB::transaction(function () use ($payment, $amount, $reason, $actorId, $viaProvider) {
+        $refund = DB::transaction(function () use ($payment, $amount, $reason, $actorId) {
             /** @var Payment $locked */
             $locked = Payment::query()->whereKey($payment->id)->lockForUpdate()->firstOrFail();
             if ($amount < 1 || $amount > $locked->refundable()) {
                 throw new InvalidArgumentException('Refund amount must be between 0.01 and '.Money::format($locked->refundable()).'.');
             }
-            $method = 'manual';
-            $ref = null;
-            if ($viaProvider && $locked->provider === Payment::CHAPA && config('services.chapa.refund_api') && $this->chapa->configured()) {
-                $ref = $this->chapa->refund($locked, $amount, $reason);
-                $method = 'chapa';
-            }
-            if ($locked->provider === Payment::WALLET) {
-                $method = 'wallet';
-            }
+            // Transfers are refunded by hand (Finance sends the money back); wallet payments go back to the wallet.
+            $method = $locked->provider === Payment::WALLET ? 'wallet' : 'manual';
             $refund = $locked->refunds()->create(['amount' => $amount, 'reason' => $reason, 'method' => $method,
-                'provider_reference' => $ref, 'created_by' => $actorId]);
+                'provider_reference' => null, 'created_by' => $actorId]);
             $total = $locked->refunded_amount + $amount;
             $full = $total >= $locked->amount;
             $locked->update(['refunded_amount' => $total, 'status' => $full ? Payment::REFUNDED : Payment::PARTIALLY_REFUNDED]);
@@ -212,6 +163,7 @@ class PaymentService
             'provider' => $provider,
             'tx_ref' => 'KM-'.Str::upper(Str::random(20)),
             'amount' => $payable->payableAmount(),
+            'currency' => Currency::code(),
             'status' => Payment::PENDING,
         ]);
     }

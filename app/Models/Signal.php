@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use LogicException;
@@ -27,6 +28,8 @@ use LogicException;
  */
 class Signal extends Model
 {
+    use HidesDemo;
+
     public const RESULTS = ['win', 'loss', 'breakeven', 'cancelled'];
 
     protected $fillable = ['pair', 'direction', 'entry', 'targets', 'stop_loss', 'notes', 'status', 'result', 'result_value',

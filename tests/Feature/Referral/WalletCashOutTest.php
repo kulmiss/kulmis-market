@@ -69,7 +69,7 @@ class WalletCashOutTest extends ReferralTestCase
         $this->assertSame(190_000, app(Ledger::class)->balance('income:sales'));
     }
 
-    public function test_partial_wallet_then_chapa_for_the_rest(): void
+    public function test_partial_wallet_then_transfer_for_the_rest(): void
     {
         $buyer = $this->member(null, 'Dawit');
         $this->credit($buyer, 50_000);
@@ -219,7 +219,7 @@ class WalletCashOutTest extends ReferralTestCase
         $this->assertTrue(FraudFlag::query()->where('user_id', $l1->id)->where('type', 'self_referral_payment')->exists());
     }
 
-    public function test_same_device_signup_is_not_linked_and_flagged(): void
+    public function test_same_device_signup_is_linked_but_held_for_review(): void
     {
         $ref = $this->member(null, 'Abdi');
         // Referrer used this device (cart) for an order.
@@ -234,8 +234,11 @@ class WalletCashOutTest extends ReferralTestCase
         $res = $this->withHeaders(['X-Cart-Token' => $token])->postJson('/api/v1/auth/register', [
             'first_name' => 'Fake', 'last_name' => 'Friend', 'phone' => '0911777888', 'password' => 'abc-12345-xyz-go', 'referral_code' => $ref->referral_code,
         ])->assertCreated();
-        $this->assertNull(User::query()->findOrFail($res->json('user.id'))->referrer_id);
-        $this->assertTrue(FraudFlag::query()->where('user_id', $ref->id)->where('type', 'self_referral_device')->exists());
+        // Linked (could be a shared family phone)…
+        $this->assertSame($ref->id, User::query()->findOrFail($res->json('user.id'))->referrer_id);
+        // …but the referrer's earnings wait for review.
+        $this->assertTrue(FraudFlag::query()->where('user_id', $ref->id)->where('type', 'same_browser_signup')->exists());
+        $this->assertTrue(app(FraudGuard::class)->isOnHold($ref));
     }
 
     public function test_daily_signup_limit_flags_for_review(): void

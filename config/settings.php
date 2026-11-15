@@ -4,10 +4,28 @@
 | Editable settings (Super Admin → Settings).
 | key => [type, default, label, group]
 | Types: money (integer santim), bps (basis points, 1500 = 15%),
-|        ratio (×100, 250 = 2.5×), int, bool, string, text.
+|        ratio (×100, 250 = 2.5×), int, bool, string, text,
+|        choice (5th item = allowed values), currency_code (3 capital letters),
+|        color (#RRGGBB).
 */
 
+use App\Support\Currency;
+
 return [
+    // General: currency. Changing it does NOT convert prices or balances.
+    'currency.code' => ['currency_code', 'ETB', 'Currency code (ISO, e.g. ETB, USD)', 'General'],
+    'currency.symbol' => ['string', 'ETB', 'Currency symbol (e.g. ETB, Br, $)', 'General'],
+    'currency.position' => ['choice', 'after_space', 'Symbol position', 'General', Currency::POSITIONS],
+    'currency.decimals' => ['choice', 'auto', 'Decimals (auto = only when not whole)', 'General', Currency::DECIMALS],
+    'currency.thousands' => ['choice', ',', 'Thousands separator', 'General', Currency::THOUSANDS],
+    'currency.decimal_point' => ['choice', '.', 'Decimal separator', 'General', Currency::DECIMAL_POINTS],
+
+    // Appearance: the member area (the admin keeps its own look).
+    'appearance.member_accent' => ['color', '#1f8a4c', 'Member area accent colour (green by default; light and dark mode follow it)', 'Appearance'],
+
+    // Demo data (Super Admin → Demo data). Off hides every demo record everywhere.
+    'demo.show' => ['bool', true, 'Show demo data (storefront, member areas, admin lists and dashboards)', 'Demo data'],
+
     // Membership
     'membership.price' => ['money', 500_000, 'Membership price per month', 'Membership'],
     'membership.grace_days' => ['int', 3, 'Grace period (days)', 'Membership'],
@@ -39,7 +57,7 @@ return [
     'referral.cookie_days' => ['int', 30, 'Referral link memory (days)', 'Referral'],
     'referral.pending_days' => ['int', 14, 'Earnings pending period (days)', 'Referral'],
     'referral.daily_signup_limit' => ['int', 20, 'Max referred sign-ups per member per day', 'Referral'],
-    'referral.same_network_signups' => ['int', 3, 'Sign-ups for one referrer from the same network in 24 h that trigger a review', 'Referral'],
+    'referral.same_network_signups' => ['int', 10, 'Sign-ups for one referrer from the same public network in 24 h that are shown for review (no hold)', 'Referral'],
 
     // Wallet
     'wallet.cashout_min' => ['money', 100_000, 'Minimum cash out', 'Wallet'],
@@ -52,9 +70,6 @@ return [
     // Engagement
     'loyalty.reward' => ['money', 30_000, 'Loyalty reward', 'Engagement'],
     'loyalty.every_months' => ['int', 3, 'Loyalty reward every (months)', 'Engagement'],
-    'badges.bronze' => ['int', 3, 'Bronze badge (active level-1 members)', 'Engagement'],
-    'badges.silver' => ['int', 10, 'Silver badge (active level-1 members)', 'Engagement'],
-    'badges.gold' => ['int', 25, 'Gold badge (active level-1 members)', 'Engagement'],
 
     // Site
     'site.name' => ['string', 'Kulmis Market', 'Shop name', 'Site'],
@@ -79,6 +94,8 @@ return [
     'notify.loyalty_reward' => ['text', 'Thank you for staying with us, {name}! We added {amount} to your wallet.', 'Message: loyalty reward', 'Messages'],
 
     'notify.signals_access' => ['text', 'Hi {name}, your trading signals access is ready. Open this personal link in Telegram to join (do not share it): {link}', 'Message: signals access link', 'Messages'],
+
+    'notify.badge_unlocked' => ['text', 'Congratulations {name}! You unlocked the {badge} badge on {site}. See your badges: {url}', 'Message: badge unlocked (only when "Badge messages" is on)', 'Messages'],
 
     'notify.payout_paid' => ['text', 'Hi {name}, we sent your cash-out of {amount}. Reference: {reference}', 'Message: cash-out paid', 'Messages'],
     'notify.payout_rejected' => ['text', 'Hi {name}, your cash-out of {amount} was not approved and is back in your wallet. {reason}', 'Message: cash-out rejected', 'Messages'],

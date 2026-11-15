@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\CatalogController;
+use App\Support\Currency;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -11,7 +12,8 @@ Route::name('api.')->group(function () {
     Route::get('/ping', fn () => response()->json([
         'ok' => true,
         'app' => config('app.name'),
-        'currency' => config('shop.currency'),
+        'currency' => Currency::code(),
+        'currency_format' => Currency::forClients(),
     ]))->name('ping');
 
     Route::middleware('feature:shop')->group(function () {

@@ -5,7 +5,7 @@ import { type ColumnDef } from '@tanstack/react-table'
 import { ArrowLeft, Network } from 'lucide-react'
 import { useMutate } from '@/hooks/use-mutate'
 import { api } from '@/lib/api'
-import { formatDate, formatETB } from '@/lib/money'
+import { currencySymbol, formatDate, formatMoney } from '@/lib/money'
 import { useAuthStore } from '@/stores/auth-store'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -93,9 +93,9 @@ export function MemberDetail({ id }: { id: string }) {
         <Card>
           <CardHeader><CardTitle className='text-base'>Wallet</CardTitle></CardHeader>
           <CardContent className='grid gap-1 text-sm'>
-            <span>Pending: <b>{formatETB(d.wallet.pending)}</b></span>
-            <span>Available: <b>{formatETB(d.wallet.available)}</b></span>
-            <span>Cash-out on hold: <b>{formatETB(d.wallet.payout)}</b></span>
+            <span>Pending: <b>{formatMoney(d.wallet.pending)}</b></span>
+            <span>Available: <b>{formatMoney(d.wallet.available)}</b></span>
+            <span>Cash-out on hold: <b>{formatMoney(d.wallet.payout)}</b></span>
           </CardContent>
         </Card>
         <Card>
@@ -120,10 +120,10 @@ export function MemberDetail({ id }: { id: string }) {
             </div>
             {can('manage-ledger') && (
               <div className='flex flex-wrap items-center gap-2'>
-                <Input type='number' className='w-full sm:w-40' placeholder='ETB (+/−)' onChange={(e) => setAmount(Math.round(Number(e.target.value) * 100))} />
+                <Input type='number' className='w-full sm:w-40' placeholder={`${currencySymbol()} (+/−)`} onChange={(e) => setAmount(Math.round(Number(e.target.value) * 100))} />
                 <Button variant='outline' disabled={!reason || !amount}
                   onClick={() => credit.mutate({ path: '/ledger/adjustments', body: { user_id: u.id, bucket: 'available', amount, reason } })}>
-                  Adjust available wallet by {formatETB(amount)}
+                  Adjust available wallet by {formatMoney(amount)}
                 </Button>
               </div>
             )}
@@ -149,7 +149,7 @@ export function MemberDetail({ id }: { id: string }) {
                   <TableRow key={p.id}>
                     <TableCell>{formatDate(p.paid_at, true)}</TableCell>
                     <TableCell>{formatDate(p.period_start)} → {formatDate(p.period_end)}</TableCell>
-                    <TableCell>{formatETB(p.amount)}</TableCell><TableCell>{formatETB(p.wallet_used)}</TableCell>
+                    <TableCell>{formatMoney(p.amount)}</TableCell><TableCell>{formatMoney(p.wallet_used)}</TableCell>
                     <TableCell><StatusBadge status={p.status} /></TableCell>
                   </TableRow>
                 ))}

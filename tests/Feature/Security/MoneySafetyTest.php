@@ -2,21 +2,19 @@
 
 namespace Tests\Feature\Security;
 
+use App\Fraud\FraudGuard;
 use App\Jobs\SendCustomerMessage;
 use App\Ledger\Account;
 use App\Ledger\Ledger;
 use App\Ledger\Wallet;
 use App\Models\FraudFlag;
-use App\Models\Order;
 use App\Models\PayoutAccount;
 use App\Models\PayoutRequest;
 use App\Models\Product;
 use App\Models\User;
-use App\Payments\PaymentService;
 use App\Support\Settings;
 use App\Support\Totp;
 use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Feature\Referral\ReferralTestCase;
@@ -156,26 +154,6 @@ class MoneySafetyTest extends ReferralTestCase
         $this->postJson("/api/v1/admin/cash-outs/$second/pay", ['reference' => 'TB2'])->assertOk();
     }
 
-    public function test_pay_with_chapa_twice_reuses_the_open_checkout(): void
-    {
-        config(['services.chapa.secret_key' => 'CHASECK_TEST-x']);
-        Http::fake(['api.chapa.co/v1/transaction/initialize' => Http::response(['data' => ['checkout_url' => 'https://checkout.chapa.co/one']])]);
-        $p = Product::factory()->create(['price' => 100_000, 'stock' => 3]);
-        $token = $this->postJson('/api/v1/cart/items', ['product_id' => $p->id])->json('token');
-        $this->withHeaders(['X-Cart-Token' => $token])->postJson('/api/v1/checkout', ['checkout_key' => (string) Str::uuid(),
-            'first_name' => 'H', 'phone' => '0911000999', 'city' => 'Adama', 'address' => 'x'])->assertCreated();
-        $order = Order::query()->firstOrFail();
-
-        $a = $this->postJson("/api/v1/orders/{$order->number}/pay", ['method' => 'chapa', 'phone' => '0911000999'])->assertCreated()->json('data.tx_ref');
-        $b = $this->postJson("/api/v1/orders/{$order->number}/pay", ['method' => 'chapa', 'phone' => '0911000999'])->assertCreated()->json('data.tx_ref');
-        $this->assertSame($a, $b);
-        Http::assertSentCount(1);
-
-        $this->travel(31)->minutes(); // an old abandoned checkout is not reused
-        $c = app(PaymentService::class)->startChapa($order->fresh(), 'https://x')->tx_ref;
-        $this->assertNotSame($a, $c);
-    }
-
     public function test_signups_from_one_browser_or_network_flag_the_referrer(): void
     {
         $ref = $this->member(null, 'Ref');
@@ -188,15 +166,18 @@ class MoneySafetyTest extends ReferralTestCase
         }
         $this->assertTrue(FraudFlag::query()->where('user_id', $ref->id)->where('type', 'shared_device_signups')->exists());
 
+        $this->flushHeaders(); // new people, new browsers
         $ref2 = $this->member(null, 'Other');
-        foreach (['0911000011', '0911000012', '0911000013'] as $i => $phone) {
+        foreach (array_map(fn ($n) => '09110000'.(11 + $n), range(0, 9)) as $i => $phone) {
             $this->withServerVariables(['REMOTE_ADDR' => '196.188.10.'.(20 + $i)])->postJson('/api/v1/auth/register', ['first_name' => 'Net', 'last_name' => (string) $i,
                 'phone' => $phone, 'password' => 'quiet river at dawn 7', 'referral_code' => $ref2->referral_code])->assertCreated();
             $this->app['auth']->forgetGuards();
         }
         $flag = FraudFlag::query()->where('user_id', $ref2->id)->where('type', 'same_network_signups')->firstOrFail();
-        $this->assertSame(3, $flag->details['count_24h']);
-        $this->assertSame(3, $ref2->referrals()->count(), 'still linked — they may be real people — but held for review');
+        $this->assertSame(10, $flag->details['count_24h']);
+        $this->assertSame(10, $ref2->referrals()->count(), 'still linked — they may be real people');
+        // Review only: many Ethiopian mobile users share one carrier IP, so this never holds money.
+        $this->assertFalse(app(FraudGuard::class)->isOnHold($ref2));
         $this->assertDatabaseMissing('users', ['signup_device_hash' => '196.188.10.20']); // no IP stored anywhere
     }
 

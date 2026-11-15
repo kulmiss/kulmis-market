@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { api } from '@/lib/api'
+import { type CurrencyFormat, setCurrency } from '@/lib/money'
 
 export type AdminUser = {
   id: number
@@ -10,6 +11,7 @@ export type AdminUser = {
   abilities: string[]
   two_factor: boolean
   two_factor_required: boolean
+  currency?: CurrencyFormat
 }
 
 type AuthState = {
@@ -22,7 +24,10 @@ type AuthState = {
 
 export const useAuthStore = create<AuthState>()((set, get) => ({
   user: null,
-  setUser: (user) => set({ user }),
+  setUser: (user) => {
+    setCurrency(user?.currency)
+    set({ user })
+  },
   can: (ability) => {
     const abilities = get().user?.abilities ?? []
     return abilities.includes('*') || abilities.includes(ability)
@@ -30,6 +35,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   fetchMe: async () => {
     try {
       const { data } = await api.get<AdminUser>('/auth/me')
+      setCurrency(data.currency)
       set({ user: data })
       return data
     } catch {

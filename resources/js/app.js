@@ -4,9 +4,21 @@
 const API = '/api/v1';
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+// Shop currency format from Settings → General (same rules as App\Support\Currency).
+const CUR = (() => {
+    try { return JSON.parse(document.querySelector('meta[name=km-currency]')?.content || '{}'); } catch { return {}; }
+})();
 const etb = (santim) => {
-    const v = (santim ?? 0) / 100;
-    return v.toLocaleString('en-US', { minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2 }) + ' ETB';
+    const minor = Math.round(santim ?? 0);
+    const abs = Math.abs(minor);
+    const dec = CUR.decimals === '0' ? 0 : CUR.decimals === '2' ? 2 : (abs % 100 ? 2 : 0);
+    const fixed = (abs / 100).toFixed(dec);
+    const [whole, frac] = fixed.split('.');
+    const sep = CUR.thousands_char ?? ',';
+    const num = whole.replace(/\B(?=(\d{3})+(?!\d))/g, sep) + (frac ? (CUR.decimal_point ?? '.') + frac : '');
+    const sym = CUR.symbol ?? 'ETB';
+    const out = { after: num + sym, before_space: sym + ' ' + num, before: sym + num }[CUR.position] ?? num + ' ' + sym;
+    return (minor < 0 ? '-' : '') + out;
 };
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
@@ -33,6 +45,13 @@ const say = (el, text, ok = false) => {
 };
 
 const formData = (form) => Object.fromEntries(new FormData(form).entries());
+
+/* ---------- share (phones with a share sheet) ---------- */
+$$('[data-share]').forEach((b) => {
+    if (!navigator.share) return;
+    b.classList.remove('hidden');
+    b.addEventListener('click', () => navigator.share({ url: b.dataset.shareUrl, text: b.dataset.shareText }).catch(() => {}));
+});
 
 /* ---------- theme ---------- */
 $$('[data-theme-toggle]').forEach((b) =>
@@ -183,13 +202,6 @@ const payPage = $('[data-pay-page]');
 if (payPage) {
     const { number, phone } = payPage.dataset;
     const msg = $('[data-form-message]', payPage);
-    $('[data-pay-chapa]', payPage)?.addEventListener('click', async (e) => {
-        e.target.disabled = true;
-        try {
-            const { data } = await api(`/orders/${encodeURIComponent(number)}/pay`, { method: 'POST', body: { method: 'chapa', phone } });
-            location.href = data.checkout_url;
-        } catch (err) { say(msg, err.message); e.target.disabled = false; }
-    });
     $('[data-proof-form]', payPage)?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const form = new FormData(e.target);
@@ -235,8 +247,9 @@ if (signalsForm) {
     signalsForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         try {
-            const { data } = await api('/signals/subscribe', { method: 'POST', body: formData(signalsForm) });
-            location.href = data.checkout_url;
+            const { data } = await api('/signals/payment-proof', { method: 'POST', form: new FormData(signalsForm) });
+            say($('[data-form-message]', signalsForm), data.message || 'Thank you! We check your receipt and send your Telegram link by SMS.', true);
+            signalsForm.reset();
         } catch (err) { say($('[data-form-message]', signalsForm), err.message); }
     });
 }

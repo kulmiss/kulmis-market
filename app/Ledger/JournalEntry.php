@@ -24,7 +24,7 @@ class JournalEntry extends Model
 {
     public const UPDATED_AT = null;
 
-    protected $fillable = ['uuid', 'type', 'description', 'reason', 'idempotency_key', 'reference_type', 'reference_id', 'reverses_entry_id', 'created_by'];
+    protected $fillable = ['uuid', 'type', 'description', 'reason', 'idempotency_key', 'reference_type', 'reference_id', 'reverses_entry_id', 'created_by', 'is_demo'];
 
     protected static function booted(): void
     {

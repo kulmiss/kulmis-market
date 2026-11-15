@@ -1,0 +1,1 @@
+import{d as e}from"./index-DUrTGyy6.js";var t=e;export{t as component};

@@ -1,12 +1,34 @@
-/** Money is integer santim in the API (500000 = 5,000 ETB). */
-export function formatETB(santim: number | null | undefined, withCurrency = true): string {
-  if (santim === null || santim === undefined) return '—'
-  const birr = santim / 100
-  const text = birr.toLocaleString('en-US', {
-    minimumFractionDigits: santim % 100 === 0 ? 0 : 2,
-    maximumFractionDigits: 2,
-  })
-  return withCurrency ? `${text} ETB` : text
+/** Shop currency format (Super Admin → Settings → General); sent with /auth/me. */
+export type CurrencyFormat = {
+  code: string
+  symbol: string
+  position: 'after_space' | 'after' | 'before_space' | 'before'
+  decimals: 'auto' | '0' | '2'
+  thousands_char: string
+  decimal_point: string
+}
+
+let currency: CurrencyFormat = { code: 'ETB', symbol: 'ETB', position: 'after_space', decimals: 'auto', thousands_char: ',', decimal_point: '.' }
+
+export function setCurrency(c: Partial<CurrencyFormat> | null | undefined) {
+  if (c) currency = { ...currency, ...c }
+}
+
+export function currencySymbol(): string {
+  return currency.symbol
+}
+
+/** Money is integer minor units in the API (500000 = 5,000 ETB). Same rules as App\Support\Currency. */
+export function formatMoney(minor: number | null | undefined, withCurrency = true, c: CurrencyFormat = currency): string {
+  if (minor === null || minor === undefined) return '—'
+  const abs = Math.abs(Math.round(minor))
+  const dec = c.decimals === '0' ? 0 : c.decimals === '2' ? 2 : abs % 100 ? 2 : 0
+  const [whole, frac] = (abs / 100).toFixed(dec).split('.')
+  const num = whole.replace(/\B(?=(\d{3})+(?!\d))/g, c.thousands_char) + (frac ? c.decimal_point + frac : '')
+  const sign = minor < 0 ? '-' : ''
+  if (!withCurrency) return sign + num
+  const out = { after: num + c.symbol, before_space: `${c.symbol} ${num}`, before: c.symbol + num, after_space: `${num} ${c.symbol}` }[c.position] ?? `${num} ${c.symbol}`
+  return sign + out
 }
 
 export function toSantim(birr: string | number): number {

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -10,11 +11,23 @@ use LogicException;
 /** Append-only: rows can never be changed or deleted. */
 class ActivityLog extends Model
 {
+    use HidesDemo;
+
+    protected static function demoOwnerColumns(): array
+    {
+        return ['actor_id'];
+    }
+
+    protected static function demoMorphParent(): ?string
+    {
+        return 'subject';
+    }
+
     public const UPDATED_AT = null;
 
     protected $table = 'activity_log';
 
-    protected $fillable = ['actor_id', 'action', 'subject_type', 'subject_id', 'properties', 'reason', 'ip_address'];
+    protected $fillable = ['actor_id', 'action', 'subject_type', 'subject_id', 'properties', 'reason', 'ip_address', 'is_demo'];
 
     protected function casts(): array
     {

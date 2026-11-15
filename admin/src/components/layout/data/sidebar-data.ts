@@ -3,6 +3,8 @@ import {
   BadgePercent,
   Banknote,
   BookOpen,
+  FlaskConical,
+  Medal,
   Bot,
   Boxes,
   FileText,
@@ -56,6 +58,7 @@ export const sidebarData: SidebarData = {
         { title: 'Members', url: '/members', icon: Users, ability: 'manage-members' },
         { title: 'Referral tree', url: '/referrals', icon: Network, ability: 'manage-referrals', feature: 'referral' },
         { title: 'Commissions', url: '/commissions', icon: BookOpen, ability: 'manage-referrals', feature: 'referral' },
+        { title: 'Badges', url: '/badges', icon: Medal, ability: 'manage-settings', feature: 'badges' },
       ],
     },
     {
@@ -79,6 +82,7 @@ export const sidebarData: SidebarData = {
       items: [
         { title: 'Pages & banners', url: '/content', icon: FileText, ability: 'manage-content' },
         { title: 'Settings', url: '/config', icon: SlidersHorizontal, ability: 'manage-settings' },
+        { title: 'Demo data', url: '/demo', icon: FlaskConical, ability: 'manage-settings' },
         { title: 'Activity log', url: '/activity', icon: ScrollText, ability: 'view-activity' },
         { title: 'My account', url: '/settings', icon: Palette },
         { title: 'Status', url: '/status', icon: Activity, ability: 'view-reports' },

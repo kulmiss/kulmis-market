@@ -19,12 +19,14 @@ import { Route as errors500RouteImport } from './routes/(errors)/500'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
+import { Route as AuthenticatedBadgesRouteImport } from './routes/_authenticated/badges'
 import { Route as AuthenticatedCashOutsRouteImport } from './routes/_authenticated/cash-outs'
 import { Route as AuthenticatedCategoriesRouteImport } from './routes/_authenticated/categories'
 import { Route as AuthenticatedCommissionsRouteImport } from './routes/_authenticated/commissions'
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
 import { Route as AuthenticatedContentRouteImport } from './routes/_authenticated/content'
 import { Route as AuthenticatedCouponsRouteImport } from './routes/_authenticated/coupons'
+import { Route as AuthenticatedDemoRouteImport } from './routes/_authenticated/demo'
 import { Route as AuthenticatedFeaturesRouteImport } from './routes/_authenticated/features'
 import { Route as AuthenticatedFraudRouteImport } from './routes/_authenticated/fraud'
 import { Route as AuthenticatedLedgerRouteImport } from './routes/_authenticated/ledger'
@@ -95,6 +97,11 @@ const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
   path: '/activity',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBadgesRoute = AuthenticatedBadgesRouteImport.update({
+  id: '/badges',
+  path: '/badges',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCashOutsRoute = AuthenticatedCashOutsRouteImport.update({
   id: '/cash-outs',
   path: '/cash-outs',
@@ -124,6 +131,11 @@ const AuthenticatedContentRoute = AuthenticatedContentRouteImport.update({
 const AuthenticatedCouponsRoute = AuthenticatedCouponsRouteImport.update({
   id: '/coupons',
   path: '/coupons',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDemoRoute = AuthenticatedDemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedFeaturesRoute = AuthenticatedFeaturesRouteImport.update({
@@ -248,12 +260,14 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/activity': typeof AuthenticatedActivityRoute
+  '/badges': typeof AuthenticatedBadgesRoute
   '/cash-outs': typeof AuthenticatedCashOutsRoute
   '/categories': typeof AuthenticatedCategoriesRoute
   '/commissions': typeof AuthenticatedCommissionsRoute
   '/config': typeof AuthenticatedConfigRoute
   '/content': typeof AuthenticatedContentRoute
   '/coupons': typeof AuthenticatedCouponsRoute
+  '/demo': typeof AuthenticatedDemoRoute
   '/features': typeof AuthenticatedFeaturesRoute
   '/fraud': typeof AuthenticatedFraudRoute
   '/ledger': typeof AuthenticatedLedgerRoute
@@ -283,12 +297,14 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/activity': typeof AuthenticatedActivityRoute
+  '/badges': typeof AuthenticatedBadgesRoute
   '/cash-outs': typeof AuthenticatedCashOutsRoute
   '/categories': typeof AuthenticatedCategoriesRoute
   '/commissions': typeof AuthenticatedCommissionsRoute
   '/config': typeof AuthenticatedConfigRoute
   '/content': typeof AuthenticatedContentRoute
   '/coupons': typeof AuthenticatedCouponsRoute
+  '/demo': typeof AuthenticatedDemoRoute
   '/features': typeof AuthenticatedFeaturesRoute
   '/fraud': typeof AuthenticatedFraudRoute
   '/ledger': typeof AuthenticatedLedgerRoute
@@ -322,12 +338,14 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
+  '/_authenticated/badges': typeof AuthenticatedBadgesRoute
   '/_authenticated/cash-outs': typeof AuthenticatedCashOutsRoute
   '/_authenticated/categories': typeof AuthenticatedCategoriesRoute
   '/_authenticated/commissions': typeof AuthenticatedCommissionsRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
   '/_authenticated/content': typeof AuthenticatedContentRoute
   '/_authenticated/coupons': typeof AuthenticatedCouponsRoute
+  '/_authenticated/demo': typeof AuthenticatedDemoRoute
   '/_authenticated/features': typeof AuthenticatedFeaturesRoute
   '/_authenticated/fraud': typeof AuthenticatedFraudRoute
   '/_authenticated/ledger': typeof AuthenticatedLedgerRoute
@@ -362,12 +380,14 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/activity'
+    | '/badges'
     | '/cash-outs'
     | '/categories'
     | '/commissions'
     | '/config'
     | '/content'
     | '/coupons'
+    | '/demo'
     | '/features'
     | '/fraud'
     | '/ledger'
@@ -397,12 +417,14 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/activity'
+    | '/badges'
     | '/cash-outs'
     | '/categories'
     | '/commissions'
     | '/config'
     | '/content'
     | '/coupons'
+    | '/demo'
     | '/features'
     | '/fraud'
     | '/ledger'
@@ -435,12 +457,14 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/activity'
+    | '/_authenticated/badges'
     | '/_authenticated/cash-outs'
     | '/_authenticated/categories'
     | '/_authenticated/commissions'
     | '/_authenticated/config'
     | '/_authenticated/content'
     | '/_authenticated/coupons'
+    | '/_authenticated/demo'
     | '/_authenticated/features'
     | '/_authenticated/fraud'
     | '/_authenticated/ledger'
@@ -546,6 +570,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedActivityRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/badges': {
+      id: '/_authenticated/badges'
+      path: '/badges'
+      fullPath: '/badges'
+      preLoaderRoute: typeof AuthenticatedBadgesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/cash-outs': {
       id: '/_authenticated/cash-outs'
       path: '/cash-outs'
@@ -586,6 +617,13 @@ declare module '@tanstack/react-router' {
       path: '/coupons'
       fullPath: '/coupons'
       preLoaderRoute: typeof AuthenticatedCouponsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/demo': {
+      id: '/_authenticated/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof AuthenticatedDemoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/features': {
@@ -750,12 +788,14 @@ const AuthenticatedSettingsRouteRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
+  AuthenticatedBadgesRoute: typeof AuthenticatedBadgesRoute
   AuthenticatedCashOutsRoute: typeof AuthenticatedCashOutsRoute
   AuthenticatedCategoriesRoute: typeof AuthenticatedCategoriesRoute
   AuthenticatedCommissionsRoute: typeof AuthenticatedCommissionsRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
   AuthenticatedContentRoute: typeof AuthenticatedContentRoute
   AuthenticatedCouponsRoute: typeof AuthenticatedCouponsRoute
+  AuthenticatedDemoRoute: typeof AuthenticatedDemoRoute
   AuthenticatedFeaturesRoute: typeof AuthenticatedFeaturesRoute
   AuthenticatedFraudRoute: typeof AuthenticatedFraudRoute
   AuthenticatedLedgerRoute: typeof AuthenticatedLedgerRoute
@@ -779,12 +819,14 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
   AuthenticatedActivityRoute: AuthenticatedActivityRoute,
+  AuthenticatedBadgesRoute: AuthenticatedBadgesRoute,
   AuthenticatedCashOutsRoute: AuthenticatedCashOutsRoute,
   AuthenticatedCategoriesRoute: AuthenticatedCategoriesRoute,
   AuthenticatedCommissionsRoute: AuthenticatedCommissionsRoute,
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,
   AuthenticatedContentRoute: AuthenticatedContentRoute,
   AuthenticatedCouponsRoute: AuthenticatedCouponsRoute,
+  AuthenticatedDemoRoute: AuthenticatedDemoRoute,
   AuthenticatedFeaturesRoute: AuthenticatedFeaturesRoute,
   AuthenticatedFraudRoute: AuthenticatedFraudRoute,
   AuthenticatedLedgerRoute: AuthenticatedLedgerRoute,

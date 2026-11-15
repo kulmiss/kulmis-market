@@ -51,7 +51,7 @@ class FeatureSwitchMatrixTest extends TestCase
             'top referrers' => ['top_referrers', [['GET', '/api/v1/referral/top', 'guest']]],
             'signals' => ['signals', [
                 ['GET', '/signals', 'guest'], ['GET', '/signals/performance', 'guest'], ['GET', '/api/v1/signals/info', 'guest'],
-                ['POST', '/api/v1/signals/subscribe', 'guest'], ['GET', '/api/v1/admin/signals', 'admin'],
+                ['POST', '/api/v1/signals/payment-proof', 'guest'], ['GET', '/api/v1/admin/signals', 'admin'],
                 ['GET', '/api/v1/admin/signals/subscribers', 'admin'],
             ]],
             'performance page' => ['signals.performance_page', [['GET', '/signals/performance', 'guest'], ['GET', '/api/v1/signals/performance', 'guest']]],

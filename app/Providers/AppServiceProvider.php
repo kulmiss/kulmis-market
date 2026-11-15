@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Badges\BadgeListener;
 use App\Events\CatalogChanged;
 use App\Events\CustomerRegistered;
 use App\Events\MembershipActivated;
@@ -69,6 +70,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Referral program.
         Event::listen(PaymentSucceeded::class, [ReferralListener::class, 'paid']);
+        Event::listen(PaymentSucceeded::class, [BadgeListener::class, 'paid']); // after commissions exist
         Event::listen(PaymentRefunded::class, [ReferralListener::class, 'refunded']);
         Event::listen(CustomerRegistered::class,
             fn (CustomerRegistered $e) => app(Attribution::class)->attachAtSignup($e->request, $e->user));
@@ -85,7 +87,8 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(20)->by($request->ip()),
         ]);
         // Sign-ups: a few per hour per network, so bulk fake accounts are slow and noisy.
-        RateLimiter::for('register', fn (Request $request) => [
+        // (Relaxed on a local install so you can test many accounts from one PC.)
+        RateLimiter::for('register', fn (Request $request) => app()->environment('local') ? Limit::perMinute(60)->by($request->ip()) : [
             Limit::perHour(5)->by('h|'.$request->ip()),
             Limit::perDay(20)->by('d|'.$request->ip()),
         ]);

@@ -2,6 +2,8 @@
 
 namespace App\Referral;
 
+use App\Badges\BadgeEngine;
+use App\Demo\Demo;
 use App\Membership\Members;
 use App\Models\User;
 use App\Support\Features;
@@ -11,85 +13,67 @@ use chillerlan\QRCode\QROptions;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
-/** Badges, monthly top referrers, QR and share links. */
+/** Monthly top referrers, QR and share links. Badges: App\\Badges\\BadgeEngine. */
 class Engagement
 {
-    public const BADGES = ['gold', 'silver', 'bronze'];
-
-    /** Badge by number of ACTIVE level-1 members. */
-    public function badgeFor(int $activeLevel1): ?string
-    {
-        if (Features::disabled('badges')) {
-            return null;
-        }
-        foreach (self::BADGES as $badge) {
-            if ($activeLevel1 >= Settings::int("badges.$badge")) {
-                return $badge;
-            }
-        }
-
-        return null;
-    }
-
     public function activeLevel1(User $user): int
     {
         return User::query()->with('membership')->where('referrer_id', $user->id)->get()
             ->filter(fn (User $u) => Members::isActive($u))->count();
     }
 
-    /** @return array{badge:?string, active_level1:int, next:?array{badge:string, needed:int}} */
-    public function progress(User $user): array
-    {
-        $active = $this->activeLevel1($user);
-        $badge = $this->badgeFor($active);
-        $next = null;
-        if (Features::enabled('badges')) {
-            foreach (array_reverse(self::BADGES) as $b) {
-                $need = Settings::int("badges.$b");
-                if ($active < $need) {
-                    $next = ['badge' => $b, 'needed' => $need - $active];
-                    break;
-                }
-            }
-        }
-
-        return ['badge' => $badge, 'active_level1' => $active, 'next' => $next];
-    }
-
     /**
      * Monthly ranking by new level-1 people who are active members.
-     * Public: first name + badge only.
+     * Public: first name + highest badge only.
      *
-     * @return list<array{rank:int, name:string, badge:?string, count:int}>
+     * @return list<array{rank:int, name:string, badge:?array{name:string, icon:string, color:string}, count:int}>
      */
-    public function topReferrers(?Carbon $month = null, int $limit = 10): array
+    public function topReferrers(?Carbon $month = null, int $limit = 10, ?bool $demo = null): array
     {
         if (Features::disabled('top_referrers')) {
             return [];
         }
         $month ??= now();
-        $key = 'top-referrers:'.$month->format('Y-m').':'.$limit;
+        $key = 'top-referrers:'.$month->format('Y-m').':'.$limit.':'.(Demo::visible() ? 'd' : 'r').':'.var_export($demo, true);
 
-        return Cache::remember($key, now()->addHour(), function () use ($month, $limit) {
-            $start = $month->copy()->startOfMonth();
-            $end = $month->copy()->endOfMonth();
-            $counts = User::query()->with('membership')->whereNotNull('referrer_id')->whereBetween('referred_at', [$start, $end])->get()
-                ->filter(fn (User $u) => Members::isActive($u))->countBy('referrer_id')->sortDesc()->take($limit * 2);
-
-            $rows = [];
-            foreach ($counts as $referrerId => $count) {
-                $ref = User::query()->find($referrerId);
-                if (! $ref || ! Members::isActive($ref) || ! $ref->isActiveAccount()) {
-                    continue;
-                }
-                $rows[] = ['name' => $ref->first_name, 'badge' => $this->badgeFor($this->activeLevel1($ref)), 'count' => (int) $count];
-                if (count($rows) === $limit) {
-                    break;
-                }
+        return Cache::remember($key, now()->addHour(), function () use ($month, $limit, $demo) {
+            $badges = app(BadgeEngine::class);
+            $out = [];
+            foreach ($this->ranking($month, $limit, $demo) as $i => $row) {
+                $b = $badges->highest($row['user']);
+                $out[] = ['rank' => $i + 1, 'name' => $row['user']->first_name,
+                    'badge' => $b ? ['name' => $b->name, 'icon' => $b->icon, 'color' => $b->color] : null, 'count' => $row['count']];
             }
 
-            return array_map(fn ($r, $i) => ['rank' => $i + 1] + $r, $rows, array_keys($rows));
+            return $out;
         });
+    }
+
+    /**
+     * Who brought the most new active level-1 members in $month (active members only).
+     *
+     * @return list<array{user: User, count: int}>
+     */
+    public function ranking(Carbon $month, int $limit = 10, ?bool $demo = null): array
+    {
+        $start = $month->copy()->startOfMonth();
+        $end = $month->copy()->endOfMonth();
+        $counts = User::query()->with('membership')->when($demo !== null, fn ($q) => $q->where('is_demo', $demo))->whereNotNull('referrer_id')->whereBetween('referred_at', [$start, $end])->get()
+            ->filter(fn (User $u) => Members::isActive($u))->countBy('referrer_id')->sortDesc()->take($limit * 2);
+
+        $rows = [];
+        foreach ($counts as $referrerId => $count) {
+            $ref = User::query()->with('membership')->find($referrerId);
+            if (! $ref || ! Members::isActive($ref) || ! $ref->isActiveAccount()) {
+                continue;
+            }
+            $rows[] = ['user' => $ref, 'count' => (int) $count];
+            if (count($rows) === $limit) {
+                break;
+            }
+        }
+
+        return $rows;
     }
 
     public function qrSvg(string $url): string

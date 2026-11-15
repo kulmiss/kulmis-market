@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use App\Orders\OrderService;
 use App\Payments\Payable;
 use App\Support\Activity;
@@ -49,6 +50,8 @@ use Illuminate\Support\Carbon;
  */
 class Order extends Model implements Payable
 {
+    use HidesDemo;
+
     public const PENDING_PAYMENT = 'pending_payment';
 
     public const PAID = 'paid';
@@ -174,7 +177,7 @@ class Order extends Model implements Payable
         return $this->shipping - $this->shipping_discount;
     }
 
-    /** What still has to be paid by Chapa/bank after the wallet part. */
+    /** What still has to be paid by transfer after the wallet part. */
     public function amountDue(): int
     {
         return max(0, $this->total - $this->wallet_used);

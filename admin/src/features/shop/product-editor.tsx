@@ -4,7 +4,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { AlertTriangle, ArrowLeft, ImagePlus, Plus, Save, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { api, errorMessage } from '@/lib/api'
-import { formatETB } from '@/lib/money'
+import { formatMoney } from '@/lib/money'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -145,9 +145,9 @@ export function ProductEditor({ id }: { id: string }) {
             <Field label='Labour'><MoneyInput value={d.cost_labour} onChange={(v) => set('cost_labour', v)} /></Field>
             <Field label='Packaging'><MoneyInput value={d.cost_packaging} onChange={(v) => set('cost_packaging', v)} /></Field>
             <div className='rounded-md bg-muted p-3 text-sm'>
-              Cost {formatETB(cost)} · price is <b>{ratio ? `${ratio.toFixed(2)}×` : '—'}</b> cost
+              Cost {formatMoney(cost)} · price is <b>{ratio ? `${ratio.toFixed(2)}×` : '—'}</b> cost
               {p?.profit && <div className='mt-1 text-xs text-muted-foreground'>
-                Worst-case member sale: {formatETB(p.profit.member_price)} − commissions {formatETB(p.profit.commission)} − fee {formatETB(p.profit.payment_fee)} − cost {formatETB(p.profit.cost)} = <b>{formatETB(p.profit.profit)}</b>
+                Worst-case member sale: {formatMoney(p.profit.member_price)} − commissions {formatMoney(p.profit.commission)} − fee {formatMoney(p.profit.payment_fee)} − cost {formatMoney(p.profit.cost)} = <b>{formatMoney(p.profit.profit)}</b>
               </div>}
             </div>
           </CardContent>

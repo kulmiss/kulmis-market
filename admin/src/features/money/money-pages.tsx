@@ -5,7 +5,7 @@ import { Check, Copy, Eye, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { useMutate } from '@/hooks/use-mutate'
 import { api } from '@/lib/api'
-import { formatDate, formatETB } from '@/lib/money'
+import { formatDate, formatMoney } from '@/lib/money'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -31,7 +31,7 @@ export function CashOutsPage() {
   const columns: ColumnDef<Payout, unknown>[] = [
     { header: 'Requested', cell: ({ row }) => formatDate(row.original.created_at, true) },
     { header: 'Member', cell: ({ row }) => `${row.original.user.first_name} ${row.original.user.last_name}` },
-    { header: 'Amount', cell: ({ row }) => <b>{formatETB(row.original.amount)}</b> },
+    { header: 'Amount', cell: ({ row }) => <b>{formatMoney(row.original.amount)}</b> },
     { header: 'To', cell: ({ row }) => `${row.original.method}${row.original.bank_name ? ` · ${row.original.bank_name}` : ''} · ${row.original.account}` },
     { header: 'Due', cell: ({ row }) => {
       const late = new Date(row.original.due_at) < new Date() && ['requested', 'on_hold'].includes(row.original.status)
@@ -60,7 +60,7 @@ function PayoutActions({ payout }: { payout: Payout }) {
   const reject = useMutate('post', ['cash-outs'], 'Rejected — money returned to wallet')
   return (
     <div className='flex gap-1'>
-      <FormDialog title={`Pay ${formatETB(payout.amount)} to ${payout.account_name}`} saveText='I sent it — mark paid'
+      <FormDialog title={`Pay ${formatMoney(payout.amount)} to ${payout.account_name}`} saveText='I sent it — mark paid'
         trigger={<Button size='sm' onClick={async () => setFull((await api.get(`/cash-outs/${payout.id}`)).data.data)}><Eye /> Pay</Button>}
         onSave={() => pay.mutateAsync({ path: `/cash-outs/${payout.id}/pay`, body: { reference, account_checked: checked } })}>
         <div className='rounded-md bg-muted p-3 text-sm'>
@@ -103,7 +103,7 @@ export function LedgerPage() {
     { header: 'Type', cell: ({ row }) => <code className='text-xs'>{row.original.type}</code> },
     { header: 'Description', cell: ({ row }) => <span>{row.original.description}{row.original.reason && <span className='block text-xs text-muted-foreground'>Reason: {row.original.reason}</span>}</span> },
     { header: 'Postings (+ debit / − credit)', cell: ({ row }) => (
-      <div className='grid text-xs'>{row.original.postings.map((p) => <span key={p.id} className='font-mono'>{p.account.code}: {p.amount > 0 ? '+' : ''}{formatETB(p.amount, false)}</span>)}</div>
+      <div className='grid text-xs'>{row.original.postings.map((p) => <span key={p.id} className='font-mono'>{p.account.code}: {p.amount > 0 ? '+' : ''}{formatMoney(p.amount, false)}</span>)}</div>
     ) },
   ]
   return (
@@ -112,7 +112,7 @@ export function LedgerPage() {
         {accounts.data?.map((a) => (
           <Card key={a.code} className='gap-1 py-3'>
             <CardHeader className='px-3'><CardTitle className='text-xs font-normal text-muted-foreground'>{a.code}</CardTitle></CardHeader>
-            <CardContent className='px-3 font-semibold'>{formatETB(a.balance)}</CardContent>
+            <CardContent className='px-3 font-semibold'>{formatMoney(a.balance)}</CardContent>
           </Card>
         ))}
       </div>
@@ -182,9 +182,9 @@ export function CommissionsPage() {
     { header: 'When', cell: ({ row }) => formatDate(row.original.created_at, true) },
     { header: 'Recipient', cell: ({ row }) => `${row.original.recipient.first_name} ${row.original.recipient.last_name}` },
     { header: 'Sale', cell: ({ row }) => `${row.original.type} · L${row.original.level}` },
-    { header: 'Base', cell: ({ row }) => formatETB(row.original.base_amount) },
+    { header: 'Base', cell: ({ row }) => formatMoney(row.original.base_amount) },
     { header: 'Rate', cell: ({ row }) => `${row.original.rate_bps / 100}%` },
-    { header: 'Amount', cell: ({ row }) => <span>{formatETB(row.original.amount)}{row.original.reversed_amount > 0 && <span className='ms-1 text-xs text-red-600'>−{formatETB(row.original.reversed_amount)}</span>}</span> },
+    { header: 'Amount', cell: ({ row }) => <span>{formatMoney(row.original.amount)}{row.original.reversed_amount > 0 && <span className='ms-1 text-xs text-red-600'>−{formatMoney(row.original.reversed_amount)}</span>}</span> },
     { header: 'Status', cell: ({ row }) => <span><StatusBadge status={row.original.on_hold ? 'on_hold' : row.original.status} />{row.original.skip_reason && <span className='ms-1 text-xs text-muted-foreground'>{row.original.skip_reason.replaceAll('_', ' ')}</span>}</span> },
     { header: 'Available', cell: ({ row }) => formatDate(row.original.available_at) },
   ]
@@ -239,7 +239,7 @@ function TreeNode({ node, level, onOpen }: { node: Node; level: number; onOpen: 
         <button className='font-medium underline-offset-4 hover:underline' onClick={() => onOpen(node.id)}>{node.name}</button>
         <span className='font-mono text-xs text-muted-foreground'>{node.code}</span>
         <StatusBadge status={node.active ? 'active' : 'expired'} />
-        <span className='text-xs text-muted-foreground'>{level === 0 ? 'you are viewing' : `L${level}`} · pending {formatETB(node.wallet.pending)} · available {formatETB(node.wallet.available)} · {node.children_count} direct</span>
+        <span className='text-xs text-muted-foreground'>{level === 0 ? 'you are viewing' : `L${level}`} · pending {formatMoney(node.wallet.pending)} · available {formatMoney(node.wallet.available)} · {node.children_count} direct</span>
       </div>
       {node.children.map((c) => <TreeNode key={c.id} node={c} level={level + 1} onOpen={onOpen} />)}
     </div>

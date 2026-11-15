@@ -2,6 +2,7 @@
 
 namespace App\Ledger;
 
+use App\Demo\Demo;
 use App\Models\User;
 use App\Security\SecurityAlerts;
 use App\Support\Activity;
@@ -69,7 +70,9 @@ class Ledger
                 ksort($accounts);
                 Account::query()->whereKey(array_keys($accounts))->orderBy('id')->lockForUpdate()->get();
 
+                $demo = Demo::actingDemoCustomer() || Demo::isDemoModel($reference) || $this->touchesDemoUser($accounts);
                 $entry = JournalEntry::query()->create([
+                    'is_demo' => $demo,
                     'uuid' => (string) Str::uuid(),
                     'type' => $type,
                     'description' => $description,
@@ -82,6 +85,7 @@ class Ledger
                 ]);
                 foreach ($lines as [$account, $amount]) {
                     Posting::query()->create([
+                        'is_demo' => $demo,
                         'journal_entry_id' => $entry->id,
                         'ledger_account_id' => $this->resolve($account)->id,
                         'amount' => $amount,
@@ -109,6 +113,19 @@ class Ledger
             }
             throw $e;
         }
+    }
+
+    /** @param array<int, Account> $accounts */
+    private function touchesDemoUser(array $accounts): bool
+    {
+        $ids = [];
+        foreach ($accounts as $acc) {
+            if (preg_match('/^user:(\d+):/', (string) $acc->code, $m)) {
+                $ids[] = (int) $m[1];
+            }
+        }
+
+        return $ids !== [] && DB::table('users')->whereIn('id', $ids)->where('is_demo', true)->exists();
     }
 
     /** Post the exact opposite of an entry (optionally a fraction of it). */

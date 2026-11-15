@@ -84,6 +84,6 @@ class ReferralCodes
 
     private function taken(string $code): bool
     {
-        return User::query()->where('referral_code', $code)->exists();
+        return User::query()->withoutGlobalScopes()->where('referral_code', $code)->exists(); // hidden demo codes are taken too
     }
 }

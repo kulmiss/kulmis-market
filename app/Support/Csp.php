@@ -24,7 +24,7 @@ final class Csp
             "img-src 'self' data: blob:",
             "font-src 'self'",
             "connect-src 'self'",
-            "form-action 'self' https://checkout.chapa.co",
+            "form-action 'self'",
             "frame-ancestors 'none'",
             "base-uri 'self'",
             "object-src 'none'",

@@ -4,8 +4,8 @@
 month. Signals are **included** for active members.
 
 ## Access flow
-1. A guest pays (`POST /api/v1/signals/subscribe` → Chapa, or
-   `/signals/payment-proof`). A member gets access automatically when the
+1. A guest pays by transfer and sends the receipt
+   (`POST /api/v1/signals/payment-proof`); staff approve it. A member gets access automatically when the
    membership activates (`GET /api/v1/signals/member-access` returns the link).
 2. The person gets a **personal deep link** by SMS/email:
    `https://t.me/<bot>?start=<token>`.

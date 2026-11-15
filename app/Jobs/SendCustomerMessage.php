@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Demo\Demo;
 use App\Mail\PlainMessage;
 use App\Models\OrderStatusChange;
 use App\Notify\Message;
@@ -32,6 +33,11 @@ class SendCustomerMessage implements ShouldQueue
     {
         $sent = [];
         $m = $this->message;
+        if (Demo::isDemoContact($m->phone, $m->email)) {
+            Log::info('Message to demo contact not sent: '.$m->subject); // demo phones (+251900…) and *.test emails
+
+            return;
+        }
         if ($m->phone && ($this->security || Features::enabled('notifications.sms'))) {
             $this->attempt('sms', fn () => $sms->send($m->phone, $m->body), $sent);
         }

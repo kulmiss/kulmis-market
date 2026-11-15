@@ -216,13 +216,16 @@ class SignalsTest extends TestCase
         $this->assertFalse($sub->fresh()->isEntitled());
     }
 
-    public function test_guest_subscribe_api_with_chapa_and_info(): void
+    public function test_guest_pays_by_transfer_and_info(): void
     {
-        config(['services.chapa.secret_key' => 'CHASECK_TEST-x']);
-        Http::fake(['api.chapa.co/*' => Http::response(['data' => ['checkout_url' => 'https://checkout.chapa.co/s']])]);
+        Storage::fake('local');
         $this->getJson('/api/v1/signals/info')->assertOk()->assertJsonPath('data.guest_price', 400_000);
-        $this->postJson('/api/v1/signals/subscribe', ['first_name' => 'Liya', 'phone' => '0944556677'])
-            ->assertCreated()->assertJsonPath('data.checkout_url', 'https://checkout.chapa.co/s');
+        $this->post('/api/v1/signals/subscribe', ['first_name' => 'Liya', 'phone' => '0944556677'])->assertNotFound();
+        $this->postJson('/api/v1/signals/payment-proof', ['first_name' => 'Liya', 'phone' => '0944556677', 'method' => 'telebirr',
+            'reference' => 'TB55', 'proof' => UploadedFile::fake()->image('r.jpg')])
+            ->assertCreated()->assertJsonPath('data.status', 'awaiting_review');
+        $this->assertSame('awaiting_review', Payment::query()->latest('id')->firstOrFail()->status);
+        $this->get('/signals')->assertOk()->assertSee('Send receipt')->assertDontSee('Chapa');
     }
 
     public function test_signals_switch_off(): void

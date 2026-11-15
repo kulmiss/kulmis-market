@@ -2,6 +2,7 @@
 
 namespace App\Membership;
 
+use App\Demo\Demo;
 use App\Events\MembershipActivated;
 use App\Events\MembershipEnded;
 use App\Jobs\SendCustomerMessage;
@@ -208,7 +209,7 @@ class MembershipService
                             [Account::LOYALTY, $amount],
                             [$this->ledger->userAccount($m->user_id, Wallet::AVAILABLE), -$amount],
                         ], "loyalty:{$m->user_id}:{$m->continuous_since->timestamp}:$seq", $m, description: 'Loyalty reward');
-                        DB::table('loyalty_rewards')->insert(['user_id' => $m->user_id, 'continuous_since' => $m->continuous_since,
+                        DB::table('loyalty_rewards')->insert(['user_id' => $m->user_id, 'is_demo' => Demo::isDemoUser($m->user_id), 'continuous_since' => $m->continuous_since,
                             'sequence' => $seq, 'amount' => $amount, 'journal_entry_id' => $entry->id, 'created_at' => now()]);
                     });
                     $this->message($m->user, str_replace('{amount}', Money::format($amount), Settings::string('notify.loyalty_reward')), $m);

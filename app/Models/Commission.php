@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -28,6 +29,18 @@ use Illuminate\Support\Carbon;
  */
 class Commission extends Model
 {
+    use HidesDemo;
+
+    protected static function demoOwnerColumns(): array
+    {
+        return ['recipient_id', 'buyer_user_id'];
+    }
+
+    protected static function demoParents(): array
+    {
+        return ['payment_id' => 'payments'];
+    }
+
     public const PENDING = 'pending';
 
     public const AVAILABLE = 'available';

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -18,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ShippingZone extends Model
 {
+    use HidesDemo;
+
     /** @var array<string, mixed> */
     protected $attributes = ['included_grams' => 1000, 'per_kg_fee' => 0, 'is_default' => false, 'is_active' => true, 'position' => 0];
 

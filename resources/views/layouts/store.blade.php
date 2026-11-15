@@ -16,6 +16,7 @@
     <meta name="description" content="{{ $description }}">
     <link rel="canonical" href="{{ $canonical ?? url()->current() }}">
     <meta name="theme-color" content="#b5532b">
+    <meta name="km-currency" content="{{ json_encode(\App\Support\Currency::forClients()) }}">
     <meta property="og:site_name" content="{{ $site }}">
     <meta property="og:title" content="{{ $title }}">
     <meta property="og:description" content="{{ $description }}">
@@ -23,7 +24,10 @@
     <meta property="og:url" content="{{ $canonical ?? url()->current() }}">
     <meta property="og:image" content="{{ $ogImage }}">
     <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="32x32">
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
     <script>{!! \App\Support\Csp::THEME_SCRIPT !!}</script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')

@@ -4,6 +4,7 @@ namespace Tests\Feature\Membership;
 
 use App\Events\MembershipEnded;
 use App\Jobs\SendCustomerMessage;
+use App\Ledger\Account;
 use App\Ledger\Ledger;
 use App\Ledger\Wallet;
 use App\Membership\MembershipService;
@@ -18,7 +19,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -199,16 +199,33 @@ class MembershipTest extends TestCase
         Event::assertDispatched(MembershipEnded::class);
     }
 
-    public function test_membership_api_pay_with_chapa(): void
+    public function test_membership_api_wallet_only_and_transfer_with_part_wallet(): void
     {
-        config(['services.chapa.secret_key' => 'CHASECK_TEST-x']);
-        Http::fake(['api.chapa.co/*' => Http::response(['data' => ['checkout_url' => 'https://checkout.chapa.co/m']])]);
+        Storage::fake('local');
         $user = User::factory()->create();
         $this->getJson('/api/v1/membership/info')->assertOk()->assertJsonPath('data.price', 500_000);
-        $this->actingAs($user, 'sanctum')->postJson('/api/v1/membership/pay', ['method' => 'chapa'])
-            ->assertCreated()->assertJsonPath('data.checkout_url', 'https://checkout.chapa.co/m')->assertJsonPath('data.amount', 500_000);
-        $this->postJson('/api/v1/membership/pay', ['method' => 'chapa'])->assertCreated();
-        $this->assertSame(1, MembershipPurchase::query()->count(), 'open purchase reused');
+        $this->actingAs($user, 'sanctum')->postJson('/api/v1/membership/pay', ['method' => 'chapa'])->assertUnprocessable();
+        $this->postJson('/api/v1/membership/pay', ['method' => 'wallet'])->assertUnprocessable()->assertJsonValidationErrors('membership');
+
+        app(Ledger::class)->post('manual.adjustment', [[Account::ADJUSTMENTS, 100_000],
+            [app(Ledger::class)->userAccount($user->id, Wallet::AVAILABLE), -100_000]], reason: 'test');
+        $this->postJson('/api/v1/membership/payment-proof', ['method' => 'telebirr', 'use_wallet' => true,
+            'proof' => UploadedFile::fake()->image('r.jpg')])->assertCreated()->assertJsonPath('data.status', 'awaiting_review');
+
+        $purchase = MembershipPurchase::query()->sole();
+        $this->assertSame(100_000, $purchase->wallet_used);
+        $this->assertSame(400_000, Payment::query()->where('provider', 'telebirr')->sole()->amount);
+        $this->assertSame(0, Wallet::for($user)->available());
+    }
+
+    public function test_member_home_offers_wallet_or_transfer_only(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user, 'web')->get('/account')->assertOk()
+            ->assertSee('Send receipt')->assertDontSee('Chapa')->assertDontSee('from my wallet');
+        app(Ledger::class)->post('manual.adjustment', [[Account::ADJUSTMENTS, 600_000],
+            [app(Ledger::class)->userAccount($user->id, Wallet::AVAILABLE), -600_000]], reason: 'test');
+        $this->get('/account')->assertOk()->assertSee('Join from my wallet');
     }
 
     public function test_membership_switch_off_hides_api(): void

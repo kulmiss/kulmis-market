@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Badges\BadgeEngine;
 use App\Cart\CartManager;
 use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Controller;
 use App\Ledger\Wallet;
+use App\Member\MemberDashboard;
 use App\Membership\MembershipService;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PayoutRequest;
 use App\Models\Product;
+use App\Models\Signal;
 use App\Models\User;
 use App\Orders\Checkout;
 use App\Orders\CheckoutExtras;
@@ -37,59 +40,127 @@ use InvalidArgumentException;
 /** The member area: dashboard, referral, wallet, cash-out, orders. */
 class AccountController extends Controller
 {
-    public function dashboard(Request $request, TeamView $team): View
+    public function dashboard(Request $request, MemberDashboard $dashboard): View
     {
         /** @var User $user */
         $user = $request->user();
         $member = $user->isActiveMember();
-        $signals = $member && Features::enabled('signals') ? app(SignalAccess::class)->grantMember($user) : null;
+        $chart = $request->query('chart') === 'monthly' ? 'monthly' : 'daily';
 
-        return view('store.account.dashboard', [
+        return view('member.home', [
             'user' => $user,
-            'membership' => $user->membership()->first(),
             'isMember' => $member,
-            'referral' => Features::enabled('referral') ? $team->for($user) : null,
-            'history' => Features::enabled('referral') ? $team->history($user, 20) : collect(),
+            'dash' => $dashboard->for($user, $chart),
             'wallet' => Wallet::for($user)->summary(),
-            'cashouts' => PayoutRequest::query()->where('user_id', $user->id)->latest('id')->limit(10)->get(),
-            'payoutAccount' => app(PayoutAccounts::class)->current($user),
-            'orders' => Order::query()->where('user_id', $user->id)->latest('id')->limit(10)->get(),
-            'signalsLink' => $signals?->deepLink(),
+            'signalsLink' => $this->signalsLink($user, $member),
             'earlyAccess' => $member && Features::enabled('shop.early_access')
                 ? Product::query()->visibleTo(true)->where('release_at', '>', now())->with(['images', 'variants'])->limit(6)->get() : collect(),
         ]);
     }
 
-    public function payMembership(Request $request, MembershipService $memberships, PaymentService $payments, WalletPayments $wallet): RedirectResponse
+    public function team(Request $request, TeamView $team): View
     {
-        $data = $request->validate(['method' => ['required', Rule::in(['chapa', 'wallet', 'wallet_chapa'])]]);
+        abort_if(Features::disabled('referral'), 404);
+
+        return view('member.team', ['ref' => $team->for($request->user())]);
+    }
+
+    public function earnings(Request $request, MemberDashboard $dashboard, TeamView $team): View
+    {
+        abort_if(Features::disabled('referral'), 404);
+        $user = $request->user();
+
+        return view('member.earnings', ['dash' => ['money' => $dashboard->money($user)], 'monthly' => $dashboard->monthly($user), 'history' => $team->history($user, 100)]);
+    }
+
+    public function wallet(Request $request): View
+    {
+        abort_if(Features::disabled('wallet'), 404);
+        /** @var User $user */
+        $user = $request->user();
+
+        return view('member.wallet', [
+            'user' => $user,
+            'wallet' => Wallet::for($user)->summary(),
+            'cashouts' => PayoutRequest::query()->where('user_id', $user->id)->latest('id')->limit(20)->get(),
+            'payoutAccount' => app(PayoutAccounts::class)->current($user),
+        ]);
+    }
+
+    public function orders(Request $request): View
+    {
+        return view('member.orders', ['orders' => Order::query()->where('user_id', $request->user()->id)->latest('id')->limit(50)->get()]);
+    }
+
+    public function signals(Request $request): View
+    {
+        abort_if(Features::disabled('signals'), 404);
+        $user = $request->user();
+
+        return view('member.signals', [
+            'isMember' => $user->isActiveMember(),
+            'signalsLink' => $this->signalsLink($user, $user->isActiveMember()),
+            'signals' => Signal::query()->latest('posted_at')->limit(15)->get(),
+        ]);
+    }
+
+    private function signalsLink(User $user, bool $member): ?string
+    {
+        return $member && Features::enabled('signals') ? app(SignalAccess::class)->grantMember($user)->deepLink() : null;
+    }
+
+    public function badges(Request $request, BadgeEngine $engine): View
+    {
+        $engine->evaluate($request->user()); // catch up right away (thresholds may have been lowered)
+
+        return view('store.account.badges', ['badges' => $engine->progress($request->user()), 'summary' => $engine->summary($request->user())]);
+    }
+
+    public function badgesSeen(Request $request, BadgeEngine $engine): RedirectResponse
+    {
+        $engine->markSeen($request->user());
+
+        return back(fallback: url('/account/badges'));
+    }
+
+    /** Pay a month fully from the wallet. */
+    public function payMembership(Request $request, MembershipService $memberships, WalletPayments $wallet): RedirectResponse
+    {
+        $request->validate(['method' => ['required', Rule::in(['wallet'])]]);
         try {
             $purchase = $memberships->newPurchase($request->user());
-            if (in_array($data['method'], ['wallet', 'wallet_chapa'], true)) {
-                $wallet->apply($purchase, $request->user());
-                if ($purchase->fresh()->isSettled()) {
-                    return redirect('/account')->with('status', 'Membership paid from your wallet. Welcome!');
-                }
-                if ($data['method'] === 'wallet') {
-                    throw new InvalidArgumentException('Not enough in your wallet — pay the rest with Chapa.');
-                }
+            $wallet->apply($purchase, $request->user());
+            if (! $purchase->fresh()->isSettled()) {
+                throw new InvalidArgumentException('Not enough in your wallet. Tick "use my wallet" and transfer the rest.');
             }
-            $payment = $payments->startChapa($purchase, url('/account?paid=1'));
         } catch (InvalidArgumentException|\RuntimeException $e) {
             return back()->withErrors(['membership' => $e->getMessage()]);
         }
 
-        return redirect()->away((string) $payment->checkout_url);
+        return redirect('/account')->with('status', 'Membership paid from your wallet. Welcome!');
     }
 
-    public function membershipProof(Request $request, MembershipService $memberships, PaymentService $payments): RedirectResponse
+    /** Bank / Telebirr transfer with a receipt, optionally after using the wallet for part of it. */
+    public function membershipProof(Request $request, MembershipService $memberships, PaymentService $payments, WalletPayments $wallet): RedirectResponse
     {
         $data = $request->validate([
             'method' => ['required', Rule::in([Payment::BANK, Payment::TELEBIRR])],
             'proof' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:5120'],
             'reference' => ['nullable', 'string', 'max:120'],
+            'use_wallet' => ['nullable', 'boolean'],
         ]);
-        $payments->submitProof($memberships->newPurchase($request->user()), $data['method'], $request->file('proof'), $data['reference'] ?? null, $request->user()->phone);
+        try {
+            $purchase = $memberships->newPurchase($request->user());
+            if ($request->boolean('use_wallet')) {
+                $wallet->apply($purchase, $request->user());
+                if ($purchase->fresh()->isSettled()) {
+                    return redirect('/account')->with('status', 'Membership paid from your wallet. Welcome!');
+                }
+            }
+            $payments->submitProof($purchase->fresh(), $data['method'], $request->file('proof'), $data['reference'] ?? null, $request->user()->phone);
+        } catch (InvalidArgumentException $e) {
+            return back()->withErrors(['membership' => $e->getMessage()]);
+        }
 
         return redirect('/account')->with('status', 'Thank you! We will confirm your payment shortly.');
     }

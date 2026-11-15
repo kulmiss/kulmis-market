@@ -26,7 +26,7 @@
 </section>
 <section class="container-km mt-12 max-w-3xl">
     <h2 class="text-2xl">Questions</h2>
-    <details class="card mt-3"><summary class="cursor-pointer font-semibold">How do I pay?</summary><p class="muted mt-2">With Telebirr, CBE Birr, M-Pesa or card through Chapa, by bank/Telebirr transfer with a receipt photo, or from your wallet earnings.</p></details>
+    <details class="card mt-3"><summary class="cursor-pointer font-semibold">How do I pay?</summary><p class="muted mt-2">By Telebirr or bank transfer with a receipt photo (we confirm it quickly), or from your wallet earnings.</p></details>
     <details class="card mt-3"><summary class="cursor-pointer font-semibold">What happens if I don't renew?</summary><p class="muted mt-2">We remind you 3 days before, on the day and after. You keep your benefits for {{ $i('membership.grace_days') }} more days. After that discounts, signals and earnings pause — your wallet balance stays yours.</p></details>
     <details class="card mt-3"><summary class="cursor-pointer font-semibold">Can I cash out my earnings?</summary><p class="muted mt-2">Yes — from {{ $m('wallet.cashout_min') }} to Telebirr or your bank, any time. We pay within {{ $i('wallet.payout_days') }} days.</p></details>
     <p class="muted mt-6 text-sm">See the <a class="underline" href="{{ url('/p/membership-terms') }}">membership terms</a>.</p>

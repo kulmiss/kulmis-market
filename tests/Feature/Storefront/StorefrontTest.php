@@ -115,7 +115,7 @@ class StorefrontTest extends TestCase
         $user = User::query()->where('phone', '+251911456789')->firstOrFail();
         $this->assertSame($ref->id, $user->referrer_id);
 
-        $this->get('/account')->assertOk()->assertSee('Selam, Meron')->assertSee('Your referral link')->assertSee($user->referral_code);
+        $this->get('/account')->assertOk()->assertSeeInOrder(['Selam,', 'Meron'])->assertSee('Your referral link')->assertSee($user->referral_code);
         $this->get('/account/referral-qr.svg')->assertOk()->assertHeader('Content-Type', 'image/svg+xml');
 
         $this->post('/logout')->assertRedirect('/');

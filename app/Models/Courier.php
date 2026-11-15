@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -13,6 +14,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Courier extends Model
 {
+    use HidesDemo;
+
     /** @var array<string, mixed> */
     protected $attributes = ['is_active' => true];
 

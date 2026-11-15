@@ -30,7 +30,7 @@ change any of them.
 | 21 | Ship the admin build in git? | Yes. `public/admin-app` is committed, so shared hosting needs no Node. CI rebuilds it to make sure it compiles. | Decided (recommended) |
 | 22 | Guests and sessions | Public pages never start a session for guests, so the only cookies are `km_cart` and `km_ref`. Guest checkout uses the stateless API. Signed-in customers get a normal session. | Decided (recommended) |
 | 23 | Storefront look | Clay, sand and coffee colours, serif headings with the system font stack (no web fonts, for speed and privacy). Change the colours in `resources/css/app.css` (`@theme`). | Decided (recommended), easy to change |
-| 24 | Security headers | Strict CSP (one hashed inline script, nothing third-party), plus a meta CSP so cached pages keep it. `form-action` allows `checkout.chapa.co` for the payment redirect. | Decided (recommended) |
+| 24 | Security headers | Strict CSP (one hashed inline script, nothing third-party), plus a meta CSP so cached pages keep it. `form-action` is `'self'` only (no payment gateway to redirect to). | Decided (recommended) |
 | 25 | Backups | Nightly encrypted backup (libsodium) of the DB, proofs and uploads, kept 14 days on the server. **You still need to copy them off the server.** | Decided (recommended) |
 | 26 | Database name | `kulmis-market` (you asked, 15 Nov). | Decided (you) |
 | 27 | Password length | Staff ≥ 12, customers ≥ 10, plus a common-password list (your security review asked for strong rules, which replaces the 5-character minimum from earlier). Set by `ADMIN_PASSWORD_MIN` / `CUSTOMER_PASSWORD_MIN`; `km:doctor` turns red if staff is below 12. | Decided (review) |
@@ -48,12 +48,27 @@ change any of them.
 | 39 | Local Docker port | 8090 by default (8080 is used by your other project). | Decided (you) |
 | 40 | Admin IP lock | Optional `ADMIN_ALLOWED_IPS`. Off by default because your IP may change; 2FA is always required. | Decided (review) |
 | 41 | `km:doctor` | Fails (exit 1) when anything is unsafe, so deploy scripts can stop. Missing setup (SMS, mail…) is a warning only. | Decided (review) |
+| 42 | Sign-up in the referrer's own browser | Linked (team is right) + flag: the referrer's earnings wait for review. Before, the link was silently refused, which looked like "referral not working". | Decided (bug #7) |
+| 43 | Many sign-ups from one network | Review-only (soft) flag at 10 in 24 h; no hold, because mobile carriers share IPs. Local/private IPs are ignored. | Decided (bug #7) |
+| 44 | Currency change and existing amounts | Nothing is converted: amounts keep their numbers, only the symbol/format changes. Admin must confirm. | Decided (you) |
+| 45 | ~~"Block checkout" when Chapa can't take the currency~~ | No longer applies: Chapa was removed (#56). Transfers work in any currency. | Obsolete |
+| 46 | Currency decimals | Choice of "only when needed" (default, as today), never, or always 2. Amounts are still stored to 1/100. | Decided (round 2) |
+| 47 | "Team size" badges | Count **active** members you invited yourself (as before), so fake sign-ups don't earn badges. "Total team" counts active members in all 3 levels. | Decided (round 2) |
+| 48 | Badge messages | In-app notification + celebration always. SMS/email/Telegram for badges are off by default (`badges.messages`) because SMS costs money. | Decided (round 2) |
+| 49 | Top referrer badge | Awarded on the 1st of each month to last month's #1 (threshold = rank, editable). | Decided (round 2) |
+| 50 | "Highest badge" | The unlocked badge with the highest "importance" number (editable per badge). Diamond is highest by default. | Decided (round 2) |
+| 51 | Demo data and money totals | The admin dashboard shows demo OR real numbers (a switch), never both added together. The ledger page shows real balances, with demo balances apart. | Decided (round 2) |
+| 52 | Demo photos | Real free photos from Pexels (no attribution needed; credited in CREDITS.md). They are craft photos that fit each product, not photos of your own products. | Decided (round 2) |
+| 53 | Demo contacts | Demo phones use +251 900 1… and emails end in .test; messages to them are never sent, so a staging server with a real SMS provider can't text strangers. | Decided (round 2) |
+| 54 | Member area look | Its own green & white layout (sidebar / bottom bar), accent editable in Settings → Appearance. The Super Admin dashboard is unchanged. | Decided (you) |
+| 55 | "Newest in your team" privacy | Level 1 by first name + initial; levels 2 and 3 show as "New member" (as before: counts only for levels 2–3). | Decided (round 2) |
+| 56 | Payment methods | **No Chapa / no online gateway.** Orders, membership and guest signals are paid by Telebirr or bank transfer with a receipt that staff approve, and members can use their wallet (all or part). Refunds of transfers are sent back by hand and recorded; wallet payments go back to the wallet. Existing page texts that mentioned Chapa are updated by a migration (only sentences you never edited). | Decided (you) |
+| 57 | Logo colour | Green `#1f8a4c` (the member-area accent default) with the gold knob and sand basket, everywhere the logo appears. The storefront keeps its clay/sand colours. If you change the member accent in Settings, the logo stays this green (it is also in the favicon and app icons). | Decided (you) |
 
 ## Still open: needs you
 | # | What | Why |
 |---|------|-----|
 | A | **SMS provider**: which one, plus its API details | Until then SMS only go to the log. Email and Telegram work. |
 | B | **Domain + hosting** | Set `APP_URL`, `MAIL_FROM_ADDRESS`. Note: Proclamation 1321/2024 has rules on keeping personal data on servers in Ethiopia, so this may matter when you choose hosting. |
-| C | **Chapa account** (test, then live keys + webhook secret) | Card / Telebirr payments. |
 | D | **Telegram bot + private channel** | Signals access. |
-| E | **Look & feel** | The colours, logo and texts are placeholders that fit "warm, handcrafted". Tell me what to change. |
+| E | **Look & feel** | Logo A (smiling mesob) is in, in the member-area green. Colours and texts still fit "warm, handcrafted"; tell me what to change. |

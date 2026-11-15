@@ -38,7 +38,7 @@ These terms apply when you use {$site} (the "shop") and when you buy from us. By
 - Made-to-order items show an estimated making time. We tell you if it changes.
 
 ## Payment
-You can pay through Chapa (Telebirr, CBE Birr, M-Pesa, cards and other methods Chapa offers), by bank or Telebirr transfer with a receipt, or from your wallet balance. We never see or store your card or mobile-money PIN.
+You can pay by Telebirr or bank transfer and send us the receipt, or pay from your wallet balance. We confirm transfers by hand, usually within a few hours. We never ask for your mobile-money PIN or bank password.
 
 ## Delivery
 We ship all over Ethiopia with partner couriers. Delivery times are estimates. You can follow your order at any time on the tracking page with your order number and phone.
@@ -58,7 +58,7 @@ We respect your privacy and handle personal data in line with Ethiopia's **Perso
 ## What we collect
 - **When you order:** name, phone, optional email, city and delivery address, order details.
 - **When you create an account:** name, phone, optional email and a password (stored only as a secure hash).
-- **When you pay:** payment status and references from Chapa, or the receipt you upload. We never receive your card details or PIN.
+- **When you pay:** the receipt you upload and its transaction reference. We never ask for your PIN or bank password.
 - **Membership and referrals:** your membership dates, the referral code you joined with, your earnings and cash-out details (account numbers are stored encrypted).
 - **Telegram (signals):** your Telegram user ID, only so we can let you into the private channel and remove you when your access ends.
 
@@ -69,7 +69,7 @@ No tracking or advertising cookies, no analytics profiles, and no IP address for
 To deliver your orders, take payments, send order and renewal messages (SMS, email, Telegram), run the membership and referral program, prevent fraud, and meet our legal and tax duties.
 
 ## Who we share it with
-Only with the services needed to serve you: the payment provider (Chapa), couriers (name, phone and address for delivery), and SMS, email and Telegram providers for messages. We do not sell your data.
+Only with the services needed to serve you: couriers (name, phone and address for delivery), and SMS, email and Telegram providers for messages. We do not sell your data.
 
 ## Your team and your privacy
 Other members only ever see your first name and last initial, the date you joined and whether you are active — and only if you joined with their link. Never your phone, email, address or purchases.
@@ -93,7 +93,7 @@ MD],
 ## Returns and refunds
 - If an item arrives damaged or is not what you ordered, tell us within **7 days** of delivery with photos. We will replace it or refund it.
 - You can cancel an order for a full refund before it ships. Made-to-order items can be cancelled before we start making them.
-- Refunds go back the way you paid: through Chapa, by transfer, or to your wallet if you paid from it.
+- Refunds go back the way you paid: by transfer, or to your wallet if you paid from it.
 - Referral earnings from a refunded order are reversed automatically.
 
 ## Membership and signals

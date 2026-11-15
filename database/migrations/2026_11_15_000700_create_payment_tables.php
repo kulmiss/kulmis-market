@@ -13,7 +13,7 @@ return new class extends Migration
             $table->uuid('uuid')->unique();
             $table->morphs('payable');                                   // Order, membership purchase, signals purchase
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('provider', 20);                              // chapa | bank_transfer | telebirr | wallet
+            $table->string('provider', 20);                              // bank_transfer | telebirr | wallet
             $table->string('tx_ref', 80)->unique();
             $table->unsignedBigInteger('amount');                        // santim
             $table->unsignedBigInteger('fee')->default(0);
@@ -37,7 +37,7 @@ return new class extends Migration
             $table->foreignId('payment_id')->constrained()->restrictOnDelete();
             $table->unsignedBigInteger('amount');
             $table->string('reason', 500);
-            $table->string('method', 20);                                // chapa | manual
+            $table->string('method', 20);                                // manual | wallet
             $table->string('provider_reference', 120)->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('created_at')->useCurrent();

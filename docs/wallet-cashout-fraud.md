@@ -3,11 +3,11 @@
 ## Paying from the wallet (`wallet.spend`)
 - Checkout: `use_wallet: true` (signed-in members). The wallet pays up to
   the full total. Membership: `POST /api/v1/membership/pay {method: "wallet"}`
-  or `{method: "chapa", use_wallet: true}` for wallet + Chapa.
+  or `POST /api/v1/membership/payment-proof {use_wallet: true, …}` for wallet + transfer.
 - The wallet part is its own `Payment` (provider `wallet`). The ledger moves
   `user:{id}:available` → the sale's income account, with an overspend guard.
 - If the wallet covers everything, the order or membership is paid at
-  once and commissions fire. Otherwise Chapa (or a proof) pays the rest.
+  once and commissions fire. Otherwise a transfer with a receipt pays the rest.
 - An unpaid order that gets cancelled puts the wallet part back. A refund of
   the wallet part goes back to *available*.
 - Commissions count the wallet part as "paid" (QUESTIONS.md #17).
@@ -32,7 +32,8 @@
 | Check | When | Effect |
 |-------|------|--------|
 | Same phone / email | sign-up, every commission | not linked / level skipped |
-| Same device (hashed cart token, no tracking cookie) | sign-up, guest orders | not linked / skipped + flag |
+| Same device at sign-up (hashed cart token, no tracking cookie) | sign-up | **linked** + flag (earnings wait for review) |
+| Same device on a guest order | guest orders | commission skipped + flag |
 | Paid with the recipient's own phone or payout account | every commission | skipped + flag |
 | More than `referral.daily_signup_limit` sign-ups in a day | sign-up | flag (still linked) |
 | Payout account used by another member | cash-out | both flagged |
@@ -61,15 +62,23 @@ Clearing releases the holds. You can also flag someone by hand.
 - **Idempotent.** The app sends an `Idempotency-Key` header and the website
   form a hidden `request_id`, so a retry or double click never creates two
   requests.
-- **Chapa double click.** Starting a payment twice within 30 minutes reuses
-  the same checkout, so a customer can't pay twice by accident.
-
-## Referral abuse
-- Self-referral: same phone, email, browser (cart token hash) or payment
-  account. The link is refused, or the commission is skipped and flagged.
-- Fake accounts: 2+ of a referrer's sign-ups from the same browser, or 3+
-  from the same network within 24 h (`referral.same_network_signups`), flag
-  the referrer. Their earnings and cash-outs wait for review. The network is
-  kept only as a keyed hash in the cache for 24 h, never in the database.
-- Sign-up rate limit: 5 per hour and 20 per day per network.
+- **Double approval.** Two admins approving the same receipt, or a double
+  click, give value once (the payment row is locked).
+- Self-referral: same phone, email or payment account. The link is refused,
+  or the commission is skipped and flagged.
+- Same browser at sign-up (a family phone, an internet café): the new member
+  **is linked** to the referrer, so the team is right, and the referrer gets
+  a `same_browser_signup` flag. Their earnings wait for Super Admin's review;
+  the member sees "Some of your earnings are being checked by our team".
+  (Before PR 29 the link was silently refused. That was the "referral not
+  working" bug.)
+- Fake accounts: 2+ of a referrer's sign-ups from the same browser flag the
+  referrer (earnings wait for review).
+- Same network: `referral.same_network_signups` (10) sign-ups for one
+  referrer from one public network in 24 h show up in the review queue as a
+  **soft** flag: nothing is held, because many Ethiopian mobile users share
+  one carrier IP. Private/local IPs are ignored. The network is kept only as
+  a keyed hash in the cache for 24 h, never in the database.
+- Sign-up rate limit: 5 per hour and 20 per day per network (60/min when
+  `APP_ENV=local`, so you can test on one PC).
 - Shared payout account between members: both are flagged.

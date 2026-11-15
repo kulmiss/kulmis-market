@@ -2,31 +2,13 @@
 
 namespace Tests\Feature\Referral;
 
+use App\Badges\BadgeEngine;
 use App\Models\Product;
-use App\Models\User;
-use App\Referral\Engagement;
 use App\Support\Features;
-use App\Support\Settings;
 use Illuminate\Support\Facades\Cache;
 
 class EngagementTest extends ReferralTestCase
 {
-    public function test_badges_by_active_level_one_members(): void
-    {
-        $me = $this->member(null, 'Abdi');
-        foreach (range(1, 3) as $i) {
-            $this->member($me, "F$i");
-        }
-        User::factory()->create(['referrer_id' => $me->id]); // not active → doesn't count
-        $e = app(Engagement::class);
-
-        $this->assertSame(['badge' => 'bronze', 'active_level1' => 3, 'next' => ['badge' => 'silver', 'needed' => 7]], $e->progress($me));
-        Settings::set('badges.silver', 3);
-        $this->assertSame('silver', $e->progress($me)['badge']);
-        Features::set('badges', false);
-        $this->assertNull($e->progress($me)['badge']);
-    }
-
     public function test_top_referrers_first_name_and_badge_only(): void
     {
         $a = $this->member(null, 'Abdi');
@@ -36,10 +18,11 @@ class EngagementTest extends ReferralTestCase
             $this->member($a, "A$i");
         }
         $this->member($b, 'B1');
+        app(BadgeEngine::class)->evaluate($a);
         Cache::flush();
 
         $rows = $this->getJson('/api/v1/referral/top')->assertOk()->json('data');
-        $this->assertSame([['rank' => 1, 'name' => 'Abdi', 'badge' => 'bronze', 'count' => 3], ['rank' => 2, 'name' => 'Bontu', 'badge' => null, 'count' => 1]], $rows);
+        $this->assertSame([['rank' => 1, 'name' => 'Abdi', 'badge' => ['name' => 'Bronze', 'icon' => 'medal', 'color' => '#b0703c'], 'count' => 3], ['rank' => 2, 'name' => 'Bontu', 'badge' => null, 'count' => 1]], $rows);
         $this->assertStringNotContainsString('Secret', (string) json_encode($rows));
 
         Features::set('top_referrers', false);

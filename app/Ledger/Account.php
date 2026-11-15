@@ -27,7 +27,7 @@ class Account extends Model
     public const EQUITY = 'equity';
 
     // System accounts.
-    public const CASH = 'asset:cash';                       // money in bank/Telebirr/Chapa
+    public const CASH = 'asset:cash';                       // money in bank/Telebirr
 
     public const COMMISSIONS = 'expense:commissions';
 

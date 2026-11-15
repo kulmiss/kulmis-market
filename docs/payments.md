@@ -1,41 +1,42 @@
 # Payments (ETB)
 
-## Chapa
-1. `POST /api/v1/orders/{number}/pay {method: "chapa", phone}` creates a
-   `payments` row (tx_ref `KM-…`) and returns Chapa's `checkout_url`. This
-   covers Telebirr, CBE Birr, M-Pesa and cards.
-2. Chapa calls `POST /api/v1/webhooks/chapa`. We check `x-chapa-signature`
-   (HMAC-SHA256 of the body) or `chapa-signature` (HMAC of the secret).
-   Then we **always re-verify** with `GET /transaction/verify/{tx_ref}`
-   before giving value.
-3. The customer's redirect (`/api/v1/payments/chapa/callback`) verifies the
-   same way, so whichever arrives first wins.
+There is no card or online gateway. Customers pay in two ways:
 
-Value is given only when the status is `success`, the currency is ETB and
-the amount is at least what's due. An underpaid or wrong-currency payment is
-flagged (`meta.mismatch`) and never accepted automatically.
+## Bank transfer / Telebirr with a receipt
+1. The pay page (`/pay/{order}`) shows the Telebirr and bank details
+   (Settings → Payments: `payments.telebirr_details`, `payments.bank_details`).
+2. The customer transfers and sends the receipt:
+   `POST /api/v1/orders/{number}/payment-proof` (multipart: method
+   `telebirr` | `bank_transfer`, proof image/PDF ≤ 5 MB, reference, payer
+   account). Proofs are stored on the **private** disk.
+3. Finance (or anyone with `approve-payments`) opens the proof in admin and
+   approves it, or rejects it with a reason the customer can see.
 
-## Bank transfer / Telebirr with proof (fallback)
-`POST /api/v1/orders/{number}/payment-proof` (multipart: method, proof
-image/PDF ≤ 5 MB, reference, payer account). Proofs are stored on the
-**private** disk. In admin: view proof → approve or reject (with a reason).
-An order with a proof waiting for review is never auto-cancelled.
+An order with a receipt waiting for review is never auto-cancelled. The same
+flow is used for membership (`/api/v1/membership/payment-proof`) and guest
+signals (`/api/v1/signals/payment-proof`).
+
+## Wallet
+Members can pay all or part of an order or membership from their wallet
+(see [wallet-cashout-fraud.md](wallet-cashout-fraud.md)). If the wallet
+doesn't cover everything, the rest is paid by transfer + receipt.
 
 ## Exactly once
-`PaymentService::markPaid()` locks the payment row. Webhooks, redirects and
-admin approvals can race, and value is still given once:
+`PaymentService::markPaid()` locks the payment row. Two admins approving at
+the same time, or a double click, still give value once:
 - order → paid
-- ledger: `asset:cash` ↔ `income:sales` (plus the `expense:payment_fees` entry)
+- ledger: `asset:cash` ↔ `income:sales`
 - `PaymentSucceeded` event (referral commissions in PR 11)
 
-A payment that arrives after the order was auto-cancelled is recorded as
+A receipt approved after the order was cancelled is recorded as
 paid, and the order is flagged `order.paid_after_cancel` so you can re-open
 it or refund it.
 
 ## Refunds
 Admin: `POST /api/v1/admin/payments/{id}/refund {amount, reason, restock?}`
-(Finance / Super Admin). Full or partial refunds go through Chapa's refund
-API when it's available, otherwise they're recorded as manual. The ledger
+(Finance / Super Admin). Full or partial. Transfers are refunded by hand
+(Finance sends the money back and the refund is recorded as `manual`);
+wallet payments go straight back to the wallet. The ledger
 entry is reversed, the order moves to `refunded` on a full refund, and
 `PaymentRefunded` fires, which reverses commissions automatically in PR 11.
 
