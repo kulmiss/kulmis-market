@@ -15,8 +15,10 @@ use App\Pricing\PriceCalculator;
 use App\Pricing\PricingException;
 use App\Pricing\Quote;
 use App\Shipping\ShippingQuoter;
+use App\Shop\Deposits;
 use App\Shop\FlashSales;
 use App\Storefront\PageCache;
+use App\Support\Features;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -130,6 +132,7 @@ class Checkout
                     'made_to_order' => $line->product->isMadeToOrder(),
                     'making_days' => $line->product->making_days,
                     'flash_sale_id' => $line->flashSaleId,
+                    'deposit_bps' => Features::enabled('shop.preorders') ? $line->product->preorder_deposit_bps : null,
                 ]);
                 if ($line->flashSaleId !== null) {
                     // Atomic: two checkouts can't both take the last pieces at the sale price.
@@ -147,6 +150,10 @@ class Checkout
                         ? ProductVariant::query()->whereKey($line->variant->id)->decrement('stock', $line->quantity)
                         : Product::query()->whereKey($line->product->id)->decrement('stock', $line->quantity);
                 }
+            }
+
+            if (Features::enabled('shop.preorders') && ($deposit = Deposits::forPreorder($order->load('items'))) > 0) {
+                $order->update(['deposit_amount' => $deposit]);
             }
 
             if ($quote->coupon) {
@@ -186,7 +193,7 @@ class Checkout
             ->count();
     }
 
-    private function newNumber(): string
+    public function newNumber(): string
     {
         do {
             $number = 'KM'.now()->format('ymd').'-'.str_pad((string) random_int(0, 99999), 5, '0', STR_PAD_LEFT);

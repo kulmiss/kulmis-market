@@ -43,6 +43,9 @@ class CommissionEngine
     public function forPayment(Payment $payment): array
     {
         $source = $payment->payable;
+        if ($source instanceof Order && $source->fresh()?->status === Order::PENDING_PAYMENT) {
+            return []; // only a deposit so far: team earnings come when the order is fully paid
+        }
         [$type, $base, $buyer, $start, $phone, $email] = $this->describe($source);
         if ($type === null || $base <= 0 || $start === null || Features::disabled('referral') || Features::disabled("referral.commission.$type")) {
             return [];

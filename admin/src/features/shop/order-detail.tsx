@@ -20,6 +20,11 @@ import { StatusBadge } from '@/components/km/status-badge'
 import { type Courier, type Order, type Payment } from './types'
 import { PageSkeleton } from '@/components/km/page-skeleton'
 
+function AskRest({ id }: { id: number }) {
+  const ask = useMutate('post', ['order'], 'Message sent: please pay the rest')
+  return <Button variant='outline' onClick={() => ask.mutate({ path: `/orders/${id}/ask-rest` })}>It's ready — ask for the rest</Button>
+}
+
 export function OrderDetail({ id }: { id: string }) {
   const order = useQuery({ queryKey: ['order', id], queryFn: async () => (await api.get<{ data: Order }>(`/orders/${id}`)).data.data })
   const couriers = useQuery({ queryKey: ['couriers'], queryFn: async () => (await api.get<{ data: Courier[] }>('/couriers')).data.data })
@@ -59,6 +64,9 @@ export function OrderDetail({ id }: { id: string }) {
             <Row label='Shipping' value={o.shipping_discount ? `${formatMoney(o.shipping)} → free` : formatMoney(o.shipping)} />
             <Row label='Total' value={formatMoney(o.total)} strong />
             {o.wallet_used > 0 && <Row label='Paid from wallet' value={formatMoney(o.wallet_used)} />}
+            {(o.gift_card_used ?? 0) > 0 && <Row label='Paid with gift card' value={formatMoney(o.gift_card_used ?? 0)} />}
+            {(o.extras ?? []).map((x) => <Row key={x.key} label={`Extra: ${x.label}`} value={formatMoney(x.amount)} />)}
+            {(o.deposit_amount ?? 0) > 0 && <Row label={`Deposit ${(o.deposit_paid ?? 0) > 0 ? 'paid' : 'asked'}`} value={formatMoney((o.deposit_paid ?? 0) > 0 ? (o.deposit_paid ?? 0) : (o.deposit_amount ?? 0))} />}
             {o.payment_fee > 0 && <Row label='Payment fee' value={formatMoney(o.payment_fee)} />}
             {o.refunded_amount > 0 && <Row label='Refunded' value={formatMoney(o.refunded_amount)} />}
           </CardContent>
@@ -94,7 +102,8 @@ export function OrderDetail({ id }: { id: string }) {
               {(o.allowed_next ?? []).filter((s) => !['paid', 'refunded'].includes(s)).map((s) => (
                 <Button key={s} variant={s === 'cancelled' ? 'destructive' : 'default'} disabled={status.isPending} onClick={() => move(s)}>Mark {s}</Button>
               ))}
-              {o.status === 'pending_payment' && <span className='text-sm text-muted-foreground'>Waiting for payment. Confirm payment proofs below.</span>}
+              {o.status === 'pending_payment' && (o.deposit_paid ?? 0) > 0 && <AskRest id={o.id} />}
+              {o.status === 'pending_payment' && <span className='text-sm text-muted-foreground'>{(o.deposit_paid ?? 0) > 0 ? 'Deposit received: make it, then ask for the rest before shipping.' : 'Waiting for payment. Confirm payment proofs below.'}</span>}
             </div>
           </CardContent>
         </Card>

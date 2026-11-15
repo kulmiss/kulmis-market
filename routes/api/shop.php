@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\CustomRequestController;
 use App\Http\Controllers\Api\GiftCardController;
 use App\Http\Controllers\Api\GiftController;
 use App\Http\Controllers\Api\StockAlertController;
@@ -30,6 +31,7 @@ Route::middleware('feature:shop')->get('shipping/zones', fn () => response()->js
         ->get(['id', 'name', 'cities', 'base_fee', 'included_grams', 'per_kg_fee', 'eta_days_min', 'eta_days_max', 'is_default']),
 ]))->name('shipping.zones');
 
+Route::post('custom-requests', [CustomRequestController::class, 'store'])->middleware(['feature:shop,shop.custom_orders', 'throttle:3,10'])->name('custom-requests.store');
 Route::post('gift-cards', [GiftCardController::class, 'store'])->middleware(['feature:shop,shop.gift_cards', 'throttle:5,10'])->name('gift-cards.store');
 Route::post('gifts', [GiftController::class, 'store'])->middleware(['feature:membership,membership.gifts', 'throttle:5,10'])->name('gifts.store');
 Route::post('contact', [ContactController::class, 'store'])->middleware(['feature:site.help_centre', 'throttle:5,10'])->name('contact');

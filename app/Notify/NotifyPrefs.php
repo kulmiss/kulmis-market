@@ -15,7 +15,7 @@ final class NotifyPrefs
         'bell.earning' => true, 'bell.team' => true, 'bell.badge' => true, 'bell.bonus' => true,
         'bell.order' => true, 'bell.renewal' => true, 'bell.cashout' => true, 'bell.goal' => true,
         'bell.signal' => false,
-        'cart_reminder' => true,
+        'cart_reminder' => true, 'offers' => true,
         'push.earning' => false, 'push.order' => false, 'push.bonus' => false, 'push.cashout' => false, 'push.signal' => false,
     ];
 

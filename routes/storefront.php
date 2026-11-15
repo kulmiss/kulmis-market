@@ -28,6 +28,8 @@ Route::get('/help', [HelpController::class, 'index'])->name('help');
 Route::get('/gift-cards', fn () => Features::enabled('shop') && Features::enabled('shop.gift_cards')
     ? view('store.gift-cards', ['amounts' => GiftCards::amounts(), 'bank' => Settings::string('payments.bank_details'),
         'telebirr' => Settings::string('payments.telebirr_details')]) : abort(404))->name('gift-cards');
+Route::get('/custom-order', fn () => Features::enabled('shop') && Features::enabled('shop.custom_orders')
+    ? view('store.custom-order') : abort(404))->name('custom-order');
 Route::get('/membership/gift', [GiftController::class, 'form'])->name('membership.gift');
 Route::get('/p/{slug}', [S::class, 'page'])->where('slug', '[a-z0-9-]+')->name('page');
 Route::get('/cart', [S::class, 'cart'])->name('cart');

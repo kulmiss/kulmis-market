@@ -11,6 +11,7 @@ export type Product = {
   weight_grams: number; stock_mode: 'stock' | 'made_to_order'; stock: number | null; making_days: number | null
   is_featured: boolean; is_members_only: boolean; release_at: string | null; status: 'draft' | 'active' | 'archived'
   kind?: 'physical' | 'digital' | 'addon'; member_discount?: boolean; booking_at?: string | null
+  preorder_deposit_bps?: number | null; preorder_ships_on?: string | null
   seo_title: string | null; seo_description: string | null
   tags?: { name: string }[]; variants: Variant[]; images: ProductImage[]
   available_stock: number | null; warnings: Warning[]
@@ -25,6 +26,7 @@ export type Order = {
   shipping: number; shipping_discount: number; total: number; wallet_used: number; payment_fee: number; refunded_amount: number
   courier_id: number | null; tracking_number: string | null; referral_code: string | null
   created_at: string; paid_at: string | null; shipped_at: string | null; delivered_at: string | null
+  deposit_amount?: number; deposit_paid?: number; gift_card_used?: number; extras_total?: number; extras?: { key: string; label: string; amount: number }[] | null
   items?: OrderItem[]; history?: { id: number; from: string | null; to: string; note: string | null; created_at: string; notified: Record<string, string> | null }[]
   items_count?: number; allowed_next?: string[]
 }

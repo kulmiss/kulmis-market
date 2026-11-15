@@ -5,7 +5,15 @@
     @if ($order->status !== 'pending_payment')
         <p class="card mt-6">This order is {{ str_replace('_', ' ', $order->status) }}.@feature('shop.order_tracking') <a class="underline" href="{{ url('/track?number='.$order->number) }}">Track it</a>.@endfeature</p>
     @else
+        @if ($order->deposit_amount > 0 && $order->deposit_paid === 0)
+            <p class="mt-3 text-2xl font-semibold">{{ \App\Support\Money::format($order->payableAmount()) }} <span class="muted text-base font-normal">deposit now</span></p>
+            <p class="muted text-sm">Total {{ \App\Support\Money::format($order->total) }}. You pay the rest ({{ \App\Support\Money::format($order->amountDue() - $order->payableAmount()) }}) when it is ready, before we send it.</p>
+        @elseif ($order->depositStage())
+            <p class="mt-3 text-2xl font-semibold">{{ \App\Support\Money::format($order->amountDue()) }} <span class="muted text-base font-normal">left to pay</span></p>
+            <p class="muted text-sm">Deposit of {{ \App\Support\Money::format($order->deposit_paid) }} received. Thank you!</p>
+        @else
         <p class="mt-3 text-2xl font-semibold">{{ \App\Support\Money::format($order->amountDue()) }}</p>
+        @endif
         <p class="muted text-sm">Save your order number: <b>{{ $order->number }}</b>. Unpaid orders are cancelled after {{ \App\Support\Settings::int('orders.unpaid_cancel_hours') }} hours.</p>
         <div class="mt-6 grid gap-4">
             @if ($order->receiptUnderReview())

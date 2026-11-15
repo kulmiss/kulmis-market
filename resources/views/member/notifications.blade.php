@@ -74,6 +74,12 @@
                 <input type="checkbox" class="size-5" name="cart_reminder" value="1" @checked(\App\Notify\NotifyPrefs::on($user, 'cart_reminder'))> One reminder when I leave things in my cart
             </label>
         @endfeature
+        @feature('shop.winback')
+            <label class="flex min-h-12 items-center gap-3 text-sm">
+                <input type="hidden" name="offers" value="0">
+                <input type="checkbox" class="size-5" name="offers" value="1" @checked(\App\Notify\NotifyPrefs::on($user, 'offers'))> Now and then, a personal discount offer
+            </label>
+        @endfeature
         <div><button class="m-btn mt-2">Save</button></div>
     </form>
 </section>

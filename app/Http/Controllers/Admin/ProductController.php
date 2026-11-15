@@ -179,6 +179,8 @@ class ProductController extends Controller
             'kind' => ['nullable', Rule::in([Product::PHYSICAL, Product::DIGITAL, Product::ADDON])],
             'member_discount' => ['boolean'],
             'booking_at' => ['nullable', 'date'],
+            'preorder_deposit_bps' => ['nullable', 'integer', 'min:1000', 'max:9000'],
+            'preorder_ships_on' => ['nullable', 'date'],
             'is_featured' => ['boolean'], 'is_members_only' => ['boolean'],
             'release_at' => ['nullable', 'date'],
             'status' => ['required', Rule::in(Product::STATUSES)],

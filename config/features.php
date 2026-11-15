@@ -28,6 +28,9 @@ return [
     'shop.upsells' => ['"Bought together" and "You may also like"', 'Shop', true, 'shop', 'Matching products on product pages, in the cart and at checkout, with a one-tap "Add" button.'],
     'shop.digital' => ['Digital products', 'Shop', true, 'shop', 'Files or private video links, sent as a safe link that ends after some days and a few downloads.'],
     'shop.addons' => ['Paid add-ons', 'Shop', true, 'shop', 'Extras like a session or workshop: price, member price, seats, an optional date and their own team-earning rates.'],
+    'shop.preorders' => ['Pre-orders', 'Shop', true, 'shop', 'Products marked "pre-order" are paid in two parts: a share now and the rest before shipping.'],
+    'shop.custom_orders' => ['Custom orders', 'Shop', true, 'shop', 'People describe what they want (photos, budget). You send a quote; they pay a deposit, then the rest before shipping.'],
+    'shop.winback' => ['Win-back offers', 'Shop', true, 'shop', 'One personal discount code, sent once, to customers who have not ordered for a while (Settings).'],
     'shop.gift_cards' => ['Gift cards', 'Shop', true, 'shop', 'People buy gift cards (fixed amounts) and spend them at checkout. Each code is secret and works until the money is used.'],
     'shop.extras.gift_wrap' => ['Gift wrapping (paid extra)', 'Shop', false, 'shop', 'A tick box at checkout for gift wrapping. Price in Settings → Checkout extras.'],
     'shop.extras.express' => ['Express making and delivery (paid extra)', 'Shop', false, 'shop', 'A tick box at checkout to have the order made and sent first. Price in Settings.'],
@@ -112,6 +115,7 @@ return [
     'messages.cart_reminder' => ['Cart reminder', 'Messages', true, 'shop', 'One reminder 24 hours after a signed-in customer leaves items in the cart. Never for guests; they can stop it.'],
     'messages.gift' => ['Gift membership', 'Messages', true, 'membership.gifts', 'Send the gift link to the receiver and a thank-you to the giver.'],
     'messages.gift_card' => ['Gift card code', 'Messages', true, 'shop.gift_cards', 'Send the gift card code to the receiver (or the buyer).'],
+    'messages.winback' => ['Win-back offer', 'Messages', true, 'shop.winback', 'The one-time "we miss you" discount message.'],
 
     // Look and speed
     'appearance.theme_switch' => ['Light / dark switch', 'Look and speed', true, null, 'Customers can switch between light and dark. Off: always light.'],

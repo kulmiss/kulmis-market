@@ -11,6 +11,7 @@
             @feature('membership')<a href="{{ url('/membership') }}" class="hover:underline">Membership</a>@endfeature
             @feature('signals')<a href="{{ url('/signals') }}" class="hover:underline">Trading signals</a>@endfeature
             @feature('shop.order_tracking')<a href="{{ url('/track') }}" class="hover:underline">Track your order</a>@endfeature
+            @feature('shop.custom_orders')<a href="{{ url('/custom-order') }}" class="hover:underline">Custom order</a>@endfeature
             @feature('shop.gift_cards')<a href="{{ url('/gift-cards') }}" class="hover:underline">Gift cards</a>@endfeature
             @feature('site.help_centre')<a href="{{ url('/help') }}" class="hover:underline">Help and contact</a>@endfeature
         </nav>

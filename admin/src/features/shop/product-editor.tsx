@@ -143,6 +143,13 @@ export function ProductEditor({ id }: { id: string }) {
             </Field>
             {d.kind === 'addon' && <Field label='Date of the session (optional)'><Input type='datetime-local' value={d.booking_at ? d.booking_at.slice(0, 16) : ''} onChange={(e) => set('booking_at', e.target.value || null)} /></Field>}
             <Toggle label='Members get their member price' checked={d.member_discount !== false} onChange={(v) => set('member_discount', v)} />
+            {d.kind !== 'digital' && <Toggle label='Pre-order (pay part now, the rest before shipping)' checked={d.preorder_deposit_bps != null} onChange={(v) => set('preorder_deposit_bps', v ? 3000 : null)} />}
+            {d.preorder_deposit_bps != null && (
+              <div className='grid grid-cols-2 gap-3'>
+                <Field label='Paid now (%)'><Input type='number' min={10} max={90} value={d.preorder_deposit_bps / 100} onChange={(e) => set('preorder_deposit_bps', Math.round(Number(e.target.value) * 100))} /></Field>
+                <Field label='Ships about'><Input type='date' value={d.preorder_ships_on?.slice(0, 10) ?? ''} onChange={(e) => set('preorder_ships_on', e.target.value || null)} /></Field>
+              </div>
+            )}
             <Toggle label='Featured' checked={d.is_featured} onChange={(v) => set('is_featured', v)} />
             <Toggle label='Members-only product' checked={d.is_members_only} onChange={(v) => set('is_members_only', v)} />
             <Field label='Release date (members see it 48 h earlier)'>

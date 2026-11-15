@@ -143,6 +143,12 @@ class User extends Authenticatable
         return $this->hasMany(self::class, 'referrer_id');
     }
 
+    /** @return HasMany<Order, $this> */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
     public function isActiveMember(): bool
     {
         return Members::isActive($this);

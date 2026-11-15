@@ -29,6 +29,7 @@ import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedContentRouteImport } from './routes/_authenticated/content'
 import { Route as AuthenticatedContestsRouteImport } from './routes/_authenticated/contests'
 import { Route as AuthenticatedCouponsRouteImport } from './routes/_authenticated/coupons'
+import { Route as AuthenticatedCustomOrdersRouteImport } from './routes/_authenticated/custom-orders'
 import { Route as AuthenticatedDemoRouteImport } from './routes/_authenticated/demo'
 import { Route as AuthenticatedFeaturesRouteImport } from './routes/_authenticated/features'
 import { Route as AuthenticatedFlashSalesRouteImport } from './routes/_authenticated/flash-sales'
@@ -156,6 +157,12 @@ const AuthenticatedCouponsRoute = AuthenticatedCouponsRouteImport.update({
   path: '/coupons',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCustomOrdersRoute =
+  AuthenticatedCustomOrdersRouteImport.update({
+    id: '/custom-orders',
+    path: '/custom-orders',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDemoRoute = AuthenticatedDemoRouteImport.update({
   id: '/demo',
   path: '/demo',
@@ -318,6 +325,7 @@ export interface FileRoutesByFullPath {
   '/content': typeof AuthenticatedContentRoute
   '/contests': typeof AuthenticatedContestsRoute
   '/coupons': typeof AuthenticatedCouponsRoute
+  '/custom-orders': typeof AuthenticatedCustomOrdersRoute
   '/demo': typeof AuthenticatedDemoRoute
   '/features': typeof AuthenticatedFeaturesRoute
   '/flash-sales': typeof AuthenticatedFlashSalesRoute
@@ -363,6 +371,7 @@ export interface FileRoutesByTo {
   '/content': typeof AuthenticatedContentRoute
   '/contests': typeof AuthenticatedContestsRoute
   '/coupons': typeof AuthenticatedCouponsRoute
+  '/custom-orders': typeof AuthenticatedCustomOrdersRoute
   '/demo': typeof AuthenticatedDemoRoute
   '/features': typeof AuthenticatedFeaturesRoute
   '/flash-sales': typeof AuthenticatedFlashSalesRoute
@@ -412,6 +421,7 @@ export interface FileRoutesById {
   '/_authenticated/content': typeof AuthenticatedContentRoute
   '/_authenticated/contests': typeof AuthenticatedContestsRoute
   '/_authenticated/coupons': typeof AuthenticatedCouponsRoute
+  '/_authenticated/custom-orders': typeof AuthenticatedCustomOrdersRoute
   '/_authenticated/demo': typeof AuthenticatedDemoRoute
   '/_authenticated/features': typeof AuthenticatedFeaturesRoute
   '/_authenticated/flash-sales': typeof AuthenticatedFlashSalesRoute
@@ -462,6 +472,7 @@ export interface FileRouteTypes {
     | '/content'
     | '/contests'
     | '/coupons'
+    | '/custom-orders'
     | '/demo'
     | '/features'
     | '/flash-sales'
@@ -507,6 +518,7 @@ export interface FileRouteTypes {
     | '/content'
     | '/contests'
     | '/coupons'
+    | '/custom-orders'
     | '/demo'
     | '/features'
     | '/flash-sales'
@@ -555,6 +567,7 @@ export interface FileRouteTypes {
     | '/_authenticated/content'
     | '/_authenticated/contests'
     | '/_authenticated/coupons'
+    | '/_authenticated/custom-orders'
     | '/_authenticated/demo'
     | '/_authenticated/features'
     | '/_authenticated/flash-sales'
@@ -734,6 +747,13 @@ declare module '@tanstack/react-router' {
       path: '/coupons'
       fullPath: '/coupons'
       preLoaderRoute: typeof AuthenticatedCouponsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/custom-orders': {
+      id: '/_authenticated/custom-orders'
+      path: '/custom-orders'
+      fullPath: '/custom-orders'
+      preLoaderRoute: typeof AuthenticatedCustomOrdersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/demo': {
@@ -950,6 +970,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedContentRoute: typeof AuthenticatedContentRoute
   AuthenticatedContestsRoute: typeof AuthenticatedContestsRoute
   AuthenticatedCouponsRoute: typeof AuthenticatedCouponsRoute
+  AuthenticatedCustomOrdersRoute: typeof AuthenticatedCustomOrdersRoute
   AuthenticatedDemoRoute: typeof AuthenticatedDemoRoute
   AuthenticatedFeaturesRoute: typeof AuthenticatedFeaturesRoute
   AuthenticatedFlashSalesRoute: typeof AuthenticatedFlashSalesRoute
@@ -989,6 +1010,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedContentRoute: AuthenticatedContentRoute,
   AuthenticatedContestsRoute: AuthenticatedContestsRoute,
   AuthenticatedCouponsRoute: AuthenticatedCouponsRoute,
+  AuthenticatedCustomOrdersRoute: AuthenticatedCustomOrdersRoute,
   AuthenticatedDemoRoute: AuthenticatedDemoRoute,
   AuthenticatedFeaturesRoute: AuthenticatedFeaturesRoute,
   AuthenticatedFlashSalesRoute: AuthenticatedFlashSalesRoute,

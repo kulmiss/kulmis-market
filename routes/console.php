@@ -6,6 +6,7 @@ use App\Rewards\Challenges;
 use App\Rewards\Contests;
 use App\Shop\CartReminders;
 use App\Shop\FlashSales;
+use App\Shop\Winback;
 use App\Storefront\PageCache;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -69,3 +70,4 @@ Schedule::call(function () {
     app(Contests::class)->settleDue();
     app(Challenges::class)->settleDue();
 })->dailyAt('05:23')->name('contests:settle')->withoutOverlapping();
+Schedule::call(fn () => app(Winback::class)->run())->dailyAt('10:13')->name('shop:winback')->withoutOverlapping();

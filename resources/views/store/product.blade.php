@@ -59,6 +59,7 @@
         <div class="mt-3 flex flex-wrap gap-2">
             @if ($product->is_members_only)<span class="badge-gold">Members-only product</span>@endif
             @if ($product->inEarlyAccess())<span class="badge">Members early access — public on {{ $product->release_at->timezone(config('app.timezone'))->format('d M') }}</span>@endif
+            @if ($product->isPreorder())<span class="badge-gold">Pre-order{{ $product->preorder_ships_on ? ' · ships about '.$product->preorder_ships_on->format('d M') : '' }} · pay {{ rtrim(rtrim(number_format($product->preorder_deposit_bps / 100, 1), '0'), '.') }}% now, the rest before shipping</span>@endif
             @if ($product->isDigital())<span class="badge">Digital · download links right after payment</span>
             @elseif ($product->isAddon())<span class="badge">Add-on{{ $product->booking_at ? ' · '.$product->booking_at->timezone(config('app.timezone'))->format('D d M, H:i') : '' }}{{ $stock !== null ? ' · '.$stock.' seats left' : '' }}</span>
             @elseif ($product->isMadeToOrder())<span class="badge">Made to order · about {{ $product->making_days }} days</span>

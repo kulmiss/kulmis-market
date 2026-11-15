@@ -328,6 +328,14 @@ $('[data-contact-form]')?.addEventListener('submit', async (e) => {
 });
 
 /* ---------- gift membership ---------- */
+$('[data-custom-form]')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const msg = $('[data-form-message]', form);
+    await busy(form, async () => {
+        try { const { data } = await api('/custom-requests', { method: 'POST', form: new FormData(form) }); say(msg, data.message, true); form.reset(); } catch (err) { say(msg, err.message); }
+    });
+});
 $('[data-giftcard-buy]')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.target;
