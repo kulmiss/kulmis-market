@@ -54,6 +54,9 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    // Extra host names allowed besides APP_URL's (comma separated), e.g. www.example.com.
+    'trusted_hosts' => env('TRUSTED_HOSTS', ''),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

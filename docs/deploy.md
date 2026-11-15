@@ -27,6 +27,7 @@ assets are committed, so the server needs **no Node.js**.
    APP_ENV=production
    APP_DEBUG=false
    APP_URL=https://your-domain
+   TRUSTED_HOSTS=www.your-domain   # optional: other names that reach this site (better: redirect www to the main name)
    DB_HOST=localhost   DB_DATABASE=…   DB_USERNAME=…   DB_PASSWORD=…
    SESSION_SECURE_COOKIE=true
    MAIL_MAILER=smtp    MAIL_HOST=…  MAIL_USERNAME=…  MAIL_PASSWORD=…  MAIL_FROM_ADDRESS=…

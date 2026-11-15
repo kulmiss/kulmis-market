@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -47,6 +48,13 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Every link, asset and image URL uses APP_URL, never the Host header a
+        // visitor sends (stops host-header injection into cached pages and emails).
+        URL::forceRootUrl(rtrim((string) config('app.url'), '/'));
+        if (str_starts_with((string) config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+        }
+
         // Database sessions without guest IPs.
         Session::extend('privacy-database', function ($app) {
             return new PrivacySessionHandler(

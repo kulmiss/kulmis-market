@@ -88,6 +88,16 @@ jobs:
         run: npx eslint .
       - name: Build
         run: npx vite build
+      - name: Build the storefront assets
+        working-directory: .
+        run: npm ci --ignore-scripts && npm run build
+      - name: Committed builds match the sources
+        # public/build and public/admin-app are committed (shared hosting has no Node).
+        # Fails when someone changed CSS/JS/TS but forgot to rebuild and commit.
+        working-directory: .
+        run: |
+          git status --porcelain public/build public/admin-app
+          test -z "$(git status --porcelain public/build public/admin-app)" || (echo "Run 'npm run build' and 'cd admin && npm run build', then commit public/build and public/admin-app." && exit 1)
 
   lighthouse:
     # Storefront must score ≥ 95 in all four categories and LCP ≤ 1.5 s.
