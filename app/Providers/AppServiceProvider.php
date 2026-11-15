@@ -24,7 +24,9 @@ use App\Shipping\ShippingQuoter;
 use App\Shipping\ZoneShippingQuoter;
 use App\Signals\MembershipSignalsListener;
 use App\Storefront\PageCache;
+use App\Support\Currency;
 use App\Support\Features;
+use App\Support\Settings;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Request;
@@ -33,6 +35,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
@@ -57,6 +60,12 @@ class AppServiceProvider extends ServiceProvider
         // Every link, asset and image URL uses APP_URL, never the Host header a
         // visitor sends (stops host-header injection into cached pages and emails).
         URL::forceRootUrl(rtrim((string) config('app.url'), '/'));
+        // A queue worker runs for hours: every job reads the current switches and settings.
+        Queue::before(function (): void {
+            Features::forgetMemo();
+            Settings::forgetMemo();
+            Currency::flush();
+        });
         // `php artisan optimize` (every deploy) also empties the page cache: new CSS/JS names.
         $this->optimizes(optimize: 'km:clear-page-cache', clear: 'km:clear-page-cache', key: 'page cache');
 

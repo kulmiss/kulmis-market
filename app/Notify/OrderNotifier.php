@@ -7,6 +7,7 @@ use App\Jobs\SendCustomerMessage;
 use App\Models\Courier;
 use App\Models\Order;
 use App\Models\User;
+use App\Support\Features;
 use App\Support\Money;
 use App\Support\Settings;
 
@@ -30,7 +31,18 @@ class OrderNotifier
             phone: $order->phone,
             email: $order->email,
             telegramChatId: $telegram ? (int) $telegram : null,
+            type: 'order_'.$event->change->to,
         ), $event->change->id);
+    }
+
+    /** The tracking page, or (switched off) the account's orders / the home page. */
+    public static function trackUrl(Order $order): string
+    {
+        if (Features::enabled('shop.order_tracking')) {
+            return url('/track?number='.$order->number);
+        }
+
+        return url($order->user_id ? '/account/orders' : '/');
     }
 
     public static function render(string $template, Order $order, ?string $reason = null): string
@@ -45,7 +57,7 @@ class OrderNotifier
             '{courier}' => $courier->name ?? 'our courier',
             '{tracking}' => $order->tracking_number ?? '—',
             '{tracking_link}' => (string) $courier?->trackingLink($order->tracking_number),
-            '{track_url}' => url('/track?number='.$order->number),
+            '{track_url}' => self::trackUrl($order),
             '{making_days}' => (string) max(1, $making),
             '{reason}' => (string) $reason,
             '{site}' => Settings::string('site.name'),

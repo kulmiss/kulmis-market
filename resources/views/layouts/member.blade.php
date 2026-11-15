@@ -18,7 +18,7 @@
     $bottom = array_slice($nav, 0, 4);
 @endphp
 <!doctype html>
-<html lang="en" class="h-full" style="--m-accent: {{ $accent }}">
+<html lang="en" class="h-full" style="--m-accent: {{ $accent }}" @if (\App\Support\Features::disabled('site.instant_loading')) data-instant="off"@endif @if (\App\Support\Features::disabled('site.offline_page')) data-offline="off"@endif>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">

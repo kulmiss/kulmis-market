@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\Badge;
 use App\Models\FeatureFlag;
 use App\Storefront\PageCache;
 use Illuminate\Support\Facades\Cache;
@@ -19,8 +20,16 @@ class Features
     /** @var array<string, bool>|null */
     private static ?array $overrides = null;
 
+    public const BADGE_PREFIX = 'badge.';
+
+    /** @var array<string, array{name:string, active:bool}>|null */
+    private static ?array $badges = null;
+
     public static function enabled(string $key): bool
     {
+        if (str_starts_with($key, self::BADGE_PREFIX)) {
+            return self::own($key) && self::enabled('badges');
+        }
         $def = self::definition($key);
         if (! self::own($key)) {
             return false;
@@ -37,6 +46,10 @@ class Features
     /** The switch itself, ignoring parents. */
     public static function own(string $key): bool
     {
+        if (str_starts_with($key, self::BADGE_PREFIX)) {
+            return self::badges()[substr($key, strlen(self::BADGE_PREFIX))]['active']
+                ?? throw new InvalidArgumentException("Unknown feature [$key].");
+        }
         $def = self::definition($key);
         $overrides = self::overrides();
 
@@ -45,9 +58,13 @@ class Features
 
     public static function set(string $key, bool $enabled, ?int $actorId = null): void
     {
-        self::definition($key);
-        $before = self::own($key);
-        FeatureFlag::query()->updateOrCreate(['key' => $key], ['enabled' => $enabled, 'updated_by' => $actorId]);
+        $before = self::own($key); // also throws for unknown keys
+        if (str_starts_with($key, self::BADGE_PREFIX)) {
+            // A badge's switch is its own "active" flag (also on the Badges page).
+            Badge::query()->where('key', substr($key, strlen(self::BADGE_PREFIX)))->update(['is_active' => $enabled]);
+        } else {
+            FeatureFlag::query()->updateOrCreate(['key' => $key], ['enabled' => $enabled, 'updated_by' => $actorId]);
+        }
         self::flush();
         PageCache::clear();
         if ($before !== $enabled) {
@@ -58,7 +75,7 @@ class Features
     /**
      * Overview for the "what's on/off" page.
      *
-     * @return list<array{key:string,label:string,group:string,enabled:bool,effective:bool,parent:?string}>
+     * @return list<array{key:string,label:string,group:string,description:string,enabled:bool,effective:bool,parent:?string}>
      */
     public static function overview(): array
     {
@@ -68,10 +85,24 @@ class Features
                 'key' => $key,
                 'label' => $def[0],
                 'group' => $def[1],
+                'description' => (string) ($def[4] ?? ''),
                 'enabled' => self::own($key),
                 'effective' => self::enabled($key),
                 'parent' => $def[3],
             ];
+            if ($key === 'badges.messages') {
+                foreach (self::badges() as $badgeKey => $badge) {
+                    $rows[] = [
+                        'key' => self::BADGE_PREFIX.$badgeKey,
+                        'label' => $badge['name'],
+                        'group' => 'Badges',
+                        'description' => $badge['description'],
+                        'enabled' => $badge['active'],
+                        'effective' => self::enabled(self::BADGE_PREFIX.$badgeKey),
+                        'parent' => 'badges',
+                    ];
+                }
+            }
         }
 
         return $rows;
@@ -79,16 +110,40 @@ class Features
 
     public static function exists(string $key): bool
     {
+        if (str_starts_with($key, self::BADGE_PREFIX)) {
+            return isset(self::badges()[substr($key, strlen(self::BADGE_PREFIX))]);
+        }
+
         return array_key_exists($key, config('features'));
+    }
+
+    /**
+     * Forget only this process's copy (queue workers live long: each job
+     * must see switches the Super Admin changed since the worker started).
+     */
+    public static function forgetMemo(): void
+    {
+        self::$overrides = null;
+        self::$badges = null;
     }
 
     public static function flush(): void
     {
         self::$overrides = null;
+        self::$badges = null;
         Cache::forget(self::CACHE_KEY);
     }
 
-    /** @return array{0:string,1:string,2:bool,3:?string} */
+    /** @return array<string, array{name:string, description:string, active:bool}> */
+    private static function badges(): array
+    {
+        return self::$badges ??= Badge::query()->orderBy('rank')->orderBy('id')
+            ->get(['key', 'name', 'description', 'is_active'])
+            ->mapWithKeys(fn (Badge $b) => [$b->key => ['name' => 'Badge: '.$b->name, 'description' => (string) $b->description, 'active' => (bool) $b->is_active]])
+            ->all();
+    }
+
+    /** @return array{0:string,1:string,2:bool,3:?string,4?:string} */
     private static function definition(string $key): array
     {
         $def = config('features')[$key] ?? null;

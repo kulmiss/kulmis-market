@@ -15,7 +15,7 @@ Route::middleware(['feature:shop', EncryptCookies::class, AddQueuedCookiesToResp
     // Coupon guessing is slow: 10 tries a minute.
     Route::put('cart/coupon', [CartController::class, 'coupon'])->middleware('throttle:10,1')->name('cart.coupon');
     Route::post('checkout', [CheckoutController::class, 'store'])->middleware('throttle:10,1')->name('checkout');
-    Route::post('orders/track', TrackingController::class)->middleware('throttle:10,1')->name('orders.track');
+    Route::post('orders/track', TrackingController::class)->middleware(['feature:shop.order_tracking', 'throttle:10,1'])->name('orders.track');
 });
 
 Route::middleware('feature:shop')->get('shipping/zones', fn () => response()->json([

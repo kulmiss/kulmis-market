@@ -7,4 +7,4 @@ Route::middleware(['feature:shop', 'throttle:20,1'])->group(function () {
     Route::post('orders/{number}/payment-options', [PaymentController::class, 'options'])->name('orders.payment-options');
     Route::post('orders/{number}/payment-proof', [PaymentController::class, 'proof'])->name('orders.payment-proof');
 });
-Route::get('payments/{payment}/receipt', [PaymentController::class, 'receipt'])->middleware('signed')->name('payments.receipt');
+Route::get('payments/{payment}/receipt', [PaymentController::class, 'receipt'])->middleware(['feature:payments.pdf_receipts', 'signed'])->name('payments.receipt');

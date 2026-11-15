@@ -7,7 +7,7 @@ Route::middleware('can:view-payments')->group(function () {
     Route::get('payments', [PaymentController::class, 'index']);
     Route::get('payments/{payment}', [PaymentController::class, 'show']);
     Route::get('payments/{payment}/proof', [PaymentController::class, 'proof']);
-    Route::get('payments/{payment}/receipt', [PaymentController::class, 'receipt']);
+    Route::get('payments/{payment}/receipt', [PaymentController::class, 'receipt'])->middleware('feature:payments.pdf_receipts');
 });
 Route::middleware('can:approve-payments')->group(function () {
     Route::post('payments/{payment}/approve', [PaymentController::class, 'approve']);

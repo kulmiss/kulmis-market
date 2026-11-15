@@ -9,7 +9,7 @@
             @feature('membership')<a href="{{ url('/membership') }}" class="hover:text-brand-600">Membership</a>@endfeature
             @feature('signals')<a href="{{ url('/signals') }}" class="hover:text-brand-600">Signals</a>@endfeature
             @feature('referral')<a href="{{ url('/referral-program') }}" class="hover:text-brand-600">Earn</a>@endfeature
-            <a href="{{ url('/track') }}" class="hover:text-brand-600">Track order</a>
+            @feature('shop.order_tracking')<a href="{{ url('/track') }}" class="hover:text-brand-600">Track order</a>@endfeature
         </nav>
         @php($me = auth()->user())
         <div class="ms-auto flex items-center gap-1">
@@ -22,7 +22,7 @@
                     @feature('membership')<a class="rounded-lg px-3 py-2 hover:bg-mist-100 dark:hover:bg-ink-800" href="{{ url('/membership') }}">Membership</a>@endfeature
                     @feature('signals')<a class="rounded-lg px-3 py-2 hover:bg-mist-100 dark:hover:bg-ink-800" href="{{ url('/signals') }}">Signals</a>@endfeature
                     @feature('referral')<a class="rounded-lg px-3 py-2 hover:bg-mist-100 dark:hover:bg-ink-800" href="{{ url('/referral-program') }}">Earn with referrals</a>@endfeature
-                    <a class="rounded-lg px-3 py-2 hover:bg-mist-100 dark:hover:bg-ink-800" href="{{ url('/track') }}">Track order</a>
+                    @feature('shop.order_tracking')<a class="rounded-lg px-3 py-2 hover:bg-mist-100 dark:hover:bg-ink-800" href="{{ url('/track') }}">Track order</a>@endfeature
                 </nav>
             </details>
             @feature('appearance.theme_switch')

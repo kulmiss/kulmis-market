@@ -70,8 +70,11 @@ change any of them.
 | 61 | Header account button | Far right. Guests: person icon → Sign in. Signed in: initial + first name (name hidden on small phones, initial only) → My account. | Decided (you) |
 | 62 | Who sees Payments in the admin | Anyone who handles orders, approves transfers (Finance) or does refunds. Only Finance/Manager/Super Admin can approve. | Decided (bug fix, round 3) |
 | 63 | A second receipt while one is being checked | Refused with "We already have your receipt and are checking it"; after a rejection the customer can send a new one. | Decided (recommended) |
-| 64 | Service worker | On: faster repeat visits and an offline page. It never stores account, admin, cart, checkout, pay or API pages. To switch it off, replace `public/sw.js` with one that unregisters. | Decided (recommended) |
+| 64 | Service worker | On: faster repeat visits and an offline page. It never stores account, admin, cart, checkout, pay or API pages. Switch it off with **Feature switches → Offline page**: phones then remove the saved pages on their next visit. | Decided (recommended) |
 | 65 | Phone speed target | Text pages are under 1.0 s LCP on Lighthouse's slow-4G phone test; photo pages are 1.1–1.5 s because of the photo download. CI fails above 2.5 s on phones (CI has no gzip/page cache) and 1.0 s on desktop. | Decided (measured) |
+| 66 | Customer two-step sign-in switched off | No new set-ups. People who already use it keep being asked for the code and can still turn it off themselves (turning it off for them would weaken their account without telling them). Staff two-step sign-in is not affected. | Decided (recommended) |
+| 67 | Message switches | Each customer message type has a switch (Feature switches → Messages). Account-safety messages (new sign-in, password changed, …), password-reset codes and email-confirm links are always sent. | Decided (recommended) |
+| 68 | Badge switches | Each badge has a switch; it is the same as "Active" on the Badges page. Off: it is hidden and nobody unlocks it. Members who had it keep the record and see it again when it is back on. | Decided (recommended) |
 
 ## Still open: needs you
 | # | What | Why |

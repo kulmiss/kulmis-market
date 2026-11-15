@@ -10,7 +10,7 @@
             @feature('shop')<a href="{{ url('/shop') }}" class="hover:underline">Shop</a>@endfeature
             @feature('membership')<a href="{{ url('/membership') }}" class="hover:underline">Membership</a>@endfeature
             @feature('signals')<a href="{{ url('/signals') }}" class="hover:underline">Trading signals</a>@endfeature
-            <a href="{{ url('/track') }}" class="hover:underline">Track your order</a>
+            @feature('shop.order_tracking')<a href="{{ url('/track') }}" class="hover:underline">Track your order</a>@endfeature
         </nav>
         <nav class="grid content-start gap-2" aria-label="Policies">
             @foreach ($pages as $p)<a href="{{ url('/p/'.$p->slug) }}" class="hover:underline">{{ $p->title }}</a>@endforeach

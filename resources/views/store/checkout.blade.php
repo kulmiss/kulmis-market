@@ -4,7 +4,7 @@
     <div class="md:col-span-3">
         <h1 class="text-4xl">Checkout</h1>
         @if (!$user && !$guestAllowed)
-            <p class="card mt-6">Please <a class="underline" href="{{ url('/login') }}">sign in</a> or <a class="underline" href="{{ url('/register') }}">create an account</a> to order.</p>
+            <p class="card mt-6">Please <a class="underline" href="{{ url('/login') }}">sign in</a>@feature('accounts.signup') or <a class="underline" href="{{ url('/register') }}">create an account</a>@endfeature to order.</p>
         @else
             @if (!$user)<p class="muted mt-2 text-sm">No account needed. Members, <a class="underline" href="{{ url('/login') }}">sign in</a> for member prices.</p>@endif
             @if ($errors->any())<div class="mt-4 rounded-xl bg-danger-600/10 p-3 text-sm text-danger-700" role="alert">{{ $errors->first() }}</div>@endif

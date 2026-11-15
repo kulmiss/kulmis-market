@@ -38,6 +38,14 @@ class SendCustomerMessage implements ShouldQueue
 
             return;
         }
+        if (! $this->security && ! $m->allowed()) {
+            Log::info('Message type switched off, not sent: '.$m->type);
+            if ($this->statusChangeId) {
+                OrderStatusChange::query()->whereKey($this->statusChangeId)->update(['notified' => json_encode(['all' => 'off'])]);
+            }
+
+            return;
+        }
         if ($m->phone && ($this->security || Features::enabled('notifications.sms'))) {
             $this->attempt('sms', fn () => $sms->send($m->phone, $m->body), $sent);
         }

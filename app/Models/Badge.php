@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Features;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -19,6 +20,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Badge extends Model
 {
+    protected static function booted(): void
+    {
+        // Each badge has a switch on the Feature switches page.
+        static::saved(fn () => Features::forgetMemo());
+        static::deleted(fn () => Features::forgetMemo());
+    }
+
     protected $guarded = ['id'];
 
     protected function casts(): array

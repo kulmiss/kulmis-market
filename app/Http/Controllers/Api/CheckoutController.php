@@ -6,6 +6,7 @@ use App\Cart\CartManager;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\User;
+use App\Notify\OrderNotifier;
 use App\Orders\Checkout;
 use App\Orders\CheckoutExtras;
 use App\Orders\OrderService;
@@ -71,7 +72,7 @@ class CheckoutController extends Controller
             'currency' => Currency::code(),
             'member_discount' => $order->member_discount,
             'shipping' => $order->shippingPayable(),
-            'track_url' => url('/track?number='.$order->number),
+            'track_url' => OrderNotifier::trackUrl($order),
             'payment_methods' => $order->status === Order::PENDING_PAYMENT ? PaymentController::methods() : [],
         ];
     }

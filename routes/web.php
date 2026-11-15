@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:20,1');
-    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:register');
+    Route::get('/register', [AuthController::class, 'showRegister'])->middleware('feature:accounts.signup')->name('register');
+    Route::post('/register', [AuthController::class, 'register'])->middleware(['feature:accounts.signup', 'throttle:register']);
     Route::get('/forgot', [AuthController::class, 'showForgot'])->name('forgot');
     Route::get('/login/two-factor', [AuthController::class, 'showTwoFactor']);
     Route::post('/login/two-factor', [AuthController::class, 'twoFactor'])->middleware('throttle:10,1');
@@ -45,8 +45,8 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
     Route::middleware('throttle:10,1')->group(function () {
         Route::post('security/password', [SecurityController::class, 'password'])->name('security.password');
         Route::post('security/email', [SecurityController::class, 'email'])->name('security.email');
-        Route::post('security/two-factor', [SecurityController::class, 'twoFactorBegin'])->name('security.2fa.begin');
-        Route::post('security/two-factor/confirm', [SecurityController::class, 'twoFactorConfirm'])->name('security.2fa.confirm');
+        Route::post('security/two-factor', [SecurityController::class, 'twoFactorBegin'])->middleware('feature:accounts.two_factor')->name('security.2fa.begin');
+        Route::post('security/two-factor/confirm', [SecurityController::class, 'twoFactorConfirm'])->middleware('feature:accounts.two_factor')->name('security.2fa.confirm');
         Route::post('security/two-factor/disable', [SecurityController::class, 'twoFactorDisable'])->name('security.2fa.disable');
         Route::post('security/sign-out-everywhere', [SecurityController::class, 'signOutEverywhere'])->name('security.signout');
     });
@@ -57,4 +57,4 @@ Route::get('/account/referral-qr.svg', function (Request $request, Engagement $e
     app(ReferralCodes::class)->assign($request->user());
 
     return response($engagement->qrSvg(url('/r/'.$request->user()->referral_code)), 200, ['Content-Type' => 'image/svg+xml', 'Cache-Control' => 'private, max-age=86400']);
-})->middleware(['auth', 'feature:referral'])->name('account.qr');
+})->middleware(['auth', 'feature:referral', 'feature:referral.qr_codes'])->name('account.qr');

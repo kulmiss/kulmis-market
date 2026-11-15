@@ -141,7 +141,7 @@ class StorefrontController extends Controller
 
     public function track(): View
     {
-        abort_if(Features::disabled('shop'), 404);
+        abort_if(Features::disabled('shop.order_tracking'), 404);
 
         return view('store.track');
     }

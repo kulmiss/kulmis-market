@@ -1,14 +1,20 @@
 # Platform core
 
 ## Feature switches
-- Defaults: `config/features.php` (`key => [label, group, default, parent]`).
+- Defaults: `config/features.php` (`key => [label, section, default, parent, easy description]`).
+  Each badge also has a switch `badge.<key>` (its "Active" flag).
 - Overrides are saved in `feature_flags`. A feature is **effectively on** only
   when it and all its parents are on, so turning off `membership` also turns
   off referrals, the member discount, free shipping and early access.
 - Code: `Features::enabled('signals')`, Blade `@feature('signals') … @endfeature`,
   routes `->middleware('feature:signals')`. A disabled feature answers 404.
   Nothing is deleted.
-- Admin API: `GET/PUT /api/v1/admin/features` (the on/off overview page).
+- Admin API: `GET/PUT /api/v1/admin/features` (the on/off overview page:
+  sections, search, On/Off filter).
+- Message types: `new Message(..., type: 'order_paid')` is skipped when
+  `messages.order_paid` is off. Account-safety messages are always sent.
+- Queue workers forget their copy of switches and settings before every job
+  (`Queue::before` in AppServiceProvider), so a change is seen at once.
 
 ## Settings
 - Defaults and types: `config/settings.php`. Types: `money` (integer santim),

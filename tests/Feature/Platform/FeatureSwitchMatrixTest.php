@@ -60,6 +60,14 @@ class FeatureSwitchMatrixTest extends TestCase
                 ['GET', '/api/v1/admin/cash-outs', 'admin'],
             ]],
             'cash out' => ['wallet.cashout', [['POST', '/api/v1/wallet/cash-out', 'customer'], ['POST', '/account/cash-out', 'customer']]],
+            'order tracking' => ['shop.order_tracking', [['GET', '/track', 'guest'], ['POST', '/api/v1/orders/track', 'guest']]],
+            'pdf receipts' => ['payments.pdf_receipts', [['GET', '/api/v1/admin/payments/1/receipt', 'admin']]],
+            'sign-up' => ['accounts.signup', [['GET', '/register', 'guest'], ['POST', '/register', 'guest'], ['POST', '/api/v1/auth/register', 'guest']]],
+            'customer 2fa set-up' => ['accounts.two_factor', [
+                ['POST', '/account/security/two-factor', 'customer'], ['POST', '/account/security/two-factor/confirm', 'customer'],
+                ['POST', '/api/v1/me/two-factor', 'customer'], ['POST', '/api/v1/me/two-factor/confirm', 'customer'],
+            ]],
+            'qr codes' => ['referral.qr_codes', [['GET', '/account/referral-qr.svg', 'customer'], ['GET', '/api/v1/referral/qr.svg', 'customer']]],
         ];
     }
 

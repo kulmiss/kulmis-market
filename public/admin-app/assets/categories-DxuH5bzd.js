@@ -1,0 +1,1 @@
+import{t as e}from"./catalog-pages-DAnaelUd.js";var t=e;export{t as component};

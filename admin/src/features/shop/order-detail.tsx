@@ -5,6 +5,7 @@ import { ArrowLeft, Check, ExternalLink, FileDown, RotateCcw, X } from 'lucide-r
 import { useMutate } from '@/hooks/use-mutate'
 import { api } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth-store'
+import { useFeatures } from '@/stores/features-store'
 import { formatDate, formatMoney } from '@/lib/money'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -130,6 +131,7 @@ function Row({ label, value, strong }: { label: string; value: string; strong?: 
 /** Approve / reject proofs, refund (full or partial), receipt. Used on orders and the payments page. */
 export function PaymentRow({ payment: p }: { payment: Payment }) {
   const canApprove = useAuthStore((st) => st.can('approve-payments'))
+  const receipts = useFeatures((st) => st.on('payments.pdf_receipts'))
   const act = useMutate('post', ['payments', 'order', 'orders'], 'Done')
   const [reason, setReason] = useState('')
   const [amount, setAmount] = useState(p.amount - p.refunded_amount)
@@ -146,7 +148,7 @@ export function PaymentRow({ payment: p }: { payment: Payment }) {
         {p.proof_reference && <span className='text-muted-foreground'>proof ref {p.proof_reference}</span>}
         <span className='ms-auto flex gap-2'>
           {p.proof_path && <Button size='sm' variant='outline' asChild><a href={`/api/v1/admin/payments/${p.id}/proof`} target='_blank' rel='noreferrer'><ExternalLink /> Proof</a></Button>}
-          {['paid', 'partially_refunded', 'refunded'].includes(p.status) && <Button size='sm' variant='outline' asChild><a href={`/api/v1/admin/payments/${p.id}/receipt`}><FileDown /> Receipt</a></Button>}
+          {receipts && ['paid', 'partially_refunded', 'refunded'].includes(p.status) && <Button size='sm' variant='outline' asChild><a href={`/api/v1/admin/payments/${p.id}/receipt`}><FileDown /> Receipt</a></Button>}
         </span>
       </div>
       {p.status === 'awaiting_review' && !canApprove && <p className='text-xs text-muted-foreground'>Waiting for Finance or a Manager to approve this transfer.</p>}

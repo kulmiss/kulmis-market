@@ -28,6 +28,8 @@
         </form>
     </section>
 
+    {{-- Switched off: no new set-ups; people who already use it can still turn it off. --}}
+    @if ($user->hasTwoFactor() || \App\Support\Features::enabled('accounts.two_factor'))
     <section class="card mt-6" id="two-factor">
         <h2 class="text-2xl">Two-step sign-in</h2>
         @if ($recoveryCodes)
@@ -45,7 +47,7 @@
                 <div><label class="label" for="dc">Code from the app</label><input id="dc" name="code" class="input" required autocomplete="one-time-code"></div>
                 <div class="flex items-end"><button class="btn-ghost w-full">Turn off</button></div>
             </form>
-        @elseif ($setup)
+        @elseif ($setup && \App\Support\Features::enabled('accounts.two_factor'))
             <p class="muted mt-1 text-sm">1. Scan this with Google Authenticator, Microsoft Authenticator or similar. 2. Type the 6-digit code it shows.</p>
             <div class="mt-4 grid items-center gap-4 sm:grid-cols-[12rem_1fr]">
                 <div class="rounded-xl bg-white p-2 [&_svg]:h-auto [&_svg]:w-full" aria-label="QR code">{!! $setup['qr_svg'] !!}</div>
@@ -63,6 +65,7 @@
             <form method="post" action="{{ url('/account/security/two-factor') }}" class="mt-4">@csrf<button class="btn-primary">Set up two-step sign-in</button></form>
         @endif
     </section>
+    @endif
 
     <section class="card mt-6" id="devices">
         <h2 class="text-2xl">Where you're signed in</h2>

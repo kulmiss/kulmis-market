@@ -48,7 +48,7 @@
                     <li class="flex gap-2"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-accent)">3</span>Earnings are ready after {{ \App\Support\Settings::int('referral.pending_days') }} days. Cash out to Telebirr or your bank.</li>
                 </ol>
             </div>
-            @if ($ref)<a href="#referral" class="m-btn">{!! I::svg('share-2', 17) !!}Share my link</a>@endif
+            @if ($ref)<a href="#referral" class="m-btn">{!! I::svg('share-2', 17) !!}{{ $ref['share'] ? 'Share my link' : 'My link' }}</a>@endif
         </div>
     </section>
 @endif
@@ -136,21 +136,25 @@
             <div class="grid content-start gap-3">
                 <div class="flex gap-2"><input class="m-input font-mono text-sm" readonly value="{{ $ref['link'] }}" data-copy-source aria-label="Referral link"><button type="button" class="m-btn" data-copy>{!! I::svg('copy', 16) !!}Copy</button></div>
                 <p class="text-sm">Code: <b class="font-mono text-lg tracking-wider">{{ $ref['code'] }}</b></p>
+                @if ($ref['share'])
                 <div class="grid grid-cols-2 gap-2 sm:flex">
                     <a class="m-btn-ghost" href="{{ $ref['share']['telegram'] }}" target="_blank" rel="noopener">{!! I::svg('send', 16) !!}Telegram</a>
                     <a class="m-btn-ghost" href="{{ $ref['share']['whatsapp'] }}" target="_blank" rel="noopener">{!! I::svg('message-circle', 16) !!}WhatsApp</a>
                     <button type="button" class="m-btn-ghost hidden" data-share data-share-url="{{ $ref['link'] }}" data-share-text="Join me on {{ \App\Support\Settings::string('site.name') }}. Use my code {{ $ref['code'] }}">{!! I::svg('share-2', 16) !!}More</button>
                 </div>
+                @endif
                 @if ($ref['can_change_code'])
                     <details class="text-sm"><summary class="cursor-pointer m-muted">Choose your own code (once)</summary>
                         <form method="post" action="{{ url('/account/referral-code') }}" class="mt-2 flex gap-2">@csrf<input name="code" class="m-input uppercase" placeholder="e.g. SELAM25" maxlength="12" aria-label="New code"><button class="m-btn-ghost">Save</button></form>
                     </details>
                 @endif
             </div>
+            @if ($ref['qr_url'])
             <figure class="justify-self-center text-center">
                 <img src="{{ url('/account/referral-qr.svg') }}" alt="QR code for your referral link" width="140" height="140" class="rounded-xl bg-white p-2" loading="lazy">
                 <figcaption class="mt-1 text-xs m-muted">Scan to join</figcaption>
             </figure>
+            @endif
         </div>
     </div>
     <div class="m-card">

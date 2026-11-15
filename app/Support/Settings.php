@@ -68,6 +68,12 @@ class Settings
         return array_key_exists($key, config('settings'));
     }
 
+    /** Forget only this process's copy (see Features::forgetMemo). */
+    public static function forgetMemo(): void
+    {
+        self::$overrides = null;
+    }
+
     public static function flush(): void
     {
         self::$overrides = null;

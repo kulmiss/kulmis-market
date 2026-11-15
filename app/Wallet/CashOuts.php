@@ -141,7 +141,7 @@ class CashOuts
             ], "payout:{$r->id}:paid", $r, description: 'Cash-out paid', actorId: $actorId);
             $r->update(['status' => 'paid', 'processed_by' => $actorId, 'processed_at' => now(), 'payout_reference' => $reference]);
             Activity::log('payout.paid', $r, ['reference' => $reference], null, $actorId);
-            DB::afterCommit(fn () => $this->notify($r, Settings::string('notify.payout_paid')));
+            DB::afterCommit(fn () => $this->notify($r, Settings::string('notify.payout_paid'), null, 'payout_paid'));
 
             return $r;
         });
@@ -160,7 +160,7 @@ class CashOuts
             ], "payout:{$r->id}:rejected", $r, $reason, $actorId, 'Cash-out returned to wallet');
             $r->update(['status' => 'rejected', 'processed_by' => $actorId, 'processed_at' => now(), 'reject_reason' => $reason]);
             Activity::log('payout.rejected', $r, [], $reason, $actorId);
-            DB::afterCommit(fn () => $this->notify($r, Settings::string('notify.payout_rejected'), $reason));
+            DB::afterCommit(fn () => $this->notify($r, Settings::string('notify.payout_rejected'), $reason, 'payout_rejected'));
 
             return $r;
         });
@@ -202,12 +202,12 @@ class CashOuts
         return $first !== null && in_array($first, $tokens, true) && ($last === null || in_array($last, $tokens, true));
     }
 
-    private function notify(PayoutRequest $r, string $template, ?string $reason = null): void
+    private function notify(PayoutRequest $r, string $template, ?string $reason, string $type): void
     {
         $user = $r->user()->firstOrFail();
         SendCustomerMessage::dispatch(new Message('Your cash-out', strtr($template, [
             '{name}' => $user->first_name, '{amount}' => Money::format($r->amount), '{reference}' => (string) $r->payout_reference,
             '{reason}' => (string) $reason,
-        ]), $user->phone, $user->email, $user->telegram_user_id));
+        ]), $user->phone, $user->email, $user->telegram_user_id, $type));
     }
 }

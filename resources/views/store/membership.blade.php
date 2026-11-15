@@ -11,7 +11,7 @@
     <p class="mt-5 text-3xl font-semibold">{{ $m('membership.price') }} <span class="muted text-lg font-normal">/ month</span></p>
     <p class="muted mt-1">Monthly only. Cancel any time by not renewing. {{ $i('membership.grace_days') }}-day grace period.</p>
     <div class="mt-7 flex justify-center gap-3">
-        <a href="{{ url('/register') }}" class="btn-primary">Join now</a>
+        <a href="{{ url(\App\Support\Features::enabled('accounts.signup') ? '/register' : '/login') }}" class="btn-primary">Join now</a>
         <a href="{{ url('/login') }}" class="btn-ghost">I already have an account</a>
     </div>
 </section>

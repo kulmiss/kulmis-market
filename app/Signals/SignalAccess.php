@@ -180,6 +180,6 @@ class SignalAccess
             '{name}' => $sub->first_name, '{link}' => $link ?? '(Telegram bot not set up yet)',
             '{date}' => $sub->current_period_end?->timezone(config('app.timezone'))->format('d M Y') ?? '', '{site}' => Settings::string('site.name'),
         ]);
-        SendCustomerMessage::dispatch(new Message('Your signals access', $body, $sub->phone, $sub->email));
+        SendCustomerMessage::dispatch(new Message('Your signals access', $body, $sub->phone, $sub->email, type: 'signals_access'));
     }
 }

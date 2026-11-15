@@ -216,7 +216,7 @@ if (checkoutForm) {
                 const { data } = await api('/checkout', { method: 'POST', body: d });
                 location.href = data.status === 'pending_payment'
                     ? `/pay/${encodeURIComponent(data.number)}?phone=${encodeURIComponent(d.phone)}`
-                    : `/track?number=${encodeURIComponent(data.number)}`;
+                    : (data.track_url || '/');
             } catch (err) { say($('[data-form-message]', checkoutForm), err.message); btn.disabled = false; }
         });
     }
@@ -311,7 +311,8 @@ $$('[data-copy]').forEach((b) => b.addEventListener('click', () => {
 
 /* ---------- instant navigation fallback (browsers without Speculation Rules) ---------- */
 const NO_PREFETCH = /^\/(account|admin|api|cart|checkout|pay|login|register|logout|r)(\/|$)/;
-if (!(HTMLScriptElement.supports && HTMLScriptElement.supports('speculationrules'))) {
+const html = document.documentElement;
+if (html.dataset.instant !== 'off' && !(HTMLScriptElement.supports && HTMLScriptElement.supports('speculationrules'))) {
     const done = new Set();
     const warm = (e) => {
         const a = e.target.closest && e.target.closest('a[href]');
@@ -326,7 +327,11 @@ if (!(HTMLScriptElement.supports && HTMLScriptElement.supports('speculationrules
 }
 
 /* ---------- service worker: fast repeat visits + offline page ---------- */
-if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+if ('serviceWorker' in navigator && html.dataset.offline === 'off') {
+    // Switched off by the Super Admin: remove the saved pages and the worker.
+    navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((r) => r.unregister())).catch(() => {});
+    if (window.caches) caches.keys().then((keys) => keys.forEach((k) => caches.delete(k))).catch(() => {});
+} else if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
     window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
     // Signing in or out forgets saved pages.
     $$('form[action$="/logout"], form[action$="/login"]').forEach((f) => f.addEventListener('submit', () => {

@@ -3,7 +3,7 @@
 <div class="container-km max-w-3xl py-10" data-pay-page data-number="{{ $order->number }}" data-phone="{{ $phone }}">
     <h1 class="text-4xl">Pay for order {{ $order->number }}</h1>
     @if ($order->status !== 'pending_payment')
-        <p class="card mt-6">This order is {{ str_replace('_', ' ', $order->status) }}. <a class="underline" href="{{ url('/track?number='.$order->number) }}">Track it</a>.</p>
+        <p class="card mt-6">This order is {{ str_replace('_', ' ', $order->status) }}.@feature('shop.order_tracking') <a class="underline" href="{{ url('/track?number='.$order->number) }}">Track it</a>.@endfeature</p>
     @else
         <p class="mt-3 text-2xl font-semibold">{{ \App\Support\Money::format($order->amountDue()) }}</p>
         <p class="muted text-sm">Save your order number: <b>{{ $order->number }}</b>. Unpaid orders are cancelled after {{ \App\Support\Settings::int('orders.unpaid_cancel_hours') }} hours.</p>
@@ -12,7 +12,7 @@
             <div class="card" data-receipt-waiting>
                 <h2 class="text-xl">We have your receipt</h2>
                 <p class="mt-2 text-sm">We are checking your transfer, usually within a few hours. You don't need to pay again; we send you a message as soon as it is confirmed.</p>
-                <a class="btn-ghost mt-4" href="{{ url('/track?number='.$order->number) }}">Track your order</a>
+                @feature('shop.order_tracking')<a class="btn-ghost mt-4" href="{{ url('/track?number='.$order->number) }}">Track your order</a>@endfeature
             </div>
             @else
             @feature('payments.manual')
