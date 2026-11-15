@@ -1,0 +1,1 @@
+import{t as e}from"./data-table-CzMMJxyd.js";import{d as t}from"./button-DvVpGx7n.js";var n=t();function r({queryKey:t,search:r=!1,...i}){return(0,n.jsx)(e,{id:t,exportName:t,search:r,...i})}export{r as t};

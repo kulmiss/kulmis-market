@@ -30,3 +30,26 @@ Commit the rebuilt `public/admin-app` together with the source change.
 - `components/km/filter-bar.tsx`, `money-input.tsx` (type birr, store santim),
   `status-badge.tsx`
 - `hooks/use-mutate.ts`: POST/PUT, toast, refresh queries
+
+## Data tables (every list)
+
+Every table in the admin and the member area works the same way:
+
+- **Search** box (waits until you stop typing), **filters**, **sort** by
+  clicking a column name (again = high to low, a third time = off).
+- **Columns**: show or hide columns. **Reset this table** puts it back.
+- **Page size** 10 / 25 / 50 / 100 / 200 (member area: up to 100) and pages.
+- **Select rows** for bulk actions; **CSV** saves every matching row (up to
+  10,000), **CSV of selected** only the ticked ones. Cells that start with
+  `= + - @` get a `'` so spreadsheets never run them as formulas.
+- The header **stays on top** while you scroll.
+- Your column choice, page size, sort and filters are **kept per table** in
+  this browser.
+- **Phones** get one card per row; filters and sort fold into a
+  "Filters (2)" button that remembers if it was open.
+
+Code: admin `admin/src/components/km/data-table.tsx` (server lists with
+`path`, ready lists with `rows`); server sorting `App\Support\TableQuery`
+(`?sort=amount` / `?sort=-amount`, only listed columns). Member area:
+`App\Member\MemberTable` + `MemberTables` and
+`resources/views/member/partials/table.blade.php`.

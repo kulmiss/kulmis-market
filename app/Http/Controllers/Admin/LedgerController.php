@@ -9,6 +9,7 @@ use App\Ledger\JournalEntry;
 use App\Ledger\Ledger;
 use App\Ledger\Wallet;
 use App\Models\User;
+use App\Support\TableQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -27,7 +28,8 @@ class LedgerController extends Controller
             ->when(! Demo::visible(), fn ($q) => $q->where('is_demo', false))
             ->when($request->input('type'), fn ($q, $v) => $q->where('type', 'like', $v.'%'))
             ->when($request->input('user_id'), fn ($q, $v) => $q->whereHas('postings.account', fn ($a) => $a->where('user_id', $v)))
-            ->latest('id')
+            ->when($request->input('q'), fn ($q, $v) => $q->where(fn ($w) => $w->where('description', 'like', "%$v%")->orWhere('uuid', $v)))
+            ->tap(fn ($q) => TableQuery::sort($q, $request, ['type' => 'type', 'when' => 'created_at']))
             ->paginate((int) $request->input('per_page', 50));
 
         return response()->json($page);

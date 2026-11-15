@@ -8,12 +8,11 @@ use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Controller;
 use App\Ledger\Wallet;
 use App\Member\MemberDashboard;
+use App\Member\MemberTables;
 use App\Membership\MembershipService;
 use App\Models\Order;
 use App\Models\Payment;
-use App\Models\PayoutRequest;
 use App\Models\Product;
-use App\Models\Signal;
 use App\Models\User;
 use App\Orders\Checkout;
 use App\Orders\CheckoutExtras;
@@ -36,6 +35,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use InvalidArgumentException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /** The member area: dashboard, referral, wallet, cash-out, orders. */
 class AccountController extends Controller
@@ -58,49 +58,67 @@ class AccountController extends Controller
         ]);
     }
 
-    public function team(Request $request, TeamView $team): View
+    public function team(Request $request, TeamView $team): View|StreamedResponse
     {
         abort_if(Features::disabled('referral'), 404);
+        $ref = $team->for($request->user());
+        $table = MemberTables::team($request, $ref);
 
-        return view('member.team', ['ref' => $team->for($request->user())]);
+        return $table->wantsCsv($request) ? $table->csv() : view('member.team', ['ref' => $ref, 'table' => $table]);
     }
 
-    public function earnings(Request $request, MemberDashboard $dashboard, TeamView $team): View
+    public function earnings(Request $request, MemberDashboard $dashboard): View|StreamedResponse
     {
         abort_if(Features::disabled('referral'), 404);
         $user = $request->user();
+        $table = MemberTables::earnings($request, $user);
 
-        return view('member.earnings', ['dash' => ['money' => $dashboard->money($user)], 'monthly' => $dashboard->monthly($user), 'history' => $team->history($user, 100)]);
+        return $table->wantsCsv($request) ? $table->csv()
+            : view('member.earnings', ['dash' => ['money' => $dashboard->money($user)], 'monthly' => $dashboard->monthly($user), 'table' => $table]);
     }
 
-    public function wallet(Request $request): View
+    public function wallet(Request $request): View|StreamedResponse
     {
         abort_if(Features::disabled('wallet'), 404);
         /** @var User $user */
         $user = $request->user();
+        $cashouts = MemberTables::cashouts($request, $user);
+        $money = MemberTables::money($request, $user);
+        foreach ([$cashouts, $money] as $table) {
+            if ($table->wantsCsv($request)) {
+                return $table->csv();
+            }
+        }
 
         return view('member.wallet', [
             'user' => $user,
             'wallet' => Wallet::for($user)->summary(),
-            'cashouts' => PayoutRequest::query()->where('user_id', $user->id)->latest('id')->limit(20)->get(),
+            'cashoutTable' => $cashouts,
+            'moneyTable' => $money,
             'payoutAccount' => app(PayoutAccounts::class)->current($user),
         ]);
     }
 
-    public function orders(Request $request): View
+    public function orders(Request $request): View|StreamedResponse
     {
-        return view('member.orders', ['orders' => Order::query()->where('user_id', $request->user()->id)->latest('id')->limit(50)->get()]);
+        $table = MemberTables::orders($request, $request->user());
+
+        return $table->wantsCsv($request) ? $table->csv() : view('member.orders', ['table' => $table]);
     }
 
-    public function signals(Request $request): View
+    public function signals(Request $request): View|StreamedResponse
     {
         abort_if(Features::disabled('signals'), 404);
         $user = $request->user();
+        $table = MemberTables::signals($request);
+        if ($table->wantsCsv($request)) {
+            return $table->csv();
+        }
 
         return view('member.signals', [
             'isMember' => $user->isActiveMember(),
             'signalsLink' => $this->signalsLink($user, $user->isActiveMember()),
-            'signals' => Signal::query()->latest('posted_at')->limit(15)->get(),
+            'table' => $table,
         ]);
     }
 

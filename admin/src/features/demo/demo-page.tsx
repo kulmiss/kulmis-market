@@ -8,8 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
-import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { DataTable } from '@/components/km/data-table'
 import { Page } from '@/components/km/page'
 import { PageSkeleton } from '@/components/km/page-skeleton'
 
@@ -82,9 +82,9 @@ export function DemoPage() {
             <Card className='lg:col-span-2'>
               <CardHeader><CardTitle className='text-base'>What is demo data</CardTitle></CardHeader>
               <CardContent>
-                <Table><TableBody>
-                  {Object.entries(d.counts).map(([k, v]) => <TableRow key={k}><TableCell>{LABELS[k] ?? k}</TableCell><TableCell className='text-end tabular-nums'>{v}</TableCell></TableRow>)}
-                </TableBody></Table>
+                <DataTable<{ key: string; what: string; count: number }> id='demo-counts' search={false} defaultPageSize={50}
+                  rows={Object.entries(d.counts).map(([k, v]) => ({ key: k, what: LABELS[k] ?? k, count: v }))} rowId={(r) => r.key}
+                  columns={[{ header: 'What', accessorKey: 'what', meta: { sort: 'what' } }, { header: 'Rows', accessorKey: 'count', meta: { sort: 'count', align: 'end' } }]} />
               </CardContent>
             </Card>
           )}

@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { FilterBar, SearchInput, SelectFilter, opts } from '@/components/km/filter-bar'
+import { opts } from '@/components/km/filter-bar'
 import { FormDialog } from '@/components/km/form-dialog'
 import { Page } from '@/components/km/page'
 import { ResourceTable, type ResourceColumn } from '@/components/km/resource-table'
@@ -20,24 +20,23 @@ type Signal = { id: number; pair: string; direction: 'long' | 'short'; entry: st
   locked_at: string | null; telegram_message_id: number | null }
 
 export function SignalsPage() {
-  const [status, setStatus] = useState('all')
   const columns: ResourceColumn<Signal>[] = [
-    { header: 'Posted', cell: ({ row }) => formatDate(row.original.posted_at, true) },
-    { header: 'Pair', cell: ({ row }) => <b>{row.original.pair}</b> },
-    { header: 'Side', cell: ({ row }) => <span className={row.original.direction === 'long' ? 'text-emerald-600' : 'text-red-600'}>{row.original.direction.toUpperCase()}</span> },
+    { header: 'Posted', cell: ({ row }) => formatDate(row.original.posted_at, true), meta: { sort: 'posted', csv: (s) => s.posted_at } },
+    { header: 'Pair', cell: ({ row }) => <b>{row.original.pair}</b>, meta: { sort: 'pair', csv: (s) => s.pair } },
+    { header: 'Side', cell: ({ row }) => <span className={row.original.direction === 'long' ? 'text-emerald-600' : 'text-red-600'}>{row.original.direction.toUpperCase()}</span>, meta: { csv: (s) => s.direction } },
     { header: 'Entry', accessorKey: 'entry' },
-    { header: 'Targets', cell: ({ row }) => row.original.targets.join(' / ') },
+    { header: 'Targets', cell: ({ row }) => row.original.targets.join(' / '), meta: { csv: (s) => s.targets.join(' / ') } },
     { header: 'SL', accessorKey: 'stop_loss' },
     { header: 'Telegram', cell: ({ row }) => (row.original.telegram_message_id ? <Send className='size-4 text-sky-500' /> : <span className='text-xs text-muted-foreground'>not sent</span>) },
     { header: 'Result', cell: ({ row }) => row.original.result
       ? <span className='flex items-center gap-1'><StatusBadge status={row.original.result} />{row.original.result_value}<Lock className='size-3 text-muted-foreground' /></span>
       : <StatusBadge status={row.original.status} /> },
-    { header: '', id: 'act', cell: ({ row }) => !row.original.locked_at && <CloseSignal signal={row.original} /> },
+    { header: '', id: 'act', meta: { label: 'Actions' }, cell: ({ row }) => !row.original.locked_at && <CloseSignal signal={row.original} /> },
   ]
   return (
     <Page title='Signals' description='Posted straight to your private Telegram channel. Closing records the result and locks it forever.' actions={<NewSignal />}>
-      <FilterBar><SelectFilter value={status} onChange={setStatus} placeholder='Status' options={opts('open', 'closed')} /></FilterBar>
-      <ResourceTable<Signal> queryKey='signals' path='/signals' params={{ status }} columns={columns} />
+      <ResourceTable<Signal> queryKey='signals' path='/signals' columns={columns} search={{ placeholder: 'Pair, e.g. BTC' }}
+        filters={[{ key: 'status', label: 'Status', options: opts('open', 'closed') }, { key: 'result', label: 'Result', options: opts('win', 'loss', 'breakeven', 'cancelled') }]} />
     </Page>
   )
 }
@@ -96,26 +95,19 @@ type Sub = { id: number; source: string; first_name: string; last_name: string; 
   current_period_end: string | null; grace_ends_at: string | null; telegram_user_id: number | null; joined_at: string | null; removed_at: string | null }
 
 export function SubscribersPage() {
-  const [q, setQ] = useState('')
-  const [source, setSource] = useState('all')
-  const [status, setStatus] = useState('all')
   const columns: ResourceColumn<Sub>[] = [
-    { header: 'Name', cell: ({ row }) => `${row.original.first_name} ${row.original.last_name}` },
+    { header: 'Name', cell: ({ row }) => `${row.original.first_name} ${row.original.last_name}`, meta: { sort: 'name', csv: (s) => `${s.first_name} ${s.last_name}` } },
     { header: 'Phone', accessorKey: 'phone' },
-    { header: 'Source', accessorKey: 'source' },
-    { header: 'Access until', cell: ({ row }) => (row.original.source === 'membership' ? 'with membership' : formatDate(row.original.grace_ends_at, true)) },
-    { header: 'In channel', cell: ({ row }) => (row.original.joined_at && !row.original.removed_at ? `since ${formatDate(row.original.joined_at)}` : row.original.telegram_user_id ? 'linked, not joined' : 'not linked') },
-    { header: 'Status', cell: ({ row }) => <StatusBadge status={row.original.entitled ? 'active' : row.original.status} /> },
-    { header: '', id: 'act', cell: ({ row }) => row.original.status !== 'ended' && <RemoveSub sub={row.original} /> },
+    { header: 'Source', accessorKey: 'source', meta: { sort: 'source' } },
+    { header: 'Access until', cell: ({ row }) => (row.original.source === 'membership' ? 'with membership' : formatDate(row.original.grace_ends_at, true)), meta: { sort: 'ends', csv: (s) => (s.source === 'membership' ? 'with membership' : s.grace_ends_at) } },
+    { header: 'In channel', cell: ({ row }) => (row.original.joined_at && !row.original.removed_at ? `since ${formatDate(row.original.joined_at)}` : row.original.telegram_user_id ? 'linked, not joined' : 'not linked'), meta: { csv: (s) => (s.joined_at && !s.removed_at ? `since ${s.joined_at}` : s.telegram_user_id ? 'linked, not joined' : 'not linked') } },
+    { header: 'Status', cell: ({ row }) => <StatusBadge status={row.original.entitled ? 'active' : row.original.status} />, meta: { sort: 'status', csv: (s) => (s.entitled ? 'active' : s.status) } },
+    { header: '', id: 'act', meta: { label: 'Actions' }, cell: ({ row }) => row.original.status !== 'ended' && <RemoveSub sub={row.original} /> },
   ]
   return (
     <Page title='Signal subscribers' description='Members get access free; guests buy it monthly. People are removed automatically when access ends.' actions={<AddSub />}>
-      <FilterBar>
-        <SearchInput value={q} onChange={setQ} placeholder='Name or phone' />
-        <SelectFilter value={source} onChange={setSource} placeholder='Source' options={opts('purchase', 'membership', 'manual')} />
-        <SelectFilter value={status} onChange={setStatus} placeholder='Status' options={opts('active', 'pending', 'ended')} />
-      </FilterBar>
-      <ResourceTable<Sub> queryKey='subscribers' path='/signals/subscribers' params={{ q, source, status }} columns={columns} />
+      <ResourceTable<Sub> queryKey='subscribers' path='/signals/subscribers' columns={columns} search={{ placeholder: 'Name or phone' }}
+        filters={[{ key: 'source', label: 'Source', options: opts('purchase', 'membership', 'manual') }, { key: 'status', label: 'Status', options: opts('active', 'pending', 'ended') }]} />
     </Page>
   )
 }

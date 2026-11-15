@@ -14,15 +14,7 @@
         <span class="text-xs m-muted">{{ $t['level1_active'] }} active · {{ $t['level1_count'] - $t['level1_active'] }} not active</span>
     </div>
     @if (count($t['level1']))
-        <ul class="mt-3 grid gap-2 sm:grid-cols-2">
-            @foreach ($t['level1'] as $p)
-                <li class="flex items-center gap-3 rounded-xl px-3 py-2.5 m-soft">
-                    <span class="grid size-9 place-items-center rounded-full text-sm font-bold text-white" style="background: var(--m-accent)">{{ mb_substr($p['name'], 0, 1) }}</span>
-                    <div class="min-w-0 flex-1"><p class="truncate text-sm font-medium">{{ $p['name'] }}</p><p class="text-xs m-muted">joined {{ \Illuminate\Support\Carbon::parse($p['joined'])->format('j M Y') }}</p></div>
-                    <span @class(['rounded-full px-2 py-0.5 text-[11px] font-semibold', 'bg-white/70 m-accent-text dark:bg-black/20' => $p['active'], 'm-muted' => ! $p['active']])>{{ $p['active'] ? 'active' : 'not active' }}</span>
-                </li>
-            @endforeach
-        </ul>
+        <div class="mt-3">@include('member.partials.table', ['table' => $table])</div>
     @else
         <div class="mt-3 grid place-items-center gap-2 rounded-xl p-8 text-center text-sm m-soft">{!! I::svg('user-plus', 28) !!}<p>No one yet. Share your link from the home screen.</p><a class="m-btn mt-1" href="{{ url('/account#referral') }}">Share my link</a></div>
     @endif

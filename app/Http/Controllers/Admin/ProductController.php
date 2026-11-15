@@ -10,6 +10,7 @@ use App\Models\Tag;
 use App\Pricing\ProfitCheck;
 use App\Support\Activity;
 use App\Support\Settings;
+use App\Support\TableQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,11 +25,10 @@ class ProductController extends Controller
             'q' => ['nullable', 'string', 'max:100'], 'status' => ['nullable', Rule::in(Product::STATUSES)],
             'category_id' => ['nullable', 'integer'], 'low_stock' => ['nullable', 'boolean'],
             'featured' => ['nullable', 'boolean'], 'members_only' => ['nullable', 'boolean'],
-            'sort' => ['nullable', Rule::in(['name', '-name', 'price', '-price', 'created_at', '-created_at'])],
+            'sort' => ['nullable', 'string', 'max:40'],
             'per_page' => ['nullable', 'integer', 'max:200'],
         ]);
         $low = Settings::int('catalog.low_stock');
-        $sort = (string) $request->input('sort', '-created_at');
 
         $page = Product::query()->with(['category:id,name', 'images', 'variants'])
             ->when($request->input('q'), fn ($q, $v) => $q->where(fn ($w) => $w->where('name', 'like', "%$v%")->orWhere('slug', 'like', "%$v%")))
@@ -39,7 +39,7 @@ class ProductController extends Controller
             ->when($request->boolean('low_stock'), fn ($q) => $q->where('stock_mode', Product::STOCK)->where(fn ($w) => $w
                 ->where(fn ($p) => $p->doesntHave('variants')->where('stock', '<=', $low))
                 ->orWhereHas('variants', fn ($v) => $v->where('is_active', true)->where('stock', '<=', $low))))
-            ->orderBy(ltrim($sort, '-'), str_starts_with($sort, '-') ? 'desc' : 'asc')
+            ->tap(fn ($q) => TableQuery::sort($q, $request, ['name' => 'name', 'price' => 'price', 'status' => 'status', 'stock' => 'stock', 'created_at' => 'created_at', 'id' => 'id'], '-created_at'))
             ->paginate((int) $request->input('per_page', 25));
 
         $page->getCollection()->transform(fn (Product $p) => $this->present($p));

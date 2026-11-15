@@ -8,32 +8,30 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { FormDialog } from '@/components/km/form-dialog'
 import { MoneyInput } from '@/components/km/money-input'
 import { Page } from '@/components/km/page'
+import { DataTable, type DataColumn } from '@/components/km/data-table'
 import { ResourceTable, type ResourceColumn } from '@/components/km/resource-table'
 import { StatusBadge } from '@/components/km/status-badge'
 import { type Category, type Courier, type Zone } from './types'
 
 /* ---------- Categories ---------- */
 
+const categoryColumns: DataColumn<Category>[] = [
+  { header: 'Name', accessorKey: 'name', meta: { sort: 'name' } },
+  { header: 'Slug', accessorKey: 'slug', cell: ({ row }) => <span className='text-muted-foreground'>{row.original.slug}</span>, meta: { sort: 'slug' } },
+  { header: 'Products', accessorKey: 'products_count', meta: { sort: 'products_count', align: 'end' } },
+  { header: 'Active', cell: ({ row }) => (row.original.is_active ? 'Yes' : 'No'), meta: { sort: 'is_active', csv: (c) => (c.is_active ? 'yes' : 'no') } },
+  { header: '', id: 'edit', meta: { label: 'Edit' }, cell: ({ row }) => <div className='text-end'><CategoryDialog category={row.original} /></div> },
+]
+
 export function CategoriesPage() {
   const list = useQuery({ queryKey: ['categories'], queryFn: async () => (await api.get<{ data: Category[] }>('/categories')).data.data })
   return (
     <Page title='Categories' actions={<CategoryDialog />}>
-      <Table>
-        <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Slug</TableHead><TableHead>Products</TableHead><TableHead>Active</TableHead><TableHead /></TableRow></TableHeader>
-        <TableBody>
-          {list.data?.map((c) => (
-            <TableRow key={c.id}>
-              <TableCell>{c.name}</TableCell><TableCell className='text-muted-foreground'>{c.slug}</TableCell>
-              <TableCell>{c.products_count}</TableCell><TableCell>{c.is_active ? 'Yes' : 'No'}</TableCell>
-              <TableCell className='text-end'><CategoryDialog category={c} /></TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <DataTable<Category> id='categories' rows={list.data ?? []} loading={list.isLoading} columns={categoryColumns} search={{ placeholder: 'Category name' }}
+        filters={[{ key: 'is_active', label: 'Active', options: [{ value: 'true', label: 'On' }, { value: 'false', label: 'Off' }] }]} />
     </Page>
   )
 }
@@ -61,20 +59,21 @@ type Coupon = { id: number; code: string; type: 'percent' | 'fixed'; value: numb
   members_only: boolean; is_active: boolean; note: string | null }
 
 const couponColumns: ResourceColumn<Coupon>[] = [
-  { header: 'Code', cell: ({ row }) => <span className='font-mono'>{row.original.code}</span> },
-  { header: 'Discount', cell: ({ row }) => (row.original.type === 'percent' ? formatBps(row.original.value) : formatMoney(row.original.value)) },
-  { header: 'Min. order', cell: ({ row }) => formatMoney(row.original.min_subtotal) },
-  { header: 'Used', cell: ({ row }) => `${row.original.used_count}${row.original.max_uses ? ` / ${row.original.max_uses}` : ''}` },
-  { header: 'Ends', cell: ({ row }) => formatDate(row.original.ends_at) },
-  { header: 'Members only', cell: ({ row }) => (row.original.members_only ? 'Yes' : '') },
-  { header: 'Status', cell: ({ row }) => <StatusBadge status={row.original.is_active ? 'active' : 'archived'} /> },
-  { header: '', id: 'edit', cell: ({ row }) => <CouponDialog coupon={row.original} /> },
+  { header: 'Code', cell: ({ row }) => <span className='font-mono'>{row.original.code}</span>, meta: { sort: 'code', csv: (c) => c.code } },
+  { header: 'Discount', cell: ({ row }) => (row.original.type === 'percent' ? formatBps(row.original.value) : formatMoney(row.original.value)), meta: { sort: 'value', csv: (c) => (c.type === 'percent' ? `${c.value / 100}%` : c.value / 100) } },
+  { header: 'Min. order', cell: ({ row }) => formatMoney(row.original.min_subtotal), meta: { align: 'end', csv: (c) => c.min_subtotal / 100 } },
+  { header: 'Used', cell: ({ row }) => `${row.original.used_count}${row.original.max_uses ? ` / ${row.original.max_uses}` : ''}`, meta: { sort: 'used', align: 'end', csv: (c) => c.used_count } },
+  { header: 'Ends', cell: ({ row }) => formatDate(row.original.ends_at), meta: { sort: 'ends', csv: (c) => c.ends_at } },
+  { header: 'Members only', cell: ({ row }) => (row.original.members_only ? 'Yes' : ''), meta: { csv: (c) => (c.members_only ? 'yes' : '') } },
+  { header: 'Status', cell: ({ row }) => <StatusBadge status={row.original.is_active ? 'active' : 'archived'} />, meta: { csv: (c) => (c.is_active ? 'active' : 'off') } },
+  { header: '', id: 'edit', meta: { label: 'Edit' }, cell: ({ row }) => <CouponDialog coupon={row.original} /> },
 ]
 
 export function CouponsPage() {
   return (
     <Page title='Coupons' description='Applied after the member discount, on goods only (not shipping).' actions={<CouponDialog />}>
-      <ResourceTable<Coupon> queryKey='coupons' path='/coupons' columns={couponColumns} />
+      <ResourceTable<Coupon> queryKey='coupons' path='/coupons' columns={couponColumns} search={{ placeholder: 'Coupon code' }}
+        filters={[{ key: 'active', label: 'Status', options: [{ value: '1', label: 'Active' }, { value: '0', label: 'Off' }] }]} />
     </Page>
   )
 }
@@ -121,39 +120,33 @@ function CouponDialog({ coupon }: { coupon?: Coupon }) {
 
 /* ---------- Shipping ---------- */
 
+const zoneColumns: DataColumn<Zone>[] = [
+  { header: 'Zone', accessorKey: 'name', cell: ({ row }) => <span>{row.original.name}{row.original.is_default && <span className='ms-2 text-xs text-muted-foreground'>(all other cities)</span>}{!row.original.is_active && ' (off)'}</span>, meta: { sort: 'name' } },
+  { header: 'Cities', cell: ({ row }) => <span className='block max-w-xs truncate'>{row.original.cities.join(', ')}</span>, meta: { csv: (z) => z.cities.join(', ') } },
+  { header: 'First kg', cell: ({ row }) => formatMoney(row.original.base_fee), meta: { sort: 'base_fee', align: 'end', csv: (z) => z.base_fee / 100 } },
+  { header: 'Each extra kg', cell: ({ row }) => formatMoney(row.original.per_kg_fee), meta: { sort: 'per_kg_fee', align: 'end', csv: (z) => z.per_kg_fee / 100 } },
+  { header: 'Delivery', cell: ({ row }) => `${row.original.eta_days_min ?? '?'}–${row.original.eta_days_max ?? '?'} days`, meta: { sort: 'eta_days_max', csv: (z) => `${z.eta_days_min ?? ''}-${z.eta_days_max ?? ''}` } },
+  { header: '', id: 'edit', meta: { label: 'Edit' }, cell: ({ row }) => <div className='text-end'><ZoneDialog zone={row.original} /></div> },
+]
+
+const courierColumns: DataColumn<Courier>[] = [
+  { header: 'Courier', accessorKey: 'name', cell: ({ row }) => `${row.original.name}${row.original.is_active ? '' : ' (off)'}`, meta: { sort: 'name' } },
+  { header: 'Phone', accessorKey: 'phone' },
+  { header: 'Tracking link', accessorKey: 'tracking_url', cell: ({ row }) => <span className='block max-w-xs truncate text-xs'>{row.original.tracking_url}</span> },
+  { header: '', id: 'edit', meta: { label: 'Edit' }, cell: ({ row }) => <div className='text-end'><CourierDialog courier={row.original} /></div> },
+]
+
 export function ShippingPage() {
   const zones = useQuery({ queryKey: ['zones'], queryFn: async () => (await api.get<{ data: Zone[] }>('/shipping-zones')).data.data })
   const couriers = useQuery({ queryKey: ['couriers'], queryFn: async () => (await api.get<{ data: Courier[] }>('/couriers')).data.data })
   return (
     <Page title='Shipping' description='Price per city/zone + weight. Members ship free over the threshold in Settings.'>
       <div className='mb-2 flex items-center justify-between'><h2 className='font-semibold'>Zones</h2><ZoneDialog /></div>
-      <Table className='mb-8'>
-        <TableHeader><TableRow><TableHead>Zone</TableHead><TableHead>Cities</TableHead><TableHead>First kg</TableHead><TableHead>Each extra kg</TableHead><TableHead>Delivery</TableHead><TableHead /></TableRow></TableHeader>
-        <TableBody>
-          {zones.data?.map((z) => (
-            <TableRow key={z.id}>
-              <TableCell>{z.name}{z.is_default && <span className='ms-2 text-xs text-muted-foreground'>(all other cities)</span>}{!z.is_active && ' (off)'}</TableCell>
-              <TableCell className='max-w-xs truncate'>{z.cities.join(', ')}</TableCell>
-              <TableCell>{formatMoney(z.base_fee)}</TableCell><TableCell>{formatMoney(z.per_kg_fee)}</TableCell>
-              <TableCell>{z.eta_days_min ?? '?'}–{z.eta_days_max ?? '?'} days</TableCell>
-              <TableCell className='text-end'><ZoneDialog zone={z} /></TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <div className='mb-8'>
+        <DataTable<Zone> id='zones' rows={zones.data ?? []} loading={zones.isLoading} columns={zoneColumns} search={{ placeholder: 'Zone or city' }} />
+      </div>
       <div className='mb-2 flex items-center justify-between'><h2 className='font-semibold'>Couriers</h2><CourierDialog /></div>
-      <Table>
-        <TableHeader><TableRow><TableHead>Courier</TableHead><TableHead>Phone</TableHead><TableHead>Tracking link</TableHead><TableHead /></TableRow></TableHeader>
-        <TableBody>
-          {couriers.data?.map((c) => (
-            <TableRow key={c.id}>
-              <TableCell>{c.name}{!c.is_active && ' (off)'}</TableCell><TableCell>{c.phone}</TableCell>
-              <TableCell className='max-w-xs truncate text-xs'>{c.tracking_url}</TableCell>
-              <TableCell className='text-end'><CourierDialog courier={c} /></TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <DataTable<Courier> id='couriers' rows={couriers.data ?? []} loading={couriers.isLoading} columns={courierColumns} search={{ placeholder: 'Courier' }} />
     </Page>
   )
 }

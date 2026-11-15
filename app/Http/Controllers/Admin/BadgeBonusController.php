@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Badges\BonusCalculator;
 use App\Badges\BonusRun;
 use App\Badges\ProfitGuard;
+use App\Demo\Demo;
 use App\Http\Controllers\Controller;
 use App\Models\BadgeBonus;
 use App\Models\BadgeBonusRun;
@@ -21,11 +22,12 @@ class BadgeBonusController extends Controller
     /** Everything for the Badge bonus page. Real money only (demo members are paid from demo money). */
     public function show(): JsonResponse
     {
+        $demo = Demo::dataset() === 'demo'; // the admin's "show demo data" switch, like the dashboard
         $last = BonusRun::lastMonth();
-        $lastRun = $this->runs->runFor($last);
-        $preview = $lastRun ? null : $this->calculator->plan($last)['pools'][0] ?? null;
+        $lastRun = $this->runs->runFor($last, $demo);
+        $preview = $lastRun ? null : $this->calculator->plan($last)['pools'][(int) $demo] ?? null;
         $now = now();
-        $forecast = $this->calculator->plan($now->copy(), null, $now)['pools'][0] ?? null;
+        $forecast = $this->calculator->plan($now->copy(), null, $now)['pools'][(int) $demo] ?? null;
         $lastRevenue = $lastRun ? $lastRun->revenue : ($preview['revenue'] ?? 0);
 
         return response()->json(['data' => [
@@ -49,7 +51,8 @@ class BadgeBonusController extends Controller
                 'budget_estimate' => intdiv($lastRevenue * Settings::int('bonus.budget'), 10_000),
                 'skipped' => $this->runs->runFor($now)?->status === BadgeBonusRun::SKIPPED,
             ],
-            'history' => BadgeBonusRun::query()->where('is_demo', false)->latest('month')->limit(24)->get()
+            'demo' => $demo,
+            'history' => BadgeBonusRun::query()->where('is_demo', $demo)->latest('month')->limit(24)->get()
                 ->map(fn (BadgeBonusRun $r) => $this->runRow($r))->values(),
         ]]);
     }
@@ -58,7 +61,8 @@ class BadgeBonusController extends Controller
     public function month(string $month): JsonResponse
     {
         $m = BonusRun::monthOf($month);
-        $run = $this->runs->runFor($m);
+        $demo = Demo::dataset() === 'demo';
+        $run = $this->runs->runFor($m, $demo);
         if ($run) {
             return response()->json(['data' => ['run' => $this->runRow($run), 'lines' => BadgeBonus::query()
                 ->with(['user:id,first_name,last_name,phone', 'badge:id,name'])->where('run_id', $run->id)->orderByDesc('amount')->limit(2000)->get()
@@ -67,7 +71,7 @@ class BadgeBonusController extends Controller
                     'limited_by' => $b->limited_by, 'team_active' => $b->team_active, 'team_money' => $b->team_money,
                     'status' => $b->on_hold ? 'on_hold' : $b->status])->values()]]);
         }
-        $pool = $this->calculator->plan($m)['pools'][0] ?? null;
+        $pool = $this->calculator->plan($m)['pools'][(int) $demo] ?? null;
 
         return response()->json(['data' => ['run' => null, 'preview' => $pool ? $this->pool($pool) : null]]);
     }

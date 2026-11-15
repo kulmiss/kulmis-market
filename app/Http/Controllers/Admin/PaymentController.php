@@ -9,6 +9,7 @@ use App\Orders\OrderService;
 use App\Payments\PaymentService;
 use App\Payments\Receipt;
 use App\Support\Activity;
+use App\Support\TableQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -33,7 +34,7 @@ class PaymentController extends Controller
             ->when($request->input('order_id'), fn ($q, $v) => $q->where('payable_type', (new Order)->getMorphClass())->where('payable_id', $v))
             ->when($request->input('q'), fn ($q, $v) => $q->where(fn ($w) => $w->where('tx_ref', 'like', "%$v%")
                 ->orWhere('provider_reference', 'like', "%$v%")->orWhere('proof_reference', 'like', "%$v%")))
-            ->latest('id')->paginate((int) $request->input('per_page', 25));
+            ->tap(fn ($q) => TableQuery::sort($q, $request, ['amount' => 'amount', 'status' => 'status', 'method' => 'provider', 'created' => 'created_at']))->paginate((int) $request->input('per_page', 25));
 
         return response()->json($page);
     }

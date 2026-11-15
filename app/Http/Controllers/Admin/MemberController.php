@@ -8,6 +8,7 @@ use App\Membership\MembershipService;
 use App\Models\MembershipPurchase;
 use App\Models\User;
 use App\Support\Activity;
+use App\Support\TableQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -27,7 +28,7 @@ class MemberController extends Controller
             ->when($request->input('membership') === 'none', fn ($q) => $q->doesntHave('membership'))
             ->when(in_array($request->input('membership'), ['active', 'grace', 'expired'], true),
                 fn ($q) => $q->whereHas('membership', fn ($m) => $m->where('status', $request->input('membership'))))
-            ->latest('id')->paginate((int) $request->input('per_page', 25));
+            ->tap(fn ($q) => TableQuery::sort($q, $request, ['name' => 'first_name', 'phone' => 'phone', 'code' => 'referral_code', 'joined' => 'created_at', 'id' => 'id']))->paginate((int) $request->input('per_page', 25));
 
         return response()->json($page);
     }

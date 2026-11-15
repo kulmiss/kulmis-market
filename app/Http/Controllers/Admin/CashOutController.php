@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Ledger\Wallet;
 use App\Models\PayoutAccount;
 use App\Models\PayoutRequest;
+use App\Support\TableQuery;
 use App\Wallet\CashOuts;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,7 +24,10 @@ class CashOutController extends Controller
         $page = PayoutRequest::query()->with('user:id,first_name,last_name,phone')
             ->when($request->input('status'), fn ($q, $v) => $q->where('status', $v))
             ->when($request->boolean('overdue'), fn ($q) => $q->whereIn('status', ['requested', 'on_hold'])->where('due_at', '<', now()))
-            ->orderByRaw("CASE WHEN status IN ('requested','on_hold') THEN 0 ELSE 1 END")->orderBy('due_at')
+            ->when($request->input('q'), fn ($q, $v) => $q->where(fn ($w) => $w->where('payout_reference', 'like', "%$v%")
+                ->orWhereHas('user', fn ($u) => $u->where('first_name', 'like', "%$v%")->orWhere('last_name', 'like', "%$v%")->orWhere('phone', 'like', "%$v%"))))
+            ->when(! $request->query('sort'), fn ($q) => $q->orderByRaw("CASE WHEN status IN ('requested','on_hold') THEN 0 ELSE 1 END")->orderBy('due_at'))
+            ->when($request->query('sort'), fn ($q) => TableQuery::sort($q, $request, ['amount' => 'amount', 'status' => 'status', 'due' => 'due_at', 'requested' => 'created_at']))
             ->paginate(min(200, (int) $request->input('per_page', 50)));
         $page->getCollection()->each(fn (PayoutRequest $r) => $r->setAttribute('account', $r->maskedAccount()));
 

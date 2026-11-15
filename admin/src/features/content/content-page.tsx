@@ -9,14 +9,29 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { FormDialog } from '@/components/km/form-dialog'
+import { DataTable, type DataColumn } from '@/components/km/data-table'
 import { Page } from '@/components/km/page'
 
 type PageRow = { id: number; slug: string; title: string; body: string; seo_description: string | null; is_published: boolean; in_footer: boolean; position: number; updated_at: string }
 type BannerRow = { id: number; placement: string; title: string; text: string | null; link_url: string | null; link_text: string | null; starts_at: string | null; ends_at: string | null; is_active: boolean; position: number }
+
+const pageColumns: DataColumn<PageRow>[] = [
+  { header: 'Title', accessorKey: 'title', cell: ({ row }) => <span>{row.original.title}{!row.original.is_published && <span className='ms-2 text-xs text-muted-foreground'>(hidden)</span>}</span>, meta: { sort: 'title' } },
+  { header: 'Address', accessorKey: 'slug', cell: ({ row }) => <a className='inline-flex items-center gap-1 underline' href={`/p/${row.original.slug}`} target='_blank' rel='noreferrer'>/p/{row.original.slug} <ExternalLink className='size-3' /></a>, meta: { sort: 'slug' } },
+  { header: 'Footer', cell: ({ row }) => (row.original.in_footer ? 'Yes' : ''), meta: { csv: (p) => (p.in_footer ? 'yes' : '') } },
+  { header: 'Updated', cell: ({ row }) => formatDate(row.original.updated_at), meta: { sort: 'updated_at', csv: (p) => p.updated_at } },
+  { header: '', id: 'edit', meta: { label: 'Edit' }, cell: ({ row }) => <div className='text-end'><PageDialog page={row.original} /></div> },
+]
+
+const bannerColumns: DataColumn<BannerRow>[] = [
+  { header: 'Where', accessorKey: 'placement', cell: ({ row }) => row.original.placement.replace('_', ' '), meta: { sort: 'placement' } },
+  { header: 'Title', accessorKey: 'title', meta: { sort: 'title' } },
+  { header: 'Dates', cell: ({ row }) => `${formatDate(row.original.starts_at)} → ${formatDate(row.original.ends_at)}`, meta: { sort: 'starts_at', csv: (b) => `${b.starts_at ?? ''} → ${b.ends_at ?? ''}` } },
+  { header: 'Active', cell: ({ row }) => (row.original.is_active ? 'Yes' : 'No'), meta: { csv: (b) => (b.is_active ? 'yes' : 'no') } },
+]
 
 export function ContentPage() {
   const pages = useQuery({ queryKey: ['pages'], queryFn: async () => (await api.get<{ data: PageRow[] }>('/pages')).data.data })
@@ -28,34 +43,15 @@ export function ContentPage() {
         <TabsList><TabsTrigger value='pages'>Pages</TabsTrigger><TabsTrigger value='banners'>Banners</TabsTrigger></TabsList>
         <TabsContent value='pages' className='mt-4'>
           <div className='mb-3 flex justify-end'><PageDialog /></div>
-          <Table>
-            <TableHeader><TableRow><TableHead>Title</TableHead><TableHead>Address</TableHead><TableHead>Footer</TableHead><TableHead>Updated</TableHead><TableHead /></TableRow></TableHeader>
-            <TableBody>
-              {pages.data?.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell>{p.title}{!p.is_published && <span className='ms-2 text-xs text-muted-foreground'>(hidden)</span>}</TableCell>
-                  <TableCell><a className='inline-flex items-center gap-1 underline' href={`/p/${p.slug}`} target='_blank' rel='noreferrer'>/p/{p.slug} <ExternalLink className='size-3' /></a></TableCell>
-                  <TableCell>{p.in_footer ? 'Yes' : ''}</TableCell><TableCell>{formatDate(p.updated_at)}</TableCell>
-                  <TableCell className='text-end'><PageDialog page={p} /></TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <DataTable<PageRow> id='pages' rows={pages.data ?? []} loading={pages.isLoading} columns={pageColumns} search={{ placeholder: 'Page title' }} />
         </TabsContent>
         <TabsContent value='banners' className='mt-4'>
           <div className='mb-3 flex justify-end'><BannerDialog /></div>
-          <Table>
-            <TableHeader><TableRow><TableHead>Where</TableHead><TableHead>Title</TableHead><TableHead>Dates</TableHead><TableHead>Active</TableHead><TableHead /></TableRow></TableHeader>
-            <TableBody>
-              {banners.data?.map((b) => (
-                <TableRow key={b.id}>
-                  <TableCell>{b.placement.replace('_', ' ')}</TableCell><TableCell>{b.title}</TableCell>
-                  <TableCell>{formatDate(b.starts_at)} → {formatDate(b.ends_at)}</TableCell><TableCell>{b.is_active ? 'Yes' : 'No'}</TableCell>
-                  <TableCell className='text-end'><BannerDialog banner={b} /><Button size='icon' variant='ghost' onClick={() => del.mutate({ path: `/banners/${b.id}` })}><Trash2 /></Button></TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <DataTable<BannerRow> id='banners' rows={banners.data ?? []} loading={banners.isLoading} search={{ placeholder: 'Banner title' }}
+            filters={[{ key: 'is_active', label: 'Active', options: [{ value: 'true', label: 'On' }, { value: 'false', label: 'Off' }] }]}
+            columns={[...bannerColumns, { header: '', id: 'edit', meta: { label: 'Edit' }, cell: ({ row }) => (
+              <div className='text-end'><BannerDialog banner={row.original} /><Button size='icon' variant='ghost' aria-label={`Delete ${row.original.title}`} onClick={() => del.mutate({ path: `/banners/${row.original.id}` })}><Trash2 /></Button></div>
+            ) }]} />
         </TabsContent>
       </Tabs>
     </Page>

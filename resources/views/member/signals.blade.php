@@ -15,13 +15,6 @@
 </section>
 <section class="m-card mt-3">
     <h2 class="font-semibold">Recent results</h2>
-    @forelse ($signals as $s)
-        <div class="mt-3 flex items-center justify-between text-sm">
-            <span><b>{{ $s->pair }}</b> <span class="uppercase m-muted">{{ $s->direction }}</span> · {{ $s->posted_at?->timezone(config('app.timezone'))->format('j M') }}</span>
-            <span @class(['rounded-full px-2 py-0.5 text-xs font-semibold capitalize', 'm-soft m-accent-text' => $s->result === 'win', 'bg-red-500/10 text-red-600' => $s->result === 'loss', 'bg-black/5 dark:bg-white/10' => ! in_array($s->result, ['win', 'loss'], true)])>{{ $s->result ?? 'open' }}@if ($s->result_value) · {{ $s->result_value }}@endif</span>
-        </div>
-    @empty
-        <p class="mt-3 text-sm m-muted">No signals yet.</p>
-    @endforelse
+    <div class="mt-3">@include('member.partials.table', ['table' => $table])</div>
 </section>
 @endsection

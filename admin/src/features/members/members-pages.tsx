@@ -9,8 +9,8 @@ import { useAuthStore } from '@/stores/auth-store'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { FilterBar, SearchInput, SelectFilter, opts } from '@/components/km/filter-bar'
+import { opts } from '@/components/km/filter-bar'
+import { DataTable, type DataColumn } from '@/components/km/data-table'
 import { Page } from '@/components/km/page'
 import { ResourceTable, type ResourceColumn } from '@/components/km/resource-table'
 import { StatusBadge } from '@/components/km/status-badge'
@@ -23,26 +23,32 @@ export type Member = {
 }
 
 const columns: ResourceColumn<Member>[] = [
-  { header: 'Name', cell: ({ row }) => `${row.original.first_name} ${row.original.last_name}` },
-  { header: 'Phone', accessorKey: 'phone' },
-  { header: 'Code', cell: ({ row }) => <span className='font-mono text-xs'>{row.original.referral_code}</span> },
-  { header: 'Membership', cell: ({ row }) => <StatusBadge status={row.original.membership?.status ?? 'none'} /> },
-  { header: 'Renews', cell: ({ row }) => formatDate(row.original.membership?.current_period_end) },
-  { header: 'Joined', cell: ({ row }) => formatDate(row.original.created_at) },
-  { header: 'Account', cell: ({ row }) => row.original.status === 'active' ? '' : <StatusBadge status={row.original.status} /> },
+  { header: 'Name', cell: ({ row }) => `${row.original.first_name} ${row.original.last_name}`, meta: { sort: 'name', csv: (m) => `${m.first_name} ${m.last_name}` } },
+  { header: 'Phone', accessorKey: 'phone', meta: { sort: 'phone' } },
+  { header: 'Email', accessorKey: 'email', meta: { hidden: true } },
+  { header: 'Code', cell: ({ row }) => <span className='font-mono text-xs'>{row.original.referral_code}</span>, meta: { sort: 'code', csv: (m) => m.referral_code } },
+  { header: 'Membership', cell: ({ row }) => <StatusBadge status={row.original.membership?.status ?? 'none'} />, meta: { csv: (m) => m.membership?.status ?? 'none' } },
+  { header: 'Renews', cell: ({ row }) => formatDate(row.original.membership?.current_period_end), meta: { csv: (m) => m.membership?.current_period_end ?? '' } },
+  { header: 'Joined', cell: ({ row }) => formatDate(row.original.created_at), meta: { sort: 'joined', csv: (m) => m.created_at } },
+  { header: 'Account', cell: ({ row }) => row.original.status === 'active' ? '' : <StatusBadge status={row.original.status} />, meta: { csv: (m) => m.status } },
+]
+
+type Purchase = { id: number; amount: number; wallet_used: number; status: string; period_start: string | null; period_end: string | null; paid_at: string | null }
+
+const purchaseColumns: DataColumn<Purchase>[] = [
+  { header: 'Paid', cell: ({ row }) => formatDate(row.original.paid_at, true), meta: { sort: 'paid_at', csv: (p) => p.paid_at } },
+  { header: 'Period', cell: ({ row }) => `${formatDate(row.original.period_start)} → ${formatDate(row.original.period_end)}`, meta: { csv: (p) => `${p.period_start ?? ''} → ${p.period_end ?? ''}` } },
+  { header: 'Amount', cell: ({ row }) => formatMoney(row.original.amount), meta: { sort: 'amount', align: 'end', csv: (p) => p.amount / 100 } },
+  { header: 'From wallet', cell: ({ row }) => formatMoney(row.original.wallet_used), meta: { sort: 'wallet_used', align: 'end', csv: (p) => p.wallet_used / 100 } },
+  { header: 'Status', cell: ({ row }) => <StatusBadge status={row.original.status} />, meta: { sort: 'status', csv: (p) => p.status } },
 ]
 
 export function MembersPage() {
   const navigate = useNavigate()
-  const [q, setQ] = useState('')
-  const [membership, setMembership] = useState('all')
   return (
     <Page title='Members' description='Customers and members. Super Admin sees everything.'>
-      <FilterBar>
-        <SearchInput value={q} onChange={setQ} placeholder='Name, phone or email' />
-        <SelectFilter value={membership} onChange={setMembership} placeholder='Membership' options={opts('active', 'grace', 'expired', 'none')} />
-      </FilterBar>
-      <ResourceTable<Member> queryKey='members' path='/members' params={{ q, membership }} columns={columns}
+      <ResourceTable<Member> queryKey='members' path='/members' columns={columns} search={{ placeholder: 'Name, phone or email' }}
+        filters={[{ key: 'membership', label: 'Membership', options: opts('active', 'grace', 'expired', 'none') }]}
         onRowClick={(m) => navigate({ to: '/members/$id', params: { id: String(m.id) } })} />
     </Page>
   )
@@ -50,7 +56,7 @@ export function MembersPage() {
 
 type Detail = {
   user: Member
-  purchases: { id: number; amount: number; wallet_used: number; status: string; period_start: string | null; period_end: string | null; paid_at: string | null }[]
+  purchases: Purchase[]
   wallet: { pending: number; available: number; payout: number }
 }
 
@@ -142,19 +148,8 @@ export function MemberDetail({ id }: { id: string }) {
         <Card className='lg:col-span-3'>
           <CardHeader><CardTitle className='text-base'>Membership payments</CardTitle></CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader><TableRow><TableHead>Paid</TableHead><TableHead>Period</TableHead><TableHead>Amount</TableHead><TableHead>From wallet</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
-              <TableBody>
-                {d.purchases.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell>{formatDate(p.paid_at, true)}</TableCell>
-                    <TableCell>{formatDate(p.period_start)} → {formatDate(p.period_end)}</TableCell>
-                    <TableCell>{formatMoney(p.amount)}</TableCell><TableCell>{formatMoney(p.wallet_used)}</TableCell>
-                    <TableCell><StatusBadge status={p.status} /></TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <DataTable<Purchase> id='member-purchases' rows={d.purchases} columns={purchaseColumns} search={false} defaultPageSize={10}
+              filters={[{ key: 'status', label: 'Status', options: opts('paid', 'pending', 'refunded', 'cancelled') }]} empty='No membership payments yet.' />
           </CardContent>
         </Card>
       </div>

@@ -61,7 +61,7 @@ class MemberDashboardTest extends ReferralTestCase
 
         $team = $this->get('/account/team')->assertOk()->assertSee('Lensa A.')->assertSee('not active')->assertDontSee('Grandkid');
         $team->assertSee('Level 2');
-        $this->get('/account/earnings')->assertOk()->assertSee('membership · level 1', false)->assertSee('Last 12 months');
+        $this->get('/account/earnings')->assertOk()->assertSee('Membership')->assertSee('data-col="level"', false)->assertSee('Last 12 months');
     }
 
     public function test_wallet_page_cashes_out_and_signals_page_opens_telegram(): void

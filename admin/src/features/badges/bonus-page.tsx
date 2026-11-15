@@ -8,8 +8,8 @@ import { formatBps, formatMoney } from '@/lib/money'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { DataTable, type DataColumn } from '@/components/km/data-table'
 import { Page } from '@/components/km/page'
 import { PageSkeleton } from '@/components/km/page-skeleton'
 
@@ -21,12 +21,31 @@ type Data = {
   settings: { budget: number; team_limit: number; pending_days: number }
   ladder: { id: number; name: string; color: string; threshold: number; monthly_bonus: number }[]
   first_payout_done: boolean
+  demo: boolean
   last_month: { month: string; label: string; run: Run | null; preview: Pool | null }
   forecast: { month: string; label: string; members: number; wanted: number; money_so_far: number; budget_so_far: number; budget_estimate: number; skipped: boolean }
   history: Run[]
 }
 
 const limitText: Record<string, string> = { team: 'Team limit', budget: 'Budget' }
+
+const lineColumns: DataColumn<Line>[] = [
+  { header: 'Member', accessorKey: 'name', meta: { sort: 'name' }, cell: ({ row }) => <Link to='/members/$id' params={{ id: String(row.original.user_id) }} className='hover:underline' onClick={(e) => e.stopPropagation()}>{row.original.name}</Link> },
+  { header: 'Badge', accessorKey: 'badge', meta: { sort: 'badge' }, cell: ({ row }) => <span>{row.original.badge}{row.original.kind === 'one_time' && <span className='text-xs text-muted-foreground'> (one time)</span>}</span> },
+  { header: 'Bonus', meta: { sort: 'amount', align: 'end', csv: (l) => l.amount / 100 }, cell: ({ row }) => <span>{formatMoney(row.original.amount)}{row.original.amount < row.original.wanted && <span className='block text-xs text-muted-foreground line-through'>{formatMoney(row.original.wanted)}</span>}</span> },
+  { header: 'Limited by', meta: { sort: 'limited_by', csv: (l) => (l.limited_by ? limitText[l.limited_by] : '') }, cell: ({ row }) => (row.original.limited_by ? limitText[row.original.limited_by] : '—') },
+  { header: 'Active team', accessorKey: 'team_active', meta: { sort: 'team_active', align: 'end' } },
+  { header: 'Team paid', meta: { sort: 'team_money', align: 'end', csv: (l) => l.team_money / 100 }, cell: ({ row }) => formatMoney(row.original.team_money) },
+]
+
+const historyColumns: DataColumn<Run>[] = [
+  { header: 'Month', accessorKey: 'label', meta: { sort: 'month' } },
+  { header: 'What happened', meta: { sort: 'status', csv: (r) => r.status }, cell: ({ row }) => (row.original.status === 'paid' ? (row.original.adjusted ? 'Paid (adjusted to the budget)' : 'Paid') : `Skipped${row.original.note ? `: ${row.original.note}` : ''}`) },
+  { header: 'Membership money', meta: { sort: 'revenue', align: 'end', csv: (r) => r.revenue / 100 }, cell: ({ row }) => formatMoney(row.original.revenue) },
+  { header: 'Budget', meta: { sort: 'budget', align: 'end', csv: (r) => r.budget / 100 }, cell: ({ row }) => formatMoney(row.original.budget) },
+  { header: 'Paid', meta: { sort: 'paid', align: 'end', csv: (r) => r.paid / 100 }, cell: ({ row }) => formatMoney(row.original.paid) },
+  { header: 'Members', accessorKey: 'members', meta: { sort: 'members', align: 'end' } },
+]
 
 /** Super Admin: is the shop safe, what goes out this month, pay now or skip, and every month so far. */
 export function BonusPage() {
@@ -47,6 +66,7 @@ export function BonusPage() {
 
   return (
     <Page title='Badge bonus' description='On the 1st of each month, members with a team badge (Bronze to Diamond) get a bonus for the month that ended. Safety limits keep you in profit.'>
+      {d.demo && <p className='mb-4 rounded-md bg-amber-500/10 p-3 text-sm'>You are looking at <b>demo</b> members and demo money ("Show demo data" is on). Real members are paid from real money only.</p>}
       <div className='grid grid-cols-1 gap-4 lg:grid-cols-3'>
         {/* Safety */}
         <Card>
@@ -141,46 +161,21 @@ export function BonusPage() {
       {/* Members of last month */}
       <Card className='mt-4'>
         <CardHeader className='pb-2'><CardTitle className='text-base'>{lm.run ? `Paid for ${lm.label}` : `Would be paid for ${lm.label}`} ({lines.length})</CardTitle></CardHeader>
-        <CardContent className='overflow-x-auto'>
-          <Table>
-            <TableHeader><TableRow><TableHead>Member</TableHead><TableHead>Badge</TableHead><TableHead className='text-end'>Bonus</TableHead><TableHead>Limited by</TableHead><TableHead className='text-end'>Active team</TableHead><TableHead className='text-end'>Team paid</TableHead></TableRow></TableHeader>
-            <TableBody>
-              {lines.length === 0 && <TableRow><TableCell colSpan={6} className='py-6 text-center text-muted-foreground'>Nobody this month.</TableCell></TableRow>}
-              {lines.map((l) => (
-                <TableRow key={`${l.user_id}-${l.badge}-${l.kind}`}>
-                  <TableCell><Link to='/members/$id' params={{ id: String(l.user_id) }} className='hover:underline'>{l.name}</Link></TableCell>
-                  <TableCell>{l.badge}{l.kind === 'one_time' && <span className='text-xs text-muted-foreground'> (one time)</span>}</TableCell>
-                  <TableCell className='text-end tabular-nums'>{formatMoney(l.amount)}{l.amount < l.wanted && <div className='text-xs text-muted-foreground line-through'>{formatMoney(l.wanted)}</div>}</TableCell>
-                  <TableCell>{l.limited_by ? limitText[l.limited_by] : '—'}</TableCell>
-                  <TableCell className='text-end tabular-nums'>{l.team_active}</TableCell>
-                  <TableCell className='text-end tabular-nums'>{formatMoney(l.team_money)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <CardContent>
+          <DataTable<Line> id='bonus-lines' rows={lines} loading={!!lm.run && last.isLoading} rowId={(l) => `${l.user_id}-${l.badge}-${l.kind}`}
+            search={{ placeholder: 'Member or badge' }} defaultSort='-amount' empty='Nobody this month.' exportName={`badge-bonus-${lm.month}`}
+            filters={[{ key: 'badge', label: 'Badge', options: [...new Set(lines.map((l) => l.badge))].map((b) => ({ value: b, label: b })) }, { key: 'limited_by', label: 'Limited by', options: [{ value: 'team', label: 'Team limit' }, { value: 'budget', label: 'Budget' }] }]}
+            columns={lineColumns} />
         </CardContent>
       </Card>
 
       {/* History */}
       <Card className='mt-4'>
         <CardHeader className='pb-2'><CardTitle className='text-base'>Every month</CardTitle></CardHeader>
-        <CardContent className='overflow-x-auto'>
-          <Table>
-            <TableHeader><TableRow><TableHead>Month</TableHead><TableHead>What happened</TableHead><TableHead className='text-end'>Membership money</TableHead><TableHead className='text-end'>Budget</TableHead><TableHead className='text-end'>Paid</TableHead><TableHead className='text-end'>Members</TableHead></TableRow></TableHeader>
-            <TableBody>
-              {d.history.length === 0 && <TableRow><TableCell colSpan={6} className='py-6 text-center text-muted-foreground'>No month paid yet.</TableCell></TableRow>}
-              {d.history.map((r) => (
-                <TableRow key={r.month}>
-                  <TableCell>{r.label}</TableCell>
-                  <TableCell>{r.status === 'paid' ? (r.adjusted ? 'Paid (adjusted to the budget)' : 'Paid') : `Skipped${r.note ? `: ${r.note}` : ''}`}</TableCell>
-                  <TableCell className='text-end tabular-nums'>{formatMoney(r.revenue)}</TableCell>
-                  <TableCell className='text-end tabular-nums'>{formatMoney(r.budget)}</TableCell>
-                  <TableCell className='text-end tabular-nums'>{formatMoney(r.paid)}</TableCell>
-                  <TableCell className='text-end tabular-nums'>{r.members}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <CardContent>
+          <DataTable<Run> id='bonus-history' rows={d.history} rowId={(r) => r.month} search={false} defaultSort='-month' empty='No month paid yet.' exportName='badge-bonus-history'
+            filters={[{ key: 'status', label: 'What happened', options: [{ value: 'paid', label: 'Paid' }, { value: 'skipped', label: 'Skipped' }] }]}
+            columns={historyColumns} />
         </CardContent>
       </Card>
 

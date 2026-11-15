@@ -6,9 +6,9 @@
 @section('content')
 <h1 class="font-serif text-3xl font-semibold">Wallet</h1>
 <section class="mt-5 grid grid-cols-3 gap-3" id="wallet">
-    @include('member.partials.stat', ['label' => 'Pending', 'value' => $fmt($wallet['pending']), 'icon' => 'clock', 'sub' => \App\Support\Settings::int('referral.pending_days').'-day refund window'])
-    @include('member.partials.stat', ['label' => 'Available', 'value' => $fmt($wallet['available']), 'icon' => 'wallet', 'tone' => 'accent'])
-    @include('member.partials.stat', ['label' => 'Cash-out requested', 'value' => $fmt($wallet['payout']), 'icon' => 'banknote'])
+    @include('member.partials.stat', ['label' => 'On the way', 'value' => $fmt($wallet['pending']), 'icon' => 'clock', 'sub' => 'Ready in '.\App\Support\Settings::int('referral.pending_days').' days'])
+    @include('member.partials.stat', ['label' => 'Ready to use', 'value' => $fmt($wallet['available']), 'icon' => 'wallet', 'tone' => 'accent'])
+    @include('member.partials.stat', ['label' => 'Cash-out asked', 'value' => $fmt($wallet['payout']), 'icon' => 'banknote'])
 </section>
 <section class="m-card mt-3">
             @feature('wallet.cashout')
@@ -45,20 +45,15 @@
             </form>
             @endif
             @endfeature
-            @if ($cashouts->isNotEmpty())
-                <ul class="mt-4 grid gap-1 text-sm">@foreach ($cashouts as $c)<li class="flex justify-between"><span>{{ $d($c->created_at) }} · {{ $fmt($c->amount) }} to {{ $c->method }} {{ $c->maskedAccount() }}</span><span class="capitalize">{{ $c->status === 'on_hold' ? 'requested' : $c->status }}@if ($c->payout_reference) · ref {{ $c->payout_reference }}@endif</span></li>@endforeach</ul>
-            @endif
+</section>
+<section class="m-card mt-3">
+    <h2 class="font-semibold">Money history</h2>
+    <p class="mt-1 text-xs m-muted">Every time money comes into or goes out of your wallet.</p>
+    <div class="mt-3">@include('member.partials.table', ['table' => $moneyTable])</div>
 </section>
 <section class="m-card mt-3">
     <h2 class="font-semibold">Cash-outs</h2>
-    @forelse ($cashouts as $c)
-        <div class="mt-3 flex items-center justify-between gap-3 text-sm">
-            <div><p>{{ $fmt($c->amount) }} to {{ $c->method }} {{ $c->maskedAccount() }}</p><p class="text-xs m-muted">{{ $d($c->created_at) }}@if ($c->payout_reference) · ref {{ $c->payout_reference }}@endif</p></div>
-            <span @class(['rounded-full px-2 py-0.5 text-xs font-semibold capitalize', 'm-soft m-accent-text' => $c->status === 'paid', 'bg-red-500/10 text-red-600' => $c->status === 'rejected', 'bg-black/5 dark:bg-white/10' => ! in_array($c->status, ['paid', 'rejected'], true)])>{{ $c->status === 'on_hold' ? 'requested' : $c->status }}</span>
-        </div>
-        @if ($c->status === 'rejected' && $c->reject_reason)<p class="mt-1 text-xs m-muted">{{ $c->reject_reason }}</p>@endif
-    @empty
-        <p class="mt-3 text-sm m-muted">No cash-outs yet. Earnings become available {{ \App\Support\Settings::int('referral.pending_days') }} days after a payment.</p>
-    @endforelse
+    <div class="mt-3">@include('member.partials.table', ['table' => $cashoutTable])</div>
+    @if (! $cashoutTable->page->total())<p class="mt-2 text-xs m-muted">Earnings become ready to use {{ \App\Support\Settings::int('referral.pending_days') }} days after a payment.</p>@endif
 </section>
 @endsection

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Support\TableQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -25,7 +26,8 @@ class ActivityLogController extends Controller
             ->when($request->input('actor_id'), fn ($q, $v) => $q->where('actor_id', $v))
             ->when($request->input('subject_type'), fn ($q, $v) => $q->where('subject_type', $v))
             ->when($request->input('subject_id'), fn ($q, $v) => $q->where('subject_id', $v))
-            ->latest('id')
+            ->when($request->input('q'), fn ($q, $v) => $q->where(fn ($w) => $w->where('action', 'like', "%$v%")->orWhere('reason', 'like', "%$v%")))
+            ->tap(fn ($q) => TableQuery::sort($q, $request, ['action' => 'action', 'when' => 'created_at']))
             ->paginate((int) $request->input('per_page', 50));
 
         return response()->json($page);
