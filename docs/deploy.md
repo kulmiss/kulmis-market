@@ -101,21 +101,63 @@ The page cache clears itself on changes. To clear it by hand, delete
 ## Backups
 - `php artisan km:backup` runs nightly at 02:17 when `BACKUP_KEY` is set. It
   includes the database, payment proofs and uploads, encrypted with
-  libsodium, and keeps 14 days in `storage/app/backups`.
+  libsodium (XChaCha20-Poly1305) using **its own key** (`BACKUP_KEY`, not
+  the app key), and keeps 14 days in `storage/app/backups`.
 - **Copy the backups off the server** regularly (download or rsync), and
-  keep `BACKUP_KEY` in your password manager.
-- Restore: `php artisan km:backup-key --decrypt=storage/app/backups/kulmis-….enc`,
-  then `tar -xzf` it and import `database.sql` with `mysql`.
+  keep `BACKUP_KEY` in your password manager. Without it a backup can't be
+  opened — by anyone, including you.
+
+### Restore test (do it once a month, and after any server change)
+1. `php artisan km:backup` (or use last night's file).
+2. `php artisan km:backup-verify` — decrypts the newest backup, unpacks it
+   and checks the key tables are there. Add
+   `--restore-to=restore_test` to load the dump into a separate scratch
+   database (define a `restore_test` connection pointing at an empty
+   database — never the live one); it then checks that the ledger in the
+   backup balances to zero and counts users.
+3. Expect `Backup OK — it can be restored.` Anything else: fix it today.
+
+### Real restore (after a disaster)
+1. Put the site in maintenance: `php artisan down`.
+2. `php artisan km:backup-key --decrypt=storage/app/backups/kulmis-….enc`
+3. `tar -xzf kulmis-….tar.gz` → `database.sql`, `app/private`, `app/public`.
+4. `mysql -u … -p kulmis-market < database.sql`, copy `app/private` and
+   `app/public` back into `storage/`.
+5. `php artisan km:doctor`, then `php artisan up`.
+
+## Production checklist
+Run `php artisan km:doctor` after every deploy and every `.env` change. It
+**fails (exit code 1) if anything is unsafe**, so a deploy script can stop:
+- `APP_ENV=production`, `APP_DEBUG=false`, `LOG_LEVEL=info`
+- HTTPS only: `APP_URL=https://…`, a TLS certificate, HSTS (sent
+  automatically), Secure cookies (automatic with an https `APP_URL`)
+- `SESSION_ENCRYPT=true`, `ADMIN_REQUIRE_2FA=true`, `ADMIN_PASSWORD_MIN=12`,
+  every staff account with 2FA on
+- `PASSWORD_PWNED_CHECK=true` (default in production)
+- `BACKUP_KEY` set, and a backup in the last 26 hours
+- File permissions: `chmod 600 .env`; the web server user owns `storage/`
+  and `bootstrap/cache/` (`chmod -R 775`); everything else read-only.
+  Never put `.env`, dumps or archives in `public/`.
+- Hidden versions: nginx `server_tokens off` (in the provided config),
+  PHP `expose_php=Off` and `display_errors=Off`.
+- Admin path: 2FA is always required. For an extra lock, set
+  `ADMIN_ALLOWED_IPS` to your own IP(s)/ranges; everyone else gets a 404
+  for `/admin` and the admin API.
+- Webhook secrets for Chapa and Telegram, and `TELEGRAM_ADMIN_CHAT_ID` so
+  you get security alerts.
+- Composer: `composer install --no-dev --optimize-autoloader` on the server.
 
 ## Security checklist (OWASP / ASVS L2)
-- `APP_DEBUG=false`, HTTPS only, `SESSION_SECURE_COOKIE=true`
-- Admin: 2FA required, session + CSRF, no API tokens for staff, roles and
-  abilities, append-only activity log
-- Rate limits on login, 2FA, checkout, tracking, password reset, webhooks
-- Webhooks: Chapa signature + re-verify with Chapa; Telegram secret header
-- Strict CSP (no inline scripts except one hashed), `X-Frame-Options: DENY`,
-  `nosniff`, HSTS on https
-- Secrets only in `.env`. Encrypted: 2FA secrets, payout account numbers,
-  sessions, backups
-- Guests: no session, no IP stored. Only essential cookies.
-- Run `php artisan km:doctor` after every change to `.env`.
+See `SECURITY_REPORT.md` for the full audit. In short:
+- Accounts: strong passwords + common list, sign-in pause after 10 wrong
+  tries, 2FA (staff required, customers optional), "Was this you?" notices,
+  email change by link, admin idle timeout, sign out everywhere
+  ([account-security.md](account-security.md))
+- Money: double-entry ledger with row locks and idempotency keys; payout
+  account 48 h wait + verification; daily limits; webhooks verified
+  (signature, amount, currency, reference) and replays ignored
+  ([wallet-cashout-fraud.md](wallet-cashout-fraud.md))
+- Web: strict CSP, HSTS, secure cookies, CSRF, CORS locked, per-route rate
+  limits, security.txt, safe uploads, secrets scrubbed from logs, gitleaks
+  and dependency audits in CI ([web-security.md](web-security.md))
+- Guests: no session, no IP stored, only essential cookies.

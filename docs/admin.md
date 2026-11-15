@@ -18,7 +18,7 @@
 ```bash
 cd admin
 npm ci --ignore-scripts
-npm run dev        # http://localhost:5173/admin-app/ (proxies /api to :8080)
+npm run dev        # http://localhost:5173/admin-app/ (proxies /api to :8090)
 npm run build      # typecheck + build into ../public/admin-app
 ```
 Commit the rebuilt `public/admin-app` together with the source change.

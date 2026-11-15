@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AdminIpAllowlist;
 use App\Http\Middleware\AdminSessionTimeout;
 use App\Http\Middleware\CachePage;
 use App\Http\Middleware\CaptureReferral;
@@ -29,7 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
         then: function () {
             Route::middleware('storefront')->group(base_path('routes/storefront.php'));
-            Route::middleware('web')->prefix('api/v1/admin')->name('admin.')
+            Route::middleware(['web', AdminIpAllowlist::class])->prefix('api/v1/admin')->name('admin.')
                 ->group(base_path('routes/admin.php'));
         },
     )

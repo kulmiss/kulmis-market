@@ -45,6 +45,9 @@ change any of them.
 | 36 | First cash-out of a new member | Held for review if they joined less than 30 days ago (editable). | Decided (review) |
 | 37 | Fake-account detection without storing IPs | The network is kept only as a keyed hash in the cache for 24 h. | Decided (review) |
 | 38 | Who can approve a bank/Telebirr transfer? | Finance, Manager and Super Admin (new `approve-payments` ability). Fulfilment and Support can see payments but not approve them, because approving gives value. | Decided (review) |
+| 39 | Local Docker port | 8090 by default (8080 is used by your other project). | Decided (you) |
+| 40 | Admin IP lock | Optional `ADMIN_ALLOWED_IPS`. Off by default because your IP may change; 2FA is always required. | Decided (review) |
+| 41 | `km:doctor` | Fails (exit 1) when anything is unsafe, so deploy scripts can stop. Missing setup (SMS, mail…) is a warning only. | Decided (review) |
 
 ## Still open: needs you
 | # | What | Why |

@@ -1,12 +1,15 @@
 services:
   app:
-    build: { context: ., dockerfile: docker/php/Dockerfile }
+    build: &php-build
+      context: .
+      dockerfile: docker/php/Dockerfile
+      args: { UID: "${UID:-1000}", GID: "${GID:-1000}" }
     volumes: [".:/var/www/html"]
     depends_on: { mysql: { condition: service_healthy } }
 
   nginx:
     image: nginx:1.27-alpine
-    ports: ["127.0.0.1:${APP_PORT:-8080}:80"]
+    ports: ["127.0.0.1:${APP_PORT:-8090}:80"]
     volumes:
       - .:/var/www/html:ro
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
@@ -15,21 +18,21 @@ services:
   # VPS-style worker. With QUEUE_VIA_SCHEDULER=true (shared-hosting mode)
   # the scheduler below drains the queue instead; both are safe together.
   queue:
-    build: { context: ., dockerfile: docker/php/Dockerfile }
+    build: *php-build
     command: php artisan queue:work --tries=3 --max-time=3600
     volumes: [".:/var/www/html"]
     depends_on: { mysql: { condition: service_healthy } }
     restart: unless-stopped
 
   scheduler:
-    build: { context: ., dockerfile: docker/php/Dockerfile }
+    build: *php-build
     command: php artisan schedule:work
     volumes: [".:/var/www/html"]
     depends_on: { mysql: { condition: service_healthy } }
     restart: unless-stopped
 
   mysql:
-    image: mysql:8.0
+    image: mysql:8.0.40
     environment:
       MYSQL_DATABASE: kulmis-market
       MYSQL_USER: kulmis
@@ -43,7 +46,7 @@ services:
       retries: 20
 
   mailpit:
-    image: axllent/mailpit:latest
+    image: axllent/mailpit:v1.21
     ports: ["127.0.0.1:${MAILPIT_PORT:-8025}:8025"]
 
 volumes:

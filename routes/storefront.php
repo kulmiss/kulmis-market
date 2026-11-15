@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Web\StorefrontController as S;
+use App\Http\Middleware\AdminIpAllowlist;
 use App\Referral\Attribution;
 use App\Support\Settings;
 use Illuminate\Support\Facades\Route;
@@ -47,4 +48,4 @@ Route::get('/admin/{path?}', function () {
     abort_unless(is_file($index), 404, 'Admin not built. Run: cd admin && npm ci && npm run build');
 
     return response((string) file_get_contents($index), 200, ['Content-Type' => 'text/html; charset=UTF-8', 'Cache-Control' => 'no-store']);
-})->where('path', '.*')->name('admin.app');
+})->where('path', '.*')->name('admin.app')->middleware(AdminIpAllowlist::class);

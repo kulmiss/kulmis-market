@@ -23,6 +23,9 @@ return [
     'admin_idle_minutes' => (int) env('ADMIN_IDLE_MINUTES', 30),
     'admin_max_hours' => (int) env('ADMIN_MAX_HOURS', 12),
 
+    // Optional: only these IPs/ranges may open the admin (comma separated). Empty = anyone (2FA still required).
+    'admin_allowed_ips' => (string) env('ADMIN_ALLOWED_IPS', ''),
+
     // App (API) sign-ins expire after this many days.
     'token_days' => (int) env('API_TOKEN_DAYS', 30),
 
