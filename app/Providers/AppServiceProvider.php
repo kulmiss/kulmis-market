@@ -103,6 +103,8 @@ class AppServiceProvider extends ServiceProvider
         }
         // Seeing payments: whoever handles orders, approves transfers or does refunds.
         Gate::define('view-payments', fn (User $user) => $user->hasAbility('manage-orders') || $user->hasAbility('approve-payments') || $user->hasAbility('manage-ledger'));
+        // Help centre messages: content editors and support staff.
+        Gate::define('answer-help', fn (User $user) => $user->hasAbility('manage-content') || $user->hasAbility('manage-members'));
 
         Event::listen(OrderStatusChanged::class, [OrderNotifier::class, 'handle']);
 

@@ -51,6 +51,7 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
     // Notification centre (bell), what to hear about, monthly goal
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications');
     Route::post('notifications/settings', [NotificationController::class, 'settings'])->middleware('throttle:20,1')->name('notifications.settings');
+    Route::post('signals/alerts', [NotificationController::class, 'signalAlerts'])->middleware('throttle:20,1')->name('signals.alerts');
     Route::post('goal', [NotificationController::class, 'goal'])->middleware('throttle:20,1')->name('goal');
 
     // Wishlist, saved addresses, buy again

@@ -275,6 +275,41 @@ if (checkoutForm) {
     }
 }
 
+/* ---------- help centre ---------- */
+const helpSearch = $('[data-help-search]');
+if (helpSearch) {
+    const input = $('input', helpSearch);
+    const none = $('[data-help-none]');
+    // Filter as you type (the form still works without JavaScript).
+    input.addEventListener('input', () => {
+        const words = input.value.toLowerCase().split(/\s+/).filter(Boolean);
+        let shown = 0;
+        $$('[data-help-group]').forEach((g) => {
+            let inGroup = 0;
+            $$('[data-help-item]', g).forEach((item) => {
+                const hit = words.every((w) => item.textContent.toLowerCase().includes(w));
+                item.hidden = !hit;
+                if (hit) inGroup++;
+            });
+            g.hidden = inGroup === 0;
+            shown += inGroup;
+        });
+        none?.classList.toggle('hidden', shown > 0);
+    });
+}
+$('[data-contact-form]')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const msg = $('[data-form-message]', form);
+    await busy(form, async () => {
+        try {
+            const { data } = await api('/contact', { method: 'POST', body: formData(form) });
+            say(msg, data.message, true);
+            form.reset();
+        } catch (err) { say(msg, err.message); }
+    });
+});
+
 /* ---------- pay page ---------- */
 const payPage = $('[data-pay-page]');
 if (payPage) {

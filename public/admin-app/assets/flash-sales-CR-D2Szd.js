@@ -1,0 +1,1 @@
+import{n as e}from"./promotions-page-Cnw-vtOr.js";var t=e;export{t as component};

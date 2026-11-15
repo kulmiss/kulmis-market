@@ -11,6 +11,7 @@
             @feature('membership')<a href="{{ url('/membership') }}" class="hover:underline">Membership</a>@endfeature
             @feature('signals')<a href="{{ url('/signals') }}" class="hover:underline">Trading signals</a>@endfeature
             @feature('shop.order_tracking')<a href="{{ url('/track') }}" class="hover:underline">Track your order</a>@endfeature
+            @feature('site.help_centre')<a href="{{ url('/help') }}" class="hover:underline">Help and contact</a>@endfeature
         </nav>
         <nav class="grid content-start gap-2" aria-label="Policies">
             @foreach ($pages as $p)<a href="{{ url('/p/'.$p->slug) }}" class="hover:underline">{{ $p->title }}</a>@endforeach

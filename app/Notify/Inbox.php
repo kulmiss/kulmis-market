@@ -17,7 +17,7 @@ final class Inbox
     public const TYPES = [
         'earning' => 'Team earnings', 'team' => 'Someone joined my team', 'badge' => 'New badges',
         'bonus' => 'Badge bonus paid', 'order' => 'My orders', 'renewal' => 'My membership',
-        'cashout' => 'My cash-outs', 'goal' => 'My monthly goal',
+        'cashout' => 'My cash-outs', 'goal' => 'My monthly goal', 'signal' => 'New trading signals',
     ];
 
     /** Older type names that share a setting. */

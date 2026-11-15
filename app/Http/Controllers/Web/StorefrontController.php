@@ -15,6 +15,7 @@ use App\Referral\Engagement;
 use App\Shop\Bundles;
 use App\Shop\FlashSales;
 use App\Shop\Recommendations;
+use App\Signals\SignalStats;
 use App\Support\Features;
 use App\Support\Phone;
 use App\Support\Settings;
@@ -104,15 +105,17 @@ class StorefrontController extends Controller
     {
         abort_if(Features::disabled('signals'), 404);
 
-        return view('store.signals', ['banners' => Banner::query()->live('signals')->get(), 'stats' => $this->signalStats()]);
+        return view('store.signals', ['banners' => Banner::query()->live('signals')->get(), 'stats' => app(SignalStats::class)->totals()]);
     }
 
-    public function performance(): View
+    public function performance(Request $request, SignalStats $stats): View
     {
         abort_if(Features::disabled('signals') || Features::disabled('signals.performance_page'), 404);
+        $pair = $stats->validPair($request->query('pair'));
 
-        return view('store.performance', ['stats' => $this->signalStats(),
-            'signals' => Signal::query()->where('status', 'closed')->latest('closed_at')->limit(100)->get()]);
+        return view('store.performance', ['stats' => $stats->totals($pair), 'months' => $stats->monthly($pair),
+            'pairs' => $stats->pairs(), 'pair' => $pair,
+            'signals' => Signal::query()->where('status', 'closed')->when($pair, fn ($q, $p) => $q->where('pair', $p))->latest('closed_at')->limit(100)->get()]);
     }
 
     public function page(string $slug): View
@@ -164,6 +167,7 @@ class StorefrontController extends Controller
             ->when(Features::enabled('membership'), fn ($c) => $c->push(url('/membership')))
             ->when(Features::enabled('signals'), fn ($c) => $c->push(url('/signals')))
             ->when(Features::enabled('referral'), fn ($c) => $c->push(url('/referral-program')))
+            ->when(Features::enabled('site.help_centre'), fn ($c) => $c->push(url('/help')))
             ->merge(Category::query()->where('is_active', true)->pluck('slug')->map(fn ($s) => url('/c/'.$s)))
             ->merge(Product::query()->visibleTo(false)->pluck('slug')->map(fn ($s) => url('/shop/'.$s)))
             ->merge(Page::query()->where('is_published', true)->pluck('slug')->map(fn ($s) => url('/p/'.$s)));
@@ -178,18 +182,6 @@ class StorefrontController extends Controller
         $body = "User-agent: *\nDisallow: /admin\nDisallow: /account\nDisallow: /checkout\nDisallow: /pay/\nDisallow: /api/\nSitemap: ".url('/sitemap.xml')."\n";
 
         return response($body, 200, ['Content-Type' => 'text/plain']);
-    }
-
-    /** @return array{wins:int, losses:int, breakeven:int, closed:int, win_rate:?float} */
-    private function signalStats(): array
-    {
-        $q = Signal::query()->where('status', 'closed');
-        $wins = (clone $q)->where('result', 'win')->count();
-        $losses = (clone $q)->where('result', 'loss')->count();
-        $be = (clone $q)->where('result', 'breakeven')->count();
-
-        return ['wins' => $wins, 'losses' => $losses, 'breakeven' => $be, 'closed' => $wins + $losses + $be,
-            'win_rate' => $wins + $losses > 0 ? round($wins * 100 / ($wins + $losses), 1) : null];
     }
 
     private function isMember(Request $request): bool

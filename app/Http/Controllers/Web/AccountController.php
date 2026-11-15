@@ -23,6 +23,7 @@ use App\Pricing\PricingException;
 use App\Referral\ReferralCodes;
 use App\Referral\TeamView;
 use App\Signals\SignalAccess;
+use App\Signals\SignalStats;
 use App\Support\Features;
 use App\Support\Phone;
 use App\Support\Settings;
@@ -116,10 +117,15 @@ class AccountController extends Controller
             return $table->csv();
         }
 
+        $stats = app(SignalStats::class);
+        $pair = $stats->validPair($request->query('pair'));
+
         return view('member.signals', [
             'isMember' => $user->isActiveMember(),
             'signalsLink' => $this->signalsLink($user, $user->isActiveMember()),
             'table' => $table,
+            'pairs' => $stats->pairs(), 'pair' => $pair, 'totals' => $stats->totals($pair), 'months' => $stats->monthly($pair),
+            'user' => $user,
         ]);
     }
 

@@ -82,6 +82,7 @@ return [
     'site.support_phone' => ['string', '+251 900 000 000', 'Support phone', 'Site'],
     'site.support_email' => ['string', 'hello@kulmis.market', 'Support email', 'Site'],
     'site.telegram_support' => ['string', '', 'Telegram support username', 'Site'],
+    'site.whatsapp' => ['string', '', 'WhatsApp number for the help centre (empty = support phone)', 'Site'],
 
     // Customer messages (SMS / email / Telegram). Placeholders:
     // {name} {number} {total} {courier} {tracking} {tracking_link} {track_url} {making_days} {reason} {site}

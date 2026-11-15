@@ -14,6 +14,7 @@ final class NotifyPrefs
     public const DEFAULTS = [
         'bell.earning' => true, 'bell.team' => true, 'bell.badge' => true, 'bell.bonus' => true,
         'bell.order' => true, 'bell.renewal' => true, 'bell.cashout' => true, 'bell.goal' => true,
+        'bell.signal' => false,
         'cart_reminder' => true,
         'push.earning' => false, 'push.order' => false,
     ];
@@ -34,6 +35,22 @@ final class NotifyPrefs
                 $prefs[$key] = (bool) $on;
             }
         }
+        $user->forceFill(['notify_prefs' => $prefs])->save();
+    }
+
+    /** @return list<string> pairs this person wants signal notes for (empty = all) */
+    public static function pairs(User $user): array
+    {
+        $p = is_array($user->notify_prefs) ? ($user->notify_prefs['signal_pairs'] ?? []) : [];
+
+        return is_array($p) ? array_values(array_filter($p, 'is_string')) : [];
+    }
+
+    /** @param list<string> $pairs */
+    public static function setPairs(User $user, array $pairs): void
+    {
+        $prefs = is_array($user->notify_prefs) ? $user->notify_prefs : [];
+        $prefs['signal_pairs'] = array_values(array_unique(array_slice($pairs, 0, 50)));
         $user->forceFill(['notify_prefs' => $prefs])->save();
     }
 }

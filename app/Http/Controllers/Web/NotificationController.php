@@ -10,6 +10,7 @@ use App\Models\UserNotification;
 use App\Notify\Inbox;
 use App\Notify\NotifyPrefs;
 use App\Referral\Goals;
+use App\Signals\SignalStats;
 use App\Support\Features;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -47,6 +48,19 @@ class NotificationController extends Controller
         NotifyPrefs::set($user, $values);
 
         return back()->with('status', 'Saved. You will only hear about what you ticked.');
+    }
+
+    public function signalAlerts(Request $request): RedirectResponse
+    {
+        abort_if(Features::disabled('signals') || Features::disabled('account.notifications'), 404);
+        $data = $request->validate(['on' => ['required', 'boolean'], 'pairs' => ['nullable', 'array', 'max:50'], 'pairs.*' => ['string', 'max:40']]);
+        /** @var User $user */
+        $user = $request->user();
+        NotifyPrefs::set($user, ['bell.signal' => (bool) $data['on']]);
+        $known = app(SignalStats::class)->pairs();
+        NotifyPrefs::setPairs($user->fresh() ?? $user, array_values(array_intersect($data['pairs'] ?? [], $known)));
+
+        return back()->with('status', $data['on'] ? 'Saved. New signals will show in your bell.' : 'Saved. No signal notes.');
     }
 
     public function goal(Request $request): RedirectResponse

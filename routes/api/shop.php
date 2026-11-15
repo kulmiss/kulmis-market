@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CheckoutController;
+use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\StockAlertController;
 use App\Http\Controllers\Api\TrackingController;
 use App\Models\ShippingZone;
@@ -25,4 +26,5 @@ Route::middleware('feature:shop')->get('shipping/zones', fn () => response()->js
         ->get(['id', 'name', 'cities', 'base_fee', 'included_grams', 'per_kg_fee', 'eta_days_min', 'eta_days_max', 'is_default']),
 ]))->name('shipping.zones');
 
+Route::post('contact', [ContactController::class, 'store'])->middleware(['feature:site.help_centre', 'throttle:5,10'])->name('contact');
 Route::post('stock-alerts', [StockAlertController::class, 'store'])->middleware(['feature:shop.stock_alerts', 'throttle:5,1'])->name('stock-alerts');

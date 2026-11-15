@@ -95,6 +95,9 @@ change any of them.
 | 86 | Notification centre (bell) | Uses the in-app list badges already wrote to. Shows earnings (level 1 sees the buyer's first name, levels 2–3 see "someone in your team"), team joins, badges, bonus paid, orders, membership and cash-outs. Opening the page marks them read. Each person can mute any type. Read ones are removed after 90 days, all after a year. | Decided (recommended) |
 | 87 | Cart reminder | Any signed-in customer (member or not), never guests. One message 24 hours (editable) after the last cart change, sent at most once per cart until they order. The link opens that cart on any phone (valid 7 days); "stop" works without signing in. Switch "Cart reminder" in Messages, on by default. | Decided (recommended) |
 | 88 | Monthly goal | Member types an amount (at least 100 ETB). Progress = team earnings this month (same number as "This month" on the home page). One "You reached your goal" note per month. | Decided (recommended) |
+| 89 | Signal results chart | Win rate per month for the last 12 months = wins ÷ (wins + losses); "no gain, no loss" isn't counted. Same chart on the public results page and in the member area, with a filter per pair. | Decided (recommended) |
+| 90 | Signal notes | Off by default. A member can turn on a bell note for each new signal and pick pairs (none picked = all). The note only says the pair and side; the details stay in the private Telegram channel. | Decided (recommended) |
+| 91 | Help centre | /help with 8 starter answers in easy English (edit or delete them in Admin → Help centre), live search, WhatsApp / Telegram / email links and a contact form (5 per 10 minutes, hidden spam trap). Each message is emailed to the support email. Support staff can answer messages; only content editors change the answers. | Decided (recommended) |
 
 ## Still open: needs you
 | # | What | Why |

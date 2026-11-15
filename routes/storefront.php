@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Web\HelpController;
 use App\Http\Controllers\Web\StorefrontController as S;
 use App\Http\Middleware\AdminIpAllowlist;
 use App\Referral\Attribution;
@@ -19,6 +20,7 @@ Route::get('/membership', [S::class, 'membership'])->name('membership');
 Route::get('/referral-program', [S::class, 'referralProgram'])->name('referral-program');
 Route::get('/signals', [S::class, 'signals'])->name('signals');
 Route::get('/signals/performance', [S::class, 'performance'])->name('signals.performance');
+Route::get('/help', [HelpController::class, 'index'])->name('help');
 Route::get('/p/{slug}', [S::class, 'page'])->where('slug', '[a-z0-9-]+')->name('page');
 Route::get('/cart', [S::class, 'cart'])->name('cart');
 Route::get('/checkout', [S::class, 'checkout'])->name('checkout');
