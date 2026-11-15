@@ -65,10 +65,14 @@ class PerformanceTest extends ReferralTestCase
 
     public function test_admin_dashboard_is_cached_until_money_moves(): void
     {
+        config(['cache.default' => 'database']); // like production: values really go through (un)serialize
         $this->actingAsAdmin();
         $first = $this->queries(fn () => $this->getJson('/api/v1/admin/dashboard')->assertOk());
         $second = $this->queries(fn () => $this->getJson('/api/v1/admin/dashboard')->assertOk());
         $this->assertLessThan(15, $second, "second load used $second queries (first $first)");
+        $a = $this->getJson('/api/v1/admin/dashboard')->json('data');
+        $this->assertIsList($a['top_products'], 'cached lists must come back as JSON lists, not objects');
+        $this->assertSame(array_keys($a), array_keys($this->getJson('/api/v1/admin/dashboard')->json('data')));
 
         $before = $this->getJson('/api/v1/admin/dashboard')->json('data.revenue.memberships');
         $this->payMembership(User::factory()->create()); // a paid membership posts to the ledger
