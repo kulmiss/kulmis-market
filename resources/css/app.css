@@ -73,8 +73,8 @@
 @utility m-muted { color: var(--m-muted); }
 @utility m-accent-text { color: var(--m-strong); }
 @utility m-soft { background: var(--m-soft); }
-@utility m-btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-50; background: var(--m-accent); }
-@utility m-btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition; border-color: var(--m-line); background: var(--m-surface); }
+@utility m-btn { @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl px-3 sm:px-4 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-50; background: var(--m-accent); }
+@utility m-btn-ghost { @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl border px-3 sm:px-4 py-2.5 text-sm font-semibold transition; border-color: var(--m-line); background: var(--m-surface); }
 @utility m-input { @apply w-full rounded-xl border px-3.5 py-2.5 text-base outline-none; background: var(--m-surface); border-color: var(--m-line); color: var(--m-ink); }
 @utility m-nav-link { @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition; }
 .m-nav-link:hover { background: var(--m-soft); }
