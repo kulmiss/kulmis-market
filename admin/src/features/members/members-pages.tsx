@@ -14,6 +14,7 @@ import { FilterBar, SearchInput, SelectFilter, opts } from '@/components/km/filt
 import { Page } from '@/components/km/page'
 import { ResourceTable, type ResourceColumn } from '@/components/km/resource-table'
 import { StatusBadge } from '@/components/km/status-badge'
+import { PageSkeleton } from '@/components/km/page-skeleton'
 
 export type Member = {
   id: number; first_name: string; last_name: string; phone: string | null; email: string | null; status: string
@@ -67,7 +68,7 @@ export function MemberDetail({ id }: { id: string }) {
   const [amount, setAmount] = useState(0)
 
   const d = q.data
-  if (!d) return <Page title='Member'>Loading…</Page>
+  if (!d) return <Page title='Member'><PageSkeleton cards={3} /></Page>
   const u = d.user
   const m = u.membership
 
@@ -110,7 +111,7 @@ export function MemberDetail({ id }: { id: string }) {
           <CardContent className='grid gap-3'>
             <Input placeholder='Reason' value={reason} onChange={(e) => setReason(e.target.value)} />
             <div className='flex flex-wrap items-center gap-2'>
-              <Input type='number' className='w-28' value={days} onChange={(e) => setDays(Number(e.target.value))} />
+              <Input type='number' className='w-28' aria-label='Days to add (negative to remove)' value={days} onChange={(e) => setDays(Number(e.target.value))} />
               <Button variant='outline' disabled={!reason} onClick={() => adjust.mutate({ path: `/members/${id}/membership`, body: { days, reason } })}>Extend membership by {days} days</Button>
               <Button variant='outline' disabled={!reason} onClick={() => adjust.mutate({ path: `/members/${id}/membership`, body: { days: -3650, reason } })}>End membership now</Button>
               {u.status === 'active'

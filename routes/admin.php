@@ -23,6 +23,7 @@ Route::middleware(['auth', 'staff', 'admin.timeout'])->group(function () {
         Route::delete('two-factor', [Admin\TwoFactorController::class, 'disable']);
 
         Route::get('features', [Admin\FeatureController::class, 'index'])->can('manage-features');
+        Route::get('features/state', [Admin\FeatureController::class, 'state']);
         Route::put('features', [Admin\FeatureController::class, 'update'])->can('manage-features');
         Route::get('settings', [Admin\SettingController::class, 'index'])->can('manage-settings');
         Route::put('settings', [Admin\SettingController::class, 'update'])->can('manage-settings');

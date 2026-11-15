@@ -31,11 +31,13 @@ class Commission extends Model
 {
     use HidesDemo;
 
+    /** @return list<string> */
     protected static function demoOwnerColumns(): array
     {
         return ['recipient_id', 'buyer_user_id'];
     }
 
+    /** @return array<string, string> */
     protected static function demoParents(): array
     {
         return ['payment_id' => 'payments'];

@@ -25,11 +25,13 @@ class SignalPurchase extends Model implements Payable
 {
     use HidesDemo;
 
+    /** @return list<string> */
     protected static function demoOwnerColumns(): array
     {
         return [];
     }
 
+    /** @return array<string, string> */
     protected static function demoParents(): array
     {
         return ['signal_subscription_id' => 'signal_subscriptions'];

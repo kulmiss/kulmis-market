@@ -26,6 +26,7 @@ class PageCache
     public static function cacheable(Request $request, Response $response): bool
     {
         return $request->isMethod('GET')
+            && $request->getHttpHost() === self::canonicalHost()
             && $request->query->count() === 0
             && ! $request->cookies->has((string) config('session.cookie'))
             && $response->getStatusCode() === 200
@@ -34,6 +35,15 @@ class PageCache
             && ! $request->is('admin', 'admin/*', 'pay/*', 'checkout', 'cart', 'track')
             && ! $response->headers->has('Set-Cookie')
             && $response->headers->getCookies() === [];
+    }
+
+    /** host[:port] of APP_URL: only requests for the real site name are cached. */
+    public static function canonicalHost(): string
+    {
+        $url = parse_url((string) config('app.url'));
+        $host = strtolower((string) ($url['host'] ?? ''));
+
+        return isset($url['port']) ? $host.':'.$url['port'] : $host;
     }
 
     public static function path(Request $request): string

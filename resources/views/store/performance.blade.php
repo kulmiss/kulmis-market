@@ -5,7 +5,7 @@
     <div class="mt-6 grid gap-3 sm:grid-cols-4">
         <div class="card"><p class="text-2xl font-semibold">{{ $stats['closed'] }}</p><p class="muted text-sm">closed</p></div>
         <div class="card"><p class="text-2xl font-semibold text-leaf-600">{{ $stats['wins'] }}</p><p class="muted text-sm">wins</p></div>
-        <div class="card"><p class="text-2xl font-semibold text-brand-600">{{ $stats['losses'] }}</p><p class="muted text-sm">losses</p></div>
+        <div class="card"><p class="text-2xl font-semibold text-danger-600">{{ $stats['losses'] }}</p><p class="muted text-sm">losses</p></div>
         <div class="card"><p class="text-2xl font-semibold">{{ $stats['win_rate'] !== null ? $stats['win_rate'].'%' : '—' }}</p><p class="muted text-sm">win rate</p></div>
     </div>
     <div class="card mt-6 overflow-x-auto">

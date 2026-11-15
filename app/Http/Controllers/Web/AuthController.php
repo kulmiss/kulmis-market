@@ -103,7 +103,7 @@ class AuthController extends Controller
             'referral_code' => ['nullable', 'string', 'max:16'],
             'terms' => ['accepted'],
         ], ['terms.accepted' => 'Please accept the terms.']);
-        $user = User::query()->create(collect($data)->only(['first_name', 'last_name', 'phone', 'email', 'password'])->all());
+        $user = User::query()->create(array_intersect_key($data, array_flip(['first_name', 'last_name', 'phone', 'email', 'password'])));
         CustomerRegistered::dispatch($request, $user);
         Activity::log('customer.registered', $user, [], null, $user->id);
         Auth::guard('web')->login($user);

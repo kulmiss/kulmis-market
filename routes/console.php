@@ -1,6 +1,7 @@
 <?php
 
 use App\Storefront\PageCache;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
 
@@ -36,6 +37,12 @@ Schedule::command('sanctum:prune-expired --hours=24')->dailyAt('03:41');
 Schedule::call(fn () => Cache::put('scheduler.heartbeat', now()->toIso8601String(), now()->addDay()))
     ->everyMinute()->name('heartbeat');
 Schedule::call(fn () => PageCache::clear())->everyFifteenMinutes()->name('page-cache-refresh');
+
+// After an update the CSS/JS file names change: cached pages must go (also runs with `php artisan optimize`).
+Artisan::command('km:clear-page-cache', function () {
+    PageCache::clear();
+    $this->info('Page cache cleared.');
+})->purpose('Delete the static page cache (public/page-cache)');
 
 // Encrypted nightly backup (needs BACKUP_KEY). Copy backups off the server too.
 if (config('shop.backup_key')) {

@@ -45,7 +45,8 @@ class MembershipController extends Controller
         /** @var User $user */
         $user = $request->user();
 
-        return response()->json(['data' => AuthController::present($user)['membership'] + ['is_member' => $user->isActiveMember()]
+        // Someone who never joined has no membership yet: answer "not a member", don't crash.
+        return response()->json(['data' => (AuthController::present($user)['membership'] ?? ['status' => null]) + ['is_member' => $user->isActiveMember()]
             + ['price' => Settings::int('membership.price')]]);
     }
 
@@ -55,7 +56,7 @@ class MembershipController extends Controller
         $request->validate(['method' => ['required', Rule::in(['wallet'])]]);
         try {
             $purchase = $this->memberships->newPurchase($request->user());
-            app(WalletPayments::class)->apply($purchase, $request->user());
+            app(WalletPayments::class)->apply($purchase, $request->user(), fullOnly: true);
             if (! $purchase->fresh()->isSettled()) {
                 throw new InvalidArgumentException('Not enough in your wallet. Use it for part of the price and transfer the rest (send the receipt).');
             }

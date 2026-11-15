@@ -29,18 +29,22 @@ class WalletPayments
 
     /**
      * @param  Model&Payable  $payable  must have a wallet_used column
+     * @param  bool  $fullOnly  spend nothing unless the wallet covers everything ("pay from wallet" buttons)
      * @return ?Payment the wallet payment, or null when nothing was used
      */
-    public function apply(Model $payable, User $user, ?int $max = null): ?Payment
+    public function apply(Model $payable, User $user, ?int $max = null, bool $fullOnly = false): ?Payment
     {
         if (! $this->enabled() || $payable->isSettled()) {
             return null;
         }
 
-        $result = DB::transaction(function () use ($payable, $user, $max) {
+        $result = DB::transaction(function () use ($payable, $user, $max, $fullOnly) {
             /** @var Model&Payable $locked */
             $locked = $payable->newQuery()->whereKey($payable->getKey())->lockForUpdate()->firstOrFail();
             $available = Wallet::for($user)->available();
+            if ($fullOnly && $available < $locked->payableAmount()) {
+                return null;
+            }
             $amount = min($available, $locked->payableAmount(), $max ?? PHP_INT_MAX);
             if ($amount < 100) { // less than 1 ETB: not worth it
                 return null;

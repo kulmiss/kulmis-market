@@ -45,7 +45,7 @@ export const sidebarData: SidebarData = {
       title: 'Shop',
       items: [
         { title: 'Orders', url: '/orders', icon: ShoppingBag, ability: 'manage-orders', feature: 'shop' },
-        { title: 'Payments', url: '/payments', icon: Receipt, ability: 'manage-orders' },
+        { title: 'Payments', url: '/payments', icon: Receipt, ability: 'view-payments' },
         { title: 'Products', url: '/products', icon: Boxes, ability: 'manage-products', feature: 'shop' },
         { title: 'Categories', url: '/categories', icon: FolderTree, ability: 'manage-products', feature: 'shop' },
         { title: 'Coupons', url: '/coupons', icon: BadgePercent, ability: 'manage-products', feature: 'shop.coupons' },

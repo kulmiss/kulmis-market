@@ -43,6 +43,7 @@ class User extends Authenticatable
 {
     use HidesDemo;
 
+    /** @return list<string> */
     protected static function demoOwnerColumns(): array
     {
         return [];

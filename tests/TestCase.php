@@ -7,6 +7,7 @@ use App\Support\Features;
 use App\Support\Settings;
 use App\Support\Totp;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Http\Request;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -15,6 +16,14 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
         Features::flush();
         Settings::flush();
+    }
+
+    protected function tearDown(): void
+    {
+        // Trusted hosts are static on the request class: a test that switches to
+        // production must not leave them set for the next test.
+        Request::setTrustedHosts([]);
+        parent::tearDown();
     }
 
     /** A Super Admin (or other role) with 2FA confirmed, signed in. */

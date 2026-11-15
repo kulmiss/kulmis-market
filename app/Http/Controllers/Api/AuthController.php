@@ -32,7 +32,7 @@ class AuthController extends Controller
             'device_name' => ['nullable', 'string', 'max:60'],
             'referral_code' => ['nullable', 'string', 'max:16'],
         ]);
-        $user = User::query()->create(collect($data)->only(['first_name', 'last_name', 'phone', 'email', 'password'])->all());
+        $user = User::query()->create(array_intersect_key($data, array_flip(['first_name', 'last_name', 'phone', 'email', 'password'])));
         CustomerRegistered::dispatch($request, $user);
         Activity::log('customer.registered', $user, [], null, $user->id);
 

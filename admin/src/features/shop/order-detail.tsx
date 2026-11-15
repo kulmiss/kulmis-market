@@ -17,6 +17,7 @@ import { MoneyInput } from '@/components/km/money-input'
 import { Page } from '@/components/km/page'
 import { StatusBadge } from '@/components/km/status-badge'
 import { type Courier, type Order, type Payment } from './types'
+import { PageSkeleton } from '@/components/km/page-skeleton'
 
 export function OrderDetail({ id }: { id: string }) {
   const order = useQuery({ queryKey: ['order', id], queryFn: async () => (await api.get<{ data: Order }>(`/orders/${id}`)).data.data })
@@ -31,7 +32,7 @@ export function OrderDetail({ id }: { id: string }) {
   const [note, setNote] = useState('')
 
   const o = order.data
-  if (!o) return <Page title='Order'>Loading…</Page>
+  if (!o) return <Page title='Order'><PageSkeleton cards={0} /></Page>
   const move = (to: string) => status.mutate({ path: `/orders/${id}/status`, body: { status: to, note: note || undefined,
     courier_id: courier ? Number(courier) : undefined, tracking_number: tracking || undefined } })
 
@@ -85,8 +86,8 @@ export function OrderDetail({ id }: { id: string }) {
                   <SelectContent>{couriers.data?.filter((c) => c.is_active).map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div className='grid gap-1'><Label>Tracking number</Label><Input value={tracking} placeholder={o.tracking_number ?? ''} onChange={(e) => setTracking(e.target.value)} /></div>
-              <div className='grid gap-1'><Label>Note (sent with cancel)</Label><Input value={note} onChange={(e) => setNote(e.target.value)} /></div>
+              <div className='grid gap-1'><Label htmlFor='od-tracking'>Tracking number</Label><Input id='od-tracking' value={tracking} placeholder={o.tracking_number ?? ''} onChange={(e) => setTracking(e.target.value)} /></div>
+              <div className='grid gap-1'><Label htmlFor='od-note'>Note (sent with cancel)</Label><Input id='od-note' value={note} onChange={(e) => setNote(e.target.value)} /></div>
             </div>
             <div className='flex flex-wrap gap-2'>
               {(o.allowed_next ?? []).filter((s) => !['paid', 'refunded'].includes(s)).map((s) => (

@@ -13,6 +13,7 @@ class ActivityLog extends Model
 {
     use HidesDemo;
 
+    /** @return list<string> */
     protected static function demoOwnerColumns(): array
     {
         return ['actor_id'];

@@ -166,13 +166,16 @@ class ProductController extends Controller
     private function syncRelations(Product $product, array $data): void
     {
         if (array_key_exists('tags', $data)) {
-            $ids = collect($data['tags'] ?? [])->map(fn ($name) => Tag::query()->firstOrCreate(
+            /** @var list<string> $tags */
+            $tags = $data['tags'] ?? [];
+            $ids = collect($tags)->map(fn ($name) => Tag::query()->firstOrCreate(
                 ['slug' => Str::slug($name)], ['name' => $name])->id);
             $product->tags()->sync($ids);
         }
         if (array_key_exists('variants', $data)) {
             $keep = [];
             foreach (array_values($data['variants'] ?? []) as $i => $v) {
+                /** @var array<string, mixed> $v */
                 $attrs = collect($v)->except('id')->put('position', $i)->all();
                 $variant = isset($v['id']) ? $product->variants()->whereKey($v['id'])->first() : null;
                 $variant ? $variant->update($attrs) : $variant = $product->variants()->create($attrs);

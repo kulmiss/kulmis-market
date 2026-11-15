@@ -16,6 +16,13 @@ class FeatureController extends Controller
         return response()->json(['data' => Features::overview()]);
     }
 
+    /** On/off only, for every staff member: the admin hides screens of switched-off features. */
+    public function state(): JsonResponse
+    {
+        return response()->json(['data' => collect(Features::overview())
+            ->map(fn (array $r) => ['key' => $r['key'], 'effective' => $r['effective']])->values()]);
+    }
+
     /** Bulk update: {"features": {"signals": false, "referral.level3": true}} */
     public function update(Request $request): JsonResponse
     {

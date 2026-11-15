@@ -44,7 +44,7 @@ class StorefrontTest extends TestCase
         $res->assertOk();
         $this->assertSame([], $res->headers->getCookies(), 'no session or tracking cookie for guests');
         $this->assertDatabaseCount('sessions', 0);
-        $res->assertHeader('Cache-Control', 'max-age=300, public');
+        $res->assertHeader('Cache-Control', 'max-age=0, must-revalidate, public'); // never a stale guest page after signing in
     }
 
     public function test_page_cache_writes_static_html_for_guests_only(): void

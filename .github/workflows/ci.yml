@@ -88,9 +88,21 @@ jobs:
         run: npx eslint .
       - name: Build
         run: npx vite build
+      - name: Build the storefront assets
+        working-directory: .
+        run: npm ci --ignore-scripts && npm run build
+      - name: Committed builds match the sources
+        # public/build and public/admin-app are committed (shared hosting has no Node).
+        # Fails when someone changed CSS/JS/TS but forgot to rebuild and commit.
+        working-directory: .
+        run: |
+          git status --porcelain public/build public/admin-app
+          test -z "$(git status --porcelain public/build public/admin-app)" || (echo "Run 'npm run build' and 'cd admin && npm run build', then commit public/build and public/admin-app." && exit 1)
 
   lighthouse:
-    # Storefront must score ≥ 95 in all four categories and LCP ≤ 1.5 s.
+    # Storefront: ≥ 95 in all four Lighthouse categories; desktop LCP ≤ 1.0 s; phone (slow 4G) LCP ≤ 2.5 s here
+    # (CI serves PHP directly: no gzip, no page cache — behind nginx the same pages measure 0.9–1.5 s);
+    # uncached pages < 150 ms and API < 100 ms server time (p95).
     if: github.event_name == 'push' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     needs: backend
@@ -118,8 +130,12 @@ jobs:
           (PHP_CLI_SERVER_WORKERS=4 php artisan serve --host=127.0.0.1 --port=8000 > /tmp/serve.log 2>&1 &)
           sleep 3
           curl -fsS http://127.0.0.1:8000/ > /dev/null || (cat /tmp/serve.log; tail -50 storage/logs/*.log; exit 1)
-      - name: Lighthouse CI
+      - name: Server time budgets (uncached pages p95 < 150 ms, API p95 < 100 ms)
+        run: scripts/perf-budget.sh http://127.0.0.1:8000
+      - name: Lighthouse CI (desktop)
         run: npx --yes @lhci/cli@0.14.x autorun
+      - name: Lighthouse CI (phone, slow 4G simulated)
+        run: npx --yes @lhci/cli@0.14.x autorun --config=lighthouserc.mobile.json
       - name: Show failed Lighthouse audits
         if: failure()
         run: |

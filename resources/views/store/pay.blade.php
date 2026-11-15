@@ -8,6 +8,13 @@
         <p class="mt-3 text-2xl font-semibold">{{ \App\Support\Money::format($order->amountDue()) }}</p>
         <p class="muted text-sm">Save your order number: <b>{{ $order->number }}</b>. Unpaid orders are cancelled after {{ \App\Support\Settings::int('orders.unpaid_cancel_hours') }} hours.</p>
         <div class="mt-6 grid gap-4">
+            @if ($order->receiptUnderReview())
+            <div class="card" data-receipt-waiting>
+                <h2 class="text-xl">We have your receipt</h2>
+                <p class="mt-2 text-sm">We are checking your transfer, usually within a few hours. You don't need to pay again; we send you a message as soon as it is confirmed.</p>
+                <a class="btn-ghost mt-4" href="{{ url('/track?number='.$order->number) }}">Track your order</a>
+            </div>
+            @else
             @feature('payments.manual')
             <div class="card">
                 <h2 class="text-xl">Transfer and upload the receipt</h2>
@@ -26,7 +33,8 @@
                 </form>
             </div>
             @endfeature
-            <p data-form-message class="text-sm text-brand-600" role="alert"></p>
+            @endif
+            <p data-form-message class="text-sm text-danger-600" role="alert"></p>
         </div>
     @endif
 </div>

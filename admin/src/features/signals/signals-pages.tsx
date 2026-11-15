@@ -7,7 +7,6 @@ import { formatDate } from '@/lib/money'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { FilterBar, SearchInput, SelectFilter, opts } from '@/components/km/filter-bar'
@@ -190,5 +189,5 @@ export function TelegramPage() {
 }
 
 function F({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div className='grid gap-1.5'><Label>{label}</Label>{children}</div>
+  return <label className='grid gap-1.5 text-sm leading-none font-medium'>{label}{children}</label>
 }

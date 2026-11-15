@@ -12,6 +12,7 @@ use App\Models\SignalSubscription;
 use App\Referral\Engagement;
 use App\Support\Settings;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -20,6 +21,15 @@ use Illuminate\Support\Facades\DB;
  */
 class Dashboard
 {
+    /** Bumped on every ledger entry: cached dashboards are rebuilt after money moves. */
+    public const VERSION_KEY = 'dashboard:version';
+
+    public static function moneyMoved(): void
+    {
+        Cache::add(self::VERSION_KEY, 0);
+        Cache::increment(self::VERSION_KEY);
+    }
+
     /** true = the demo data set, false = real data. Never both: money totals never mix them. */
     private bool $demo = false;
 

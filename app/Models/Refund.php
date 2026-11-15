@@ -17,11 +17,13 @@ class Refund extends Model
 {
     use HidesDemo;
 
+    /** @return list<string> */
     protected static function demoOwnerColumns(): array
     {
         return ['created_by'];
     }
 
+    /** @return array<string, string> */
     protected static function demoParents(): array
     {
         return ['payment_id' => 'payments'];

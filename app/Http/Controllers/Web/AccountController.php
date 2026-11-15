@@ -129,7 +129,7 @@ class AccountController extends Controller
         $request->validate(['method' => ['required', Rule::in(['wallet'])]]);
         try {
             $purchase = $memberships->newPurchase($request->user());
-            $wallet->apply($purchase, $request->user());
+            $wallet->apply($purchase, $request->user(), fullOnly: true);
             if (! $purchase->fresh()->isSettled()) {
                 throw new InvalidArgumentException('Not enough in your wallet. Tick "use my wallet" and transfer the rest.');
             }

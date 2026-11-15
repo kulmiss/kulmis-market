@@ -9,7 +9,6 @@ import { api } from '@/lib/api'
 import { formatMoney } from '@/lib/money'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -134,5 +133,5 @@ function BadgeDialog({ badge, rules, icons: iconNames }: { badge?: Badge; rules:
 }
 
 function L({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div className='grid gap-1.5'><Label>{label}</Label>{children}</div>
+  return <label className='grid gap-1.5 text-sm leading-none font-medium'>{label}{children}</label>
 }

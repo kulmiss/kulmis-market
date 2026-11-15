@@ -14,7 +14,9 @@ class CachePage
     {
         $response = $next($request);
         if (PageCache::cacheable($request, $response)) {
-            $response->headers->set('Cache-Control', 'public, max-age=300');
+            // Same as the web server sends for cached copies: the browser always checks back, so
+            // signing in or out never shows a stale guest page from the browser cache.
+            $response->headers->set('Cache-Control', 'public, max-age=0, must-revalidate');
             if (PageCache::enabled()) {
                 PageCache::store($request, $response);
                 $response->headers->set('X-Page-Cache', 'stored');

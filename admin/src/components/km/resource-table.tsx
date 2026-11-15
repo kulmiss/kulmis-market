@@ -8,10 +8,11 @@ import {
   tableFeatures,
   useTable,
 } from '@tanstack/react-table'
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { api, type Paginated } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 /** Table features used by every admin list (only row selection; paging and filters run on the server). */
@@ -102,7 +103,11 @@ export function ResourceTable<T extends object>({
           </TableHeader>
           <TableBody>
             {query.isLoading ? (
-              <TableRow><TableCell colSpan={allColumns.length} className='h-24 text-center'><Loader2 className='mx-auto animate-spin' /></TableCell></TableRow>
+              Array.from({ length: 8 }, (_, i) => (
+                <TableRow key={`s${i}`} aria-busy='true'>
+                  {allColumns.map((_c, j) => <TableCell key={j}><Skeleton className='h-5 w-full max-w-40' /></TableCell>)}
+                </TableRow>
+              ))
             ) : table.getRowModel().rows.length === 0 ? (
               <TableRow><TableCell colSpan={allColumns.length} className='h-24 text-center text-muted-foreground'>{empty}</TableCell></TableRow>
             ) : (

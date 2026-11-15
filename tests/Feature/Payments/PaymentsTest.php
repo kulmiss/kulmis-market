@@ -214,4 +214,37 @@ class PaymentsTest extends TestCase
         $this->postJson("/api/v1/orders/{$order->number}/payment-options", ['phone' => '0933445566'])
             ->assertOk()->assertJsonCount(0, 'data.methods');
     }
+
+    public function test_only_one_receipt_can_wait_for_review(): void
+    {
+        $order = $this->order();
+        $send = fn () => $this->postJson("/api/v1/orders/{$order->number}/payment-proof", ['phone' => '0933445566', 'method' => 'telebirr',
+            'proof' => UploadedFile::fake()->image('r.jpg')]);
+        $send()->assertCreated();
+        $send()->assertUnprocessable()->assertJsonValidationErrors('order'); // double click / second tab
+        $this->get("/pay/{$order->number}?phone=0933445566")->assertOk()->assertSee('We have your receipt')->assertDontSee('Send receipt');
+        $this->postJson('/api/v1/orders/track', ['number' => $order->number, 'phone' => '0933445566'])
+            ->assertOk()->assertJsonPath('data.receipt_under_review', true);
+        $this->assertSame(1, Payment::query()->count());
+        $this->assertCount(1, Storage::disk('local')->allFiles(), 'the refused copy is not kept');
+
+        // After a rejection the customer can send a better receipt.
+        $payment = Payment::query()->sole();
+        app(PaymentService::class)->rejectProof($payment, User::factory()->role('finance')->create()->id, 'Blurry');
+        $send()->assertCreated();
+        $this->assertSame(2, Payment::query()->count());
+    }
+
+    public function test_finance_can_see_and_approve_payments_but_not_orders(): void
+    {
+        $order = $this->order();
+        $this->postJson("/api/v1/orders/{$order->number}/payment-proof", ['phone' => '0933445566', 'method' => 'telebirr',
+            'proof' => UploadedFile::fake()->image('r.jpg')])->assertCreated();
+        $payment = Payment::query()->sole();
+        $this->actingAsAdmin('finance');
+        $this->getJson('/api/v1/admin/payments')->assertOk()->assertJsonPath('total', 1);
+        $this->get("/api/v1/admin/payments/{$payment->id}/proof")->assertOk();
+        $this->postJson("/api/v1/admin/payments/{$payment->id}/approve")->assertOk();
+        $this->getJson("/api/v1/admin/orders/{$order->id}")->assertForbidden();
+    }
 }

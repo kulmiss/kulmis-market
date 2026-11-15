@@ -91,7 +91,10 @@ class AuthController extends Controller
             'email' => $user->email,
             'role' => $user->role,
             'role_label' => config("permissions.roles.{$user->role}.label"),
-            'abilities' => $user->isSuperAdmin() ? ['*'] : config("permissions.roles.{$user->role}.abilities", []),
+            'abilities' => $user->isSuperAdmin() ? ['*'] : array_values(array_merge(
+                config("permissions.roles.{$user->role}.abilities", []),
+                $user->can('view-payments') ? ['view-payments'] : [],   // combined ability (see AppServiceProvider)
+            )),
             'two_factor' => $user->hasTwoFactor(),
             'two_factor_required' => (bool) config('permissions.require_2fa'),
             'currency' => Currency::forClients(),

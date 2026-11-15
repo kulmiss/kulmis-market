@@ -34,11 +34,30 @@ class PaymentService
         if (! in_array($provider, [Payment::BANK, Payment::TELEBIRR], true)) {
             throw new InvalidArgumentException('Unknown manual payment method.');
         }
-        $this->assertPayable($payable);
-        $payment = $this->create($payable, $provider);
         $path = app(ProofStorage::class)->store($proof);
-        $payment->update(['status' => Payment::AWAITING_REVIEW, 'proof_path' => $path,
-            'proof_reference' => $reference, 'payer_account' => $payerAccount]);
+
+        // One receipt under review at a time: a double click, a second tab or a
+        // resend can't leave two transfers for staff to approve (and count twice).
+        try {
+            $payment = DB::transaction(function () use ($payable, $provider, $path, $reference, $payerAccount) {
+                $payable->newQuery()->whereKey($payable->getKey())->lockForUpdate()->first();
+                $waiting = Payment::query()->where('payable_type', $payable->getMorphClass())->where('payable_id', $payable->getKey())
+                    ->where('status', Payment::AWAITING_REVIEW)->exists();
+                if ($waiting) {
+                    throw new InvalidArgumentException('We already have your receipt and are checking it. You will hear from us soon.');
+                }
+                $this->assertPayable($payable);
+                $payment = $this->create($payable, $provider);
+                $payment->update(['status' => Payment::AWAITING_REVIEW, 'proof_path' => $path,
+                    'proof_reference' => $reference, 'payer_account' => $payerAccount]);
+
+                return $payment;
+            });
+        } catch (\Throwable $e) {
+            app(ProofStorage::class)->delete($path); // don't keep a file nobody will review
+
+            throw $e;
+        }
         Activity::log('payment.proof_submitted', $payment, ['provider' => $provider]);
 
         return $payment;

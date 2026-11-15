@@ -7,10 +7,13 @@ use App\Http\Middleware\CaptureReferral;
 use App\Http\Middleware\EnsureFeature;
 use App\Http\Middleware\EnsureStaff;
 use App\Http\Middleware\EnsureTwoFactor;
+use App\Http\Middleware\NormalizeQuery;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\ShareErrorsIfSession;
 use App\Http\Middleware\StartSessionIfPresent;
+use App\Http\Middleware\StripControlCharacters;
 use App\Http\Middleware\ThrottlePerRoute;
+use App\Http\TrustedHosts;
 use App\Pricing\PricingException;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -36,6 +39,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(SecurityHeaders::class);
+        $middleware->append(StripControlCharacters::class);
+        $middleware->prepend(NormalizeQuery::class);
+        // Production only (Laravel skips this locally and in tests): any other Host header gets 400.
+        $middleware->trustHosts(at: fn () => TrustedHosts::patterns(), subdomains: false);
         $middleware->group('storefront', [
             EncryptCookies::class,
             AddQueuedCookiesToResponse::class,

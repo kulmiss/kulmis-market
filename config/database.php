@@ -19,6 +19,9 @@ return [
 
     'default' => env('DB_CONNECTION', 'sqlite'),
 
+    // Development only: log queries slower than this (ms). 0 turns it off.
+    'slow_query_ms' => (int) env('SLOW_QUERY_MS', 50),
+
     /*
     |--------------------------------------------------------------------------
     | Database Connections

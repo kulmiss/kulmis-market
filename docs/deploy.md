@@ -27,6 +27,7 @@ assets are committed, so the server needs **no Node.js**.
    APP_ENV=production
    APP_DEBUG=false
    APP_URL=https://your-domain
+   TRUSTED_HOSTS=www.your-domain   # optional: other names that reach this site (better: redirect www to the main name)
    DB_HOST=localhost   DB_DATABASE=…   DB_USERNAME=…   DB_PASSWORD=…
    SESSION_SECURE_COOKIE=true
    MAIL_MAILER=smtp    MAIL_HOST=…  MAIL_USERNAME=…  MAIL_PASSWORD=…  MAIL_FROM_ADDRESS=…
@@ -40,7 +41,7 @@ assets are committed, so the server needs **no Node.js**.
    php artisan storage:link
    php artisan km:create-admin you@example.com
    php artisan km:backup-key            # put the line it prints in .env
-   php artisan config:cache && php artisan route:cache && php artisan view:cache
+   php artisan optimize                 # config, routes, views, events + empties the page cache
    ```
 6. **Cron** (cPanel → Cron Jobs, every minute):
    ```
@@ -91,7 +92,7 @@ php artisan down
 git pull
 composer install --no-dev --optimize-autoloader
 php artisan migrate --force
-php artisan config:cache && php artisan route:cache && php artisan view:cache
+php artisan optimize        # caches config/routes/views/events and empties the page cache (new CSS/JS names)
 php artisan up
 ```
 The page cache clears itself on changes. To clear it by hand, delete

@@ -1,5 +1,126 @@
 # Kulmis Market — security and quality review
 
+_Newest review first. Round 3 is below; round 1 (before the first merge) follows it._
+
+## Round 3 — second full review (15 Nov 2026, after round 2 + the Chapa removal)
+
+Branches `pr/38` … `pr/44` (PRs #46–#52). Goal: bulletproof and feeling instant.
+
+**How it was checked**
+- **Every screen in a real browser** (headless Chrome against Docker + nginx, port 8090, demo data):
+  - storefront, member area and admin, on phone and desktop, light and dark
+  - as a guest, a new member, a member with a big team, a member in grace, an expired member and a shopper without membership
+  - as every staff role and as Super Admin
+  - the checks: console errors, failed requests, broken images, sideways scrolling, unlabeled fields and PHP warnings
+- **End-to-end flows in the browser:**
+  - browse → cart → checkout → transfer receipt → staff approval → track
+  - membership from the wallet, cash-out, referral QR, signals
+  - double clicks, the back button, refresh mid-payment, expired sessions
+  - emoji, Amharic and HTML in every field, huge input
+- **Attacks:** a new `AttackTest` covering:
+  - stored XSS everywhere
+  - array/huge query values on every GET route
+  - mass assignment
+  - open redirects
+  - account enumeration
+  - the last item in stock
+- **Real parallel requests against MariaDB:**
+  - 10 buyers for the last item
+  - 6 checkouts with a single-use coupon
+  - 8 cash-outs at once
+  - each one succeeded exactly once
+- **Tools:**
+  - Larastan raised to **level 6**
+  - `composer audit` and `npm audit` (storefront + admin): clean
+  - gitleaks in CI
+  - Lighthouse (12 runs, phone + desktop) before → after
+  - query counts per page, server timings (p95)
+
+Result: **358 tests** pass on SQLite and MariaDB; Larastan level 6 with 0 errors; audits clean.
+
+### Scores (round 3)
+
+| Area | Bugs found | Fixed? | Score /10 before → after |
+|---|---|---|---|
+| Web security | Host-header **cache poisoning** (high); array query strings crashed pages | ✅ | 8 → 9.5 |
+| Money & payments | Finance couldn't open Payments; **double "Send receipt" made two approvable receipts**; "pay from wallet" with too little took the partial amount | ✅ | 8 → 9.5 |
+| Access control (staff roles) | Pages a role can't use showed empty tables or loaded forever; staff couldn't read feature on/off | ✅ | 8.5 → 9.5 |
+| Storefront | Stale guest page after sign-in; errors shown in green; tracking asked to pay again while a receipt was checked; back button showed the old cart | ✅ | 8 → 9.5 |
+| API robustness | `GET /api/v1/membership` crashed for people who never joined | ✅ | 8.5 → 9.5 |
+| Input hygiene | Null bytes / right-to-left overrides were stored | ✅ | 9 → 9.5 |
+| Build & deploy | Committed CSS older than its source; deploys served cached pages pointing at deleted CSS/JS | ✅ (+ CI check) | 7.5 → 9.5 |
+| CSP | Storefront allowed inline `<style>` blocks | ✅ (attributes only) | 9 → 9.5 |
+| Concurrency (stock, coupons, wallet) | none (verified with real parallel requests) | — | 9.5 → 9.5 |
+| Accessibility | Button contrast 4.37:1 (stale CSS), prohibited ARIA in shop pagination, ~50 admin fields without an accessible name | ✅ | 9 → 9.5 |
+| Code quality | 26 type issues at Larastan level 6 | ✅ | 9 → 9.5 |
+| Performance | N+1 on member pages, uncached dashboard, heavy photos; the new dashboard cache broke lists on the second load (caught by the final check) | ✅ | 9 → 9.5 |
+| Dependencies | 8 Dependabot updates (4 broke CI) | ✅ #46 | 9 → 9.5 |
+
+### Every bug found in round 3
+
+| # | Area | Bug | Severity | Fixed in |
+|---|------|-----|----------|----------|
+| 1 | Security | Web cache poisoning: a request with a forged Host header was written to the static page cache with that host in every link, script and image URL (all later visitors got a broken page / links to the attacker's domain) | High | pr/39 |
+| 2 | Build | Committed storefront CSS was older than the source (green buttons still #1f8a4c, 4.37:1 contrast) and nothing checked it | Medium | pr/39 |
+| 3 | Tests | Trusted-host setting leaked between tests (static on Request) | Low | pr/39 |
+| 4 | Storefront | After signing in, pages you'd seen as a guest could still show the guest version for up to 5 minutes (browser cached them with max-age=300) | Medium | pr/40 |
+| 5 | Admin | Fulfilment and Support staff landed on the Dashboard they can't use: it stayed on "Loading…" forever | Medium | pr/41 |
+| 6 | Admin | Opening a page your role can't use (by link/URL) showed an empty table and action buttons instead of "403" | Low | pr/41 |
+| 7 | Admin / money | Finance (who approves transfers) could not open Payments at all: the list needed the "manage orders" permission | High | pr/41 |
+| 8 | Money | Double-clicking "Send receipt" (or a second tab) created two receipts for the same order; both could be approved | High | pr/41 |
+| 9 | Storefront | After the colour change, error messages (wrong password, checkout problems, failed receipt) showed in green, like success | Medium | pr/41 |
+| 10 | Admin | Staff other than Super Admin couldn't read the feature switches (403 on every page), so switched-off sections still showed in their menu | Low | pr/41 |
+| 11 | Storefront | Track order said "Pay" again while a receipt was being checked (customers could pay twice); the pay page still offered the receipt form | Medium | pr/41 |
+| 12 | Storefront | Back button after placing an order showed the old cart on the checkout page; header cart count stale after back | Low | pr/41 |
+| 13 | Security | Invisible control characters (null bytes) and right-to-left override characters were saved in names/addresses (can break exports and disguise text) | Low | pr/41 |
+| 14 | Money | "Pay from wallet" for membership with too little in the wallet took the partial amount from the wallet and then showed an error (money parked in an unpaid purchase) | Medium | pr/41 |
+| 15 | Robustness | Query strings with arrays (`/shop?sort[]=x`, `/pay/…?phone[]=1`, admin filters) crashed with 500 and filled the logs; admin lists accepted `per_page=99999999` | Medium | pr/42 |
+| 16 | API | `GET /api/v1/membership` crashed (500) for a signed-in customer who never had a membership | Medium | pr/42 |
+| 17 | Security | Admin sign-in accepted any `redirect=` value (defence in depth: only /admin paths now) | Low | pr/42 |
+| 18 | Deploy | After an update, cached pages kept pointing to the old CSS/JS file names (deleted by the new build) for up to 15 minutes: unstyled pages. `php artisan optimize` now empties the page cache; deploy steps use it | Medium | pr/43 |
+| 19 | Accessibility | Shop pagination used prohibited ARIA (Lighthouse a11y 96) | Low | pr/43 |
+| 20 | Admin | (found in the final check) The new dashboard cache returned lists as broken objects on the second load ("top_products.map is not a function"); stored as plain arrays now, test uses the real cache store | High (caught before merge) | pr/43 |
+| 21 | Accessibility | ~50 admin fields had no accessible name (placeholder-only filters, labels not linked to their inputs) | Low | pr/44 |
+| 22 | Admin | Demo data page scrolled sideways on phones | Low | pr/44 |
+
+### Speed (before → after, Docker + nginx, demo data)
+
+| Page / action | Before | After |
+|---|---|---|
+| Lighthouse phone (slow 4G simulated): home / product / shop LCP | 1.21 / 1.95 / 1.36 s | **1.10 / 1.50 / 1.49 s** |
+| Lighthouse phone: membership, login, signals LCP | 0.99–1.25 s | **0.94–0.96 s** |
+| Lighthouse desktop LCP (all key pages) | 0.25–0.56 s | 0.27–0.47 s |
+| Lighthouse scores (perf / a11y / best practices / SEO) | 97–100 / 95–96 / 100 / 100 | **100 / 96–100 / 100 / 100** |
+| CLS | 0 | 0 |
+| Page weight: product / shop / home | 264 / 472 / 194 KB | **170 / 337 / 148 KB** |
+| Cached pages (nginx, no PHP) | 0.5–0.7 ms | 0.5–0.7 ms |
+| Uncached pages p95 | 25–43 ms | 17–45 ms (budget 150 ms) |
+| API p95 | 28–43 ms | 19–34 ms (budget 100 ms) |
+| `/account` (member with a big team) | 90 queries / 124 ms | **58 queries / ~100 ms** |
+| `/account/team` | 33 queries / 45 ms | **11 queries / 19 ms** |
+| `/account/wallet` | 10 queries / 16 ms | **5 queries / 14 ms** |
+| Admin dashboard | 54 queries / 70–78 ms | first load same, **then 6 queries / 8 ms** |
+| Admin first load (JS, gzip) | 177 KB | 172 KB (98 lazy chunks, 438 KB total) |
+| Storefront CSS / JS (gzip) | 10.1 / 4.3 KB | 8.9 / 4.4 KB |
+
+Security changes were measured as they went in: the host check, the query normaliser and the stricter CSP added no measurable time.
+
+### Not done, or only partly, and why
+| Item | Why | Next step |
+|---|---|---|
+| Phone LCP ≤ 1.0 s under Lighthouse's simulated slow 4G on photo-led pages (home 1.10 s, product 1.50 s) | At 1.6 Mbps the photo download alone takes most of that time; text pages are already < 1 s. On real 4G the pages paint well under 1 s | Smaller hero crops, or a CDN with image resizing near Ethiopia |
+| Critical CSS inlined | The whole CSS is 8.9 KB and Lighthouse estimates 0 ms to gain; inlining would also need a per-build CSP hash | Revisit if the CSS grows |
+| Brotli on the Docker nginx | The official nginx image has no Brotli module; gzip is on. `.htaccess` turns Brotli on where the host has it | Use a host/CDN with Brotli |
+| Admin CSP still allows inline styles | The admin UI library injects styles at runtime | Storefront is strict (attributes only) |
+| Virtualised admin tables | Every list is paged on the server (25–50 rows), so there is nothing long to virtualise | — |
+| Optimistic UI in the admin | Money actions must wait for the server; lists refresh in ~10–20 ms anyway | Could add for non-money toggles |
+| Larastan level 7+ | 108 findings at level 7, mostly union-type strictness, none found to be bugs | Raise gradually |
+| Lighthouse budgets in CI | CI serves PHP directly (no gzip, no page cache), so its phone numbers are slower (shop 2.3 s, product 2.0–2.3 s); budget 2.5 s on phones, 1.0 s on desktop | Run CI behind nginx to use the real numbers |
+
+---
+
+# Round 1 review (for reference)
+
 _Review of the whole app before the first merge (15 Nov 2026). Branches
 `pr/21` … `pr/28` on top of the original stack (#1–#20)._
 
@@ -102,16 +223,17 @@ and MariaDB; Larastan 0 errors; gitleaks no real secrets; both audits clean.
 | Super Admin and the database owner can do anything | One-person team by design | Keep 2FA on, use `ADMIN_ALLOWED_IPS`, copy logs/backups off the server |
 | 2FA optional for customers | You asked for optional | The Security page nudges members with earnings to turn it on |
 | Recovery codes are stored encrypted, not hashed | Low risk (encrypted with the app key) | Could be hashed later |
-| CSP allows inline *styles* | Needed by the admin UI library | Scripts stay strict (one hashed inline script) |
-| Larastan at level 5, not max | Higher levels mostly flag style, not bugs | Raise gradually |
+| CSP allows inline *styles* in the admin | Needed by the admin UI library | Storefront: no inline `<style>` at all, only style attributes (round 3) |
+| Larastan at level 6, not max | Level 7+ mostly flags union-type strictness | Raise gradually |
 | No external penetration test | Out of scope here | Recommended before a big launch |
 
 ## How to check it yourself
 ```bash
-php artisan test                 # 303 tests
+php artisan test                 # 358 tests
 php artisan km:doctor            # red = unsafe, yellow = setup to do
 php artisan km:backup && php artisan km:backup-verify
 ```
-CI (on the top PR) runs Pint, Larastan, the tests on MySQL 8, the admin build,
-Lighthouse ≥ 95 + LCP ≤ 1.5 s, gitleaks over the whole history and the
-dependency audits.
+CI (on the top PR) runs Pint, Larastan (level 6), the tests on MySQL 8, the admin
+build, a check that the committed builds match the sources, server-time budgets,
+Lighthouse on desktop (≥ 95, LCP ≤ 1.0 s) and phone (LCP ≤ 2.5 s on slow 4G in CI, which serves PHP without gzip or page cache),
+gitleaks over the whole history and the dependency audits.
