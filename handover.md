@@ -53,7 +53,7 @@ PRs 1–28 are merged into `main`.
 ### Round 2 (stacked on `main`)
 | PR | Branch | Status |
 |----|--------|--------|
-| 29 | `pr/29-referral-fix` | Draft. Bug #7 "referral not working": same-browser sign-ups are linked + held for review (were silently refused), soft network flag, local sign-up limit; end-to-end tests A→B→C→D + guest via link + admin tree == member team |
+| 29 | `pr/29-referral-fix` | Draft. Bug #7 "referral not working": same-browser sign-ups are linked + held for review (were silently refused), soft network flag, local sign-up limit, referral QR no longer 404s under nginx; end-to-end tests A→B→C→D + guest via link + admin tree == member team |
 
 **Merge:** the top PR of round 2 targets `main` and contains every commit
 below it, so one merge brings in everything.
