@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web\AccountController;
 use App\Http\Controllers\Web\AuthController;
+use App\Http\Controllers\Web\ContestController;
 use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\PushController;
 use App\Http\Controllers\Web\ReviewController;
@@ -44,6 +45,7 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
     Route::post('cash-out', [AccountController::class, 'cashOut'])->middleware(['feature:wallet', 'feature:wallet.cashout', 'throttle:5,1'])->name('cashout');
     Route::post('payout-account', [AccountController::class, 'payoutAccount'])->middleware(['feature:wallet', 'feature:wallet.cashout', 'throttle:5,10'])->name('payout-account');
     Route::post('referral-code', [AccountController::class, 'referralCode'])->middleware('feature:referral')->name('referral-code');
+    Route::get('contests', [ContestController::class, 'index'])->name('contests');
     Route::get('badges', [AccountController::class, 'badges'])->middleware('feature:badges')->name('badges');
     Route::post('badges/seen', [AccountController::class, 'badgesSeen'])->middleware(['feature:badges', 'throttle:30,1'])->name('badges.seen');
 

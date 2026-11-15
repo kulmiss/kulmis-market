@@ -28,7 +28,8 @@ class Rewards
         return 'expense:reward_'.$kind;
     }
 
-    public function grant(User $to, string $kind, int $amount, ?Model $source, string $key, string $description, string $notifyTitle): ?Reward
+    /** @param ?int $daysOnTheWay null = the normal refund window (14 days); 0 when the window already passed (contests, challenges) */
+    public function grant(User $to, string $kind, int $amount, ?Model $source, string $key, string $description, string $notifyTitle, ?int $daysOnTheWay = null): ?Reward
     {
         if ($amount <= 0 || ! $to->isActiveAccount() || ! array_key_exists($kind, Reward::KINDS)) {
             return null;
@@ -37,11 +38,13 @@ class Rewards
             return null;
         }
         try {
-            return DB::transaction(function () use ($to, $kind, $amount, $source, $key, $description, $notifyTitle) {
+            $days = $daysOnTheWay ?? max(0, Settings::int('referral.pending_days'));
+
+            return DB::transaction(function () use ($to, $kind, $amount, $source, $key, $description, $notifyTitle, $days) {
                 $r = Reward::query()->create([
                     'user_id' => $to->id, 'kind' => $kind, 'amount' => $amount, 'status' => Reward::PENDING,
                     'on_hold' => app(FraudGuard::class)->isOnHold($to),
-                    'available_at' => now()->addDays(max(0, Settings::int('referral.pending_days'))),
+                    'available_at' => now()->addDays($days),
                     'source_type' => $source?->getMorphClass(), 'source_id' => $source?->getKey(),
                     'dedupe_key' => $key, 'description' => mb_substr($description, 0, 255),
                 ]);
@@ -49,8 +52,8 @@ class Rewards
                     [self::account($kind), $amount],
                     [$this->ledger->userAccount($to, Wallet::PENDING), -$amount],
                 ], "reward:{$r->id}:earned", $r, description: $description);
-                Inbox::add($to, 'earning', $notifyTitle.': '.Money::format($amount), $description.' It is on the way: ready to use in '
-                    .Settings::int('referral.pending_days').' days.', '/account/wallet', "reward:{$r->id}");
+                Inbox::add($to, 'earning', $notifyTitle.': '.Money::format($amount), $description.($days > 0
+                    ? ' It is on the way: ready to use in '.$days.' days.' : ' It is ready to use within the hour.'), '/account/wallet', "reward:{$r->id}");
 
                 return $r;
             });

@@ -2,6 +2,8 @@
 
 use App\Notify\Inbox;
 use App\Notify\WebPush;
+use App\Rewards\Challenges;
+use App\Rewards\Contests;
 use App\Shop\CartReminders;
 use App\Shop\FlashSales;
 use App\Storefront\PageCache;
@@ -63,3 +65,7 @@ Artisan::command('km:push-keys', function () {
     $this->line('WEBPUSH_PUBLIC_KEY='.$k['public']);
     $this->line('WEBPUSH_PRIVATE_KEY='.$k['private']);
 })->purpose('Make the keys for phone notifications (Web Push)');
+Schedule::call(function () {
+    app(Contests::class)->settleDue();
+    app(Challenges::class)->settleDue();
+})->dailyAt('05:23')->name('contests:settle')->withoutOverlapping();

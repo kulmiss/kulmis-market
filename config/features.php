@@ -51,6 +51,8 @@ return [
     'referral.share_buttons' => ['Share buttons', 'Referral', true, 'referral', 'Telegram, WhatsApp and "More" buttons to share the referral link.'],
     'referral.qr_codes' => ['QR codes', 'Referral', true, 'referral', 'A QR code of the referral link that friends can scan.'],
     'referral.first_payment_bonus' => ['First-payment bonus', 'Referral', true, 'referral', 'The inviter gets a bonus (Settings) when someone they brought pays for the first time. A refund takes it back.'],
+    'referral.contests' => ['Referral contests', 'Referral', true, 'referral', 'Contests with dates, a rule and fixed prizes for places 1–10, with a live leaderboard (first name and badge only).'],
+    'referral.challenges' => ['Team challenges', 'Referral', true, 'referral', 'For example "Bring 3 new paying members this month → 300 ETB". Paid after the month, within a monthly cap.'],
 
     // Badges
     'badges' => ['Badges', 'Badges', true, null, 'Members unlock badges for their team, loyalty, earnings and orders.'],

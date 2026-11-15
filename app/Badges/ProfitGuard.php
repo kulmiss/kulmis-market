@@ -3,6 +3,8 @@
 namespace App\Badges;
 
 use App\Models\Badge;
+use App\Models\Challenge;
+use App\Models\Contest;
 use App\Support\Features;
 use App\Support\Money;
 use App\Support\Settings;
@@ -29,7 +31,7 @@ final class ProfitGuard
 
     /** Switches that turn on a payout: turning one on is checked too. */
     public const PAYOUT_SWITCHES = ['referral', 'referral.level1', 'referral.level2', 'referral.level3', 'referral.commission.membership',
-        'badges', 'badges.bonus', 'loyalty_reward', 'referral.first_payment_bonus', 'membership.comeback_reward'];
+        'badges', 'badges.bonus', 'loyalty_reward', 'referral.first_payment_bonus', 'membership.comeback_reward', 'referral.contests', 'referral.challenges'];
 
     /** Settings whose change is checked. */
     public const PATTERN = '/^(referral\.rate\.membership\.|membership\.price|loyalty\.|bonus\.|reward\.|contest\.|challenge\.)/';
@@ -56,8 +58,15 @@ final class ProfitGuard
         $loyalty = self::share(Settings::int('loyalty.reward'), max(1, Settings::int('loyalty.every_months')) * $price);
         $first = Features::enabled('referral.first_payment_bonus') ? self::share(Settings::int('bonus.first_payment'), $price) : 0;
         $comeback = Features::enabled('membership.comeback_reward') ? self::share(Settings::int('reward.comeback'), $price) : 0;
-        $contests = 0;   // contests: next change
-        $challenges = 0; // team challenges: next change
+        $contests = Features::enabled('referral.contests') && Contest::query()->where('status', 'active')->exists()
+            ? Settings::int('contest.budget') : 0;
+        $challenges = 0;
+        if (Features::enabled('referral.challenges')) {
+            foreach (Challenge::query()->where('is_active', true)->get(['reward', 'target']) as $c) {
+                $challenges += self::share($c->reward, max(1, $c->target) * $price); // one member can make several
+            }
+            $challenges = min($challenges, Settings::int('challenge.budget'));
+        }
         $total = $commissions + $bonus + $loyalty + $first + $comeback + $contests + $challenges;
 
         return [

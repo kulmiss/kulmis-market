@@ -9,6 +9,12 @@ use App\Ledger\Account;
 use App\Ledger\Ledger;
 use App\Models\Badge;
 use App\Models\BadgeBonus;
+use App\Models\Challenge;
+use App\Models\Contest;
+use App\Rewards\Challenges;
+use App\Rewards\Contests;
+use App\Rewards\Rewards;
+use App\Rewards\Scores;
 use App\Support\Settings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -65,6 +71,19 @@ class BonusProfitSimulationTest extends TestCase
 
         $run = app(BonusRun::class)->pay(Carbon::parse('2026-10-01', self::TZ), null);
         $revenue = $run->revenue;
+
+        // October also had a referral contest (generous fixed prizes) and a team challenge.
+        $contest = Contest::query()->create(['name' => 'October contest', 'rule' => 'new_paying_members', 'prizes' => [2_000_000, 1_000_000, 500_000, 250_000, 250_000],
+            'starts_at' => Carbon::parse('2026-10-01', self::TZ), 'ends_at' => Carbon::parse('2026-11-01', self::TZ)]);
+        $challenge = Challenge::query()->create(['name' => 'Bring 3', 'target' => 3, 'reward' => 50_000]);
+        Carbon::setTestNow(Carbon::parse('2026-11-16 08:00', self::TZ)); // after the 14-day check
+        app(Contests::class)->settle($contest);
+        app(Challenges::class)->settle($challenge, Carbon::parse('2026-10-01', self::TZ));
+        $contestPaid = Rewards::total('contest');
+        $challengePaid = Rewards::total('challenge');
+        $octoberMoney = Scores::membershipMoney(Carbon::parse('2026-10-01', self::TZ), Carbon::parse('2026-11-01', self::TZ));
+        $this->assertLessThanOrEqual(intdiv($octoberMoney * Settings::int('contest.budget'), 10_000), $contestPaid, 'contest prizes stay inside their budget');
+        $this->assertLessThanOrEqual(intdiv($octoberMoney * Settings::int('challenge.budget'), 10_000), $challengePaid, 'challenge rewards stay inside their budget');
         $this->assertGreaterThan(1_000 * 500_000, $revenue, 'the simulation has real money in it');
 
         // Everything that can go out of October's membership money.
@@ -72,7 +91,7 @@ class BonusProfitSimulationTest extends TestCase
         $bonuses = app(Ledger::class)->balance(Account::BADGE_BONUSES);
         $guard = ProfitGuard::worstCase();
         $loyalty = intdiv($revenue * $guard['loyalty'], 10_000);
-        $newPayouts = $this->worstCaseNewPayouts($users);
+        $newPayouts = $this->worstCaseNewPayouts($users) + $contestPaid + $challengePaid;
         $kept = $revenue - $commissions - $bonuses - $loyalty - $newPayouts;
 
         if (getenv('SIM_REPORT')) {

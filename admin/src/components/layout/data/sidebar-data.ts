@@ -1,5 +1,6 @@
 import {
   Activity,
+  Trophy,
   LifeBuoy,
   Package,
   Timer,
@@ -68,6 +69,7 @@ export const sidebarData: SidebarData = {
         { title: 'Team earnings', url: '/commissions', icon: BookOpen, ability: 'manage-referrals', feature: 'referral' },
         { title: 'Badges', url: '/badges', icon: Medal, ability: 'manage-settings', feature: 'badges' },
         { title: 'Badge bonus', url: '/badge-bonus', icon: PiggyBank, ability: 'manage-settings', feature: 'badges.bonus' },
+        { title: 'Contests', url: '/contests', icon: Trophy, ability: 'manage-referrals', feature: 'referral' },
       ],
     },
     {

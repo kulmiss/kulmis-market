@@ -1,1 +1,0 @@
-import{t as e}from"./signals-pages-6lzP_Qfp.js";var t=e;export{t as component};

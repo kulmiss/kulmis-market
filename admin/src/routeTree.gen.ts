@@ -27,6 +27,7 @@ import { Route as AuthenticatedCategoriesRouteImport } from './routes/_authentic
 import { Route as AuthenticatedCommissionsRouteImport } from './routes/_authenticated/commissions'
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
 import { Route as AuthenticatedContentRouteImport } from './routes/_authenticated/content'
+import { Route as AuthenticatedContestsRouteImport } from './routes/_authenticated/contests'
 import { Route as AuthenticatedCouponsRouteImport } from './routes/_authenticated/coupons'
 import { Route as AuthenticatedDemoRouteImport } from './routes/_authenticated/demo'
 import { Route as AuthenticatedFeaturesRouteImport } from './routes/_authenticated/features'
@@ -141,6 +142,11 @@ const AuthenticatedConfigRoute = AuthenticatedConfigRouteImport.update({
 const AuthenticatedContentRoute = AuthenticatedContentRouteImport.update({
   id: '/content',
   path: '/content',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedContestsRoute = AuthenticatedContestsRouteImport.update({
+  id: '/contests',
+  path: '/contests',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCouponsRoute = AuthenticatedCouponsRouteImport.update({
@@ -298,6 +304,7 @@ export interface FileRoutesByFullPath {
   '/commissions': typeof AuthenticatedCommissionsRoute
   '/config': typeof AuthenticatedConfigRoute
   '/content': typeof AuthenticatedContentRoute
+  '/contests': typeof AuthenticatedContestsRoute
   '/coupons': typeof AuthenticatedCouponsRoute
   '/demo': typeof AuthenticatedDemoRoute
   '/features': typeof AuthenticatedFeaturesRoute
@@ -340,6 +347,7 @@ export interface FileRoutesByTo {
   '/commissions': typeof AuthenticatedCommissionsRoute
   '/config': typeof AuthenticatedConfigRoute
   '/content': typeof AuthenticatedContentRoute
+  '/contests': typeof AuthenticatedContestsRoute
   '/coupons': typeof AuthenticatedCouponsRoute
   '/demo': typeof AuthenticatedDemoRoute
   '/features': typeof AuthenticatedFeaturesRoute
@@ -386,6 +394,7 @@ export interface FileRoutesById {
   '/_authenticated/commissions': typeof AuthenticatedCommissionsRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
   '/_authenticated/content': typeof AuthenticatedContentRoute
+  '/_authenticated/contests': typeof AuthenticatedContestsRoute
   '/_authenticated/coupons': typeof AuthenticatedCouponsRoute
   '/_authenticated/demo': typeof AuthenticatedDemoRoute
   '/_authenticated/features': typeof AuthenticatedFeaturesRoute
@@ -433,6 +442,7 @@ export interface FileRouteTypes {
     | '/commissions'
     | '/config'
     | '/content'
+    | '/contests'
     | '/coupons'
     | '/demo'
     | '/features'
@@ -475,6 +485,7 @@ export interface FileRouteTypes {
     | '/commissions'
     | '/config'
     | '/content'
+    | '/contests'
     | '/coupons'
     | '/demo'
     | '/features'
@@ -520,6 +531,7 @@ export interface FileRouteTypes {
     | '/_authenticated/commissions'
     | '/_authenticated/config'
     | '/_authenticated/content'
+    | '/_authenticated/contests'
     | '/_authenticated/coupons'
     | '/_authenticated/demo'
     | '/_authenticated/features'
@@ -684,6 +696,13 @@ declare module '@tanstack/react-router' {
       path: '/content'
       fullPath: '/content'
       preLoaderRoute: typeof AuthenticatedContentRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/contests': {
+      id: '/_authenticated/contests'
+      path: '/contests'
+      fullPath: '/contests'
+      preLoaderRoute: typeof AuthenticatedContestsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/coupons': {
@@ -891,6 +910,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCommissionsRoute: typeof AuthenticatedCommissionsRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
   AuthenticatedContentRoute: typeof AuthenticatedContentRoute
+  AuthenticatedContestsRoute: typeof AuthenticatedContestsRoute
   AuthenticatedCouponsRoute: typeof AuthenticatedCouponsRoute
   AuthenticatedDemoRoute: typeof AuthenticatedDemoRoute
   AuthenticatedFeaturesRoute: typeof AuthenticatedFeaturesRoute
@@ -927,6 +947,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCommissionsRoute: AuthenticatedCommissionsRoute,
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,
   AuthenticatedContentRoute: AuthenticatedContentRoute,
+  AuthenticatedContestsRoute: AuthenticatedContestsRoute,
   AuthenticatedCouponsRoute: AuthenticatedCouponsRoute,
   AuthenticatedDemoRoute: AuthenticatedDemoRoute,
   AuthenticatedFeaturesRoute: AuthenticatedFeaturesRoute,

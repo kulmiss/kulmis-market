@@ -1,0 +1,1 @@
+import{t as e}from"./order-detail-kNZS-CJJ.js";import{n as t}from"./index-DNEp-Uyn.js";import{d as n}from"./button-CLcLC9O1.js";var r=n();function i(){let{id:n}=t.useParams();return(0,r.jsx)(e,{id:n},n)}export{i as component};
