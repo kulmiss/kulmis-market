@@ -1,1 +1,0 @@
-import{n as e}from"./promotions-page-ClPYTtZ4.js";var t=e;export{t as component};

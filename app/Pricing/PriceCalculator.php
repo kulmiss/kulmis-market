@@ -5,6 +5,7 @@ namespace App\Pricing;
 use App\Models\Coupon;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Orders\Extras;
 use App\Shop\Bundles;
 use App\Shop\FlashSales;
 use App\Support\Features;
@@ -44,8 +45,9 @@ class PriceCalculator
     /**
      * @param  list<array{0: Product, 1: ?ProductVariant, 2: int}>  $items
      * @param  ?Closure(Coupon): int  $customerUses  how often this customer already used the coupon
+     * @param  list<string>  $extras  paid checkout extras chosen (gift_wrap, express, insurance)
      */
-    public function quote(array $items, bool $member, ?string $couponCode = null, int $shipping = 0, ?Closure $customerUses = null, bool $checkStock = true): Quote
+    public function quote(array $items, bool $member, ?string $couponCode = null, int $shipping = 0, ?Closure $customerUses = null, bool $checkStock = true, array $extras = []): Quote
     {
         if ($items === []) {
             throw new PricingException('Your cart is empty.');
@@ -100,7 +102,7 @@ class PriceCalculator
         }
 
         return new Quote($lines, $member, $listSubtotal, $memberDiscount, $couponDiscount, $coupon, $shipping, $shippingDiscount, $preview,
-            $bundles['discount'], $bundles['applied']);
+            $bundles['discount'], $bundles['applied'], Extras::price($extras, $merchandise));
     }
 
     public function freeShippingApplies(int $merchandiseTotal): bool

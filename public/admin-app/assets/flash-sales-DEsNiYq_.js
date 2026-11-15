@@ -1,0 +1,1 @@
+import{n as e}from"./promotions-page-DTcn22Pf.js";var t=e;export{t as component};

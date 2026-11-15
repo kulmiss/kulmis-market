@@ -22,6 +22,7 @@ use App\Payments\PaymentService;
 use App\Pricing\PricingException;
 use App\Referral\ReferralCodes;
 use App\Referral\TeamView;
+use App\Shop\GiftCards;
 use App\Signals\SignalAccess;
 use App\Signals\SignalStats;
 use App\Support\Features;
@@ -236,9 +237,14 @@ class AccountController extends Controller
         }
         try {
             $extra = app(CheckoutExtras::class)->collect($request, $cart, $user, $data);
+            $giftCardId = $cart->gift_card_id;
             $order = $checkout->place($cart, $data, $user, $data['checkout_key'], $extra);
         } catch (PricingException $e) {
             throw ValidationException::withMessages(['cart' => $e->getMessage()]);
+        }
+        if ($order->wasRecentlyCreated && $giftCardId) {
+            app(GiftCards::class)->apply($order, $giftCardId);
+            $order->refresh();
         }
         if ($order->wasRecentlyCreated && $request->boolean('save_address') && Features::enabled('shop.saved_addresses')) {
             $this->rememberAddress($user, $data);

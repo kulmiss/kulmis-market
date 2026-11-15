@@ -39,6 +39,12 @@ return [
 
     // Pricing & catalog
     'pricing.member_discount_bps' => ['bps', 1_500, 'Member price cut on products', 'Pricing'],
+    'giftcards.amounts' => ['string', '500,1000,2000,5000', 'Gift card amounts people can buy (ETB, comma separated)', 'Gift cards'],
+    'giftcards.valid_days' => ['int', 365, 'Gift cards: days they can be used (0 = no end date)', 'Gift cards'],
+    'extras.gift_wrap_price' => ['money', 15_000, 'Checkout extra: gift wrapping price', 'Checkout extras'],
+    'extras.express_price' => ['money', 30_000, 'Checkout extra: express making and delivery price', 'Checkout extras'],
+    'extras.insurance_bps' => ['bps', 150, 'Checkout extra: shipping insurance (share of the goods)', 'Checkout extras'],
+    'extras.insurance_min' => ['money', 2_000, 'Checkout extra: shipping insurance at least', 'Checkout extras'],
     'shipping.member_free_over' => ['money', 300_000, 'Free delivery for members when the order is at least', 'Pricing'],
     'catalog.early_access_hours' => ['int', 48, 'Members can buy new products this many hours early', 'Pricing'],
     'catalog.min_price_cost_ratio' => ['ratio', 250, 'Warn me when the price is less than cost ×', 'Pricing'],
@@ -63,6 +69,8 @@ return [
     'wallet.cashout_min' => ['money', 100_000, 'Smallest cash-out', 'Wallet'],
     'wallet.payout_days' => ['int', 3, 'We pay cash-outs within (days)', 'Wallet'],
     'wallet.payout_account_hold_hours' => ['int', 48, 'Wait before a new or changed cash-out account can be used (hours)', 'Wallet'],
+    'wallet.cashout_fee_fixed' => ['money', 0, 'Cash-out fee: fixed amount (0 = none)', 'Wallet'],
+    'wallet.cashout_fee_bps' => ['bps', 0, 'Cash-out fee: share of the amount (0 = none)', 'Wallet'],
     'wallet.cashout_daily_max' => ['money', 5_000_000, 'Most a member can cash out in 24 hours', 'Wallet'],
     'wallet.cashout_daily_count' => ['int', 2, 'Most cash-out requests per member in 24 hours', 'Wallet'],
     'wallet.new_account_review_days' => ['int', 30, 'Check the first cash-out of accounts newer than (days)', 'Wallet'],

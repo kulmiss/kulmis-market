@@ -160,15 +160,18 @@ if (zoom) {
 }
 
 /* ---------- cart page ---------- */
-function totalsHtml(q) {
+function totalsHtml(q, gc = null) {
     const row = (l, v, cls = '') => `<div class="flex justify-between ${cls}"><span>${l}</span><span>${v}</span></div>`;
+    const card = gc && gc.use > 0 ? [row(`Gift card ••••${esc(gc.last4)}`, '−' + etb(gc.use), 'text-brand-600'), row('To pay', etb(q.total - gc.use), 'text-base font-semibold')] : [];
     return [
         row('Subtotal', etb(q.list_subtotal)),
         q.member_discount ? row('Member discount', '−' + etb(q.member_discount), 'text-brand-600') : '',
         q.bundle_discount ? row('Set saving' + (q.bundles?.length ? ' (' + q.bundles.map((b) => esc(b.name)).join(', ') + ')' : ''), '−' + etb(q.bundle_discount), 'text-brand-600') : '',
         q.coupon_discount ? row(`Coupon ${esc(q.coupon)}`, '−' + etb(q.coupon_discount), 'text-brand-600') : '',
         q.shipping ? row('Shipping', q.shipping_discount ? 'Free' : etb(q.shipping_payable)) : row('Shipping', 'at checkout'),
+        ...(q.extras || []).map((x) => row(esc(x.label), etb(x.amount))),
         row('Total', etb(q.total), 'mt-1 text-base font-semibold'),
+        ...card,
     ].join('');
 }
 
@@ -210,7 +213,15 @@ async function renderCart() {
         </div>`;
     }).join('');
     if (cart.problem) lines.insertAdjacentHTML('beforeend', `<p class="text-sm text-danger-600">${esc(cart.problem)}</p>`);
-    if (q) $('[data-totals]', body).innerHTML = totalsHtml(q);
+    if (q) $('[data-totals]', body).innerHTML = totalsHtml(q, cart.gift_card);
+    const gf = $('[data-giftcard-form]', body);
+    if (gf) {
+        if (cart.gift_card) gf.code.placeholder = `Gift card ••••${cart.gift_card.last4} added`;
+        gf.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try { await api('/cart/gift-card', { method: 'PUT', body: { code: gf.code.value || null } }); renderCart(); } catch (err) { alert(err.message); }
+        });
+    }
     renderSuggestions($('[data-suggestions]', body), cart.suggestions, renderCart);
     if (q && q.member_savings_preview > 0) {
         const js = $('[data-join-save]', body);
@@ -244,7 +255,7 @@ if (checkoutForm) {
             const cart = await api('/cart?' + params);
             if (!cart.items.length) { summary.innerHTML = '<p>Your cart is empty. <a class="underline" href="/shop">Shop</a></p>'; return; }
             summary.innerHTML = cart.items.map((i) => `<div class="flex justify-between"><span>${i.quantity} × ${esc(i.name)}</span></div>`).join('')
-                + '<hr class="my-2 border-mist-200">' + (cart.quote ? totalsHtml(cart.quote) : `<p class="text-danger-600">${esc(cart.problem)}</p>`);
+                + '<hr class="my-2 border-mist-200">' + (cart.quote ? totalsHtml(cart.quote, cart.gift_card) : `<p class="text-danger-600">${esc(cart.problem)}</p>`);
             renderSuggestions($('[data-checkout-suggestions]'), cart.suggestions, refreshSummary);
         } catch (e) { summary.textContent = e.message; }
     };
@@ -255,6 +266,12 @@ if (checkoutForm) {
         $('[data-cities]').innerHTML = [...new Set(data.flatMap((z) => z.cities))].map((c) => `<option value="${esc(c)}">`).join('');
     }).catch(() => {});
     zonesSel?.addEventListener('change', refreshSummary);
+    // Paid extras (gift wrap, express, insurance): saved on the cart, priced by the server.
+    $$('[data-extra]', checkoutForm).forEach((box) => box.addEventListener('change', async () => {
+        const extras = $$('[data-extra]:checked', checkoutForm).map((b) => b.value);
+        try { await api('/cart/extras', { method: 'PUT', body: { extras } }); } catch (e) { alert(e.message); }
+        refreshSummary();
+    }));
     checkoutForm.city.addEventListener('change', refreshSummary);
     refreshSummary();
 
@@ -311,6 +328,14 @@ $('[data-contact-form]')?.addEventListener('submit', async (e) => {
 });
 
 /* ---------- gift membership ---------- */
+$('[data-giftcard-buy]')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const msg = $('[data-form-message]', form);
+    await busy(form, async () => {
+        try { const { data } = await api('/gift-cards', { method: 'POST', form: new FormData(form) }); say(msg, data.message, true); form.reset(); } catch (err) { say(msg, err.message); }
+    });
+});
 $('[data-gift-form]')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.target;

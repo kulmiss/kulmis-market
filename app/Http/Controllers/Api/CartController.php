@@ -6,18 +6,23 @@ use App\Cart\CartManager;
 use App\Http\Controllers\Controller;
 use App\Models\Bundle;
 use App\Models\Cart;
+use App\Models\GiftCard;
 use App\Models\Product;
 use App\Models\User;
 use App\Orders\Checkout;
+use App\Orders\Extras;
 use App\Pricing\PriceCalculator;
 use App\Pricing\PricingException;
 use App\Shop\Bundles;
 use App\Shop\FlashSales;
+use App\Shop\GiftCards;
 use App\Shop\Recommendations;
 use App\Support\Features;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class CartController extends Controller
 {
@@ -58,6 +63,37 @@ class CartController extends Controller
         });
 
         return $this->respond($cart, $request, 201);
+    }
+
+    /** Paid checkout extras (only the ones switched on are kept). */
+    public function extras(Request $request): JsonResponse
+    {
+        $data = $request->validate(['extras' => ['present', 'array'], 'extras.*' => ['string', Rule::in(Extras::KEYS)]]);
+        $cart = $this->carts->find($request);
+        abort_if($cart === null, 404);
+        $cart->update(['extras' => array_values(array_intersect(array_keys(Extras::available()), $data['extras']))]);
+
+        return $this->respond($cart, $request);
+    }
+
+    /** Type a gift card code (or null to take it off). */
+    public function giftCard(Request $request, GiftCards $cards): JsonResponse
+    {
+        abort_if(Features::disabled('shop.gift_cards'), 404);
+        $data = $request->validate(['code' => ['nullable', 'string', 'max:40']]);
+        $cart = $this->carts->find($request);
+        abort_if($cart === null, 404);
+        if (! $data['code']) {
+            $cart->update(['gift_card_id' => null]);
+        } else {
+            try {
+                $cards->attach($cart, $data['code'], (string) $request->ip());
+            } catch (\InvalidArgumentException $e) {
+                throw ValidationException::withMessages(['code' => $e->getMessage()]);
+            }
+        }
+
+        return $this->respond($cart->fresh() ?? $cart, $request);
     }
 
     public function update(Request $request, int $item): JsonResponse
@@ -110,6 +146,8 @@ class CartController extends Controller
                 'image' => $i->product->images->first()?->url(400, in_array('webp', $i->product->images->first()->formats, true) ? 'webp' : 'jpg'),
             ]),
             'coupon_code' => $cart?->coupon_code,
+            'extras' => $cart->extras ?? [],
+            'gift_card' => $this->giftCardInfo($cart, $quote),
             'quote' => $quote,
             'problem' => $error,
             'is_member' => (bool) $user?->isActiveMember(),
@@ -145,6 +183,23 @@ class CartController extends Controller
                 'one_tap' => $p->isPurchasableBy($member) && $p->variants->where('is_active', true)->isEmpty() && ($stock === null || $stock > 0),
             ];
         })->values()->all();
+    }
+
+    /**
+     * @param  ?array<string, mixed>  $quote
+     * @return ?array{last4:string, balance:int, use:int}
+     */
+    private function giftCardInfo(?Cart $cart, ?array $quote): ?array
+    {
+        if (! $cart?->gift_card_id || Features::disabled('shop.gift_cards')) {
+            return null;
+        }
+        $card = GiftCard::query()->find($cart->gift_card_id);
+        if (! $card || ! $card->usable()) {
+            return null;
+        }
+
+        return ['last4' => (string) $card->last4, 'balance' => $card->balance, 'use' => min($card->balance, (int) ($quote['total'] ?? 0))];
     }
 
     private function user(Request $request): ?User

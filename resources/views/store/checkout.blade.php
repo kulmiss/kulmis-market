@@ -37,6 +37,14 @@
                     <div><label class="label" for="cz">Delivery zone</label><select id="cz" name="shipping_zone_id" class="input" data-zones><option value="">Pick by city</option></select></div>
                 </div>
                 <div><label class="label" for="ca">Address (area, street, landmark)</label><textarea id="ca" name="address" class="input" rows="2" required autocomplete="street-address">{{ old('address') }}</textarea></div>
+                @php $extrasOn = \App\Orders\Extras::available(); $chosen = (array) (app(\App\Cart\CartManager::class)->find(request())?->extras ?? []); @endphp
+                @if ($extrasOn)
+                    <fieldset class="grid gap-1"><legend class="label">Extras (optional)</legend>
+                        @foreach ($extrasOn as $k => $x)
+                            <label class="flex min-h-12 items-center gap-3 text-sm"><input type="checkbox" class="size-5" value="{{ $k }}" data-extra @checked(in_array($k, $chosen, true))> {{ $x['label'] }} <span class="muted">+ {{ $x['hint'] }}</span></label>
+                        @endforeach
+                    </fieldset>
+                @endif
                 <div><label class="label" for="cn">Notes (optional)</label><input id="cn" name="notes" class="input" value="{{ old('notes') }}"></div>
                 @if ($user && \App\Support\Features::enabled('shop.saved_addresses'))
                     <label class="flex min-h-12 items-center gap-2 text-sm"><input type="checkbox" name="save_address" value="1" class="size-5"> Save this address for next time</label>

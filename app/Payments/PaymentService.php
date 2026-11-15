@@ -7,8 +7,10 @@ use App\Events\PaymentSucceeded;
 use App\Ledger\Account;
 use App\Ledger\Ledger;
 use App\Ledger\Wallet;
+use App\Models\GiftCard;
 use App\Models\Payment;
 use App\Models\Refund;
+use App\Shop\GiftCards;
 use App\Support\Activity;
 use App\Support\Currency;
 use App\Support\Money;
@@ -108,7 +110,7 @@ class PaymentService
 
             /** @var Model&Payable $payable */
             $payable = $locked->payable;
-            if (! in_array($locked->provider, [Payment::WALLET, Payment::GIFT], true)) {
+            if (! in_array($locked->provider, [Payment::WALLET, Payment::GIFT, Payment::GIFT_CARD], true)) {
                 $lines = [[Account::CASH, $locked->amount], [$payable->payableIncomeAccount(), -$locked->amount]];
                 $this->ledger->post('payment.received', $lines, "payment:{$locked->id}:received", $locked,
                     description: $payable->payableTitle());
@@ -141,7 +143,9 @@ class PaymentService
                 throw new InvalidArgumentException('Refund amount must be between 0.01 and '.Money::format($locked->refundable()).'.');
             }
             // Transfers are refunded by hand (Finance sends the money back); wallet payments go back to the wallet.
-            $method = $locked->provider === Payment::WALLET ? 'wallet' : 'manual';
+            $method = match ($locked->provider) {
+                Payment::WALLET => 'wallet', Payment::GIFT_CARD => 'gift_card', default => 'manual'
+            };
             $refund = $locked->refunds()->create(['amount' => $amount, 'reason' => $reason, 'method' => $method,
                 'provider_reference' => null, 'created_by' => $actorId]);
             $total = $locked->refunded_amount + $amount;
@@ -150,7 +154,12 @@ class PaymentService
 
             /** @var Model&Payable $payable */
             $payable = $locked->payable;
-            if ($locked->provider === Payment::WALLET) {
+            if ($locked->provider === Payment::GIFT_CARD) {
+                // Back on the gift card.
+                $this->ledger->post('giftcard.refunded', [[$payable->payableIncomeAccount(), $amount], [GiftCard::ACCOUNT, -$amount]],
+                    "refund:{$refund->id}", $locked, $reason, $actorId, 'Refund to gift card');
+                app(GiftCards::class)->refundToCard($locked, $amount);
+            } elseif ($locked->provider === Payment::WALLET) {
                 // Back to the member's available balance.
                 $this->ledger->post('wallet.refunded', [[$payable->payableIncomeAccount(), $amount],
                     [$this->ledger->userAccount((int) $locked->user_id, Wallet::AVAILABLE), -$amount]],

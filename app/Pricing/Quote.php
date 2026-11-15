@@ -22,7 +22,14 @@ final class Quote
         public readonly int $bundleDiscount = 0,
         /** @var list<array{bundle_id:int,name:string,sets:int,saving:int}> */
         public readonly array $bundles = [],
+        /** @var list<array{key:string,label:string,amount:int}> paid checkout extras */
+        public readonly array $extras = [],
     ) {}
+
+    public function extrasTotal(): int
+    {
+        return (int) array_sum(array_column($this->extras, 'amount'));
+    }
 
     /** Goods after member discount, bundle saving and coupon (commission base for products). */
     public function merchandiseTotal(): int
@@ -37,7 +44,7 @@ final class Quote
 
     public function total(): int
     {
-        return $this->merchandiseTotal() + $this->shippingPayable();
+        return $this->merchandiseTotal() + $this->shippingPayable() + $this->extrasTotal();
     }
 
     public function weightGrams(): int
@@ -67,6 +74,8 @@ final class Quote
             'shipping' => $this->shipping,
             'shipping_discount' => $this->shippingDiscount,
             'shipping_payable' => $this->shippingPayable(),
+            'extras' => $this->extras,
+            'extras_total' => $this->extrasTotal(),
             'total' => $this->total(),
             'weight_grams' => $this->weightGrams(),
             'member_savings_preview' => $this->memberSavingsPreview,

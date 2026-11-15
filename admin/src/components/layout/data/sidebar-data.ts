@@ -1,5 +1,6 @@
 import {
   Activity,
+  Gift,
   Share2,
   Trophy,
   LifeBuoy,
@@ -56,6 +57,7 @@ export const sidebarData: SidebarData = {
         { title: 'Products', url: '/products', icon: Boxes, ability: 'manage-products', feature: 'shop' },
         { title: 'Categories', url: '/categories', icon: FolderTree, ability: 'manage-products', feature: 'shop' },
         { title: 'Coupons', url: '/coupons', icon: BadgePercent, ability: 'manage-products', feature: 'shop.coupons' },
+        { title: 'Gift cards', url: '/gift-cards', icon: Gift, ability: 'manage-orders', feature: 'shop.gift_cards' },
         { title: 'Flash sales', url: '/flash-sales', icon: Timer, ability: 'manage-products', feature: 'shop.flash_sales' },
         { title: 'Bundles', url: '/bundles', icon: Package, ability: 'manage-products', feature: 'shop.bundles' },
         { title: 'Reviews', url: '/reviews', icon: Star, ability: 'manage-products', feature: 'shop.reviews' },

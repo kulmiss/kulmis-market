@@ -26,6 +26,10 @@ return [
     'shop.flash_sales' => ['Flash sales', 'Shop', true, 'shop', 'A lower price for a short time, with a countdown and (if you want) limited pieces. Members still get their member price on top.'],
     'shop.bundles' => ['Bundles', 'Shop', true, 'shop', 'Sets of products at one price. When every piece of a set is in the cart, the saving comes off by itself.'],
     'shop.upsells' => ['"Bought together" and "You may also like"', 'Shop', true, 'shop', 'Matching products on product pages, in the cart and at checkout, with a one-tap "Add" button.'],
+    'shop.gift_cards' => ['Gift cards', 'Shop', true, 'shop', 'People buy gift cards (fixed amounts) and spend them at checkout. Each code is secret and works until the money is used.'],
+    'shop.extras.gift_wrap' => ['Gift wrapping (paid extra)', 'Shop', false, 'shop', 'A tick box at checkout for gift wrapping. Price in Settings → Checkout extras.'],
+    'shop.extras.express' => ['Express making and delivery (paid extra)', 'Shop', false, 'shop', 'A tick box at checkout to have the order made and sent first. Price in Settings.'],
+    'shop.extras.insurance' => ['Shipping insurance (paid extra)', 'Shop', false, 'shop', 'A tick box at checkout to insure the parcel, priced as a share of the goods.'],
     'shop.order_tracking' => ['Order tracking page', 'Shop', true, 'shop', 'The "Track order" page and its links in menus and messages.'],
 
     // Payments
@@ -66,6 +70,7 @@ return [
     // Wallet
     'wallet' => ['Wallet', 'Wallet', true, null, 'Members see their money: on the way, ready to use, and cash-outs.'],
     'wallet.cashout' => ['Cash-out', 'Wallet', true, 'wallet', 'Members can ask to get their money sent to their bank or Telebirr.'],
+    'wallet.cashout_fee' => ['Cash-out fee', 'Wallet', false, 'wallet.cashout', 'Keep a small fee from each cash-out (fixed and/or a share, in Settings). Members see it before they ask.'],
 
     // Signals
     'signals' => ['Trading signals', 'Signals', true, null, 'The signals page, buying signals and signals for members.'],
@@ -104,6 +109,7 @@ return [
     'messages.payout_rejected' => ['Cash-out not approved', 'Messages', true, 'wallet.cashout', 'Tell the member their cash-out was not approved.'],
     'messages.cart_reminder' => ['Cart reminder', 'Messages', true, 'shop', 'One reminder 24 hours after a signed-in customer leaves items in the cart. Never for guests; they can stop it.'],
     'messages.gift' => ['Gift membership', 'Messages', true, 'membership.gifts', 'Send the gift link to the receiver and a thank-you to the giver.'],
+    'messages.gift_card' => ['Gift card code', 'Messages', true, 'shop.gift_cards', 'Send the gift card code to the receiver (or the buyer).'],
 
     // Look and speed
     'appearance.theme_switch' => ['Light / dark switch', 'Look and speed', true, null, 'Customers can switch between light and dark. Off: always light.'],

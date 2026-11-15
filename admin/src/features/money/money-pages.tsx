@@ -19,7 +19,7 @@ import { StatusBadge } from '@/components/km/status-badge'
 /* ---------- Cash-outs ---------- */
 
 type Payout = {
-  id: number; amount: number; method: string; account: string; account_name: string; bank_name: string | null; status: string
+  id: number; amount: number; fee?: number; method: string; account: string; account_name: string; bank_name: string | null; status: string
   due_at: string; created_at: string; payout_reference: string | null; reject_reason: string | null; hold_reason: string | null
   user: { id: number; first_name: string; last_name: string; phone: string }
 }
@@ -29,7 +29,7 @@ export function CashOutsPage() {
   const columns: ResourceColumn<Payout>[] = [
     { header: 'Requested', cell: ({ row }) => formatDate(row.original.created_at, true), meta: { sort: 'requested', csv: (p) => p.created_at } },
     { header: 'Member', cell: ({ row }) => `${row.original.user.first_name} ${row.original.user.last_name}`, meta: { csv: (p) => `${p.user.first_name} ${p.user.last_name}` } },
-    { header: 'Amount', cell: ({ row }) => <b>{formatMoney(row.original.amount)}</b>, meta: { sort: 'amount', align: 'end', csv: (p) => p.amount / 100 } },
+    { header: 'Amount', cell: ({ row }) => <span><b>{formatMoney(row.original.amount)}</b>{!!row.original.fee && <span className='block text-xs text-muted-foreground'>send {formatMoney(row.original.amount - row.original.fee)} · fee {formatMoney(row.original.fee)}</span>}</span>, meta: { sort: 'amount', align: 'end', csv: (p) => p.amount / 100 } },
     { header: 'To', cell: ({ row }) => `${row.original.method}${row.original.bank_name ? ` · ${row.original.bank_name}` : ''} · ${row.original.account}`, meta: { csv: (p) => `${p.method} ${p.bank_name ?? ''} ${p.account}` } },
     { header: 'Due', cell: ({ row }) => {
       const late = new Date(row.original.due_at) < new Date() && ['requested', 'on_hold'].includes(row.original.status)
@@ -57,7 +57,7 @@ function PayoutActions({ payout }: { payout: Payout }) {
   const reject = useMutate('post', ['cash-outs'], 'Rejected — money returned to wallet')
   return (
     <div className='flex gap-1'>
-      <FormDialog title={`Pay ${formatMoney(payout.amount)} to ${payout.account_name}`} saveText='I sent it — mark paid'
+      <FormDialog title={`Send ${formatMoney(payout.amount - (payout.fee ?? 0))} to ${payout.account_name}${payout.fee ? ` (fee ${formatMoney(payout.fee)} kept)` : ''}`} saveText='I sent it — mark paid'
         trigger={<Button size='sm' onClick={async () => setFull((await api.get(`/cash-outs/${payout.id}`)).data.data)}><Eye /> Pay</Button>}
         onSave={() => pay.mutateAsync({ path: `/cash-outs/${payout.id}/pay`, body: { reference, account_checked: checked } })}>
         <div className='rounded-md bg-muted p-3 text-sm'>

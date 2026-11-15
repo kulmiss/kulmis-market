@@ -39,7 +39,7 @@ class Checkout
         $weight = array_sum(array_map(fn ($i) => ($i[1]->weight_grams ?? $i[0]->weight_grams) * $i[2], $items));
         $fee = $items && ($zoneId || $city) ? $this->shipping->quote($zoneId, (string) $city, $weight) : 0;
 
-        return $this->prices->quote($items, $member, $cart->coupon_code, $fee, $this->couponUses($user, $phone));
+        return $this->prices->quote($items, $member, $cart->coupon_code, $fee, $this->couponUses($user, $phone), true, (array) ($cart->extras ?? []));
     }
 
     /**
@@ -79,7 +79,7 @@ class Checkout
             $member = (bool) $user?->isActiveMember();
             $weight = array_sum(array_map(fn ($i) => ($i[1]->weight_grams ?? $i[0]->weight_grams) * $i[2], $items));
             $fee = $this->shipping->quote($customer['shipping_zone_id'] ?? null, $customer['city'], $weight);
-            $quote = $this->prices->quote($items, $member, $cart->coupon_code, $fee, $this->couponUses($user, $customer['phone']));
+            $quote = $this->prices->quote($items, $member, $cart->coupon_code, $fee, $this->couponUses($user, $customer['phone']), true, (array) ($cart->extras ?? []));
 
             $order = Order::query()->create(array_merge([
                 'number' => $this->newNumber(),
@@ -104,6 +104,8 @@ class Checkout
                 'shipping' => $quote->shipping,
                 'shipping_discount' => $quote->shippingDiscount,
                 'total' => $quote->total(),
+                'extras' => $quote->extras ?: null,
+                'extras_total' => $quote->extrasTotal(),
                 'checkout_key' => $checkoutKey,
                 'device_hash' => $this->carts->deviceHash($cart),
             ], $extra));
@@ -155,7 +157,7 @@ class Checkout
             $order->history()->create(['from' => null, 'to' => Order::PENDING_PAYMENT, 'note' => 'Order placed']);
 
             $cart->items()->delete();
-            $cart->update(['coupon_code' => null, 'reminded_at' => null]);
+            $cart->update(['coupon_code' => null, 'reminded_at' => null, 'extras' => null, 'gift_card_id' => null]);
 
             return $order;
         });

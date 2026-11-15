@@ -11,6 +11,13 @@
         <input id="coupon" name="code" class="input" placeholder="Coupon code">
         <button class="btn-ghost">Apply</button>
     </form>
+    @feature('shop.gift_cards')
+    <form class="mt-2 flex gap-2" data-giftcard-form>
+        <label class="sr-only" for="giftcard">Gift card code</label>
+        <input id="giftcard" name="code" class="input" placeholder="Gift card code" autocomplete="off" maxlength="40">
+        <button class="btn-ghost">Use</button>
+    </form>
+    @endfeature
     <div class="card mt-6 grid gap-1 text-sm" data-totals></div>
     <div class="mt-4 hidden rounded-2xl bg-brand-500/10 p-4 text-sm" data-join-save></div>
     <div class="mt-6 flex justify-end"><a href="{{ url('/checkout') }}" class="btn-primary">Checkout</a></div>

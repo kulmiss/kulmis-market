@@ -10,6 +10,7 @@ use App\Notify\OrderNotifier;
 use App\Orders\Checkout;
 use App\Orders\CheckoutExtras;
 use App\Orders\OrderService;
+use App\Shop\GiftCards;
 use App\Support\Currency;
 use App\Support\Features;
 use App\Support\Phone;
@@ -47,7 +48,12 @@ class CheckoutController extends Controller
         abort_if($cart === null, 422, 'Your cart is empty.');
 
         $extra = app(CheckoutExtras::class)->collect($request, $cart, $user, $data);
+        $giftCardId = $cart->gift_card_id;
         $order = $this->checkout->place($cart, $data, $user, $data['checkout_key'], $extra);
+        if ($order->wasRecentlyCreated && $giftCardId) {
+            app(GiftCards::class)->apply($order, $giftCardId);
+            $order->refresh();
+        }
         if ($order->wasRecentlyCreated && $user && $request->boolean('use_wallet')) {
             app(WalletPayments::class)->apply($order, $user);
             $order->refresh();

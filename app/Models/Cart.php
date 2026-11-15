@@ -17,11 +17,11 @@ use Illuminate\Support\Carbon;
  */
 class Cart extends Model
 {
-    protected $fillable = ['token', 'user_id', 'coupon_code', 'reminded_at'];
+    protected $fillable = ['token', 'user_id', 'coupon_code', 'reminded_at', 'extras', 'gift_card_id'];
 
     protected function casts(): array
     {
-        return ['reminded_at' => 'datetime'];
+        return ['reminded_at' => 'datetime', 'extras' => 'array'];
     }
 
     /** @return BelongsTo<User, $this> */

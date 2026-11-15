@@ -82,9 +82,9 @@ class Order extends Model implements Payable
     protected function casts(): array
     {
         $ints = array_fill_keys(['list_subtotal', 'member_discount', 'coupon_discount', 'merchandise_total', 'shipping',
-            'shipping_discount', 'total', 'wallet_used', 'payment_fee', 'refunded_amount'], 'integer');
+            'shipping_discount', 'total', 'wallet_used', 'payment_fee', 'refunded_amount', 'bundle_discount', 'extras_total', 'gift_card_used'], 'integer');
 
-        return $ints + ['is_member_order' => 'boolean', 'paid_at' => 'datetime', 'shipped_at' => 'datetime',
+        return $ints + ['extras' => 'array', 'is_member_order' => 'boolean', 'paid_at' => 'datetime', 'shipped_at' => 'datetime',
             'delivered_at' => 'datetime', 'cancelled_at' => 'datetime'];
     }
 
@@ -187,7 +187,7 @@ class Order extends Model implements Payable
 
     public function amountDue(): int
     {
-        return max(0, $this->total - $this->wallet_used);
+        return max(0, $this->total - $this->wallet_used - (int) $this->gift_card_used);
     }
 
     public function canMoveTo(string $status): bool
