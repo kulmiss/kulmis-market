@@ -7,12 +7,20 @@ updates:
     open-pull-requests-limit: 5
     groups:
       laravel: { patterns: ["laravel/*", "symfony/*"] }
+    ignore:
+      # phpunit 13 needs PHP 8.4+; the shop stays on PHP 8.3 for hosting (QUESTIONS #59).
+      - dependency-name: "phpunit/phpunit"
+        versions: [">=13"]
   - package-ecosystem: npm
     directory: "/admin"
     schedule: { interval: weekly, day: monday }
     open-pull-requests-limit: 5
     groups:
       dev-tooling: { dependency-type: development }
+    ignore:
+      # typescript-eslint does not support TypeScript 7 yet; lift this when it does.
+      - dependency-name: "typescript"
+        versions: [">=7"]
   - package-ecosystem: npm
     directory: "/"
     schedule: { interval: weekly, day: monday }
@@ -22,3 +30,7 @@ updates:
   - package-ecosystem: docker
     directory: "/docker/php"
     schedule: { interval: monthly }
+    ignore:
+      # Local Docker matches the live server: PHP 8.3 (QUESTIONS #59).
+      - dependency-name: "php"
+        versions: [">=8.4"]

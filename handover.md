@@ -16,7 +16,7 @@ English (ready for Amharic) and aimed at customers in Ethiopia.
 - **API:** REST `/api/v1`, ready for the Flutter app (Sanctum tokens)
 - Built assets are committed, so the server needs no Node
 
-## PRs (everything up to #36 is merged into main)
+## PRs (everything up to #37 is merged into main)
 | PR | Branch | Status |
 |----|--------|--------|
 | 1 | `pr/01-scaffold` | Merged. Laravel 13, Docker, CI, docs |
@@ -61,7 +61,8 @@ PRs 1–28 are merged into `main`.
 | 34 | `pr/34-member-dashboard` | Merged via #44 (#42). New member area: app-like layout (sidebar / bottom bar), green & white + dark mode, accent in Settings → Appearance; home with money cards, month vs month, chart, per level/type, team, newest, badge, referral tools, membership + streak, signals, activity; Team, Earnings, Wallet, Orders, Signals pages; empty states ([docs/storefront.md](docs/storefront.md#member-area-account)) |
 | 35 | `pr/35-remove-chapa` | Merged via #44 (#43). Chapa removed completely: payments are Telebirr/bank transfer + receipt (staff approve) and the wallet; membership = wallet or transfer (+ part wallet); guest signals = transfer + receipt; manual/wallet refunds; CSP `form-action 'self'`; page texts updated by a migration ([docs/payments.md](docs/payments.md)) |
 | 36 | `pr/36-green-logo` | Merged (#44). Logo in the member-area green (#1f8a4c) everywhere: storefront, member area, errors, admin, emails, PDF receipts, favicon/ico/touch/app icons, social preview; manifest theme colour green ([docs/storefront.md](docs/storefront.md#logo-and-icons)) |
-| 37 | `pr/37-green-store` | **Top PR, targets main, ready for review, CI runs here.** Shop in white & green (same green as the logo/member area; dark mode readable; emails, PDF, social preview match); no religious images in the demo data (cross pendant and Meskel print replaced, evil-eye beads cropped) ([docs/storefront.md](docs/storefront.md#colours)) |
+| 37 | `pr/37-green-store` | Merged (#45). Shop in white & green (same green as the logo/member area; dark mode readable; emails, PDF, social preview match); no religious images in the demo data (cross pendant and Meskel print replaced, evil-eye beads cropped) ([docs/storefront.md](docs/storefront.md#colours)) |
+| 38 | `pr/38-deps` | **Top PR, targets main, ready for review, CI runs here.** Dependency updates: GitHub Actions (checkout 7, cache 6, setup-node 7), admin @tanstack/react-table 9 (tables migrated to the v9 API), react-day-picker 10, @types/node 26, prettier-plugin-tailwindcss 0.8; unused table helpers removed; Dependabot skips PHP 8.4+, phpunit 13 and TypeScript 7 (QUESTIONS #59) |
 
 **Merge:** the top PR targets `main` and contains every commit
 below it, so one merge brings in everything.

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { type ColumnDef } from '@tanstack/react-table'
 import { ArrowLeft, Network } from 'lucide-react'
 import { useMutate } from '@/hooks/use-mutate'
 import { api } from '@/lib/api'
@@ -13,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { FilterBar, SearchInput, SelectFilter, opts } from '@/components/km/filter-bar'
 import { Page } from '@/components/km/page'
-import { ResourceTable } from '@/components/km/resource-table'
+import { ResourceTable, type ResourceColumn } from '@/components/km/resource-table'
 import { StatusBadge } from '@/components/km/status-badge'
 
 export type Member = {
@@ -22,7 +21,7 @@ export type Member = {
   membership: { status: string; current_period_end: string | null; grace_ends_at: string | null; continuous_since: string | null; periods_paid: number } | null
 }
 
-const columns: ColumnDef<Member, unknown>[] = [
+const columns: ResourceColumn<Member>[] = [
   { header: 'Name', cell: ({ row }) => `${row.original.first_name} ${row.original.last_name}` },
   { header: 'Phone', accessorKey: 'phone' },
   { header: 'Code', cell: ({ row }) => <span className='font-mono text-xs'>{row.original.referral_code}</span> },

@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { type ColumnDef } from '@tanstack/react-table'
 import { Pencil, Plus } from 'lucide-react'
 import { useMutate } from '@/hooks/use-mutate'
 import { api } from '@/lib/api'
@@ -14,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { FormDialog } from '@/components/km/form-dialog'
 import { MoneyInput } from '@/components/km/money-input'
 import { Page } from '@/components/km/page'
-import { ResourceTable } from '@/components/km/resource-table'
+import { ResourceTable, type ResourceColumn } from '@/components/km/resource-table'
 import { StatusBadge } from '@/components/km/status-badge'
 import { type Category, type Courier, type Zone } from './types'
 
@@ -62,7 +61,7 @@ type Coupon = { id: number; code: string; type: 'percent' | 'fixed'; value: numb
   starts_at: string | null; ends_at: string | null; max_uses: number | null; max_uses_per_customer: number | null; used_count: number
   members_only: boolean; is_active: boolean; note: string | null }
 
-const couponColumns: ColumnDef<Coupon, unknown>[] = [
+const couponColumns: ResourceColumn<Coupon>[] = [
   { header: 'Code', cell: ({ row }) => <span className='font-mono'>{row.original.code}</span> },
   { header: 'Discount', cell: ({ row }) => (row.original.type === 'percent' ? formatBps(row.original.value) : formatMoney(row.original.value)) },
   { header: 'Min. order', cell: ({ row }) => formatMoney(row.original.min_subtotal) },

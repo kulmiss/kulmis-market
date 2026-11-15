@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { type ColumnDef } from '@tanstack/react-table'
 import { AlertTriangle, Plus } from 'lucide-react'
 import { useMutate } from '@/hooks/use-mutate'
 import { formatMoney } from '@/lib/money'
@@ -8,11 +7,11 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { FilterBar, SearchInput, SelectFilter, opts } from '@/components/km/filter-bar'
 import { Page } from '@/components/km/page'
-import { ResourceTable } from '@/components/km/resource-table'
+import { ResourceTable, type ResourceColumn } from '@/components/km/resource-table'
 import { StatusBadge } from '@/components/km/status-badge'
 import { type Product } from './types'
 
-const columns: ColumnDef<Product, unknown>[] = [
+const columns: ResourceColumn<Product>[] = [
   { header: 'Product', cell: ({ row }) => (
     <span className='flex items-center gap-2'>
       {row.original.images[0] ? <img src={row.original.images[0].thumb} alt='' className='size-9 rounded object-cover' /> : <span className='size-9 rounded bg-muted' />}
