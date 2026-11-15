@@ -23,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         foreach (Demo::TABLES as $table) {
-            if (in_array($table, ['badge_bonus_runs', 'badge_bonuses'], true) || ! Schema::hasTable($table)) {
+            if (in_array($table, Demo::LATER_TABLES, true) || ! Schema::hasTable($table)) {
                 continue; // dropped with their own tables
             }
             Schema::table($table, function (Blueprint $t) {

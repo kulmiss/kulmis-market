@@ -31,6 +31,8 @@ use Illuminate\Support\Carbon;
  * @property ?int $making_days
  * @property bool $is_featured
  * @property bool $is_members_only
+ * @property string|null $rating_avg
+ * @property int $rating_count
  * @property ?Carbon $release_at
  * @property string $status
  */

@@ -20,6 +20,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PayoutRequest;
 use App\Models\Product;
+use App\Models\ProductReview;
 use App\Models\ShippingZone;
 use App\Models\Signal;
 use App\Models\SignalSubscription;
@@ -645,6 +646,7 @@ class DemoSeeder extends Seeder
 
     private function finishingTouches(): void
     {
+        $this->demoReviews();
         // A few products end up low or sold out (stock alerts on the dashboard).
         foreach ($this->finalStock as $id => $stock) {
             Product::query()->whereKey($id)->update(['stock' => $stock]);
@@ -707,6 +709,34 @@ class DemoSeeder extends Seeder
         $v = getenv($name);
 
         return $v === false || $v === '' ? null : $v;
+    }
+
+    /** Reviews from demo buyers on delivered demo orders (marked demo; hidden when demo data is off). */
+    private function demoReviews(): void
+    {
+        $texts = [
+            [5, 'Beautiful work', 'The weaving is tight and the colours are just like the photos. It arrived well packed.'],
+            [5, 'Perfect gift', 'I bought it for my mother and she loves it. You can see it is made by hand.'],
+            [4, 'Very nice', 'Good quality and fast delivery. A little smaller than I thought, but very pretty.'],
+            [5, null, 'Second time I order here. Always the same good quality, thank you!'],
+            [4, 'Good value', 'Strong and well made. The member price makes it a very good deal.'],
+        ];
+        $i = 0;
+        $orders = Order::query()->where('status', Order::DELIVERED)->whereNotNull('user_id')->with('items')->orderBy('id')->limit(40)->get();
+        foreach ($orders as $order) {
+            foreach ($order->items as $item) {
+                if (! $item->product_id || ProductReview::query()->where('product_id', $item->product_id)->where('user_id', $order->user_id)->exists()) {
+                    continue;
+                }
+                [$rating, $title, $body] = $texts[$i % count($texts)];
+                ProductReview::query()->create(['product_id' => $item->product_id, 'user_id' => $order->user_id, 'order_id' => $order->id,
+                    'rating' => $rating, 'title' => $title, 'body' => $body, 'status' => ProductReview::APPROVED,
+                    'reviewed_at' => $order->delivered_at, 'is_demo' => true, 'created_at' => $order->delivered_at, 'updated_at' => $order->delivered_at]);
+                if (++$i >= 18) {
+                    return;
+                }
+            }
+        }
     }
 
     private function tinyPhoto(int $i): string

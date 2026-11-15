@@ -27,8 +27,11 @@ final class Demo
         'users', 'memberships', 'membership_purchases', 'loyalty_rewards', 'categories', 'products', 'coupons',
         'shipping_zones', 'couriers', 'orders', 'payments', 'refunds', 'commissions', 'payout_accounts', 'payout_requests',
         'fraud_flags', 'signals', 'signal_subscriptions', 'signal_purchases', 'activity_log', 'journal_entries',
-        'ledger_postings', 'user_badges', 'user_notifications', 'badge_bonus_runs', 'badge_bonuses',
+        'ledger_postings', 'user_badges', 'user_notifications', 'badge_bonus_runs', 'badge_bonuses', 'product_reviews',
     ];
+
+    /** Tables made after the is_demo migration: they create their own column. */
+    public const LATER_TABLES = ['badge_bonus_runs', 'badge_bonuses', 'product_reviews'];
 
     private static ?bool $actingDemo = null;
 

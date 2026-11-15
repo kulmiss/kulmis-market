@@ -33,6 +33,7 @@ import { Route as AuthenticatedFraudRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedLedgerRouteImport } from './routes/_authenticated/ledger'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
 import { Route as AuthenticatedReferralsRouteImport } from './routes/_authenticated/referrals'
+import { Route as AuthenticatedReviewsRouteImport } from './routes/_authenticated/reviews'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
 import { Route as AuthenticatedShippingRouteImport } from './routes/_authenticated/shipping'
 import { Route as AuthenticatedStatusRouteImport } from './routes/_authenticated/status'
@@ -169,6 +170,11 @@ const AuthenticatedReferralsRoute = AuthenticatedReferralsRouteImport.update({
   path: '/referrals',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedReviewsRoute = AuthenticatedReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSettingsRouteRoute =
   AuthenticatedSettingsRouteRouteImport.update({
     id: '/settings',
@@ -280,6 +286,7 @@ export interface FileRoutesByFullPath {
   '/ledger': typeof AuthenticatedLedgerRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/referrals': typeof AuthenticatedReferralsRoute
+  '/reviews': typeof AuthenticatedReviewsRoute
   '/shipping': typeof AuthenticatedShippingRoute
   '/status': typeof AuthenticatedStatusRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
@@ -318,6 +325,7 @@ export interface FileRoutesByTo {
   '/ledger': typeof AuthenticatedLedgerRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/referrals': typeof AuthenticatedReferralsRoute
+  '/reviews': typeof AuthenticatedReviewsRoute
   '/shipping': typeof AuthenticatedShippingRoute
   '/status': typeof AuthenticatedStatusRoute
   '/': typeof AuthenticatedIndexRoute
@@ -360,6 +368,7 @@ export interface FileRoutesById {
   '/_authenticated/ledger': typeof AuthenticatedLedgerRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/referrals': typeof AuthenticatedReferralsRoute
+  '/_authenticated/reviews': typeof AuthenticatedReviewsRoute
   '/_authenticated/shipping': typeof AuthenticatedShippingRoute
   '/_authenticated/status': typeof AuthenticatedStatusRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
@@ -403,6 +412,7 @@ export interface FileRouteTypes {
     | '/ledger'
     | '/payments'
     | '/referrals'
+    | '/reviews'
     | '/shipping'
     | '/status'
     | '/errors/$error'
@@ -441,6 +451,7 @@ export interface FileRouteTypes {
     | '/ledger'
     | '/payments'
     | '/referrals'
+    | '/reviews'
     | '/shipping'
     | '/status'
     | '/'
@@ -482,6 +493,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ledger'
     | '/_authenticated/payments'
     | '/_authenticated/referrals'
+    | '/_authenticated/reviews'
     | '/_authenticated/shipping'
     | '/_authenticated/status'
     | '/_authenticated/'
@@ -680,6 +692,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReferralsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/reviews': {
+      id: '/_authenticated/reviews'
+      path: '/reviews'
+      fullPath: '/reviews'
+      preLoaderRoute: typeof AuthenticatedReviewsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
@@ -821,6 +840,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLedgerRoute: typeof AuthenticatedLedgerRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedReferralsRoute: typeof AuthenticatedReferralsRoute
+  AuthenticatedReviewsRoute: typeof AuthenticatedReviewsRoute
   AuthenticatedShippingRoute: typeof AuthenticatedShippingRoute
   AuthenticatedStatusRoute: typeof AuthenticatedStatusRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
@@ -853,6 +873,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLedgerRoute: AuthenticatedLedgerRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedReferralsRoute: AuthenticatedReferralsRoute,
+  AuthenticatedReviewsRoute: AuthenticatedReviewsRoute,
   AuthenticatedShippingRoute: AuthenticatedShippingRoute,
   AuthenticatedStatusRoute: AuthenticatedStatusRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,

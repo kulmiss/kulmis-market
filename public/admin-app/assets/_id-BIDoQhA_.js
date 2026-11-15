@@ -1,0 +1,1 @@
+import{t as e}from"./order-detail-Cg_s03Mi.js";import{n as t}from"./index-BBV76Jv1.js";import{d as n}from"./button-CLcLC9O1.js";var r=n();function i(){let{id:n}=t.useParams();return(0,r.jsx)(e,{id:n},n)}export{i as component};

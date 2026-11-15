@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web\AccountController;
 use App\Http\Controllers\Web\AuthController;
+use App\Http\Controllers\Web\ReviewController;
 use App\Http\Controllers\Web\SecurityController;
 use App\Http\Controllers\Web\ShopAccountController;
 use App\Referral\Engagement;
@@ -55,6 +56,7 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
         Route::put('addresses/{address}', [ShopAccountController::class, 'saveAddress'])->middleware('throttle:20,1')->name('addresses.update');
         Route::delete('addresses/{address}', [ShopAccountController::class, 'deleteAddress'])->middleware('throttle:20,1')->name('addresses.delete');
     });
+    Route::post('reviews/{product}', [ReviewController::class, 'store'])->middleware(['feature:shop.reviews', 'throttle:5,1'])->name('reviews.store');
     Route::post('orders/{number}/buy-again', [ShopAccountController::class, 'buyAgain'])->middleware(['feature:shop', 'feature:shop.buy_again', 'throttle:20,1'])->name('orders.buy-again');
     Route::middleware('throttle:10,1')->group(function () {
         Route::post('security/password', [SecurityController::class, 'password'])->name('security.password');

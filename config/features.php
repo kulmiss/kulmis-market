@@ -22,6 +22,7 @@ return [
     'shop.stock_alerts' => ['"Tell me when it\'s back"', 'Shop', true, 'shop', 'People can leave their phone or email on a sold-out item and get one message when it is back.'],
     'shop.buy_again' => ['Buy again', 'Shop', true, 'shop', 'A "Buy again" button on past orders puts the same items in the cart (today\'s prices).'],
     'shop.saved_addresses' => ['Saved addresses', 'Shop', true, 'shop', 'Signed-in customers can save several delivery addresses and pick one at checkout.'],
+    'shop.reviews' => ['Product reviews', 'Shop', true, 'shop', 'People who bought and received a product can rate it and add photos. You approve each one first.'],
     'shop.order_tracking' => ['Order tracking page', 'Shop', true, 'shop', 'The "Track order" page and its links in menus and messages.'],
 
     // Payments

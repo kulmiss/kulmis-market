@@ -11,6 +11,9 @@
         'offers' => ['@type' => 'Offer', 'priceCurrency' => \App\Support\Currency::code(), 'price' => number_format($product->price / 100, 2, '.', ''),
             'availability' => $stock === null || $stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock', 'url' => url('/shop/'.$product->slug)],
     ];
+    if (\App\Support\Features::enabled('shop.reviews') && $product->rating_count > 0) {
+        $jsonLd['aggregateRating'] = ['@type' => 'AggregateRating', 'ratingValue' => (string) $product->rating_avg, 'reviewCount' => $product->rating_count];
+    }
 @endphp
 @extends('layouts.store', [
     'title' => $product->seo_title ?? $product->name,
@@ -120,6 +123,7 @@
         @if ($product->description)<div class="prose-km mt-8">{!! \Illuminate\Support\Str::markdown($product->description, ['html_input' => 'escape', 'allow_unsafe_links' => false]) !!}</div>@endif
     </div>
 </div>
+@feature('shop.reviews')@include('store.partials.reviews')@endfeature
 @if ($related->isNotEmpty())
 <section class="container-km mt-6">
     <h2 class="mb-5 text-2xl">You may also like</h2>

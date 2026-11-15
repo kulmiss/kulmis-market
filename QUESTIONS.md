@@ -87,6 +87,7 @@ change any of them.
 | 78 | Back-in-stock alerts | One message per request (SMS for a phone, email for an email); then the request is closed. At most 20 open requests per phone/email. Guests can ask too (rate-limited, honeypot). | Decided (recommended) |
 | 79 | Buy again | Uses today's prices and skips items that are no longer sold, and says which ones. | Decided (recommended) |
 | 80 | Saved addresses | Up to 10 per person; the first one is the default; "Save this address for next time" at checkout skips duplicates. | Decided (recommended) |
+| 81 | Reviews | Only buyers whose order was delivered; one review per product; up to 3 photos (re-encoded, no hidden data); nothing shows before you press "Show it"; names show as "Abebe K."; demo reviews show only while demo data is on and never count in the real star average. | Decided (recommended) |
 
 ## Still open: needs you
 | # | What | Why |
