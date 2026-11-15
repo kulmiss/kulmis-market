@@ -38,7 +38,7 @@ export function TwoFactorSetup() {
 
   return (
     <AuthLayout>
-      <Card className='max-w-md gap-4'>
+      <Card className='gap-4'>
         <CardHeader>
           <CardTitle className='flex items-center gap-2'>
             <ShieldCheck className='size-5' /> Set up two-factor authentication

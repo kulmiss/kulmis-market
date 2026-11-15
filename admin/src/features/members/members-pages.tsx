@@ -120,7 +120,7 @@ export function MemberDetail({ id }: { id: string }) {
             </div>
             {can('manage-ledger') && (
               <div className='flex flex-wrap items-center gap-2'>
-                <Input type='number' className='w-40' placeholder='ETB (+/−)' onChange={(e) => setAmount(Math.round(Number(e.target.value) * 100))} />
+                <Input type='number' className='w-full sm:w-40' placeholder='ETB (+/−)' onChange={(e) => setAmount(Math.round(Number(e.target.value) * 100))} />
                 <Button variant='outline' disabled={!reason || !amount}
                   onClick={() => credit.mutate({ path: '/ledger/adjustments', body: { user_id: u.id, bucket: 'available', amount, reason } })}>
                   Adjust available wallet by {formatETB(amount)}
@@ -129,7 +129,7 @@ export function MemberDetail({ id }: { id: string }) {
             )}
             {isSuper && (
               <div className='flex flex-wrap items-center gap-2'>
-                <Input className='w-40' placeholder='New referrer ID (empty = none)' value={newReferrer} onChange={(e) => setNewReferrer(e.target.value)} />
+                <Input className='w-full sm:w-56' placeholder='New referrer ID (empty = none)' value={newReferrer} onChange={(e) => setNewReferrer(e.target.value)} />
                 <Button variant='outline' disabled={!reason || reason.length < 5}
                   onClick={() => referrer.mutate({ path: `/referrals/members/${id}/referrer`, body: { referrer_id: newReferrer ? Number(newReferrer) : null, reason } })}>
                   Change referrer (Super Admin)

@@ -65,8 +65,12 @@ class AdminAuthTest extends TestCase
 
         $this->getJson('/api/v1/admin/features')->assertForbidden()->assertJson(['two_factor_setup_required' => true]);
 
-        $secret = $this->postJson('/api/v1/admin/two-factor/setup')->assertOk()->json('secret');
+        $setup = $this->postJson('/api/v1/admin/two-factor/setup')->assertOk();
+        $secret = $setup->json('secret');
         $this->assertNotEmpty($secret);
+        // Raw SVG markup (the admin inlines it), not a data: URI.
+        $this->assertStringContainsString('<svg', $setup->json('qr_svg'));
+        $this->assertStringNotContainsString('data:image', $setup->json('qr_svg'));
         $this->postJson('/api/v1/admin/two-factor/confirm', ['code' => '123456'])->assertUnprocessable();
         $codes = $this->postJson('/api/v1/admin/two-factor/confirm', ['code' => Totp::code($secret, intdiv(time(), 30))])
             ->assertOk()->json('recovery_codes');

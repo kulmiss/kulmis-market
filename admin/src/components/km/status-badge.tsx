@@ -17,6 +17,15 @@ const map: Record<string, keyof typeof tones> = {
   refunded: 'bad', reversed: 'bad', loss: 'bad', suspended: 'bad', confirmed: 'bad',
 }
 
+/** Yes/no check with plain labels, e.g. "Set" / "Not set". */
+export function Flag({ ok, yes = 'Set', no = 'Not set', noTone = 'warn' }: { ok: boolean; yes?: string; no?: string; noTone?: keyof typeof tones }) {
+  return (
+    <Badge variant='outline' className={cn('border-transparent', tones[ok ? 'good' : noTone])}>
+      {ok ? yes : no}
+    </Badge>
+  )
+}
+
 export function StatusBadge({ status, className }: { status: string | null | undefined; className?: string }) {
   if (!status) return <span className='text-muted-foreground'>—</span>
   return (

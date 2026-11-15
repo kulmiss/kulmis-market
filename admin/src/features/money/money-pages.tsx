@@ -201,7 +201,7 @@ export function ReferralTreePage({ initialUser }: { initialUser?: number }) {
   return (
     <Page title='Referral tree' description='Full view for Super Admin: 3 levels down, upline, wallets.'>
       <FilterBar>
-        <Input className='h-9 w-48' placeholder='Member ID' value={userId} onChange={(e) => setUserId(e.target.value)} />
+        <Input className='h-9 w-full sm:w-48' placeholder='Member ID' value={userId} onChange={(e) => setUserId(e.target.value)} />
         <Button size='sm' onClick={() => setShow(userId)}>Show</Button>
       </FilterBar>
       {tree.data && (

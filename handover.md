@@ -62,12 +62,15 @@ All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
 See [docs/local-setup.md](docs/local-setup.md).
 
 ## Test status
-- 216 backend tests pass on SQLite and MariaDB 10.11 (every money path in
+- 217 backend tests pass on SQLite and MariaDB 10.11 (every money path in
   the brief is covered).
 - The admin passes typecheck, lint (0 errors) and build. The storefront
   builds.
 - CI (on the top PR): Pint + PHPUnit on MySQL 8, admin
   typecheck/lint/build, and Lighthouse ≥ 95 + LCP ≤ 1.5 s.
+- Layout checked in headless Chrome (15 Nov): every admin page and every
+  storefront page at 1440 px and 390 px, plus the sign-in/2FA screens at
+  610 px. No page scrolls sideways; wide admin tables scroll inside their box.
 
 ## Not done / next ideas
 - Larastan isn't installed (the build machine couldn't download it). Add

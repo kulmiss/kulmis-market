@@ -1,1 +1,0 @@
-import{d as e}from"./index-BOdU8nUi.js";var t=e;export{t as component};

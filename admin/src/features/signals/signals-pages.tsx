@@ -15,7 +15,7 @@ import { FilterBar, SearchInput, SelectFilter, opts } from '@/components/km/filt
 import { FormDialog } from '@/components/km/form-dialog'
 import { Page } from '@/components/km/page'
 import { ResourceTable } from '@/components/km/resource-table'
-import { StatusBadge } from '@/components/km/status-badge'
+import { Flag, StatusBadge } from '@/components/km/status-badge'
 
 type Signal = { id: number; pair: string; direction: 'long' | 'short'; entry: string; targets: string[]; stop_loss: string; notes: string | null
   status: string; result: string | null; result_value: string | null; result_note: string | null; posted_at: string | null; closed_at: string | null
@@ -156,7 +156,7 @@ type Tg = { configured: boolean; bot_username: string | null; channel_id_set: bo
 export function TelegramPage() {
   const q = useQuery({ queryKey: ['telegram'], queryFn: async () => (await api.get<{ data: Tg }>('/signals/telegram')).data.data })
   const t = q.data
-  const ok = (v: boolean) => <StatusBadge status={v ? 'active' : 'failed'} />
+  const ok = (v: boolean) => <Flag ok={v} />
   return (
     <Page title='Telegram bot' description='Bot settings live in the server .env (secrets never go in the database).'>
       {t && (

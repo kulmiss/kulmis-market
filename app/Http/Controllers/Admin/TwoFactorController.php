@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Support\Activity;
 use App\Support\Totp;
 use chillerlan\QRCode\QRCode;
+use chillerlan\QRCode\QROptions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -30,7 +31,7 @@ class TwoFactorController extends Controller
         return response()->json([
             'secret' => $secret,
             'otpauth_uri' => $uri,
-            'qr_svg' => (new QRCode)->render($uri),
+            'qr_svg' => (new QRCode(new QROptions(['outputType' => 'svg', 'outputBase64' => false, 'addQuietzone' => true])))->render($uri),
         ]);
     }
 

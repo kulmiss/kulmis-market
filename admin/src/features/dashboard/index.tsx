@@ -66,7 +66,7 @@ export function Dashboard() {
                 <AreaChart data={d.daily}>
                   <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
                   <XAxis dataKey='date' tickFormatter={(v: string) => v.slice(5)} fontSize={12} />
-                  <YAxis tickFormatter={(v: number) => `${Math.round(v / 100).toLocaleString()}`} fontSize={12} width={70} />
+                  <YAxis allowDecimals={false} domain={[0, (max: number) => Math.max(max, 100_000)]} tickFormatter={(v: number) => `${Math.round(v / 100).toLocaleString()}`} fontSize={12} width={60} />
                   <Tooltip formatter={(v) => formatETB(Number(v))} labelFormatter={(l) => String(l)} />
                   <Area type='monotone' dataKey='revenue' stroke='var(--color-primary)' fill='var(--color-primary)' fillOpacity={0.15} />
                 </AreaChart>

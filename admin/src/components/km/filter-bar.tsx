@@ -6,7 +6,7 @@ export function FilterBar({ children }: { children: React.ReactNode }) {
 }
 
 export function SearchInput({ value, onChange, placeholder = 'Search…' }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
-  return <Input className='h-9 w-56' placeholder={placeholder} value={value} onChange={(e) => onChange(e.target.value)} />
+  return <Input className='h-9 w-full sm:w-56' placeholder={placeholder} value={value} onChange={(e) => onChange(e.target.value)} />
 }
 
 export function SelectFilter({ value, onChange, options, placeholder }: {
@@ -14,7 +14,7 @@ export function SelectFilter({ value, onChange, options, placeholder }: {
 }) {
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className='h-9 w-44'><SelectValue placeholder={placeholder} /></SelectTrigger>
+      <SelectTrigger className='h-9 w-full sm:w-44'><SelectValue placeholder={placeholder} /></SelectTrigger>
       <SelectContent>
         <SelectItem value='all'>{placeholder}: all</SelectItem>
         {options.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
