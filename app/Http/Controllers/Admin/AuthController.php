@@ -9,6 +9,7 @@ use App\Security\LoginGuard;
 use App\Security\Sessions;
 use App\Security\TwoFactor;
 use App\Support\Activity;
+use App\Support\Currency;
 use App\Support\Phone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -93,6 +94,7 @@ class AuthController extends Controller
             'abilities' => $user->isSuperAdmin() ? ['*'] : config("permissions.roles.{$user->role}.abilities", []),
             'two_factor' => $user->hasTwoFactor(),
             'two_factor_required' => (bool) config('permissions.require_2fa'),
+            'currency' => Currency::forClients(),
         ]);
     }
 

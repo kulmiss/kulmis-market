@@ -2,10 +2,10 @@
 
 return [
     /*
-     * Shop currency. All money is stored as integer minor units (santim,
-     * 1 ETB = 100 santim) — never floats.
+     * All money is stored as integer minor units (santim, 1 ETB = 100
+     * santim), never floats. The currency itself (code, symbol, format) is
+     * a Super Admin setting: Settings → General (App\Support\Currency).
      */
-    'currency' => env('SHOP_CURRENCY', 'ETB'),
     'minor_units' => 100,
 
     /*

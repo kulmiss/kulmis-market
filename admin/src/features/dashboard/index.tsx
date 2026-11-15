@@ -4,7 +4,7 @@ import { Link } from '@tanstack/react-router'
 import { AlertTriangle, Banknote, Crown, Package, Radio, ShieldAlert, TrendingUp, Users } from 'lucide-react'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { api } from '@/lib/api'
-import { formatETB } from '@/lib/money'
+import { formatMoney } from '@/lib/money'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Page } from '@/components/km/page'
@@ -50,24 +50,24 @@ export function Dashboard() {
         <div className='grid gap-4'>
           <Attention d={d} />
           <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
-            <Kpi icon={TrendingUp} title='Revenue' value={formatETB(d.revenue.total)}
-              sub={`Shop ${formatETB(d.revenue.products)} · Membership ${formatETB(d.revenue.memberships)} · Signals ${formatETB(d.revenue.signals)}`} />
-            <Kpi icon={Banknote} title='Gross profit' value={formatETB(d.gross_profit)}
-              sub={`after product cost ${formatETB(d.costs.products)}, commissions ${formatETB(d.costs.commissions)}, loyalty ${formatETB(d.costs.loyalty)}, fees ${formatETB(d.costs.payment_fees)}`} />
-            <Kpi icon={Crown} title='Membership MRR' value={formatETB(d.membership.mrr)}
+            <Kpi icon={TrendingUp} title='Revenue' value={formatMoney(d.revenue.total)}
+              sub={`Shop ${formatMoney(d.revenue.products)} · Membership ${formatMoney(d.revenue.memberships)} · Signals ${formatMoney(d.revenue.signals)}`} />
+            <Kpi icon={Banknote} title='Gross profit' value={formatMoney(d.gross_profit)}
+              sub={`after product cost ${formatMoney(d.costs.products)}, commissions ${formatMoney(d.costs.commissions)}, loyalty ${formatMoney(d.costs.loyalty)}, fees ${formatMoney(d.costs.payment_fees)}`} />
+            <Kpi icon={Crown} title='Membership MRR' value={formatMoney(d.membership.mrr)}
               sub={`${d.membership.active} active · ${d.membership.new} new · ${d.membership.churned} churned (${d.membership.churn_rate}%)`} />
             <Kpi icon={Radio} title='Signals subscribers' value={String(d.signals.subscribers)} sub={`${d.signals.guests_paying} paying guests, the rest are members`} />
           </div>
 
           <Card>
-            <CardHeader><CardTitle className='text-base'>Revenue per day</CardTitle><CardDescription>{d.orders.paid} paid orders · average {formatETB(d.orders.average)}</CardDescription></CardHeader>
+            <CardHeader><CardTitle className='text-base'>Revenue per day</CardTitle><CardDescription>{d.orders.paid} paid orders · average {formatMoney(d.orders.average)}</CardDescription></CardHeader>
             <CardContent className='h-64'>
               <ResponsiveContainer width='100%' height='100%'>
                 <AreaChart data={d.daily}>
                   <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
                   <XAxis dataKey='date' tickFormatter={(v: string) => v.slice(5)} fontSize={12} />
                   <YAxis allowDecimals={false} domain={[0, (max: number) => Math.max(max, 100_000)]} tickFormatter={(v: number) => `${Math.round(v / 100).toLocaleString()}`} fontSize={12} width={60} />
-                  <Tooltip formatter={(v) => formatETB(Number(v))} labelFormatter={(l) => String(l)} />
+                  <Tooltip formatter={(v) => formatMoney(Number(v))} labelFormatter={(l) => String(l)} />
                   <Area type='monotone' dataKey='revenue' stroke='var(--color-primary)' fill='var(--color-primary)' fillOpacity={0.15} />
                 </AreaChart>
               </ResponsiveContainer>
@@ -78,23 +78,23 @@ export function Dashboard() {
             <Card>
               <CardHeader><CardTitle className='text-base'>Commissions</CardTitle></CardHeader>
               <CardContent className='grid gap-1 text-sm'>
-                <Line label='Earned in period' value={formatETB(d.commissions.earned_in_period)} />
-                <Line label='Pending (all members)' value={formatETB(d.commissions.pending)} />
-                <Line label='Available (all members)' value={formatETB(d.commissions.available)} />
-                <Line label='Cash-outs requested' value={formatETB(d.commissions.requested)} />
-                <Line label='Paid out in period' value={formatETB(d.commissions.paid_out)} />
-                <Line label='Paid out all time' value={formatETB(d.commissions.paid_out_all_time)} />
-                <Line label='Loyalty rewards in period' value={formatETB(d.loyalty_rewards)} />
+                <Line label='Earned in period' value={formatMoney(d.commissions.earned_in_period)} />
+                <Line label='Pending (all members)' value={formatMoney(d.commissions.pending)} />
+                <Line label='Available (all members)' value={formatMoney(d.commissions.available)} />
+                <Line label='Cash-outs requested' value={formatMoney(d.commissions.requested)} />
+                <Line label='Paid out in period' value={formatMoney(d.commissions.paid_out)} />
+                <Line label='Paid out all time' value={formatMoney(d.commissions.paid_out_all_time)} />
+                <Line label='Loyalty rewards in period' value={formatMoney(d.loyalty_rewards)} />
               </CardContent>
             </Card>
             <Card>
               <CardHeader><CardTitle className='text-base'>Discounts & shipping</CardTitle></CardHeader>
               <CardContent className='grid gap-1 text-sm'>
-                <Line label='Member discounts' value={formatETB(d.discounts.member)} />
-                <Line label='Coupons' value={formatETB(d.discounts.coupons)} />
-                <Line label='Free shipping given' value={formatETB(d.discounts.free_shipping)} />
-                <Line label='Shipping charged' value={formatETB(d.shipping.charged)} />
-                <Line label='Payment fees' value={formatETB(d.payment_fees)} />
+                <Line label='Member discounts' value={formatMoney(d.discounts.member)} />
+                <Line label='Coupons' value={formatMoney(d.discounts.coupons)} />
+                <Line label='Free shipping given' value={formatMoney(d.discounts.free_shipping)} />
+                <Line label='Shipping charged' value={formatMoney(d.shipping.charged)} />
+                <Line label='Payment fees' value={formatMoney(d.payment_fees)} />
               </CardContent>
             </Card>
             <Card>
@@ -107,7 +107,7 @@ export function Dashboard() {
             <Card>
               <CardHeader><CardTitle className='text-base'>Top products</CardTitle></CardHeader>
               <CardContent className='grid gap-1 text-sm'>
-                {d.top_products.map((p) => <Line key={p.product_id} label={`${p.qty} × ${p.name}`} value={formatETB(Number(p.revenue))} />)}
+                {d.top_products.map((p) => <Line key={p.product_id} label={`${p.qty} × ${p.name}`} value={formatMoney(Number(p.revenue))} />)}
                 {d.top_products.length === 0 && <span className='text-muted-foreground'>No sales in this period.</span>}
               </CardContent>
             </Card>
@@ -121,7 +121,7 @@ export function Dashboard() {
             <Card>
               <CardHeader><CardTitle className='flex items-center gap-2 text-base'><Users className='size-4' /> Cash-out queue</CardTitle></CardHeader>
               <CardContent className='grid gap-1 text-sm'>
-                <Line label='Waiting' value={`${d.cash_outs.waiting} · ${formatETB(d.cash_outs.waiting_amount)}`} />
+                <Line label='Waiting' value={`${d.cash_outs.waiting} · ${formatMoney(d.cash_outs.waiting_amount)}`} />
                 <Line label='Overdue (> 3 days)' value={String(d.cash_outs.overdue)} />
                 <Button size='sm' variant='outline' className='mt-2' asChild><Link to='/cash-outs'>Open queue</Link></Button>
               </CardContent>

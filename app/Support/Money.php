@@ -28,16 +28,10 @@ final class Money
         return intdiv($amount * $bps + 5_000, 10_000);
     }
 
-    /** "5,000 ETB" / "1,234.50 ETB" */
+    /** "5,000 ETB" / "1,234.50 ETB", in the shop currency's format (Settings → General). */
     public static function format(int $santim, bool $withCurrency = true): string
     {
-        $neg = $santim < 0;
-        $abs = abs($santim);
-        $birr = number_format(intdiv($abs, 100));
-        $cents = $abs % 100;
-        $text = ($neg ? '-' : '').$birr.($cents ? '.'.str_pad((string) $cents, 2, '0', STR_PAD_LEFT) : '');
-
-        return $withCurrency ? $text.' '.config('shop.currency', 'ETB') : $text;
+        return Currency::format($santim, $withCurrency);
     }
 
     /** Parse "1,234.5" or 1234 (birr) into santim. */

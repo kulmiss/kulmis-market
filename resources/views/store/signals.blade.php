@@ -27,7 +27,11 @@
             </div>
             <div><label class="label" for="sp">Phone (your link comes by SMS)</label><input id="sp" name="phone" class="input" required inputmode="tel" placeholder="09…" autocomplete="tel"></div>
             <div><label class="label" for="se">Email (optional)</label><input id="se" name="email" type="email" class="input" autocomplete="email"></div>
+            @chapa
             <button class="btn-primary">Pay {{ $m('signals.guest_price') }} with Chapa</button>
+            @else
+            <p class="text-sm text-clay-700" role="status">{{ app(\App\Payments\ChapaGateway::class)->unsupportedMessage() }}</p>
+            @endchapa
             <p class="muted text-xs">Telebirr, CBE Birr, M-Pesa or card. After paying you get a personal one-time Telegram link. Access ends automatically after the month (+{{ \App\Support\Settings::int('signals.grace_days') }} days grace) unless you renew.</p>
             <p data-form-message class="text-sm text-clay-600" role="alert"></p>
         </form>

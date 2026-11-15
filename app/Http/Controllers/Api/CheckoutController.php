@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Orders\Checkout;
 use App\Orders\CheckoutExtras;
 use App\Orders\OrderService;
+use App\Support\Currency;
 use App\Support\Features;
 use App\Support\Phone;
 use App\Wallet\WalletPayments;
@@ -67,7 +68,7 @@ class CheckoutController extends Controller
             'total' => $order->total,
             'amount_due' => $order->status === Order::PENDING_PAYMENT ? $order->amountDue() : 0,
             'wallet_used' => $order->wallet_used,
-            'currency' => config('shop.currency'),
+            'currency' => Currency::code(),
             'member_discount' => $order->member_discount,
             'shipping' => $order->shippingPayable(),
             'track_url' => url('/track?number='.$order->number),

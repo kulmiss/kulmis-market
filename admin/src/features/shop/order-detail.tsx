@@ -5,7 +5,7 @@ import { ArrowLeft, Check, ExternalLink, FileDown, RotateCcw, X } from 'lucide-r
 import { useMutate } from '@/hooks/use-mutate'
 import { api } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth-store'
-import { formatDate, formatETB } from '@/lib/money'
+import { formatDate, formatMoney } from '@/lib/money'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -47,18 +47,18 @@ export function OrderDetail({ id }: { id: string }) {
             {o.items?.map((i) => (
               <div key={i.id} className='flex justify-between gap-2'>
                 <span>{i.quantity} × {i.name}{i.made_to_order && <span className='text-muted-foreground'> · made to order ({i.making_days} days)</span>}</span>
-                <span className='text-end'>{formatETB(i.line_total)}<span className='block text-xs text-muted-foreground'>cost {formatETB(i.unit_cost * i.quantity)}</span></span>
+                <span className='text-end'>{formatMoney(i.line_total)}<span className='block text-xs text-muted-foreground'>cost {formatMoney(i.unit_cost * i.quantity)}</span></span>
               </div>
             ))}
             <Separator />
-            <Row label='Subtotal (guest prices)' value={formatETB(o.list_subtotal)} />
-            {o.member_discount > 0 && <Row label='Member discount' value={`−${formatETB(o.member_discount)}`} />}
-            {o.coupon_discount > 0 && <Row label={`Coupon ${o.coupon_code}`} value={`−${formatETB(o.coupon_discount)}`} />}
-            <Row label='Shipping' value={o.shipping_discount ? `${formatETB(o.shipping)} → free` : formatETB(o.shipping)} />
-            <Row label='Total' value={formatETB(o.total)} strong />
-            {o.wallet_used > 0 && <Row label='Paid from wallet' value={formatETB(o.wallet_used)} />}
-            {o.payment_fee > 0 && <Row label='Payment fee' value={formatETB(o.payment_fee)} />}
-            {o.refunded_amount > 0 && <Row label='Refunded' value={formatETB(o.refunded_amount)} />}
+            <Row label='Subtotal (guest prices)' value={formatMoney(o.list_subtotal)} />
+            {o.member_discount > 0 && <Row label='Member discount' value={`−${formatMoney(o.member_discount)}`} />}
+            {o.coupon_discount > 0 && <Row label={`Coupon ${o.coupon_code}`} value={`−${formatMoney(o.coupon_discount)}`} />}
+            <Row label='Shipping' value={o.shipping_discount ? `${formatMoney(o.shipping)} → free` : formatMoney(o.shipping)} />
+            <Row label='Total' value={formatMoney(o.total)} strong />
+            {o.wallet_used > 0 && <Row label='Paid from wallet' value={formatMoney(o.wallet_used)} />}
+            {o.payment_fee > 0 && <Row label='Payment fee' value={formatMoney(o.payment_fee)} />}
+            {o.refunded_amount > 0 && <Row label='Refunded' value={formatMoney(o.refunded_amount)} />}
           </CardContent>
         </Card>
 
@@ -139,7 +139,7 @@ export function PaymentRow({ payment: p }: { payment: Payment }) {
     <div className='grid gap-2 rounded-md border p-3 text-sm'>
       <div className='flex flex-wrap items-center gap-2'>
         <StatusBadge status={p.status} />
-        <span className='font-medium'>{formatETB(p.amount)}</span>
+        <span className='font-medium'>{formatMoney(p.amount)}</span>
         <span className='text-muted-foreground'>{p.provider.replaceAll('_', ' ')} · {p.tx_ref}</span>
         {p.provider_reference && <span className='text-muted-foreground'>ref {p.provider_reference}</span>}
         {p.proof_reference && <span className='text-muted-foreground'>proof ref {p.proof_reference}</span>}
@@ -163,14 +163,14 @@ export function PaymentRow({ payment: p }: { payment: Payment }) {
           <Input className='h-9 w-full sm:w-64' placeholder='Reason (required)' value={reason} onChange={(e) => setReason(e.target.value)} />
           <label className='flex items-center gap-2'><Switch checked={restock} onCheckedChange={setRestock} /> Put items back in stock</label>
           <Button size='sm' variant='destructive' disabled={!reason || amount < 1}
-            onClick={() => act.mutate({ path: `/payments/${p.id}/refund`, body: { amount, reason, restock } })}>Refund {formatETB(amount)}</Button>
+            onClick={() => act.mutate({ path: `/payments/${p.id}/refund`, body: { amount, reason, restock } })}>Refund {formatMoney(amount)}</Button>
           <Button size='sm' variant='ghost' onClick={() => setRefunding(false)}>Cancel</Button>
         </div>
       ) : (
         <div><Button size='sm' variant='outline' onClick={() => setRefunding(true)}><RotateCcw /> Refund…</Button>
           <span className='ms-2 text-xs text-muted-foreground'>Commissions on this sale are reversed automatically.</span></div>
       ))}
-      {p.refunds?.map((r) => <div key={r.id} className='text-xs text-muted-foreground'>Refunded {formatETB(r.amount)} ({r.method}) · {r.reason}</div>)}
+      {p.refunds?.map((r) => <div key={r.id} className='text-xs text-muted-foreground'>Refunded {formatMoney(r.amount)} ({r.method}) · {r.reason}</div>)}
     </div>
   )
 }

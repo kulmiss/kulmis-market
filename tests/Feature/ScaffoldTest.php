@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Support\Currency;
 use Tests\TestCase;
 
 class ScaffoldTest extends TestCase
@@ -28,7 +29,7 @@ class ScaffoldTest extends TestCase
 
     public function test_shop_defaults(): void
     {
-        $this->assertSame('ETB', config('shop.currency'));
+        $this->assertSame('ETB', Currency::code());
         $this->assertSame(100, config('shop.minor_units'));
         $this->assertSame('Africa/Addis_Ababa', config('app.timezone'));
     }

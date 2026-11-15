@@ -1,6 +1,6 @@
 # Handover — Kulmis Market
 
-_Last updated: PR 29._
+_Last updated: PR 30._
 
 Kulmis Market is an online shop for handcrafted Ethiopian products, plus a
 trading-signals service (private Telegram channel) and a paid monthly
@@ -54,6 +54,7 @@ PRs 1–28 are merged into `main`.
 | PR | Branch | Status |
 |----|--------|--------|
 | 29 | `pr/29-referral-fix` | Draft. Bug #7 "referral not working": same-browser sign-ups are linked + held for review (were silently refused), soft network flag, local sign-up limit, referral QR no longer 404s under nginx; end-to-end tests A→B→C→D + guest via link + admin tree == member team |
+| 30 | `pr/30-currency` | Draft. Currency setting (Settings → General): code, symbol, position, decimals, separators; used everywhere; confirmation, nothing converted; Chapa blocked for unsupported currencies ([docs/platform.md](docs/platform.md#currency-settings--general)) |
 
 **Merge:** the top PR of round 2 targets `main` and contains every commit
 below it, so one merge brings in everything.

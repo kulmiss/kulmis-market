@@ -19,11 +19,11 @@
             <p class="muted mt-1 text-sm">{{ $fmt(\App\Support\Settings::int('membership.price')) }} per month @if ($isMember) — renew any time; days are added on top.@endif</p>
             <form method="post" action="{{ url('/account/membership/pay') }}" class="mt-4 grid gap-2">
                 @csrf
-                @feature('payments.chapa')<button name="method" value="chapa" class="btn-primary">{{ $isMember ? 'Renew' : 'Join' }} with Chapa</button>@endfeature
+                @chapa<button name="method" value="chapa" class="btn-primary">{{ $isMember ? 'Renew' : 'Join' }} with Chapa</button>@elsefeature('payments.chapa')<p class="text-sm text-clay-700" role="status">{{ app(\App\Payments\ChapaGateway::class)->unsupportedMessage() }}</p>@endchapa
                 @if (\App\Support\Features::enabled('wallet.spend') && $wallet['available'] >= 100)
                     @if ($wallet['available'] >= \App\Support\Settings::int('membership.price'))
                         <button name="method" value="wallet" class="btn-dark">Pay from wallet ({{ $fmt($wallet['available']) }})</button>
-                    @else
+                    @elsechapa
                         <button name="method" value="wallet_chapa" class="btn-ghost">Wallet {{ $fmt($wallet['available']) }} + rest with Chapa</button>
                     @endif
                 @endif
@@ -119,7 +119,7 @@
             <form method="post" action="{{ url('/account/cash-out') }}" class="mt-4 flex flex-wrap items-end gap-3">
                 @csrf
                 <input type="hidden" name="request_id" value="{{ \Illuminate\Support\Str::random(32) }}">
-                <div><label class="label" for="ca">Cash out (from {{ $fmt(\App\Support\Settings::int('wallet.cashout_min')) }})</label><input id="ca" name="amount_birr" class="input" inputmode="decimal" required placeholder="ETB"></div>
+                <div><label class="label" for="ca">Cash out (from {{ $fmt(\App\Support\Settings::int('wallet.cashout_min')) }})</label><input id="ca" name="amount_birr" class="input" inputmode="decimal" required placeholder="{{ \App\Support\Currency::config()['symbol'] }}"></div>
                 <button class="btn-primary">Request cash-out</button>
                 <p class="muted w-full text-xs">Paid to {{ ucfirst($acct->method) }} {{ $acct->masked() }} within {{ \App\Support\Settings::int('wallet.payout_days') }} days.</p>
             </form>

@@ -4,9 +4,21 @@
 const API = '/api/v1';
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+// Shop currency format from Settings → General (same rules as App\Support\Currency).
+const CUR = (() => {
+    try { return JSON.parse(document.querySelector('meta[name=km-currency]')?.content || '{}'); } catch { return {}; }
+})();
 const etb = (santim) => {
-    const v = (santim ?? 0) / 100;
-    return v.toLocaleString('en-US', { minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2 }) + ' ETB';
+    const minor = Math.round(santim ?? 0);
+    const abs = Math.abs(minor);
+    const dec = CUR.decimals === '0' ? 0 : CUR.decimals === '2' ? 2 : (abs % 100 ? 2 : 0);
+    const fixed = (abs / 100).toFixed(dec);
+    const [whole, frac] = fixed.split('.');
+    const sep = CUR.thousands_char ?? ',';
+    const num = whole.replace(/\B(?=(\d{3})+(?!\d))/g, sep) + (frac ? (CUR.decimal_point ?? '.') + frac : '');
+    const sym = CUR.symbol ?? 'ETB';
+    const out = { after: num + sym, before_space: sym + ' ' + num, before: sym + num }[CUR.position] ?? num + ' ' + sym;
+    return (minor < 0 ? '-' : '') + out;
 };
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 

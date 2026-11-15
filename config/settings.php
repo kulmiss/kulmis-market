@@ -4,10 +4,21 @@
 | Editable settings (Super Admin → Settings).
 | key => [type, default, label, group]
 | Types: money (integer santim), bps (basis points, 1500 = 15%),
-|        ratio (×100, 250 = 2.5×), int, bool, string, text.
+|        ratio (×100, 250 = 2.5×), int, bool, string, text,
+|        choice (5th item = allowed values), currency_code (3 capital letters).
 */
 
+use App\Support\Currency;
+
 return [
+    // General: currency. Changing it does NOT convert prices or balances.
+    'currency.code' => ['currency_code', 'ETB', 'Currency code (ISO, e.g. ETB, USD)', 'General'],
+    'currency.symbol' => ['string', 'ETB', 'Currency symbol (e.g. ETB, Br, $)', 'General'],
+    'currency.position' => ['choice', 'after_space', 'Symbol position', 'General', Currency::POSITIONS],
+    'currency.decimals' => ['choice', 'auto', 'Decimals (auto = only when not whole)', 'General', Currency::DECIMALS],
+    'currency.thousands' => ['choice', ',', 'Thousands separator', 'General', Currency::THOUSANDS],
+    'currency.decimal_point' => ['choice', '.', 'Decimal separator', 'General', Currency::DECIMAL_POINTS],
+
     // Membership
     'membership.price' => ['money', 500_000, 'Membership price per month', 'Membership'],
     'membership.grace_days' => ['int', 3, 'Grace period (days)', 'Membership'],

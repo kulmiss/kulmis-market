@@ -3,7 +3,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { type ColumnDef } from '@tanstack/react-table'
 import { AlertTriangle, Plus } from 'lucide-react'
 import { useMutate } from '@/hooks/use-mutate'
-import { formatETB } from '@/lib/money'
+import { formatMoney } from '@/lib/money'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { FilterBar, SearchInput, SelectFilter, opts } from '@/components/km/filter-bar'
@@ -26,9 +26,9 @@ const columns: ColumnDef<Product, unknown>[] = [
       </span>
     </span>
   ) },
-  { header: 'Price', cell: ({ row }) => formatETB(row.original.price) },
-  { header: 'Cost', cell: ({ row }) => formatETB(row.original.total_cost) },
-  { header: 'Member profit', cell: ({ row }) => row.original.profit ? formatETB(row.original.profit.profit) : '—' },
+  { header: 'Price', cell: ({ row }) => formatMoney(row.original.price) },
+  { header: 'Cost', cell: ({ row }) => formatMoney(row.original.total_cost) },
+  { header: 'Member profit', cell: ({ row }) => row.original.profit ? formatMoney(row.original.profit.profit) : '—' },
   { header: 'Stock', cell: ({ row }) => (row.original.stock_mode === 'made_to_order' ? `Made to order (${row.original.making_days} d)` : row.original.available_stock) },
   { header: 'Status', cell: ({ row }) => <StatusBadge status={row.original.status} /> },
   { header: '', id: 'warn', cell: ({ row }) => row.original.warnings.length > 0 && (

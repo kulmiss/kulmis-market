@@ -50,6 +50,9 @@ change any of them.
 | 41 | `km:doctor` | Fails (exit 1) when anything is unsafe, so deploy scripts can stop. Missing setup (SMS, mail…) is a warning only. | Decided (review) |
 | 42 | Sign-up in the referrer's own browser | Linked (team is right) + flag: the referrer's earnings wait for review. Before, the link was silently refused, which looked like "referral not working". | Decided (bug #7) |
 | 43 | Many sign-ups from one network | Review-only (soft) flag at 10 in 24 h; no hold, because mobile carriers share IPs. Local/private IPs are ignored. | Decided (bug #7) |
+| 44 | Currency change and existing amounts | Nothing is converted: amounts keep their numbers, only the symbol/format changes. Admin must confirm. | Decided (you) |
+| 45 | "Block checkout" when Chapa can't take the currency | Only the Chapa option is blocked, with a message; bank/Telebirr transfer with a receipt stays open so customers can still buy. Tell me if you want the whole checkout closed instead. | Decided (round 2) |
+| 46 | Currency decimals | Choice of "only when needed" (default, as today), never, or always 2. Amounts are still stored to 1/100. | Decided (round 2) |
 
 ## Still open: needs you
 | # | What | Why |

@@ -4,7 +4,7 @@ import { type ColumnDef } from '@tanstack/react-table'
 import { Pencil, Plus } from 'lucide-react'
 import { useMutate } from '@/hooks/use-mutate'
 import { api } from '@/lib/api'
-import { formatBps, formatDate, formatETB } from '@/lib/money'
+import { formatBps, formatDate, formatMoney } from '@/lib/money'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -64,8 +64,8 @@ type Coupon = { id: number; code: string; type: 'percent' | 'fixed'; value: numb
 
 const couponColumns: ColumnDef<Coupon, unknown>[] = [
   { header: 'Code', cell: ({ row }) => <span className='font-mono'>{row.original.code}</span> },
-  { header: 'Discount', cell: ({ row }) => (row.original.type === 'percent' ? formatBps(row.original.value) : formatETB(row.original.value)) },
-  { header: 'Min. order', cell: ({ row }) => formatETB(row.original.min_subtotal) },
+  { header: 'Discount', cell: ({ row }) => (row.original.type === 'percent' ? formatBps(row.original.value) : formatMoney(row.original.value)) },
+  { header: 'Min. order', cell: ({ row }) => formatMoney(row.original.min_subtotal) },
   { header: 'Used', cell: ({ row }) => `${row.original.used_count}${row.original.max_uses ? ` / ${row.original.max_uses}` : ''}` },
   { header: 'Ends', cell: ({ row }) => formatDate(row.original.ends_at) },
   { header: 'Members only', cell: ({ row }) => (row.original.members_only ? 'Yes' : '') },
@@ -136,7 +136,7 @@ export function ShippingPage() {
             <TableRow key={z.id}>
               <TableCell>{z.name}{z.is_default && <span className='ms-2 text-xs text-muted-foreground'>(all other cities)</span>}{!z.is_active && ' (off)'}</TableCell>
               <TableCell className='max-w-xs truncate'>{z.cities.join(', ')}</TableCell>
-              <TableCell>{formatETB(z.base_fee)}</TableCell><TableCell>{formatETB(z.per_kg_fee)}</TableCell>
+              <TableCell>{formatMoney(z.base_fee)}</TableCell><TableCell>{formatMoney(z.per_kg_fee)}</TableCell>
               <TableCell>{z.eta_days_min ?? '?'}–{z.eta_days_max ?? '?'} days</TableCell>
               <TableCell className='text-end'><ZoneDialog zone={z} /></TableCell>
             </TableRow>

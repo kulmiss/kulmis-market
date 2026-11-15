@@ -8,13 +8,15 @@
         <p class="mt-3 text-2xl font-semibold">{{ \App\Support\Money::format($order->amountDue()) }}</p>
         <p class="muted text-sm">Save your order number: <b>{{ $order->number }}</b>. Unpaid orders are cancelled after {{ \App\Support\Settings::int('orders.unpaid_cancel_hours') }} hours.</p>
         <div class="mt-6 grid gap-4">
-            @feature('payments.chapa')
+            @chapa
             <div class="card">
                 <h2 class="text-xl">Pay now</h2>
                 <p class="muted text-sm">Telebirr, CBE Birr, M-Pesa or card — through Chapa.</p>
                 <button class="btn-primary mt-4" data-pay-chapa>Pay with Chapa</button>
             </div>
-            @endfeature
+            @elsefeature('payments.chapa')
+            <p class="card text-sm text-clay-700" role="status" data-chapa-unsupported>{{ app(\App\Payments\ChapaGateway::class)->unsupportedMessage() }}</p>
+            @endchapa
             @feature('payments.manual')
             <div class="card">
                 <h2 class="text-xl">Transfer and upload the receipt</h2>

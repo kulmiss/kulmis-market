@@ -16,6 +16,7 @@
     <meta name="description" content="{{ $description }}">
     <link rel="canonical" href="{{ $canonical ?? url()->current() }}">
     <meta name="theme-color" content="#b5532b">
+    <meta name="km-currency" content="{{ json_encode(\App\Support\Currency::forClients()) }}">
     <meta property="og:site_name" content="{{ $site }}">
     <meta property="og:title" content="{{ $title }}">
     <meta property="og:description" content="{{ $description }}">

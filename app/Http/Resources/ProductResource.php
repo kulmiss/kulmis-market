@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Pricing\PriceCalculator;
+use App\Support\Currency;
 use App\Support\Features;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -37,7 +38,7 @@ class ProductResource extends JsonResource
             // "Member price" shown next to the guest price everywhere.
             'member_price' => $memberPrice = $this->memberPrice($p->price),
             'member_saving' => $memberPrice === null ? 0 : $p->price - $memberPrice,
-            'currency' => config('shop.currency'),
+            'currency' => Currency::code(),
             'weight_grams' => $p->weight_grams,
             'made_to_order' => $p->isMadeToOrder(),
             'making_days' => $p->making_days,

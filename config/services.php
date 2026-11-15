@@ -49,6 +49,8 @@ return [
         'secret_key' => env('CHAPA_SECRET_KEY'),
         'webhook_secret' => env('CHAPA_WEBHOOK_SECRET'),
         'base_url' => env('CHAPA_BASE_URL', 'https://api.chapa.co/v1'),
+        // Currencies Chapa accepts for this shop. Checkout with Chapa is blocked for any other.
+        'currencies' => array_filter(explode(',', (string) env('CHAPA_CURRENCIES', 'ETB'))),
         'refund_api' => (bool) env('CHAPA_REFUND_API', true),
     ],
 

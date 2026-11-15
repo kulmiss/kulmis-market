@@ -16,5 +16,5 @@
             @foreach ($pages as $p)<a href="{{ url('/p/'.$p->slug) }}" class="hover:underline">{{ $p->title }}</a>@endforeach
         </nav>
     </div>
-    <p class="container-km muted mt-8 text-xs">© {{ now()->year }} {{ \App\Support\Settings::string('site.name') }}. Prices in ETB. We use only essential cookies (cart and referral code) — no tracking.</p>
+    <p class="container-km muted mt-8 text-xs">© {{ now()->year }} {{ \App\Support\Settings::string('site.name') }}. Prices in {{ \App\Support\Currency::code() }}. We use only essential cookies (cart and referral code) — no tracking.</p>
 </footer>

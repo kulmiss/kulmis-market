@@ -3,6 +3,7 @@
 namespace App\Payments;
 
 use App\Models\Payment;
+use App\Support\Currency;
 use App\Support\Phone;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
@@ -19,6 +20,24 @@ class ChapaGateway
         return (string) config('services.chapa.secret_key') !== '';
     }
 
+    /** @return list<string> */
+    public function currencies(): array
+    {
+        return array_values(array_map(fn ($c) => strtoupper(trim((string) $c)), (array) config('services.chapa.currencies', ['ETB'])));
+    }
+
+    public function supports(string $currency): bool
+    {
+        return in_array(strtoupper($currency), $this->currencies(), true);
+    }
+
+    /** Shown wherever Chapa would be offered when the shop currency isn't supported. */
+    public function unsupportedMessage(): string
+    {
+        return 'Online payment through Chapa only works in '.implode(', ', $this->currencies()).', and this shop now uses '
+            .Currency::code().'. Please pay by bank or Telebirr transfer, or contact us.';
+    }
+
     /**
      * @param  array{first_name:string,last_name:string,phone:?string,email:?string}  $customer
      * @return string checkout URL
@@ -28,7 +47,7 @@ class ChapaGateway
         $phone = $customer['phone'] ? '0'.substr((string) Phone::normalize($customer['phone']), 4) : null;
         $res = $this->http()->post($this->base().'/transaction/initialize', array_filter([
             'amount' => self::birr($payment->amount),
-            'currency' => 'ETB',
+            'currency' => $payment->currency,
             'email' => $customer['email'],
             'first_name' => $customer['first_name'],
             'last_name' => $customer['last_name'] ?: $customer['first_name'],

@@ -10,12 +10,14 @@ use App\Ledger\Wallet;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Support\Activity;
+use App\Support\Currency;
 use App\Support\Money;
 use App\Support\Settings;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 
 /**
@@ -31,11 +33,14 @@ class PaymentService
     public function startChapa(Model $payable, string $returnUrl): Payment
     {
         $this->assertPayable($payable);
+        if (! $this->chapa->supports(Currency::code())) {
+            throw ValidationException::withMessages(['payment' => $this->chapa->unsupportedMessage()]);
+        }
         // Double click / refresh / app retry: reuse the open checkout instead of
         // starting a second one that could also be paid.
         $open = Payment::query()->where('payable_type', $payable->getMorphClass())->where('payable_id', $payable->getKey())
             ->where('provider', Payment::CHAPA)->where('status', Payment::PENDING)->whereNotNull('checkout_url')
-            ->where('amount', $payable->payableAmount())->where('created_at', '>=', now()->subMinutes(30))->latest('id')->first();
+            ->where('amount', $payable->payableAmount())->where('currency', Currency::code())->where('created_at', '>=', now()->subMinutes(30))->latest('id')->first();
         if ($open) {
             return $open;
         }
@@ -71,7 +76,7 @@ class PaymentService
             return $payment;
         }
         $result = $this->chapa->verify($txRef);
-        if ($result['status'] === 'success' && $result['currency'] === 'ETB' && $result['amount'] >= $payment->amount) {
+        if ($result['status'] === 'success' && $result['currency'] === $payment->currency && $result['amount'] >= $payment->amount) {
             $this->markPaid($payment, $result['charge'] ?: null, $result['reference'], $result['payer'], ['chapa' => $result['raw']]);
         } elseif ($result['status'] === 'mismatch') {
             Activity::log('payment.reference_mismatch', $payment, ['asked' => $txRef]);
@@ -212,6 +217,7 @@ class PaymentService
             'provider' => $provider,
             'tx_ref' => 'KM-'.Str::upper(Str::random(20)),
             'amount' => $payable->payableAmount(),
+            'currency' => Currency::code(),
             'status' => Payment::PENDING,
         ]);
     }

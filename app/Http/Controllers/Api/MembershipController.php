@@ -7,6 +7,7 @@ use App\Membership\MembershipService;
 use App\Models\Payment;
 use App\Models\User;
 use App\Payments\PaymentService;
+use App\Support\Currency;
 use App\Support\Features;
 use App\Support\Settings;
 use App\Wallet\WalletPayments;
@@ -26,7 +27,7 @@ class MembershipController extends Controller
         return response()->json(['data' => [
             'price' => Settings::int('membership.price'),
             'period' => 'month',
-            'currency' => config('shop.currency'),
+            'currency' => Currency::code(),
             'benefits' => array_values(array_filter([
                 Features::enabled('membership.member_discount') ? ['key' => 'discount', 'value' => Settings::int('pricing.member_discount_bps')] : null,
                 Features::enabled('signals') ? ['key' => 'signals', 'value' => Settings::int('signals.guest_price')] : null,

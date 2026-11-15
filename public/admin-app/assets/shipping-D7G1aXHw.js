@@ -1,0 +1,1 @@
+import{r as e}from"./catalog-pages-CtVirxBe.js";var t=e;export{t as component};
