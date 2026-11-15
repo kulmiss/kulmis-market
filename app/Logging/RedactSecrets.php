@@ -40,7 +40,10 @@ class RedactSecrets
         return (string) preg_replace(array_keys(self::PATTERNS), array_values(self::PATTERNS), $s);
     }
 
-    /** @param array<mixed> $a @return array<mixed> */
+    /**
+     * @param  array<mixed>  $a
+     * @return array<mixed>
+     */
     private static function cleanArray(array $a): array
     {
         foreach ($a as $k => $v) {

@@ -26,7 +26,9 @@ export function UserAuthForm({ redirectTo }: { redirectTo?: string }) {
     if (setupRequired) {
       navigate({ to: '/two-factor-setup', replace: true })
     } else {
-      navigate({ to: (redirectTo as '/') || '/', replace: true })
+      // Only our own admin paths: never //evil.example or https://… (open redirect).
+      const safe = redirectTo && /^\/(?!\/)/.test(redirectTo) && !redirectTo.includes('\\') ? redirectTo : '/'
+      navigate({ to: safe as '/', replace: true })
     }
   }
 

@@ -54,7 +54,11 @@ class SecurityAlerts
         }
     }
 
-    /** Owner alert on Telegram (and log) for events that need a human now. */
+    /**
+     * Owner alert on Telegram (and log) for events that need a human now.
+     *
+     * @param  array<string, mixed>  $context
+     */
     public function critical(string $title, array $context = []): void
     {
         Activity::log('security.critical', null, ['title' => $title] + $context);

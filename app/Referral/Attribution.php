@@ -89,7 +89,10 @@ class Attribution
         }
     }
 
-    /** @return array<string, mixed> order columns */
+    /**
+     * @param  array<string, mixed>  $customer
+     * @return array<string, mixed> order columns
+     */
     public function forOrder(Request $request, ?User $buyer, array $customer): array
     {
         // Registered buyers: the locked sign-up referrer is used (see CommissionEngine).

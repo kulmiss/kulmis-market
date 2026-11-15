@@ -45,7 +45,8 @@ class MembershipController extends Controller
         /** @var User $user */
         $user = $request->user();
 
-        return response()->json(['data' => AuthController::present($user)['membership'] + ['is_member' => $user->isActiveMember()]
+        // Someone who never joined has no membership yet: answer "not a member", don't crash.
+        return response()->json(['data' => (AuthController::present($user)['membership'] ?? ['status' => null]) + ['is_member' => $user->isActiveMember()]
             + ['price' => Settings::int('membership.price')]]);
     }
 

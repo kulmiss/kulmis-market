@@ -32,7 +32,10 @@ class TelegramClient
         return (array) ($body['result'] ?? []);
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @param  array<string, mixed>  $extra
+     * @return array<string, mixed>
+     */
     public function sendMessage(int|string $chatId, string $text, array $extra = []): array
     {
         return $this->call('sendMessage', array_merge(['chat_id' => $chatId, 'text' => $text, 'parse_mode' => 'HTML',

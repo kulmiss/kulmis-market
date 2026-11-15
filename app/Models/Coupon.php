@@ -43,6 +43,7 @@ class Coupon extends Model
             'members_only' => 'boolean', 'is_active' => 'boolean'];
     }
 
+    /** @return Attribute<never, string> */
     protected function code(): Attribute
     {
         return Attribute::set(fn (string $v) => strtoupper(trim($v)));

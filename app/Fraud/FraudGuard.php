@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Cache;
  */
 class FraudGuard
 {
+    /** @param array<string, mixed> $details */
     public function flag(User|int $user, string $type, array $details = []): FraudFlag
     {
         $id = $user instanceof User ? $user->id : $user;

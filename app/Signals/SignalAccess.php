@@ -101,7 +101,11 @@ class SignalAccess
         return $sub;
     }
 
-    /** Admin: give access by hand for N days. */
+    /**
+     * Admin: give access by hand for N days.
+     *
+     * @param  array<string, mixed>  $person
+     */
     public function grantManual(array $person, int $days, int $actorId, string $reason): SignalSubscription
     {
         $sub = SignalSubscription::query()->create([

@@ -18,7 +18,7 @@
     $bottom = array_slice($nav, 0, 4);
 @endphp
 <!doctype html>
-<html lang="en" class="h-full">
+<html lang="en" class="h-full" style="--m-accent: {{ $accent }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -31,7 +31,6 @@
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
     <link rel="manifest" href="{{ asset('site.webmanifest') }}">
     @feature('appearance.theme_switch')<script>{!! \App\Support\Csp::THEME_SCRIPT !!}</script>@endfeature
-    <style>:root { --m-accent: {{ $accent }}; }</style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="km-member min-h-full font-sans antialiased">

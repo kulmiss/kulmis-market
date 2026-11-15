@@ -253,4 +253,10 @@ class MembershipTest extends TestCase
         $this->postJson("/api/v1/admin/members/{$user->id}/status", ['status' => 'suspended', 'reason' => 'Fraud'])->assertOk();
         $this->assertSame('suspended', $user->fresh()->status);
     }
+
+    public function test_membership_status_for_someone_who_never_joined(): void
+    {
+        $this->actingAs(User::factory()->create(), 'sanctum')->getJson('/api/v1/membership')
+            ->assertOk()->assertJsonPath('data.is_member', false)->assertJsonPath('data.status', null)->assertJsonPath('data.price', 500_000);
+    }
 }

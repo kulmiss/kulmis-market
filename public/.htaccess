@@ -52,8 +52,8 @@
     Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
     Header always unset X-Powered-By
     # Cached guest pages are served without PHP: send the CSP here too.
-    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-Xw+iXV1g6Uwe+/grlE5MEUAXKtap/VwHEZMIn78C1Zg='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'" env=KM_CACHED
-    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-Xw+iXV1g6Uwe+/grlE5MEUAXKtap/VwHEZMIn78C1Zg='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'" env=REDIRECT_KM_CACHED
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-Xw+iXV1g6Uwe+/grlE5MEUAXKtap/VwHEZMIn78C1Zg='; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'" env=KM_CACHED
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-Xw+iXV1g6Uwe+/grlE5MEUAXKtap/VwHEZMIn78C1Zg='; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'" env=REDIRECT_KM_CACHED
     <FilesMatch "\.(css|js|webp|avif|jpg|jpeg|png|svg|woff2)$">
         Header set Cache-Control "public, max-age=31536000, immutable"
     </FilesMatch>

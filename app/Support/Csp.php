@@ -20,7 +20,9 @@ final class Csp
         return implode('; ', [
             "default-src 'self'",
             "script-src 'self' ".self::themeHash(),
-            "style-src 'self' 'unsafe-inline'",
+            // No inline <style> blocks at all; style="" attributes (badge colours, member accent) stay allowed.
+            "style-src 'self'",
+            "style-src-attr 'unsafe-inline'",
             "img-src 'self' data: blob:",
             "font-src 'self'",
             "connect-src 'self'",

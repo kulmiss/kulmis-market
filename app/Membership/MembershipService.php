@@ -138,7 +138,11 @@ class MembershipService
         });
     }
 
-    /** Daily: active → grace → expired, plus renewal reminders. */
+    /**
+     * Daily: active → grace → expired, plus renewal reminders.
+     *
+     * @return array<string, int>
+     */
     public function sweep(?Carbon $now = null): array
     {
         $now ??= now();

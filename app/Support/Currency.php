@@ -40,7 +40,11 @@ final class Currency
         ];
     }
 
-    /** What clients (storefront JS, admin, app) need to format amounts the same way. */
+    /**
+     * What clients (storefront JS, admin, app) need to format amounts the same way.
+     *
+     * @return array<string, mixed>
+     */
     public static function forClients(): array
     {
         $c = self::config();
