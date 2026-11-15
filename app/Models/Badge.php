@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $threshold
  * @property int $rank
  * @property bool $is_active
+ * @property int $monthly_bonus santim, paid every month (level-1 team badges only)
+ * @property int $one_time_bonus santim, paid once when unlocked (other badges)
  */
 class Badge extends Model
 {
@@ -31,7 +33,13 @@ class Badge extends Model
 
     protected function casts(): array
     {
-        return ['threshold' => 'integer', 'rank' => 'integer', 'is_active' => 'boolean'];
+        return ['threshold' => 'integer', 'rank' => 'integer', 'is_active' => 'boolean', 'monthly_bonus' => 'integer', 'one_time_bonus' => 'integer'];
+    }
+
+    /** Only the level-1 team badges (Bronze … Diamond) can pay every month. */
+    public function paysMonthly(): bool
+    {
+        return $this->rule === 'active_level1';
     }
 
     /** @return HasMany<UserBadge, $this> */

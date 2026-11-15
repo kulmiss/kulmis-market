@@ -128,6 +128,57 @@
     @endif
 </section>
 
+@if ($bonus = $dash['bonus'])
+<section class="m-card mt-3" id="badge-bonus" aria-labelledby="bonus-title">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+        <div class="min-w-0">
+            <h2 id="bonus-title" class="font-semibold">Your badge bonus</h2>
+            @if ($bonus['current'])
+                <p class="mt-1 text-sm">Badge now: <b style="color: {{ $bonus['current']['color'] }}">{{ $bonus['current']['name'] }}</b> · {{ $bonus['active'] }} active {{ \Illuminate\Support\Str::plural('member', $bonus['active']) }} you invited</p>
+            @else
+                <p class="mt-1 text-sm m-muted">{{ $bonus['active'] }} active {{ \Illuminate\Support\Str::plural('member', $bonus['active']) }} you invited. Bronze starts at {{ $bonus['next']['threshold'] ?? 3 }}.</p>
+            @endif
+        </div>
+        <div class="text-end">
+            <p class="text-xs m-muted">Expected for {{ $bonus['month'] }}</p>
+            <p class="text-2xl font-semibold tabular-nums break-all">{{ $fmt($bonus['expected']) }}</p>
+        </div>
+    </div>
+    @if (! $bonus['paid_all_month'])
+        <p class="mt-2 rounded-xl px-3 py-2 text-sm m-soft">No bonus this month: your membership was not paid for every day of {{ $bonus['month'] }}. Keep it paid all of next month to get one.</p>
+    @else
+        <p class="mt-2 text-xs m-muted">We pay it on {{ $bonus['pay_day'] }} if your membership stays paid every day and your team still has enough active members at the end of the month.</p>
+    @endif
+    @if ($bonus['adjusted_last'])
+        <p class="mt-2 rounded-xl bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-200"><b>Bonus adjusted this month.</b> Many members earned a bonus, so everyone got the same smaller share.</p>
+    @endif
+    @if ($bonus['next'])
+        <div class="mt-4">
+            <div class="flex items-baseline justify-between gap-2 text-sm"><span>Next: <b>{{ $bonus['next']['name'] }}</b> · {{ $fmt($bonus['next']['bonus']) }} a month</span><span class="tabular-nums m-muted">{{ $bonus['active'] }}/{{ $bonus['next']['threshold'] }}</span></div>
+            <div class="mt-1 h-3 overflow-hidden rounded-full m-soft" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $bonus['next']['percent'] }}" aria-label="Progress to {{ $bonus['next']['name'] }}">
+                <div class="h-full rounded-full" style="width: {{ max(2, $bonus['next']['percent']) }}%; background: {{ $bonus['next']['color'] }}"></div>
+            </div>
+            <p class="mt-1 text-xs m-muted">{{ $bonus['next']['missing'] }} more active {{ \Illuminate\Support\Str::plural('member', $bonus['next']['missing']) }} to go.</p>
+        </div>
+    @else
+        <p class="mt-4 text-sm">You have the highest badge. Amazing!</p>
+    @endif
+    @if ($bonus['history'])
+        <details class="mt-4" data-collapse="bonus-history">
+            <summary class="flex min-h-12 cursor-pointer items-center text-sm font-semibold">Bonus history ({{ count($bonus['history']) }})</summary>
+            <ul class="grid gap-2 text-sm">
+                @foreach ($bonus['history'] as $h)
+                    <li class="flex items-center justify-between gap-3 rounded-xl px-3 py-2 m-soft">
+                        <span class="min-w-0"><b>{{ $h['month'] }}</b> · {{ $h['badge'] }}{{ $h['kind'] === 'one_time' ? ' (one time)' : '' }}<span class="block text-xs m-muted">{{ $h['status'] }}{{ $h['adjusted'] ? ' · adjusted' : '' }}</span></span>
+                        <b class="shrink-0 tabular-nums">{{ $fmt($h['amount']) }}</b>
+                    </li>
+                @endforeach
+            </ul>
+        </details>
+    @endif
+</section>
+@endif
+
 {{-- Referral + team --}}
 <section class="mt-3 grid gap-3 lg:grid-cols-3">
     <div class="m-card lg:col-span-2" id="referral">

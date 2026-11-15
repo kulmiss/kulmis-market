@@ -13,12 +13,12 @@ import { PageSkeleton } from '@/components/km/page-skeleton'
 type D = {
   revenue: { products: number; memberships: number; signals: number; total: number }
   gross_profit: number
-  costs: { products: number; commissions: number; loyalty: number; payment_fees: number }
+  costs: { products: number; commissions: number; loyalty: number; badge_bonuses: number; payment_fees: number }
   discounts: { member: number; coupons: number; free_shipping: number; total: number }
   shipping: { charged: number; free_given: number }
   orders: { paid: number; average: number }
   commissions: { earned_in_period: number; pending: number; available: number; requested: number; paid_out: number; paid_out_all_time: number }
-  loyalty_rewards: number; payment_fees: number
+  loyalty_rewards: number; badge_bonuses: number; payment_fees: number
   membership: { active: number; mrr: number; new: number; churned: number; churn_rate: number }
   signals: { subscribers: number; guests_paying: number }
   top_products: { product_id: number; name: string; qty: number; revenue: number }[]
@@ -65,7 +65,7 @@ export function Dashboard() {
             <Kpi icon={TrendingUp} title='Revenue' value={formatMoney(d.revenue.total)}
               sub={`Shop ${formatMoney(d.revenue.products)} · Membership ${formatMoney(d.revenue.memberships)} · Signals ${formatMoney(d.revenue.signals)}`} />
             <Kpi icon={Banknote} title='Gross profit' value={formatMoney(d.gross_profit)}
-              sub={`after product cost ${formatMoney(d.costs.products)}, commissions ${formatMoney(d.costs.commissions)}, loyalty ${formatMoney(d.costs.loyalty)}, fees ${formatMoney(d.costs.payment_fees)}`} />
+              sub={`after product cost ${formatMoney(d.costs.products)}, commissions ${formatMoney(d.costs.commissions)}, loyalty ${formatMoney(d.costs.loyalty)}, badge bonuses ${formatMoney(d.costs.badge_bonuses)}, fees ${formatMoney(d.costs.payment_fees)}`} />
             <Kpi icon={Crown} title='Membership MRR' value={formatMoney(d.membership.mrr)}
               sub={`${d.membership.active} active · ${d.membership.new} new · ${d.membership.churned} churned (${d.membership.churn_rate}%)`} />
             <Kpi icon={Radio} title='Signals subscribers' value={String(d.signals.subscribers)} sub={`${d.signals.guests_paying} paying guests, the rest are members`} />
@@ -97,6 +97,7 @@ export function Dashboard() {
                 <Line label='Paid out in period' value={formatMoney(d.commissions.paid_out)} />
                 <Line label='Paid out all time' value={formatMoney(d.commissions.paid_out_all_time)} />
                 <Line label='Loyalty rewards in period' value={formatMoney(d.loyalty_rewards)} />
+                <Line label='Badge bonuses in period' value={formatMoney(d.badge_bonuses)} />
               </CardContent>
             </Card>
             <Card>

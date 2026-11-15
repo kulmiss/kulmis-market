@@ -51,6 +51,7 @@ class Dashboard
             ->sum(DB::raw('order_items.unit_cost * order_items.quantity'));
         $commissions = $this->flow(Account::COMMISSIONS, $from, $to);
         $loyalty = $this->flow(Account::LOYALTY, $from, $to);
+        $bonuses = $this->flow(Account::BADGE_BONUSES, $from, $to);
         $fees = $this->flow('expense:payment_fees', $from, $to);
 
         $discounts = [
@@ -76,8 +77,8 @@ class Dashboard
             'dataset' => $demo ? 'demo' : 'real',
             'period' => ['from' => $from->toDateString(), 'to' => $to->toDateString()],
             'revenue' => $revenue + ['total' => $netRevenue],
-            'gross_profit' => $netRevenue - $productCost - $commissions - $loyalty - $fees,
-            'costs' => ['products' => $productCost, 'commissions' => $commissions, 'loyalty' => $loyalty, 'payment_fees' => $fees],
+            'gross_profit' => $netRevenue - $productCost - $commissions - $loyalty - $bonuses - $fees,
+            'costs' => ['products' => $productCost, 'commissions' => $commissions, 'loyalty' => $loyalty, 'badge_bonuses' => $bonuses, 'payment_fees' => $fees],
             'discounts' => $discounts + ['total' => array_sum($discounts)],
             'shipping' => [
                 'charged' => (int) (clone $paidOrders)->sum(DB::raw('shipping - shipping_discount')),
@@ -93,6 +94,7 @@ class Dashboard
                 'paid_out_all_time' => (int) PayoutRequest::query()->where('is_demo', $demo)->where('status', 'paid')->sum('amount'),
             ],
             'loyalty_rewards' => $loyalty,
+            'badge_bonuses' => $bonuses,
             'payment_fees' => $fees,
             'membership' => [
                 'active' => $activeMembers,

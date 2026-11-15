@@ -27,7 +27,7 @@ final class Demo
         'users', 'memberships', 'membership_purchases', 'loyalty_rewards', 'categories', 'products', 'coupons',
         'shipping_zones', 'couriers', 'orders', 'payments', 'refunds', 'commissions', 'payout_accounts', 'payout_requests',
         'fraud_flags', 'signals', 'signal_subscriptions', 'signal_purchases', 'activity_log', 'journal_entries',
-        'ledger_postings', 'user_badges', 'user_notifications',
+        'ledger_postings', 'user_badges', 'user_notifications', 'badge_bonus_runs', 'badge_bonuses',
     ];
 
     private static ?bool $actingDemo = null;
@@ -153,6 +153,8 @@ final class Demo
             $in('order_items', 'order_id', $orders);
             $in('order_status_history', 'order_id', $orders);
             $in('coupon_redemptions', 'order_id', $orders);
+            DB::table('badge_bonuses')->where('is_demo', true)->delete();
+            DB::table('badge_bonus_runs')->where('is_demo', true)->delete();
             foreach (['refunds', 'commissions', 'payments', 'loyalty_rewards', 'user_badges', 'user_notifications', 'payout_requests',
                 'payout_accounts', 'fraud_flags', 'signal_purchases', 'signal_subscriptions', 'activity_log', 'orders'] as $t) {
                 DB::table($t)->where('is_demo', true)->delete();

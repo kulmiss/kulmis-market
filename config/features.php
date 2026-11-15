@@ -26,7 +26,7 @@ return [
     'wallet.spend' => ['Pay with wallet', 'Payments', true, 'wallet', 'Members can use money in their wallet to pay in the shop.'],
 
     // Membership
-    'membership' => ['Membership', 'Membership', true, null, 'People can buy a yearly membership.'],
+    'membership' => ['Membership', 'Membership', true, null, 'People can buy a monthly membership.'],
     'membership.member_discount' => ['Member discount on products', 'Membership', true, 'membership', 'Members pay a lower price in the shop.'],
     'loyalty_reward' => ['Loyalty reward', 'Membership', true, 'wallet', 'Members who stay long get money in their wallet (amount in Settings).'],
 
@@ -44,6 +44,7 @@ return [
 
     // Badges
     'badges' => ['Badges', 'Badges', true, null, 'Members unlock badges for their team, loyalty, earnings and orders.'],
+    'badges.bonus' => ['Badge bonuses', 'Badges', true, 'badges', 'Bronze to Diamond pay a bonus every month; other badges can pay once. Safety limits keep you in profit.'],
     'badges.messages' => ['Badge messages', 'Badges', false, 'badges', 'Send an SMS / email / Telegram when a badge unlocks. (The in-app note is always shown.)'],
 
     // Wallet
@@ -78,6 +79,7 @@ return [
     'messages.loyalty_reward' => ['Loyalty reward', 'Messages', true, 'loyalty_reward', 'Tell the member we added their loyalty reward.'],
     'messages.signals_access' => ['Signals link', 'Messages', true, 'signals', 'Send the personal Telegram link. Off: they find it in their account only.'],
     'messages.payout_paid' => ['Cash-out sent', 'Messages', true, 'wallet.cashout', 'Tell the member we sent their money.'],
+    'messages.badge_bonus' => ['Badge bonus', 'Messages', true, 'badges.bonus', 'Tell the member how much badge bonus they got this month.'],
     'messages.payout_rejected' => ['Cash-out not approved', 'Messages', true, 'wallet.cashout', 'Tell the member their cash-out was not approved.'],
 
     // Look and speed

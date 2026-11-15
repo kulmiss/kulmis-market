@@ -17,7 +17,7 @@ import { FormDialog } from '@/components/km/form-dialog'
 import { MoneyInput } from '@/components/km/money-input'
 import { Page } from '@/components/km/page'
 
-type Badge = { id: number; key: string; name: string; description: string; icon: string; color: string; rule: string; threshold: number; rank: number; is_active: boolean; holders_count: number }
+type Badge = { id: number; key: string; name: string; description: string; icon: string; color: string; rule: string; threshold: number; rank: number; is_active: boolean; holders_count: number; monthly_bonus: number; one_time_bonus: number }
 type Rule = { key: string; label: string; unit: string }
 type Data = { data: Badge[]; rules: Rule[]; icons: string[] }
 
@@ -56,7 +56,7 @@ export function BadgesPage() {
       actions={q.data && <BadgeDialog rules={rules} icons={q.data.icons} />}>
       <div className='overflow-x-auto'>
         <Table>
-          <TableHeader><TableRow><TableHead>Badge</TableHead><TableHead>Rule</TableHead><TableHead>Unlocks at</TableHead><TableHead>Importance</TableHead><TableHead>Members</TableHead><TableHead>On</TableHead><TableHead /></TableRow></TableHeader>
+          <TableHeader><TableRow><TableHead>Badge</TableHead><TableHead>Rule</TableHead><TableHead>Unlocks at</TableHead><TableHead>Bonus</TableHead><TableHead>Importance</TableHead><TableHead>Members</TableHead><TableHead>On</TableHead><TableHead /></TableRow></TableHeader>
           <TableBody>
             {q.data?.data.map((b) => (
               <TableRow key={b.id} className={b.is_active ? '' : 'opacity-60'}>
@@ -68,6 +68,7 @@ export function BadgesPage() {
                 </TableCell>
                 <TableCell className='max-w-56 text-sm'>{ruleOf(b.rule)?.label ?? b.rule}</TableCell>
                 <TableCell>{thresholdText(b, ruleOf(b.rule))}</TableCell>
+                <TableCell className='whitespace-nowrap tabular-nums'>{b.monthly_bonus > 0 ? `${formatMoney(b.monthly_bonus)} / month` : b.one_time_bonus > 0 ? `${formatMoney(b.one_time_bonus)} once` : '—'}</TableCell>
                 <TableCell>{b.rank}</TableCell>
                 <TableCell>{b.holders_count}</TableCell>
                 <TableCell><Switch checked={b.is_active} aria-label={`${b.name} on/off`} onCheckedChange={(v) => save.mutate({ path: `/badges/${b.id}`, body: { is_active: v } })} /></TableCell>
@@ -91,13 +92,15 @@ function BadgeDialog({ badge, rules, icons: iconNames }: { badge?: Badge; rules:
   const [d, setD] = useState({
     name: badge?.name ?? '', description: badge?.description ?? '', icon: badge?.icon ?? 'award', color: badge?.color ?? '#3f8a4e',
     rule: badge?.rule ?? 'active_level1', threshold: badge?.threshold ?? 5, rank: badge?.rank ?? 10, is_active: badge?.is_active ?? true,
+    monthly_bonus: badge?.monthly_bonus ?? 0, one_time_bonus: badge?.one_time_bonus ?? 0,
   })
+  const monthly = d.rule === 'active_level1'
   const save = useMutate(badge ? 'put' : 'post', ['badges'], 'Badge saved')
   const unit = rules.find((r) => r.key === d.rule)?.unit
   return (
     <FormDialog title={badge ? `Edit ${badge.name}` : 'New badge'}
       trigger={badge ? <Button size='icon' variant='ghost' aria-label={`Edit ${badge.name}`}><Pencil /></Button> : <Button><Plus /> New badge</Button>}
-      onSave={() => save.mutateAsync({ path: badge ? `/badges/${badge.id}` : '/badges', body: d })}>
+      onSave={() => save.mutateAsync({ path: badge ? `/badges/${badge.id}` : '/badges', body: { ...d, monthly_bonus: monthly ? d.monthly_bonus : 0, one_time_bonus: monthly ? 0 : d.one_time_bonus } })}>
       <div className='flex items-center gap-3 rounded-md border p-3'>
         <span className='grid size-12 place-items-center rounded-full text-white' style={{ background: d.color }}><BadgeIcon name={d.icon} className='size-6' /></span>
         <div><div className='font-semibold'>{d.name || 'Badge name'}</div><div className='text-xs text-muted-foreground'>{d.description || 'Short description'}</div></div>
@@ -127,6 +130,9 @@ function BadgeDialog({ badge, rules, icons: iconNames }: { badge?: Badge; rules:
         </L>
         <L label='Importance (higher shows first)'><Input type='number' min={0} max={1000} value={d.rank} onChange={(e) => setD({ ...d, rank: Number(e.target.value) })} /></L>
       </div>
+      {monthly
+        ? <L label='Bonus every month (only the highest badge pays; 0 = none)'><MoneyInput value={d.monthly_bonus} onChange={(v) => setD({ ...d, monthly_bonus: v })} /></L>
+        : <L label='One-time bonus when unlocked (0 = none)'><MoneyInput value={d.one_time_bonus} onChange={(v) => setD({ ...d, one_time_bonus: v })} /></L>}
       <label className='flex items-center gap-2 text-sm'><Switch checked={d.is_active} onCheckedChange={(v) => setD({ ...d, is_active: v })} /> On</label>
     </FormDialog>
   )

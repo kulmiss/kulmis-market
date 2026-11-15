@@ -71,6 +71,11 @@ return [
     'loyalty.reward' => ['money', 30_000, 'Loyalty reward', 'Engagement'],
     'loyalty.every_months' => ['int', 3, 'Loyalty reward every (months)', 'Engagement'],
 
+    // Badge bonus (amounts per badge: Badges page). Safety limits keep the shop in profit.
+    'bonus.budget' => ['bps', 500, 'Most of a month\'s membership money that goes to badge bonuses', 'Badge bonus'],
+    'bonus.team_limit' => ['bps', 200, 'Most per member: share of the membership money their own invited people paid that month', 'Badge bonus'],
+    'bonus.pending_days' => ['int', 14, 'Days a badge bonus is on the way before it can be used', 'Badge bonus'],
+
     // Site
     'site.name' => ['string', 'Kulmis Market', 'Shop name', 'Site'],
     'site.tagline' => ['string', 'Handcrafted in Ethiopia', 'Tagline', 'Site'],
@@ -95,6 +100,7 @@ return [
 
     'notify.signals_access' => ['text', 'Hi {name}, your trading signals access is ready. Open this personal link in Telegram to join (do not share it): {link}', 'Message: signals access link', 'Messages'],
 
+    'notify.badge_bonus' => ['text', 'Well done {name}! Your {badge} badge bonus for {month} is {amount}. It is on the way and ready to use on {ready}.{adjusted}', 'Message: monthly badge bonus', 'Messages'],
     'notify.badge_unlocked' => ['text', 'Congratulations {name}! You unlocked the {badge} badge on {site}. See your badges: {url}', 'Message: badge unlocked (only when "Badge messages" is on)', 'Messages'],
 
     'notify.payout_paid' => ['text', 'Hi {name}, we sent your cash-out of {amount}. Reference: {reference}', 'Message: cash-out paid', 'Messages'],

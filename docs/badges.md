@@ -43,3 +43,4 @@ switch `badges.messages`, text `notify.badge_unlocked`).
   `GET /api/v1/notifications`, `POST /api/v1/notifications/read`.
 - Admin API: `GET/POST /api/v1/admin/badges`, `PUT/DELETE /api/v1/admin/badges/{id}`
   (`manage-settings`).
+- Monthly badge bonus: [badge-bonus.md](badge-bonus.md).

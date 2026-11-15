@@ -30,6 +30,7 @@ Schedule::command('referrals:release')->hourly()->withoutOverlapping();
 Schedule::command('payouts:remind')->dailyAt('08:41');
 Schedule::command('badges:check')->dailyAt('04:17')->withoutOverlapping();
 Schedule::command('badges:check --top-referrer')->monthlyOn(1, '05:13')->withoutOverlapping();
+Schedule::command('badges:bonus')->monthlyOn(1, '06:23')->withoutOverlapping();
 Schedule::command('km:prune-logs')->weeklyOn(1, '03:23');
 Schedule::command('sanctum:prune-expired --hours=24')->dailyAt('03:41');
 

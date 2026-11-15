@@ -16,7 +16,7 @@ English (ready for Amharic) and aimed at customers in Ethiopia.
 - **API:** REST `/api/v1`, ready for the Flutter app (Sanctum tokens)
 - Built assets are committed, so the server needs no Node
 
-## PRs (everything up to #37 is merged into main; #38–#44 are a stack — merge the top one)
+## PRs (everything up to #44 is merged into main; #45 and up are a stack — merge the top one)
 | PR | Branch | Status |
 |----|--------|--------|
 | 1 | `pr/01-scaffold` | Merged. Laravel 13, Docker, CI, docs |
@@ -62,13 +62,15 @@ PRs 1–28 are merged into `main`.
 | 35 | `pr/35-remove-chapa` | Merged via #44 (#43). Chapa removed completely: payments are Telebirr/bank transfer + receipt (staff approve) and the wallet; membership = wallet or transfer (+ part wallet); guest signals = transfer + receipt; manual/wallet refunds; CSP `form-action 'self'`; page texts updated by a migration ([docs/payments.md](docs/payments.md)) |
 | 36 | `pr/36-green-logo` | Merged (#44). Logo in the member-area green (#1f8a4c) everywhere: storefront, member area, errors, admin, emails, PDF receipts, favicon/ico/touch/app icons, social preview; manifest theme colour green ([docs/storefront.md](docs/storefront.md#logo-and-icons)) |
 | 37 | `pr/37-green-store` | Merged (#45). Shop in white & green (same green as the logo/member area; dark mode readable; emails, PDF, social preview match); no religious images in the demo data (cross pendant and Meskel print replaced, evil-eye beads cropped) ([docs/storefront.md](docs/storefront.md#colours)) |
-| 38 | `pr/38-deps` | Draft (#46). Dependency updates: GitHub Actions (checkout 7, cache 6, setup-node 7), admin @tanstack/react-table 9 (tables migrated to the v9 API), react-day-picker 10, @types/node 26, prettier-plugin-tailwindcss 0.8; unused table helpers removed; Dependabot skips PHP 8.4+, phpunit 13 and TypeScript 7 (QUESTIONS #59) |
-| 39 | `pr/39-host-assets` | Draft (#47). Host-header cache poisoning fixed (canonical URLs, host check, trusted hosts); committed CSS rebuilt; CI checks committed builds match the sources |
-| 40 | `pr/40-header-theme` | Draft (#48). Header: theme, cart, account at the far right showing the signed-in member; Super Admin light/dark switch; no stale guest page after sign-in |
-| 41 | `pr/41-bugs` | Draft (#49). Bug hunt: Finance can open Payments, one receipt under review at a time, role-aware admin (403 / first allowed page), feature state for all staff, red errors, double-submit protection, control-character stripping, pay-from-wallet takes nothing unless full |
-| 42 | `pr/42-security` | Draft (#50). Security re-audit: AttackTest (XSS, query strings, mass assignment, redirects, enumeration, stock), array query strings no longer crash, membership API fix, storefront CSP without inline styles, Larastan level 6 |
-| 43 | `pr/43-perf` | Draft (#51). Speed: speculation rules, LCP preload, lighter photos, service worker + offline page, fewer queries, cached dashboard, skeletons, deploy clears the page cache, CI budgets (phone Lighthouse, server time) |
-| 44 | `pr/44-report` | **Top PR, targets main, ready for review, CI runs here.** SECURITY_REPORT round 3 (scores, every bug, speed before → after), docs, handover |
+| 38 | `pr/38-deps` | Merged via #52. Dependency updates: GitHub Actions (checkout 7, cache 6, setup-node 7), admin @tanstack/react-table 9 (tables migrated to the v9 API), react-day-picker 10, @types/node 26, prettier-plugin-tailwindcss 0.8; unused table helpers removed; Dependabot skips PHP 8.4+, phpunit 13 and TypeScript 7 (QUESTIONS #59) |
+| 39 | `pr/39-host-assets` | Merged via #52. Host-header cache poisoning fixed (canonical URLs, host check, trusted hosts); committed CSS rebuilt; CI checks committed builds match the sources |
+| 40 | `pr/40-header-theme` | Merged via #52. Header: theme, cart, account at the far right showing the signed-in member; Super Admin light/dark switch; no stale guest page after sign-in |
+| 41 | `pr/41-bugs` | Merged via #52. Bug hunt: Finance can open Payments, one receipt under review at a time, role-aware admin (403 / first allowed page), feature state for all staff, red errors, double-submit protection, control-character stripping, pay-from-wallet takes nothing unless full |
+| 42 | `pr/42-security` | Merged via #52. Security re-audit: AttackTest (XSS, query strings, mass assignment, redirects, enumeration, stock), array query strings no longer crash, membership API fix, storefront CSP without inline styles, Larastan level 6 |
+| 43 | `pr/43-perf` | Merged via #52. Speed: speculation rules, LCP preload, lighter photos, service worker + offline page, fewer queries, cached dashboard, skeletons, deploy clears the page cache, CI budgets (phone Lighthouse, server time) |
+| 44 | `pr/44-report` | Merged (#52). SECURITY_REPORT round 3 (scores, every bug, speed before → after), docs, handover |
+| 45 | `pr/45-switches` | Draft (#53). Feature switches for every feature (order tracking, PDF receipts, sign-up, customer 2FA, share buttons, QR codes, instant loading, offline page, each message type, each badge), sections with easy descriptions, search and on/off overview; queue workers see changes at once ([docs/platform.md](docs/platform.md#feature-switches)) |
+| 46 | `pr/46-bonus` | Draft. Monthly badge bonus (Bronze 200 … Diamond 6,000 ETB), highest badge only, paid only for fully paid months; profit guards: 2% of the member's own team money, 5% monthly budget with pro-rata cut, 35% settings guard; dry run, pay now / skip, first payout by hand; member card; simulation test ([docs/badge-bonus.md](docs/badge-bonus.md)) |
 
 **Merge:** the top PR targets `main` and contains every commit
 below it, so one merge brings in everything.

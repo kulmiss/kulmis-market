@@ -75,6 +75,12 @@ change any of them.
 | 66 | Customer two-step sign-in switched off | No new set-ups. People who already use it keep being asked for the code and can still turn it off themselves (turning it off for them would weaken their account without telling them). Staff two-step sign-in is not affected. | Decided (recommended) |
 | 67 | Message switches | Each customer message type has a switch (Feature switches → Messages). Account-safety messages (new sign-in, password changed, …), password-reset codes and email-confirm links are always sent. | Decided (recommended) |
 | 68 | Badge switches | Each badge has a switch; it is the same as "Active" on the Badges page. Off: it is hidden and nobody unlocks it. Members who had it keep the record and see it again when it is back on. | Decided (recommended) |
+| 69 | Badge bonus: grace days | No bonus that month: every day must be paid. A month counts from when it was paid. | Decided (you) |
+| 70 | Badge bonus: which badges pay monthly | Only Bronze–Diamond (active level-1 members). Whole-team badges (25/100/250) and all other badges have a one-time bonus field, default 0. | Decided (you) |
+| 71 | Badge bonus: first payout | The job on the 1st waits until you check the list and press "Pay now" once; then it is automatic. | Decided (you) |
+| 72 | Badge bonus: free months given by staff | They don't count: not for the member's own "paid every day", not as an active team member, not as team money. Bonuses come only from real money. | Decided (recommended) |
+| 73 | Badge bonus: refunds later | A refund before the bonus is ready lowers or cancels it. After it is ready it is not taken back (the 5% budget and 2% team limit already cover this). | Decided (recommended) |
+| 74 | Profit guard | Settings that could pay out more than 35% of a membership (team earnings + badge bonus + loyalty) can't be saved. Today: 20.34%, you keep at least 3,983 of every 5,000 ETB. | Decided (you + recommended) |
 
 ## Still open: needs you
 | # | What | Why |

@@ -33,6 +33,8 @@ class Account extends Model
 
     public const LOYALTY = 'expense:loyalty';
 
+    public const BADGE_BONUSES = 'expense:badge_bonuses';
+
     public const WALLET_SALES = 'income:wallet_sales';      // orders/memberships paid with wallet
 
     public const ADJUSTMENTS = 'equity:adjustments';        // counterpart for manual corrections
