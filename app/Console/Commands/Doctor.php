@@ -42,7 +42,7 @@ class Doctor extends Command
             ['Every staff account has 2FA on', $staffWithout2fa === 0, "$staffWithout2fa staff account(s) without 2FA: sign in and set it up, or suspend them"],
             ['Staff passwords ≥ 12 characters', (int) config('security.staff_password_min') >= 12, 'ADMIN_PASSWORD_MIN=12'],
             ['Breached-password check on', (bool) config('security.pwned_check') || ! $prod, 'PASSWORD_PWNED_CHECK=true'],
-            ['Backup key set (and not the app key)', (string) config('shop.backup_key') !== '' && config('shop.backup_key') !== config('app.key'), 'php artisan km:backup-key'],
+            ['Backup key set (and not the app key)', ((string) config('shop.backup_key') !== '' && config('shop.backup_key') !== config('app.key')) || ! $prod, 'php artisan km:backup-key'],
             ['A backup in the last 26 hours', $backup !== null && filemtime($backup) > now()->subHours(26)->getTimestamp() || ! $prod, 'cron runs km:backup nightly; check the scheduler'],
             ['.env not readable by other users', ! is_file($env) || (fileperms($env) & 0o004) === 0 || $local, 'chmod 600 .env'],
             ['No secrets or dumps in public/', $this->publicIsClean(), 'remove .env / *.sql / *.zip from public/'],
