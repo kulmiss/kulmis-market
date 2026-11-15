@@ -53,12 +53,12 @@ PRs 1–28 are merged into `main`.
 ### Round 2 (stacked on `main`)
 | PR | Branch | Status |
 |----|--------|--------|
-| 29 | `pr/29-referral-fix` | Draft. Bug #7 "referral not working": same-browser sign-ups are linked + held for review (were silently refused), soft network flag, local sign-up limit, referral QR no longer 404s under nginx; end-to-end tests A→B→C→D + guest via link + admin tree == member team |
-| 30 | `pr/30-currency` | Draft. Currency setting (Settings → General): code, symbol, position, decimals, separators; used everywhere; confirmation, nothing converted; Chapa blocked for unsupported currencies ([docs/platform.md](docs/platform.md#currency-settings--general)) |
-| 31 | `pr/31-badges` | Draft. Badges: 21 editable badges (team, total team, loyalty, first sale, earnings, top referrer, early supporter, shopper) with progress bars, admin editor, unlock celebration + in-app notifications ([docs/badges.md](docs/badges.md)) |
-| 32 | `pr/32-logo` | Draft. New logo (A, smiling mesob) everywhere: storefront, errors, admin, emails, PDF receipts, favicon/ico/touch/manifest icons, social preview ([docs/storefront.md](docs/storefront.md#logo-and-icons)) |
-| 33 | `pr/33-demo-data` | Draft. Demo data for every section (6 months simulated through the real services, real Pexels photos + CREDITS.md), `is_demo` everywhere, Show demo data switch, Delete all demo data, never mixed into real totals, refuses production ([docs/local-setup.md](docs/local-setup.md#demo-data)) |
-| 34 | `pr/34-member-dashboard` | Draft. New member area: app-like layout (sidebar / bottom bar), green & white + dark mode, accent in Settings → Appearance; home with money cards, month vs month, chart, per level/type, team, newest, badge, referral tools, membership + streak, signals, activity; Team, Earnings, Wallet, Orders, Signals pages; empty states ([docs/storefront.md](docs/storefront.md#member-area-account)) |
+| 29 | `pr/29-referral-fix` | Draft (#37). Bug #7 "referral not working": same-browser sign-ups are linked + held for review (were silently refused), soft network flag, local sign-up limit, referral QR no longer 404s under nginx; end-to-end tests A→B→C→D + guest via link + admin tree == member team |
+| 30 | `pr/30-currency` | Draft (#38). Currency setting (Settings → General): code, symbol, position, decimals, separators; used everywhere; confirmation, nothing converted; Chapa blocked for unsupported currencies ([docs/platform.md](docs/platform.md#currency-settings--general)) |
+| 31 | `pr/31-badges` | Draft (#39). Badges: 21 editable badges (team, total team, loyalty, first sale, earnings, top referrer, early supporter, shopper) with progress bars, admin editor, unlock celebration + in-app notifications ([docs/badges.md](docs/badges.md)) |
+| 32 | `pr/32-logo` | Draft (#40). New logo (A, smiling mesob) everywhere: storefront, errors, admin, emails, PDF receipts, favicon/ico/touch/manifest icons, social preview ([docs/storefront.md](docs/storefront.md#logo-and-icons)) |
+| 33 | `pr/33-demo-data` | Draft (#41). Demo data for every section (6 months simulated through the real services, real Pexels photos + CREDITS.md), `is_demo` everywhere, Show demo data switch, Delete all demo data, never mixed into real totals, refuses production ([docs/local-setup.md](docs/local-setup.md#demo-data)) |
+| 34 | `pr/34-member-dashboard` | **Top PR (#42), targets main, ready for review, CI runs here.** New member area: app-like layout (sidebar / bottom bar), green & white + dark mode, accent in Settings → Appearance; home with money cards, month vs month, chart, per level/type, team, newest, badge, referral tools, membership + streak, signals, activity; Team, Earnings, Wallet, Orders, Signals pages; empty states ([docs/storefront.md](docs/storefront.md#member-area-account)) |
 
 **Merge:** the top PR of round 2 targets `main` and contains every commit
 below it, so one merge brings in everything.
@@ -80,7 +80,7 @@ All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
 See [docs/local-setup.md](docs/local-setup.md).
 
 ## Test status
-- 307 backend tests pass on SQLite and MariaDB 10.11 (every money path in
+- 340 backend tests pass on SQLite and MariaDB 10.11 (every money path in
   the brief is covered).
 - The admin passes typecheck, lint (0 errors) and build. The storefront
   builds.
