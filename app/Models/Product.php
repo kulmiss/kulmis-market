@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use App\Events\CatalogChanged;
 use App\Support\Features;
 use App\Support\Settings;
@@ -36,6 +37,8 @@ class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
     use HasFactory;
+
+    use HidesDemo;
 
     public const STOCK = 'stock';
 

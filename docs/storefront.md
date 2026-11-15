@@ -53,8 +53,7 @@ Pages (Markdown, rendered safely) and banners (top bar, home, shop,
 membership, signals, with dates) are edited in **Admin → Pages & banners**.
 
 ## Demo data
-`php artisan db:seed --class=DemoSeeder` adds 4 categories and 8 products
-with generated photos, plus shipping zones and couriers.
+`php artisan db:seed --class=DemoSeeder` adds demo data for every section (see [local-setup.md](local-setup.md#demo-data)).
 
 ## Screen review (security review, 15 Nov)
 Every storefront page (phone + desktop, light + dark, guest + member) and

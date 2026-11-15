@@ -1,6 +1,6 @@
 # Handover — Kulmis Market
 
-_Last updated: PR 32._
+_Last updated: PR 33._
 
 Kulmis Market is an online shop for handcrafted Ethiopian products, plus a
 trading-signals service (private Telegram channel) and a paid monthly
@@ -57,6 +57,7 @@ PRs 1–28 are merged into `main`.
 | 30 | `pr/30-currency` | Draft. Currency setting (Settings → General): code, symbol, position, decimals, separators; used everywhere; confirmation, nothing converted; Chapa blocked for unsupported currencies ([docs/platform.md](docs/platform.md#currency-settings--general)) |
 | 31 | `pr/31-badges` | Draft. Badges: 21 editable badges (team, total team, loyalty, first sale, earnings, top referrer, early supporter, shopper) with progress bars, admin editor, unlock celebration + in-app notifications ([docs/badges.md](docs/badges.md)) |
 | 32 | `pr/32-logo` | Draft. New logo (A, smiling mesob) everywhere: storefront, errors, admin, emails, PDF receipts, favicon/ico/touch/manifest icons, social preview ([docs/storefront.md](docs/storefront.md#logo-and-icons)) |
+| 33 | `pr/33-demo-data` | Draft. Demo data for every section (6 months simulated through the real services, real Pexels photos + CREDITS.md), `is_demo` everywhere, Show demo data switch, Delete all demo data, never mixed into real totals, refuses production ([docs/local-setup.md](docs/local-setup.md#demo-data)) |
 
 **Merge:** the top PR of round 2 targets `main` and contains every commit
 below it, so one merge brings in everything.

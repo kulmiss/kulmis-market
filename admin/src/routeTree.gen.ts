@@ -26,6 +26,7 @@ import { Route as AuthenticatedCommissionsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
 import { Route as AuthenticatedContentRouteImport } from './routes/_authenticated/content'
 import { Route as AuthenticatedCouponsRouteImport } from './routes/_authenticated/coupons'
+import { Route as AuthenticatedDemoRouteImport } from './routes/_authenticated/demo'
 import { Route as AuthenticatedFeaturesRouteImport } from './routes/_authenticated/features'
 import { Route as AuthenticatedFraudRouteImport } from './routes/_authenticated/fraud'
 import { Route as AuthenticatedLedgerRouteImport } from './routes/_authenticated/ledger'
@@ -130,6 +131,11 @@ const AuthenticatedContentRoute = AuthenticatedContentRouteImport.update({
 const AuthenticatedCouponsRoute = AuthenticatedCouponsRouteImport.update({
   id: '/coupons',
   path: '/coupons',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDemoRoute = AuthenticatedDemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedFeaturesRoute = AuthenticatedFeaturesRouteImport.update({
@@ -261,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/config': typeof AuthenticatedConfigRoute
   '/content': typeof AuthenticatedContentRoute
   '/coupons': typeof AuthenticatedCouponsRoute
+  '/demo': typeof AuthenticatedDemoRoute
   '/features': typeof AuthenticatedFeaturesRoute
   '/fraud': typeof AuthenticatedFraudRoute
   '/ledger': typeof AuthenticatedLedgerRoute
@@ -297,6 +304,7 @@ export interface FileRoutesByTo {
   '/config': typeof AuthenticatedConfigRoute
   '/content': typeof AuthenticatedContentRoute
   '/coupons': typeof AuthenticatedCouponsRoute
+  '/demo': typeof AuthenticatedDemoRoute
   '/features': typeof AuthenticatedFeaturesRoute
   '/fraud': typeof AuthenticatedFraudRoute
   '/ledger': typeof AuthenticatedLedgerRoute
@@ -337,6 +345,7 @@ export interface FileRoutesById {
   '/_authenticated/config': typeof AuthenticatedConfigRoute
   '/_authenticated/content': typeof AuthenticatedContentRoute
   '/_authenticated/coupons': typeof AuthenticatedCouponsRoute
+  '/_authenticated/demo': typeof AuthenticatedDemoRoute
   '/_authenticated/features': typeof AuthenticatedFeaturesRoute
   '/_authenticated/fraud': typeof AuthenticatedFraudRoute
   '/_authenticated/ledger': typeof AuthenticatedLedgerRoute
@@ -378,6 +387,7 @@ export interface FileRouteTypes {
     | '/config'
     | '/content'
     | '/coupons'
+    | '/demo'
     | '/features'
     | '/fraud'
     | '/ledger'
@@ -414,6 +424,7 @@ export interface FileRouteTypes {
     | '/config'
     | '/content'
     | '/coupons'
+    | '/demo'
     | '/features'
     | '/fraud'
     | '/ledger'
@@ -453,6 +464,7 @@ export interface FileRouteTypes {
     | '/_authenticated/config'
     | '/_authenticated/content'
     | '/_authenticated/coupons'
+    | '/_authenticated/demo'
     | '/_authenticated/features'
     | '/_authenticated/fraud'
     | '/_authenticated/ledger'
@@ -605,6 +617,13 @@ declare module '@tanstack/react-router' {
       path: '/coupons'
       fullPath: '/coupons'
       preLoaderRoute: typeof AuthenticatedCouponsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/demo': {
+      id: '/_authenticated/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof AuthenticatedDemoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/features': {
@@ -776,6 +795,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
   AuthenticatedContentRoute: typeof AuthenticatedContentRoute
   AuthenticatedCouponsRoute: typeof AuthenticatedCouponsRoute
+  AuthenticatedDemoRoute: typeof AuthenticatedDemoRoute
   AuthenticatedFeaturesRoute: typeof AuthenticatedFeaturesRoute
   AuthenticatedFraudRoute: typeof AuthenticatedFraudRoute
   AuthenticatedLedgerRoute: typeof AuthenticatedLedgerRoute
@@ -806,6 +826,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,
   AuthenticatedContentRoute: AuthenticatedContentRoute,
   AuthenticatedCouponsRoute: AuthenticatedCouponsRoute,
+  AuthenticatedDemoRoute: AuthenticatedDemoRoute,
   AuthenticatedFeaturesRoute: AuthenticatedFeaturesRoute,
   AuthenticatedFraudRoute: AuthenticatedFraudRoute,
   AuthenticatedLedgerRoute: AuthenticatedLedgerRoute,

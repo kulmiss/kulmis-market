@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use App\Orders\OrderService;
 use App\Payments\Payable;
 use App\Support\Activity;
@@ -49,6 +50,8 @@ use Illuminate\Support\Carbon;
  */
 class Order extends Model implements Payable
 {
+    use HidesDemo;
+
     public const PENDING_PAYMENT = 'pending_payment';
 
     public const PAID = 'paid';

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -20,6 +21,8 @@ use Illuminate\Support\Carbon;
  */
 class UserNotification extends Model
 {
+    use HidesDemo;
+
     public const UPDATED_AT = null;
 
     protected $guarded = ['id'];

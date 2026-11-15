@@ -57,6 +57,9 @@ change any of them.
 | 48 | Badge messages | In-app notification + celebration always. SMS/email/Telegram for badges are off by default (`badges.messages`) because SMS costs money. | Decided (round 2) |
 | 49 | Top referrer badge | Awarded on the 1st of each month to last month's #1 (threshold = rank, editable). | Decided (round 2) |
 | 50 | "Highest badge" | The unlocked badge with the highest "importance" number (editable per badge). Diamond is highest by default. | Decided (round 2) |
+| 51 | Demo data and money totals | The admin dashboard shows demo OR real numbers (a switch), never both added together. The ledger page shows real balances, with demo balances apart. | Decided (round 2) |
+| 52 | Demo photos | Real free photos from Pexels (no attribution needed; credited in CREDITS.md). They are craft photos that fit each product, not photos of your own products. | Decided (round 2) |
+| 53 | Demo contacts | Demo phones use +251 900 1… and emails end in .test; messages to them are never sent, so a staging server with a real SMS provider can't text strangers. | Decided (round 2) |
 
 ## Still open: needs you
 | # | What | Why |

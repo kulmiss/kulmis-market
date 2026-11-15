@@ -1,0 +1,1 @@
+import{r as e}from"./catalog-pages-FB8IOCMc.js";var t=e;export{t as component};

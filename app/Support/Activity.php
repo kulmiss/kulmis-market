@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Demo\Demo;
 use App\Models\ActivityLog;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -26,6 +27,7 @@ class Activity
             'properties' => $properties ?: null,
             'reason' => $reason,
             'ip_address' => $actorId && $request ? $request->ip() : null,
+            'is_demo' => Demo::isDemoModel($subject),
         ]);
     }
 }

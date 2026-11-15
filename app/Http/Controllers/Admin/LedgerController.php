@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Demo\Demo;
 use App\Http\Controllers\Controller;
 use App\Ledger\Account;
 use App\Ledger\JournalEntry;
@@ -10,6 +11,7 @@ use App\Ledger\Wallet;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class LedgerController extends Controller
@@ -22,6 +24,7 @@ class LedgerController extends Controller
 
         $page = JournalEntry::query()
             ->with(['postings.account:id,code,type,name,user_id'])
+            ->when(! Demo::visible(), fn ($q) => $q->where('is_demo', false))
             ->when($request->input('type'), fn ($q, $v) => $q->where('type', 'like', $v.'%'))
             ->when($request->input('user_id'), fn ($q, $v) => $q->whereHas('postings.account', fn ($a) => $a->where('user_id', $v)))
             ->latest('id')
@@ -32,8 +35,12 @@ class LedgerController extends Controller
 
     public function accounts(): JsonResponse
     {
+        // Real money only; demo postings are shown apart (never mixed into real totals).
+        $sum = fn (Account $a, bool $demo) => (int) DB::table('ledger_postings')->where('ledger_account_id', $a->id)->where('is_demo', $demo)->sum('amount');
+        $showDemo = Demo::visible();
         $rows = Account::query()->whereNull('user_id')->orderBy('code')->get()
-            ->map(fn (Account $a) => ['code' => $a->code, 'type' => $a->type, 'name' => $a->name, 'balance' => $this->ledger->balance($a)]);
+            ->map(fn (Account $a) => ['code' => $a->code, 'type' => $a->type, 'name' => $a->name, 'balance' => $sum($a, false)]
+                + ($showDemo ? ['demo_balance' => $sum($a, true)] : []));
 
         return response()->json(['data' => $rows]);
     }

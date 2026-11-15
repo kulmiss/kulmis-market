@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -18,6 +19,8 @@ use Illuminate\Support\Carbon;
  */
 class Membership extends Model
 {
+    use HidesDemo;
+
     protected $fillable = ['user_id', 'status', 'current_period_start', 'current_period_end', 'grace_ends_at', 'continuous_since', 'periods_paid'];
 
     protected function casts(): array

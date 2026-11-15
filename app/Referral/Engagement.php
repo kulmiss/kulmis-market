@@ -3,6 +3,7 @@
 namespace App\Referral;
 
 use App\Badges\BadgeEngine;
+use App\Demo\Demo;
 use App\Membership\Members;
 use App\Models\User;
 use App\Support\Features;
@@ -27,18 +28,18 @@ class Engagement
      *
      * @return list<array{rank:int, name:string, badge:?array{name:string, icon:string, color:string}, count:int}>
      */
-    public function topReferrers(?Carbon $month = null, int $limit = 10): array
+    public function topReferrers(?Carbon $month = null, int $limit = 10, ?bool $demo = null): array
     {
         if (Features::disabled('top_referrers')) {
             return [];
         }
         $month ??= now();
-        $key = 'top-referrers:'.$month->format('Y-m').':'.$limit;
+        $key = 'top-referrers:'.$month->format('Y-m').':'.$limit.':'.(Demo::visible() ? 'd' : 'r').':'.var_export($demo, true);
 
-        return Cache::remember($key, now()->addHour(), function () use ($month, $limit) {
+        return Cache::remember($key, now()->addHour(), function () use ($month, $limit, $demo) {
             $badges = app(BadgeEngine::class);
             $out = [];
-            foreach ($this->ranking($month, $limit) as $i => $row) {
+            foreach ($this->ranking($month, $limit, $demo) as $i => $row) {
                 $b = $badges->highest($row['user']);
                 $out[] = ['rank' => $i + 1, 'name' => $row['user']->first_name,
                     'badge' => $b ? ['name' => $b->name, 'icon' => $b->icon, 'color' => $b->color] : null, 'count' => $row['count']];
@@ -53,11 +54,11 @@ class Engagement
      *
      * @return list<array{user: User, count: int}>
      */
-    public function ranking(Carbon $month, int $limit = 10): array
+    public function ranking(Carbon $month, int $limit = 10, ?bool $demo = null): array
     {
         $start = $month->copy()->startOfMonth();
         $end = $month->copy()->endOfMonth();
-        $counts = User::query()->with('membership')->whereNotNull('referrer_id')->whereBetween('referred_at', [$start, $end])->get()
+        $counts = User::query()->with('membership')->when($demo !== null, fn ($q) => $q->where('is_demo', $demo))->whereNotNull('referrer_id')->whereBetween('referred_at', [$start, $end])->get()
             ->filter(fn (User $u) => Members::isActive($u))->countBy('referrer_id')->sortDesc()->take($limit * 2);
 
         $rows = [];

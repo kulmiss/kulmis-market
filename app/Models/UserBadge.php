@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -16,6 +17,8 @@ use Illuminate\Support\Carbon;
  */
 class UserBadge extends Model
 {
+    use HidesDemo;
+
     public $timestamps = false;
 
     protected $guarded = ['id'];

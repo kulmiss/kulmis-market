@@ -161,7 +161,7 @@ class Checkout
     {
         do {
             $number = 'KM'.now()->format('ymd').'-'.str_pad((string) random_int(0, 99999), 5, '0', STR_PAD_LEFT);
-        } while (Order::query()->where('number', $number)->exists());
+        } while (Order::query()->withoutGlobalScopes()->where('number', $number)->exists());
 
         return $number;
     }

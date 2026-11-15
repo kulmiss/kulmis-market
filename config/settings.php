@@ -19,6 +19,9 @@ return [
     'currency.thousands' => ['choice', ',', 'Thousands separator', 'General', Currency::THOUSANDS],
     'currency.decimal_point' => ['choice', '.', 'Decimal separator', 'General', Currency::DECIMAL_POINTS],
 
+    // Demo data (Super Admin → Demo data). Off hides every demo record everywhere.
+    'demo.show' => ['bool', true, 'Show demo data (storefront, member areas, admin lists and dashboards)', 'Demo data'],
+
     // Membership
     'membership.price' => ['money', 500_000, 'Membership price per month', 'Membership'],
     'membership.grace_days' => ['int', 3, 'Grace period (days)', 'Membership'],

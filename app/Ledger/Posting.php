@@ -18,7 +18,7 @@ class Posting extends Model
 
     protected $table = 'ledger_postings';
 
-    protected $fillable = ['journal_entry_id', 'ledger_account_id', 'amount'];
+    protected $fillable = ['journal_entry_id', 'ledger_account_id', 'amount', 'is_demo'];
 
     protected function casts(): array
     {

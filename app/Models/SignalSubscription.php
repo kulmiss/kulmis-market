@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use App\Membership\Members;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,6 +29,8 @@ use Illuminate\Support\Carbon;
  */
 class SignalSubscription extends Model
 {
+    use HidesDemo;
+
     public const PURCHASE = 'purchase';
 
     public const MEMBERSHIP = 'membership';

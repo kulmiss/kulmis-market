@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use App\Membership\Members;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -40,6 +41,13 @@ use Laravel\Sanctum\HasApiTokens;
  */
 class User extends Authenticatable
 {
+    use HidesDemo;
+
+    protected static function demoOwnerColumns(): array
+    {
+        return [];
+    }
+
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 

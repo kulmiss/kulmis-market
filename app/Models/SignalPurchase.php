@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use App\Payments\Payable;
 use App\Signals\SignalAccess;
 use Illuminate\Database\Eloquent\Model;
@@ -22,6 +23,18 @@ use Illuminate\Support\Carbon;
  */
 class SignalPurchase extends Model implements Payable
 {
+    use HidesDemo;
+
+    protected static function demoOwnerColumns(): array
+    {
+        return [];
+    }
+
+    protected static function demoParents(): array
+    {
+        return ['signal_subscription_id' => 'signal_subscriptions'];
+    }
+
     protected $fillable = ['signal_subscription_id', 'amount', 'status', 'period_start', 'period_end', 'paid_at'];
 
     protected function casts(): array

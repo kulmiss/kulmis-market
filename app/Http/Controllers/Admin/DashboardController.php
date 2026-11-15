@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Demo\Demo;
 use App\Http\Controllers\Controller;
 use App\Reports\Dashboard;
 use App\Support\Features;
@@ -15,12 +16,15 @@ class DashboardController extends Controller
 {
     public function index(Request $request, Dashboard $dashboard): JsonResponse
     {
-        $request->validate(['from' => ['nullable', 'date'], 'to' => ['nullable', 'date', 'after_or_equal:from']]);
+        $request->validate(['from' => ['nullable', 'date'], 'to' => ['nullable', 'date', 'after_or_equal:from'], 'data' => ['nullable', 'in:real,demo']]);
         $to = $request->input('to') ? Carbon::parse($request->input('to'))->endOfDay() : now()->endOfDay();
         $from = $request->input('from') ? Carbon::parse($request->input('from'))->startOfDay() : $to->copy()->subDays(29)->startOfDay();
         abort_if($from->diffInDays($to) > 366, 422, 'Choose at most one year.');
 
-        return response()->json(['data' => $dashboard->build($from, $to)]);
+        $dataset = Demo::dataset($request->input('data'));
+
+        return response()->json(['data' => $dashboard->build($from, $to, $dataset === 'demo')
+            + ['demo' => ['visible' => Demo::visible(), 'exists' => Demo::exists()]]]);
     }
 
     /** Health page: is cron running, queue backlog, what's off. */

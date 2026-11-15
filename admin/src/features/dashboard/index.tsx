@@ -22,7 +22,9 @@ type D = {
   signals: { subscribers: number; guests_paying: number }
   top_products: { product_id: number; name: string; qty: number; revenue: number }[]
   stock_alerts: { id: number; name: string; stock: number }[]
-  top_referrers: { rank: number; name: string; badge: string | null; count: number }[]
+  top_referrers: { rank: number; name: string; badge: { name: string; icon: string; color: string } | null; count: number }[]
+  dataset: 'real' | 'demo'
+  demo: { visible: boolean; exists: boolean }
   cash_outs: { waiting: number; waiting_amount: number; overdue: number }
   queues: { proofs_to_review: number; fraud_open: number; orders_to_ship: number; commissions_on_hold: number }
   daily: { date: string; revenue: number; orders: number }[]
@@ -32,13 +34,14 @@ const ranges = [{ label: '7 days', days: 7 }, { label: '30 days', days: 30 }, { 
 
 export function Dashboard() {
   const [days, setDays] = useState(30)
+  const [data, setData] = useState<'demo' | 'real'>('demo')
   const q = useQuery({
-    queryKey: ['dashboard', days],
+    queryKey: ['dashboard', days, data],
     queryFn: async () => {
       const to = new Date()
       const from = new Date(Date.now() - (days - 1) * 86400_000)
       const iso = (x: Date) => x.toISOString().slice(0, 10)
-      return (await api.get<{ data: D }>('/dashboard', { params: { from: iso(from), to: iso(to) } })).data.data
+      return (await api.get<{ data: D }>('/dashboard', { params: { from: iso(from), to: iso(to), data } })).data.data
     },
   })
   const d = q.data
@@ -48,6 +51,14 @@ export function Dashboard() {
       actions={ranges.map((r) => <Button key={r.days} size='sm' variant={days === r.days ? 'default' : 'outline'} onClick={() => setDays(r.days)}>{r.label}</Button>)}>
       {!d ? <p className='text-muted-foreground'>Loading…</p> : (
         <div className='grid gap-4'>
+          {d.demo.visible && d.demo.exists && (
+            <div className='flex flex-wrap items-center gap-2 rounded-md border border-dashed p-3 text-sm' data-testid='dataset-switch'>
+              <span>{d.dataset === 'demo' ? 'Showing demo numbers (not real money).' : 'Showing real numbers only.'}</span>
+              <Button size='sm' variant={data === 'demo' ? 'default' : 'outline'} onClick={() => setData('demo')}>Demo data</Button>
+              <Button size='sm' variant={data === 'real' ? 'default' : 'outline'} onClick={() => setData('real')}>Real data</Button>
+              <a className='ms-auto underline' href='/admin/demo'>Hide or delete demo data</a>
+            </div>
+          )}
           <Attention d={d} />
           <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
             <Kpi icon={TrendingUp} title='Revenue' value={formatMoney(d.revenue.total)}
@@ -101,7 +112,7 @@ export function Dashboard() {
               <CardHeader><CardTitle className='text-base'>Top referrers this month</CardTitle></CardHeader>
               <CardContent className='grid gap-1 text-sm'>
                 {d.top_referrers.length === 0 && <span className='text-muted-foreground'>No referrals yet this month.</span>}
-                {d.top_referrers.map((r) => <Line key={r.rank} label={`${r.rank}. ${r.name}${r.badge ? ` · ${r.badge}` : ''}`} value={`${r.count} new`} />)}
+                {d.top_referrers.map((r) => <Line key={r.rank} label={`${r.rank}. ${r.name}${r.badge ? ` · ${r.badge.name}` : ''}`} value={`${r.count} new`} />)}
               </CardContent>
             </Card>
             <Card>
