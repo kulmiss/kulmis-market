@@ -78,6 +78,7 @@ class Attribution
         if ($referrer) {
             $user->forceFill(['referrer_id' => $referrer->id, 'referred_at' => now()])->save();
             $guard->checkDailyLimit($referrer);
+            $guard->checkFakeSignups($referrer, $user, $device, (string) $request->ip());
         } elseif ($refused === 'self_referral') {
             Activity::log('referral.self_referral_blocked', $user, ['code' => $code], null, $user->id);
         }

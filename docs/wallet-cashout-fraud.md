@@ -41,3 +41,35 @@
 wait as `on_hold`. Review queue: `GET /api/v1/admin/fraud`, then
 `POST /api/v1/admin/fraud/{id}/review {decision: cleared|confirmed, suspend?}`.
 Clearing releases the holds. You can also flag someone by hand.
+
+## Money safety (security review)
+- **Saved cash-out account.** Members save one Telebirr/bank account
+  (Account → Wallet, or `PUT /api/v1/wallet/payout-account`). Saving needs
+  the password, plus a 2FA code when two-step sign-in is on. The name must
+  match theirs.
+- **48-hour wait.** A new or changed account can be used after
+  `wallet.payout_account_hold_hours` (48). The member is told on every
+  channel ("Was this you?"), and open requests made before the change go on
+  hold.
+- **Verified accounts only.** The first payout to an account needs Super
+  Admin to tick "I checked the account" (the name shown by Telebirr/the
+  bank). After that the account is verified.
+- **Daily limits.** At most `wallet.cashout_daily_count` (2) requests and
+  `wallet.cashout_daily_max` (50,000 ETB) per member in 24 hours.
+- **New accounts.** The first cash-out of a member who joined less than
+  `wallet.new_account_review_days` (30) ago is held for review.
+- **Idempotent.** The app sends an `Idempotency-Key` header and the website
+  form a hidden `request_id`, so a retry or double click never creates two
+  requests.
+- **Chapa double click.** Starting a payment twice within 30 minutes reuses
+  the same checkout, so a customer can't pay twice by accident.
+
+## Referral abuse
+- Self-referral: same phone, email, browser (cart token hash) or payment
+  account. The link is refused, or the commission is skipped and flagged.
+- Fake accounts: 2+ of a referrer's sign-ups from the same browser, or 3+
+  from the same network within 24 h (`referral.same_network_signups`), flag
+  the referrer. Their earnings and cash-outs wait for review. The network is
+  kept only as a keyed hash in the cache for 24 h, never in the database.
+- Sign-up rate limit: 5 per hour and 20 per day per network.
+- Shared payout account between members: both are flagged.

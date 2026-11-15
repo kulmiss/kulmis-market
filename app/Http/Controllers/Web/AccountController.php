@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Cart\CartManager;
+use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Controller;
 use App\Ledger\Wallet;
 use App\Membership\MembershipService;
@@ -21,7 +22,9 @@ use App\Referral\TeamView;
 use App\Signals\SignalAccess;
 use App\Support\Features;
 use App\Support\Phone;
+use App\Support\Settings;
 use App\Wallet\CashOuts;
+use App\Wallet\PayoutAccounts;
 use App\Wallet\WalletPayments;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -49,6 +52,7 @@ class AccountController extends Controller
             'history' => Features::enabled('referral') ? $team->history($user, 20) : collect(),
             'wallet' => Wallet::for($user)->summary(),
             'cashouts' => PayoutRequest::query()->where('user_id', $user->id)->latest('id')->limit(10)->get(),
+            'payoutAccount' => app(PayoutAccounts::class)->current($user),
             'orders' => Order::query()->where('user_id', $user->id)->latest('id')->limit(10)->get(),
             'signalsLink' => $signals?->deepLink(),
             'earlyAccess' => $member && Features::enabled('shop.early_access')
@@ -92,16 +96,21 @@ class AccountController extends Controller
 
     public function cashOut(Request $request, CashOuts $cashOuts): RedirectResponse
     {
-        $data = $request->validate([
-            'amount_birr' => ['required', 'numeric', 'min:1'],
-            'method' => ['required', Rule::in(['telebirr', 'bank'])],
-            'account_name' => ['required', 'string', 'max:160'],
-            'account_number' => ['required', 'string', 'max:40', 'regex:/^[0-9+\s-]{6,40}$/'],
-            'bank_name' => ['nullable', 'required_if:method,bank', 'string', 'max:120'],
-        ]);
-        $cashOuts->request($request->user(), ['amount' => (int) round((float) $data['amount_birr'] * 100)] + $data);
+        $data = $request->validate(['amount_birr' => ['required', 'numeric', 'min:1', 'max:1000000'], 'request_id' => ['nullable', 'string', 'max:64']]);
+        // request_id is a random value in the form: a double click submits it twice, we pay once.
+        $cashOuts->request($request->user(), (int) round((float) $data['amount_birr'] * 100), $data['request_id'] ?? null);
 
-        return redirect('/account#wallet')->with('status', 'Cash-out requested. We pay within 3 days.');
+        return redirect('/account#wallet')->with('status', 'Cash-out requested. We pay within '.Settings::int('wallet.payout_days').' days.');
+    }
+
+    public function payoutAccount(Request $request, PayoutAccounts $accounts): RedirectResponse
+    {
+        $data = $request->validate(WalletController::accountRules()
+            + ['current_password' => ['required', 'string'], 'code' => ['nullable', 'string', 'max:32']]);
+        $account = $accounts->save($request->user(), $data, $data['current_password'], $data['code'] ?? null);
+
+        return redirect('/account#wallet')->with('status', 'Cash-out account saved. For your safety you can cash out to it from '
+            .$account->usable_after->timezone(config('app.timezone'))->format('d M H:i').'.');
     }
 
     public function referralCode(Request $request, ReferralCodes $codes): RedirectResponse

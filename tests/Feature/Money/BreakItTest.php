@@ -3,6 +3,7 @@
 namespace Tests\Feature\Money;
 
 use App\Ledger\Ledger;
+use App\Ledger\LedgerException;
 use App\Ledger\Posting;
 use App\Ledger\Wallet;
 use App\Membership\MembershipService;
@@ -10,12 +11,14 @@ use App\Models\Commission;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\PayoutAccount;
 use App\Models\Product;
 use App\Models\User;
 use App\Payments\ChapaGateway;
 use App\Payments\PaymentService;
 use App\Referral\CommissionEngine;
 use App\Wallet\CashOuts;
+use App\Wallet\PayoutAccounts;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -183,9 +186,11 @@ class BreakItTest extends ReferralTestCase
         $m = $this->member(null, 'Abdi');
         $m->forceFill(['last_name' => 'Kebede'])->save();
         app(Ledger::class)->post('manual.credit', [['equity:adjustments', 150_000], [app(Ledger::class)->userAccount($m, Wallet::AVAILABLE), -150_000]], null, null, 'test');
-        $data = ['amount' => 100_000, 'method' => 'telebirr', 'account_name' => 'Abdi Kebede', 'account_number' => '0911223344'];
-        app(CashOuts::class)->request($m->fresh(), $data);
-        $this->expectExceptionCount(fn () => app(CashOuts::class)->request($m->fresh(), $data));
+        $m->forceFill(['created_at' => now()->subDays(60)])->save();
+        app(PayoutAccounts::class)->save($m->fresh(), ['method' => 'telebirr', 'account_name' => 'Abdi Kebede', 'account_number' => '0911223344'], 'password');
+        PayoutAccount::query()->update(['usable_after' => now()->subMinute()]);
+        app(CashOuts::class)->request($m->fresh(), 100_000);
+        $this->expectExceptionCount(fn () => app(CashOuts::class)->request($m->fresh(), 100_000));
 
         $this->assertSame(50_000, Wallet::for($m)->available());
         $this->assertLedgerBalances();
@@ -222,7 +227,7 @@ class BreakItTest extends ReferralTestCase
     {
         try {
             $fn();
-        } catch (InvalidArgumentException|ValidationException|\App\Ledger\LedgerException|\App\Pricing\PricingException) {
+        } catch (InvalidArgumentException|ValidationException|LedgerException|\App\Pricing\PricingException) {
             $this->addToAssertionCount(1);
 
             return;

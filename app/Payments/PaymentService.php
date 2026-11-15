@@ -31,6 +31,14 @@ class PaymentService
     public function startChapa(Model $payable, string $returnUrl): Payment
     {
         $this->assertPayable($payable);
+        // Double click / refresh / app retry: reuse the open checkout instead of
+        // starting a second one that could also be paid.
+        $open = Payment::query()->where('payable_type', $payable->getMorphClass())->where('payable_id', $payable->getKey())
+            ->where('provider', Payment::CHAPA)->where('status', Payment::PENDING)->whereNotNull('checkout_url')
+            ->where('amount', $payable->payableAmount())->where('created_at', '>=', now()->subMinutes(30))->latest('id')->first();
+        if ($open) {
+            return $open;
+        }
         $payment = $this->create($payable, Payment::CHAPA);
         $url = $this->chapa->initialize($payment, $payable->payableCustomer(), $payable->payableTitle(), $returnUrl,
             route('api.payments.chapa.callback'));

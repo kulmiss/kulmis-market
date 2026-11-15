@@ -17,7 +17,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:20,1');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:register');
     Route::get('/forgot', [AuthController::class, 'showForgot'])->name('forgot');
     Route::get('/login/two-factor', [AuthController::class, 'showTwoFactor']);
     Route::post('/login/two-factor', [AuthController::class, 'twoFactor'])->middleware('throttle:10,1');
@@ -31,6 +31,7 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
     Route::post('membership/pay', [AccountController::class, 'payMembership'])->middleware('feature:membership')->name('membership.pay');
     Route::post('membership/proof', [AccountController::class, 'membershipProof'])->middleware(['feature:membership', 'feature:payments.manual'])->name('membership.proof');
     Route::post('cash-out', [AccountController::class, 'cashOut'])->middleware(['feature:wallet', 'feature:wallet.cashout', 'throttle:5,1'])->name('cashout');
+    Route::post('payout-account', [AccountController::class, 'payoutAccount'])->middleware(['feature:wallet', 'feature:wallet.cashout', 'throttle:5,10'])->name('payout-account');
     Route::post('referral-code', [AccountController::class, 'referralCode'])->middleware('feature:referral')->name('referral-code');
 
     Route::get('security', [SecurityController::class, 'show'])->name('security');

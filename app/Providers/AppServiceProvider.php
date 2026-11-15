@@ -84,6 +84,11 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(5)->by(mb_strtolower((string) $request->input('login')).'|'.$request->ip()),
             Limit::perMinute(20)->by($request->ip()),
         ]);
+        // Sign-ups: a few per hour per network, so bulk fake accounts are slow and noisy.
+        RateLimiter::for('register', fn (Request $request) => [
+            Limit::perHour(5)->by('h|'.$request->ip()),
+            Limit::perDay(20)->by('d|'.$request->ip()),
+        ]);
         RateLimiter::for('two-factor', fn (Request $request) => Limit::perMinute(5)->by($request->session()->getId()));
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(120)->by($request->user()?->id ?: $request->ip()));
     }

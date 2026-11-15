@@ -9,6 +9,7 @@ use App\Ledger\Wallet;
 use App\Models\Commission;
 use App\Models\FraudFlag;
 use App\Models\Order;
+use App\Models\PayoutAccount;
 use App\Models\PayoutRequest;
 use App\Models\Product;
 use App\Models\User;
@@ -28,11 +29,24 @@ class WalletCashOutTest extends ReferralTestCase
         app(Ledger::class)->post('manual.adjustment', [[app(Ledger::class)->userAccount($u, Wallet::AVAILABLE), -$amount], [Account::ADJUSTMENTS, $amount]], reason: 'test');
     }
 
+    /** Saves a cash-out account and skips the 48-hour wait (tested in MoneySafetyTest). */
+    private function account(User $u, string $number = '0911223344', ?string $name = null): TestResponse
+    {
+        $u->forceFill(['created_at' => now()->subDays(60)])->save();
+        $r = $this->actingAs($u, 'sanctum')->putJson('/api/v1/wallet/payout-account', ['method' => 'telebirr',
+            'account_name' => $name ?? $u->first_name.' '.$u->last_name, 'account_number' => $number, 'current_password' => 'password']);
+        PayoutAccount::query()->where('user_id', $u->id)->update(['usable_after' => now()->subMinute()]);
+
+        return $r;
+    }
+
     private function cashOut(User $u, array $data): TestResponse
     {
-        return $this->actingAs($u, 'sanctum')->postJson('/api/v1/wallet/cash-out', array_merge([
-            'amount' => 150_000, 'method' => 'telebirr', 'account_name' => $u->first_name.' '.$u->last_name, 'account_number' => '0911223344',
-        ], $data));
+        if (! PayoutAccount::query()->where('user_id', $u->id)->exists() && Features::enabled('wallet.cashout')) {
+            $this->account($u)->assertOk();
+        }
+
+        return $this->actingAs($u, 'sanctum')->postJson('/api/v1/wallet/cash-out', array_merge(['amount' => 150_000], $data));
     }
 
     public function test_pay_order_fully_from_wallet_creates_commissions(): void
@@ -115,11 +129,11 @@ class WalletCashOutTest extends ReferralTestCase
         $u->forceFill(['last_name' => 'Mohammed'])->save();
         $this->credit($u, 120_000);
 
+        $this->account($u, '0911223344', 'Someone Else')->assertUnprocessable()->assertJsonValidationErrors('account_name');
+        $this->account($u, '0911223344', 'MOHAMMED Abdi')->assertOk();
         $this->cashOut($u, ['amount' => 99_999])->assertUnprocessable()->assertJsonValidationErrors('amount');
         $this->cashOut($u, ['amount' => 150_000])->assertUnprocessable()->assertJsonValidationErrors('amount');
-        $this->cashOut($u, ['amount' => 100_000, 'account_name' => 'Someone Else'])->assertUnprocessable()->assertJsonValidationErrors('account_name');
-
-        $this->cashOut($u, ['amount' => 100_000, 'account_name' => 'MOHAMMED Abdi'])->assertCreated();
+        $this->cashOut($u, ['amount' => 100_000])->assertCreated();
         $this->assertSame(['pending' => 0, 'available' => 20_000, 'payout' => 100_000], Wallet::for($u)->summary());
         $this->assertTrue(PayoutRequest::query()->firstOrFail()->due_at->between(now()->addDays(3)->subMinute(), now()->addDays(3)->addMinute()));
     }
@@ -135,8 +149,10 @@ class WalletCashOutTest extends ReferralTestCase
         $this->actingAsAdmin();
         $this->getJson('/api/v1/admin/cash-outs?status=requested')->assertJsonPath('total', 2)->assertJsonPath('data.0.account', '••••••3344');
         $this->getJson("/api/v1/admin/cash-outs/$id1")->assertJsonPath('data.account_number', '0911223344');
-        $this->postJson("/api/v1/admin/cash-outs/$id1/pay", ['reference' => 'TB-PAY-1'])->assertOk()->assertJsonPath('data.status', 'paid');
-        $this->postJson("/api/v1/admin/cash-outs/$id1/pay", ['reference' => 'again'])->assertUnprocessable();
+        // First payout to an account: Super Admin must confirm the name first.
+        $this->postJson("/api/v1/admin/cash-outs/$id1/pay", ['reference' => 'TB-PAY-1'])->assertUnprocessable();
+        $this->postJson("/api/v1/admin/cash-outs/$id1/pay", ['reference' => 'TB-PAY-1', 'account_checked' => true])->assertOk()->assertJsonPath('data.status', 'paid');
+        $this->postJson("/api/v1/admin/cash-outs/$id1/pay", ['reference' => 'again', 'account_checked' => true])->assertUnprocessable();
         $this->postJson("/api/v1/admin/cash-outs/$id2/reject", ['reason' => 'Wrong number'])->assertOk();
 
         $this->assertSame(['pending' => 0, 'available' => 200_000, 'payout' => 0], Wallet::for($u)->summary());
@@ -159,6 +175,7 @@ class WalletCashOutTest extends ReferralTestCase
         $this->credit($b, 200_000);
         $this->cashOut($a, ['amount' => 100_000])->assertCreated();
         $this->app['auth']->forgetGuards();
+        $this->account($b, '0911223344', 'Bontu '.$b->last_name)->assertOk();   // the same Telebirr number as Abdi
         $this->cashOut($b, ['amount' => 100_000])->assertCreated();
 
         $this->assertTrue(app(FraudGuard::class)->isOnHold($a));
@@ -167,7 +184,7 @@ class WalletCashOutTest extends ReferralTestCase
         $this->assertSame('on_hold', $held->status);
 
         $this->actingAsAdmin();
-        $this->postJson("/api/v1/admin/cash-outs/{$held->id}/pay", ['reference' => 'x'])->assertUnprocessable();
+        $this->postJson("/api/v1/admin/cash-outs/{$held->id}/pay", ['reference' => 'x', 'account_checked' => true])->assertUnprocessable();
         FraudFlag::query()->where('user_id', $b->id)->each(fn ($f) => $this->postJson("/api/v1/admin/fraud/{$f->id}/review", ['decision' => 'cleared'])->assertOk());
         $this->assertSame('requested', $held->fresh()->status);
     }

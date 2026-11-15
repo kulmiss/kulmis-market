@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Ledger\Wallet;
+use App\Models\PayoutAccount;
 use App\Models\PayoutRequest;
 use App\Wallet\CashOuts;
 use Illuminate\Http\JsonResponse;
@@ -32,17 +33,21 @@ class CashOutController extends Controller
     /** Full account number only here, for Super Admin to pay. */
     public function show(PayoutRequest $payout): JsonResponse
     {
+        $account = $payout->payout_account_id ? PayoutAccount::query()->find($payout->payout_account_id) : null;
+
         return response()->json(['data' => $payout->load('user')->toArray() + [
             'account_number' => $payout->account_number,
+            'account_verified' => $account?->verified_at !== null,
+            'account_added_at' => $account?->created_at?->toIso8601String(),
             'wallet' => Wallet::for($payout->user)->summary(),
         ]]);
     }
 
     public function pay(Request $request, PayoutRequest $payout): JsonResponse
     {
-        $data = $request->validate(['reference' => ['required', 'string', 'max:120']]);
+        $data = $request->validate(['reference' => ['required', 'string', 'max:120'], 'account_checked' => ['nullable', 'boolean']]);
 
-        return $this->attempt(fn () => $this->cashOuts->markPaid($payout, $data['reference'], (int) $request->user()?->id));
+        return $this->attempt(fn () => $this->cashOuts->markPaid($payout, $data['reference'], (int) $request->user()?->id, (bool) ($data['account_checked'] ?? false)));
     }
 
     public function reject(Request $request, PayoutRequest $payout): JsonResponse

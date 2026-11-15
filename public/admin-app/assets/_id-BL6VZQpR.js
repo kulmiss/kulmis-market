@@ -1,0 +1,1 @@
+import{t as e}from"./members-pages-DIKS_7XC.js";import{d as t}from"./button-DvVpGx7n.js";import{r as n}from"./index-CE3sZMYd.js";var r=t();function i(){let{id:t}=n.useParams();return(0,r.jsx)(e,{id:t},t)}export{i as component};

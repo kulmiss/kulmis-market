@@ -91,18 +91,38 @@
                 <div><p class="muted text-xs">Cash-out requested</p><p class="text-2xl font-semibold">{{ $fmt($wallet['payout']) }}</p></div>
             </div>
             @feature('wallet.cashout')
-            <details class="mt-4"><summary class="cursor-pointer text-sm font-semibold">Cash out (from {{ $fmt(\App\Support\Settings::int('wallet.cashout_min')) }})</summary>
-                <form method="post" action="{{ url('/account/cash-out') }}" class="mt-3 grid gap-3 sm:grid-cols-2">
-                    @csrf
-                    <div><label class="label" for="ca">Amount (ETB)</label><input id="ca" name="amount_birr" class="input" inputmode="decimal" required></div>
-                    <div><label class="label" for="cm">To</label><select id="cm" name="method" class="input"><option value="telebirr">Telebirr</option><option value="bank">Bank account</option></select></div>
-                    <div><label class="label" for="cn">Account name (must match {{ $user->name }})</label><input id="cn" name="account_name" class="input" required value="{{ $user->name }}"></div>
-                    <div><label class="label" for="cnum">Phone / account number</label><input id="cnum" name="account_number" class="input" required inputmode="numeric"></div>
-                    <div class="sm:col-span-2"><label class="label" for="cb">Bank name (for bank)</label><input id="cb" name="bank_name" class="input"></div>
-                    <button class="btn-primary sm:col-span-2">Request cash-out</button>
-                    <p class="muted text-xs sm:col-span-2">We pay within {{ \App\Support\Settings::int('wallet.payout_days') }} days.</p>
-                </form>
-            </details>
+            @php $acct = $payoutAccount; @endphp
+            <div class="mt-5 rounded-xl border border-sand-200 p-4 dark:border-coffee-800">
+                <p class="text-sm font-semibold">Cash-out account</p>
+                @if ($acct)
+                    <p class="mt-1 text-sm">{{ ucfirst($acct->method) }} {{ $acct->masked() }} · {{ $acct->account_name }}@if ($acct->bank_name) · {{ $acct->bank_name }}@endif</p>
+                    @unless ($acct->isUsable())<p class="mt-1 text-xs text-clay-600">For your safety, you can cash out to this account from {{ $acct->usable_after->timezone(config('app.timezone'))->format('d M H:i') }}.</p>@endunless
+                @else
+                    <p class="muted mt-1 text-sm">Add the Telebirr number or bank account we should pay you to. The name must match yours.</p>
+                @endif
+                <details class="mt-2 text-sm" @if (!$acct) open @endif><summary class="cursor-pointer">{{ $acct ? 'Change account' : 'Add account' }}</summary>
+                    <form method="post" action="{{ url('/account/payout-account') }}" class="mt-3 grid gap-3 sm:grid-cols-2">
+                        @csrf
+                        <div><label class="label" for="pm">Type</label><select id="pm" name="method" class="input"><option value="telebirr">Telebirr</option><option value="bank">Bank account</option></select></div>
+                        <div><label class="label" for="pn">Account name (must match {{ $user->name }})</label><input id="pn" name="account_name" class="input" required value="{{ $user->name }}"></div>
+                        <div><label class="label" for="pnum">Phone / account number</label><input id="pnum" name="account_number" class="input" required inputmode="numeric"></div>
+                        <div><label class="label" for="pb">Bank name (for bank)</label><input id="pb" name="bank_name" class="input"></div>
+                        <div><label class="label" for="ppw">Your password</label><input id="ppw" name="current_password" type="password" class="input" required autocomplete="current-password"></div>
+                        @if ($user->hasTwoFactor())<div><label class="label" for="pcode">Code from your app</label><input id="pcode" name="code" class="input" required autocomplete="one-time-code"></div>@endif
+                        <p class="muted text-xs sm:col-span-2">We'll message you about this change. A new account can be used after {{ \App\Support\Settings::int('wallet.payout_account_hold_hours') }} hours.</p>
+                        <button class="btn-ghost sm:col-span-2">Save account</button>
+                    </form>
+                </details>
+            </div>
+            @if ($acct?->isUsable())
+            <form method="post" action="{{ url('/account/cash-out') }}" class="mt-4 flex flex-wrap items-end gap-3">
+                @csrf
+                <input type="hidden" name="request_id" value="{{ \Illuminate\Support\Str::random(32) }}">
+                <div><label class="label" for="ca">Cash out (from {{ $fmt(\App\Support\Settings::int('wallet.cashout_min')) }})</label><input id="ca" name="amount_birr" class="input" inputmode="decimal" required placeholder="ETB"></div>
+                <button class="btn-primary">Request cash-out</button>
+                <p class="muted w-full text-xs">Paid to {{ ucfirst($acct->method) }} {{ $acct->masked() }} within {{ \App\Support\Settings::int('wallet.payout_days') }} days.</p>
+            </form>
+            @endif
             @endfeature
             @if ($cashouts->isNotEmpty())
                 <ul class="mt-4 grid gap-1 text-sm">@foreach ($cashouts as $c)<li class="flex justify-between"><span>{{ $d($c->created_at) }} · {{ $fmt($c->amount) }} to {{ $c->method }} {{ $c->maskedAccount() }}</span><span class="capitalize">{{ $c->status === 'on_hold' ? 'requested' : $c->status }}@if ($c->payout_reference) · ref {{ $c->payout_reference }}@endif</span></li>@endforeach</ul>

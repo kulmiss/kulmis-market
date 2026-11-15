@@ -39,10 +39,15 @@ return [
     'referral.cookie_days' => ['int', 30, 'Referral link memory (days)', 'Referral'],
     'referral.pending_days' => ['int', 14, 'Earnings pending period (days)', 'Referral'],
     'referral.daily_signup_limit' => ['int', 20, 'Max referred sign-ups per member per day', 'Referral'],
+    'referral.same_network_signups' => ['int', 3, 'Sign-ups for one referrer from the same network in 24 h that trigger a review', 'Referral'],
 
     // Wallet
     'wallet.cashout_min' => ['money', 100_000, 'Minimum cash out', 'Wallet'],
     'wallet.payout_days' => ['int', 3, 'Pay cash-outs within (days)', 'Wallet'],
+    'wallet.payout_account_hold_hours' => ['int', 48, 'Wait after a cash-out account is added or changed (hours)', 'Wallet'],
+    'wallet.cashout_daily_max' => ['money', 5_000_000, 'Most a member can cash out in 24 hours', 'Wallet'],
+    'wallet.cashout_daily_count' => ['int', 2, 'Most cash-out requests per member in 24 hours', 'Wallet'],
+    'wallet.new_account_review_days' => ['int', 30, 'First cash-out of an account younger than this is held for review (days)', 'Wallet'],
 
     // Engagement
     'loyalty.reward' => ['money', 30_000, 'Loyalty reward', 'Engagement'],

@@ -40,6 +40,10 @@ change any of them.
 | 31 | Customer 2FA | Optional, offered on Account → Security with a nudge when they have wallet earnings. Required for staff. | Decided (review) |
 | 32 | "New sign-in" detection without tracking | A random cookie set only after sign-in (hash stored), not IP or fingerprinting, so guests stay untracked. | Decided (review) |
 | 33 | Security notices vs notification switches | Security notices always go out (email/SMS/Telegram), even when order notifications are switched off. | Decided (review) |
+| 34 | How is a payout account "verified"? | Super Admin confirms the name shown by Telebirr/the bank on the first payout ("I checked the account"). No external API is needed. | Decided (review) |
+| 35 | Daily cash-out limits | 2 requests and 50,000 ETB per member per 24 h (editable). | Decided (review) |
+| 36 | First cash-out of a new member | Held for review if they joined less than 30 days ago (editable). | Decided (review) |
+| 37 | Fake-account detection without storing IPs | The network is kept only as a keyed hash in the cache for 24 h. | Decided (review) |
 
 ## Still open: needs you
 | # | What | Why |

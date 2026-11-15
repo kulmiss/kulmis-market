@@ -54,21 +54,31 @@ export function CashOutsPage() {
 function PayoutActions({ payout }: { payout: Payout }) {
   const [reference, setReference] = useState('')
   const [reason, setReason] = useState('')
-  const [full, setFull] = useState<{ account_number: string; wallet: { available: number } } | null>(null)
+  const [full, setFull] = useState<{ account_number: string; account_verified: boolean; account_added_at: string | null; wallet: { available: number } } | null>(null)
+  const [checked, setChecked] = useState(false)
   const pay = useMutate('post', ['cash-outs'], 'Marked as paid — member notified')
   const reject = useMutate('post', ['cash-outs'], 'Rejected — money returned to wallet')
   return (
     <div className='flex gap-1'>
       <FormDialog title={`Pay ${formatETB(payout.amount)} to ${payout.account_name}`} saveText='I sent it — mark paid'
         trigger={<Button size='sm' onClick={async () => setFull((await api.get(`/cash-outs/${payout.id}`)).data.data)}><Eye /> Pay</Button>}
-        onSave={() => pay.mutateAsync({ path: `/cash-outs/${payout.id}/pay`, body: { reference } })}>
+        onSave={() => pay.mutateAsync({ path: `/cash-outs/${payout.id}/pay`, body: { reference, account_checked: checked } })}>
         <div className='rounded-md bg-muted p-3 text-sm'>
           <div>{payout.method === 'bank' ? `Bank: ${payout.bank_name}` : 'Telebirr'}</div>
           <div>Name: <b>{payout.account_name}</b></div>
           <div className='flex items-center gap-2'>Account: <b className='font-mono'>{full?.account_number ?? '…'}</b>
             {full && <Button size='icon' variant='ghost' className='size-6' onClick={() => navigator.clipboard.writeText(full.account_number).then(() => toast.success('Copied'))}><Copy /></Button>}</div>
-          {payout.status === 'on_hold' && <div className='mt-2 text-amber-700'>On hold: review the fraud queue first.</div>}
+          {payout.status === 'on_hold' && <div className='mt-2 text-amber-700'>On hold: {payout.hold_reason ?? 'review the fraud queue first'}.</div>}
+          {full && (full.account_verified
+            ? <div className='mt-2 text-emerald-700'>Account verified on an earlier payout.</div>
+            : <div className='mt-2 text-amber-700'>First payout to this account{full.account_added_at ? ` (added ${formatDate(full.account_added_at, true)})` : ''}: check the name shown by Telebirr/the bank before sending.</div>)}
         </div>
+        {full && !full.account_verified && (
+          <label className='flex items-start gap-2 text-sm'>
+            <input type='checkbox' className='mt-1 size-4' checked={checked} onChange={(e) => setChecked(e.target.checked)} />
+            I checked the account: the name on it is {payout.account_name}.
+          </label>
+        )}
         <Input placeholder='Transfer reference (required)' value={reference} onChange={(e) => setReference(e.target.value)} />
       </FormDialog>
       <FormDialog title='Reject cash-out' saveText='Reject' trigger={<Button size='sm' variant='ghost'><X /></Button>}

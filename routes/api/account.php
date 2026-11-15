@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\ReferralController;
 use App\Http\Controllers\Api\WalletController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('auth/register', [AuthController::class, 'register'])->middleware('throttle:10,1')->name('auth.register');
+Route::post('auth/register', [AuthController::class, 'register'])->middleware('throttle:register')->name('auth.register');
 Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:login')->name('auth.login');
 Route::post('auth/two-factor', [AuthController::class, 'twoFactor'])->middleware('throttle:10,1')->name('auth.two-factor');
 
@@ -39,6 +39,8 @@ Route::middleware(['feature:wallet', 'auth:sanctum'])->prefix('wallet')->name('w
     Route::get('/', [WalletController::class, 'show'])->name('show');
     Route::post('cash-out', [WalletController::class, 'cashOut'])
         ->middleware(['feature:wallet.cashout', 'throttle:5,1'])->name('cashout');
+    Route::put('payout-account', [WalletController::class, 'savePayoutAccount'])
+        ->middleware(['feature:wallet.cashout', 'throttle:5,10'])->name('payout-account');
 });
 
 Route::post('auth/forgot', [AccountController::class, 'forgot'])->middleware('throttle:3,10')->name('auth.forgot');
