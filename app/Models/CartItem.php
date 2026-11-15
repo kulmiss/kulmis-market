@@ -18,6 +18,19 @@ class CartItem extends Model
 {
     protected $fillable = ['product_id', 'product_variant_id', 'quantity'];
 
+    /**
+     * A change to a line counts as a change to the cart (for the cart reminder).
+     *
+     * @var list<string>
+     */
+    protected $touches = ['cart'];
+
+    /** @return BelongsTo<Cart, $this> */
+    public function cart(): BelongsTo
+    {
+        return $this->belongsTo(Cart::class);
+    }
+
     /** @return BelongsTo<Product, $this> */
     public function product(): BelongsTo
     {

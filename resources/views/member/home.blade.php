@@ -77,6 +77,29 @@
         @else
             <span class="text-xs m-muted">Compare with next month once you have earnings.</span>
         @endif
+        @feature('account.goals')
+            @php $goal = \App\Referral\Goals::progress($user, $money['this_month']); @endphp
+            <div class="border-t pt-3" style="border-color: var(--m-line)" id="goal">
+                @if ($goal)
+                    <div class="flex items-baseline justify-between gap-2 text-sm">
+                        <span class="font-semibold">Goal: {{ $fmt($goal['goal']) }}</span>
+                        <span class="tabular-nums m-muted">{{ $goal['percent'] }}%</span>
+                    </div>
+                    <div class="mt-2 h-2.5 overflow-hidden rounded-full m-soft" role="progressbar" aria-label="Monthly goal" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $goal['percent'] }}">
+                        <div class="h-full rounded-full" style="width: {{ $goal['percent'] }}%; background: var(--m-accent)"></div>
+                    </div>
+                    <p class="mt-2 text-xs m-muted">{{ $goal['reached'] ? 'Goal reached this month. Well done! 🎉' : $fmt($goal['left']).' to go this month.' }}</p>
+                @endif
+                <details class="mt-1" @if (! $goal) open @endif>
+                    <summary class="inline-flex min-h-12 cursor-pointer items-center text-sm font-semibold m-accent-text">{{ $goal ? 'Change my goal' : 'Set a goal for this month' }}</summary>
+                    <form method="post" action="{{ url('/account/goal') }}" class="flex gap-2">@csrf
+                        <label class="sr-only" for="goal-input">Goal in {{ \App\Support\Currency::code() }}</label>
+                        <input id="goal-input" name="goal" type="number" inputmode="numeric" min="0" step="1" class="m-input" placeholder="e.g. 3000" value="{{ $goal ? intdiv($goal['goal'], 100) : '' }}">
+                        <button class="m-btn">Save</button>
+                    </form>
+                </details>
+            </div>
+        @endfeature
     </div>
     <div class="m-card lg:col-span-2">
         <div class="flex items-center justify-between gap-2">

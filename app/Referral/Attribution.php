@@ -7,6 +7,7 @@ use App\Fraud\FraudGuard;
 use App\Models\Order;
 use App\Models\SignalSubscription;
 use App\Models\User;
+use App\Notify\Inbox;
 use App\Support\Activity;
 use App\Support\Features;
 use App\Support\Phone;
@@ -79,6 +80,8 @@ class Attribution
                 Activity::log('referral.same_browser_linked', $user, ['referrer' => $referrer->id], null, $user->id);
             }
             $user->forceFill(['referrer_id' => $referrer->id, 'referred_at' => now()])->save();
+            Inbox::add($referrer, 'team', $user->first_name.' joined your team', 'They signed up with your link or code. When they pay for a membership you earn from it.',
+                '/account/team', "team:{$user->id}");
             $guard->checkDailyLimit($referrer);
             $guard->checkFakeSignups($referrer, $user, $device, (string) $request->ip());
         } elseif ($refused === 'self_referral') {

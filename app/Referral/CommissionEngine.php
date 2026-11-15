@@ -13,6 +13,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\SignalPurchase;
 use App\Models\User;
+use App\Notify\Inbox;
 use App\Support\Activity;
 use App\Support\Features;
 use App\Support\Money;
@@ -192,6 +193,13 @@ class CommissionEngine
                 ], "commission:{$c->id}:earned", $c, description: "Team earnings, level $level, from ".match ($type) {
                     'membership' => 'a membership', 'products' => 'a shop order', 'signals' => 'signals', default => $type
                 });
+                $from = $level === 1 && $buyer ? $buyer->first_name : 'someone in your team';
+                Inbox::add($recipient, 'earning', 'You earned '.Money::format($amount),
+                    "Level $level, from $from (".match ($type) {
+                        'membership' => 'membership', 'products' => 'shop order', 'signals' => 'signals', default => $type
+                    }
+                    .'). It is on the way: ready to use in '.Settings::int('referral.pending_days').' days.', '/account/earnings', "commission:{$c->id}");
+                Goals::check($recipient);
             } elseif ($skip === 'self_referral') {
                 Activity::log('referral.self_referral_skipped', $c, ['level' => $level]);
             }

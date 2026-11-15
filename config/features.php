@@ -67,6 +67,8 @@ return [
     // Accounts
     'accounts.signup' => ['Sign-up', 'Accounts', true, null, 'New people can make an account. Off: only existing accounts can sign in.'],
     'accounts.two_factor' => ['Two-step sign-in for customers', 'Accounts', true, null, 'Customers can turn on a code from an app. Off: no new set-ups; people who already use it keep it.'],
+    'account.notifications' => ['Notification centre (bell)', 'Accounts', true, null, 'A bell in the account area with news: earnings, team joins, badges, bonuses, orders, membership and cash-outs.'],
+    'account.goals' => ['Monthly goals', 'Accounts', true, 'referral', 'Members can set "Earn X this month" and see a progress bar on their home page.'],
 
     // Notification channels
     'notifications.sms' => ['SMS', 'Notification channels', true, null, 'Send customer messages by SMS.'],
@@ -90,6 +92,7 @@ return [
     'messages.payout_paid' => ['Cash-out sent', 'Messages', true, 'wallet.cashout', 'Tell the member we sent their money.'],
     'messages.badge_bonus' => ['Badge bonus', 'Messages', true, 'badges.bonus', 'Tell the member how much badge bonus they got this month.'],
     'messages.payout_rejected' => ['Cash-out not approved', 'Messages', true, 'wallet.cashout', 'Tell the member their cash-out was not approved.'],
+    'messages.cart_reminder' => ['Cart reminder', 'Messages', true, 'shop', 'One reminder 24 hours after a signed-in customer leaves items in the cart. Never for guests; they can stop it.'],
 
     // Look and speed
     'appearance.theme_switch' => ['Light / dark switch', 'Look and speed', true, null, 'Customers can switch between light and dark. Off: always light.'],

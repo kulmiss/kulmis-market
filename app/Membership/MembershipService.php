@@ -12,6 +12,7 @@ use App\Ledger\Wallet;
 use App\Models\Membership;
 use App\Models\MembershipPurchase;
 use App\Models\User;
+use App\Notify\Inbox;
 use App\Notify\Message;
 use App\Support\Activity;
 use App\Support\Features;
@@ -247,5 +248,9 @@ class MembershipService
             '{site}' => Settings::string('site.name'),
         ]);
         SendCustomerMessage::dispatch(new Message('Your membership', $body, $user->phone, $user->email, $user->telegram_user_id, $type));
+        Inbox::add($user, 'renewal', match ($type) {
+            'membership_activated' => 'Your membership is active', 'membership_before' => 'Your membership ends soon',
+            'membership_today' => 'Your membership ends today', 'membership_after' => 'Your membership has ended', default => 'Your membership',
+        }, $body, '/account#membership', $type.':'.$m->id.':'.($m->current_period_end?->format('Ymd') ?? ''));
     }
 }

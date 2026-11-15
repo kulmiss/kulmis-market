@@ -101,6 +101,8 @@ return [
     'notify.signals_access' => ['text', 'Hi {name}, your trading signals access is ready. Open this personal link in Telegram to join (do not share it): {link}', 'Message: signals access link', 'Messages'],
 
     'notify.back_in_stock' => ['text', 'Good news! {product} is back in stock at {site}. Get it here before it sells out: {url}', 'Message: back in stock', 'Messages'],
+    'notify.cart_reminder' => ['text', 'Hi {name}, you left {items} in your cart at {site}. It is still there for you: {url} (To stop these: {stop})', 'Message: cart reminder', 'Messages'],
+    'cart_reminder.hours' => ['int', 24, 'Cart reminder: hours after the last change', 'Messages'],
     'notify.badge_bonus' => ['text', 'Well done {name}! Your {badge} badge bonus for {month} is {amount}. It is on the way and ready to use on {ready}.{adjusted}', 'Message: monthly badge bonus', 'Messages'],
     'notify.badge_unlocked' => ['text', 'Congratulations {name}! You unlocked the {badge} badge on {site}. See your badges: {url}', 'Message: badge unlocked (only when "Badge messages" is on)', 'Messages'],
 

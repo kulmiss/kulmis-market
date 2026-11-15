@@ -92,6 +92,9 @@ change any of them.
 | 83 | Flash sales and bundles that lose money | The admin shows "You keep at least X per member order" while you type. Saving a loss needs an extra tick ("I know it loses money"); it is never blocked silently. | Decided (recommended) |
 | 84 | Bundles | No special cart line: when every piece of a set is in the cart, the saving comes off by itself (biggest saving first, each piece counts once). The set price gets the member price on top; coupons apply after the set saving; team earnings use the price after the saving. | Decided (recommended) |
 | 85 | "Bought together" and "You may also like" | Worked out automatically: "bought together" from real paid orders, "also like" from the same category, best rated first. Cached for 6 hours. One-tap "Add" only for products without options; others say "Choose". | Decided (recommended) |
+| 86 | Notification centre (bell) | Uses the in-app list badges already wrote to. Shows earnings (level 1 sees the buyer's first name, levels 2–3 see "someone in your team"), team joins, badges, bonus paid, orders, membership and cash-outs. Opening the page marks them read. Each person can mute any type. Read ones are removed after 90 days, all after a year. | Decided (recommended) |
+| 87 | Cart reminder | Any signed-in customer (member or not), never guests. One message 24 hours (editable) after the last cart change, sent at most once per cart until they order. The link opens that cart on any phone (valid 7 days); "stop" works without signing in. Switch "Cart reminder" in Messages, on by default. | Decided (recommended) |
+| 88 | Monthly goal | Member types an amount (at least 100 ETB). Progress = team earnings this month (same number as "This month" on the home page). One "You reached your goal" note per month. | Decided (recommended) |
 
 ## Still open: needs you
 | # | What | Why |

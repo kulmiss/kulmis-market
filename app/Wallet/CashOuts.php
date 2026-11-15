@@ -10,6 +10,7 @@ use App\Ledger\Wallet;
 use App\Models\PayoutAccount;
 use App\Models\PayoutRequest;
 use App\Models\User;
+use App\Notify\Inbox;
 use App\Notify\Message;
 use App\Support\Activity;
 use App\Support\Features;
@@ -205,9 +206,11 @@ class CashOuts
     private function notify(PayoutRequest $r, string $template, ?string $reason, string $type): void
     {
         $user = $r->user()->firstOrFail();
-        SendCustomerMessage::dispatch(new Message('Your cash-out', strtr($template, [
+        $body = strtr($template, [
             '{name}' => $user->first_name, '{amount}' => Money::format($r->amount), '{reference}' => (string) $r->payout_reference,
             '{reason}' => (string) $reason,
-        ]), $user->phone, $user->email, $user->telegram_user_id, $type));
+        ]);
+        SendCustomerMessage::dispatch(new Message('Your cash-out', $body, $user->phone, $user->email, $user->telegram_user_id, $type));
+        Inbox::add($user, 'cashout', $type === 'payout_paid' ? 'Cash-out sent: '.Money::format($r->amount) : 'Cash-out not approved', $body, '/account/wallet', "$type:{$r->id}");
     }
 }

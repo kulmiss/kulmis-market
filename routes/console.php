@@ -1,5 +1,7 @@
 <?php
 
+use App\Notify\Inbox;
+use App\Shop\CartReminders;
 use App\Shop\FlashSales;
 use App\Storefront\PageCache;
 use Illuminate\Support\Facades\Artisan;
@@ -51,3 +53,5 @@ if (config('shop.backup_key')) {
     Schedule::command('km:backup')->dailyAt('02:17')->withoutOverlapping();
 }
 Schedule::call(fn () => app(FlashSales::class)->tick())->everyMinute()->name('flash-sales:tick')->withoutOverlapping();
+Schedule::call(fn () => app(CartReminders::class)->run())->hourly()->name('carts:remind')->withoutOverlapping();
+Schedule::call(fn () => Inbox::prune())->dailyAt('03:37')->name('notifications:prune');

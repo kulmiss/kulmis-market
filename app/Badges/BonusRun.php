@@ -10,6 +10,7 @@ use App\Ledger\Wallet;
 use App\Models\BadgeBonus;
 use App\Models\BadgeBonusRun;
 use App\Models\User;
+use App\Notify\Inbox;
 use App\Notify\Message;
 use App\Support\Activity;
 use App\Support\Features;
@@ -251,6 +252,7 @@ final class BonusRun
                 '{site}' => Settings::string('site.name'),
             ]);
             SendCustomerMessage::dispatch(new Message('Your badge bonus', $body, $u->phone, $u->email, $u->telegram_user_id, 'badge_bonus'));
+            Inbox::add($u, 'bonus', 'Badge bonus: '.Money::format($b->amount), $body, '/account/badges#badge-bonus', "bonus:{$b->id}");
         }
     }
 

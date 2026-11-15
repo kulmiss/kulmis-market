@@ -155,7 +155,7 @@ class Checkout
             $order->history()->create(['from' => null, 'to' => Order::PENDING_PAYMENT, 'note' => 'Order placed']);
 
             $cart->items()->delete();
-            $cart->update(['coupon_code' => null]);
+            $cart->update(['coupon_code' => null, 'reminded_at' => null]);
 
             return $order;
         });

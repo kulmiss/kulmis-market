@@ -37,6 +37,8 @@ use Laravel\Sanctum\HasApiTokens;
  * @property ?Carbon $password_changed_at
  * @property ?string $pending_email
  * @property ?Carbon $pending_email_expires_at
+ * @property ?array<string, mixed> $notify_prefs
+ * @property ?int $goal_amount
  * @property-read string $name
  */
 class User extends Authenticatable
@@ -79,6 +81,8 @@ class User extends Authenticatable
             'locked_until' => 'datetime',
             'password_changed_at' => 'datetime',
             'pending_email_expires_at' => 'datetime',
+            'notify_prefs' => 'array',
+            'goal_amount' => 'integer',
         ];
     }
 

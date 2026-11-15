@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web\AccountController;
 use App\Http\Controllers\Web\AuthController;
+use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\ReviewController;
 use App\Http\Controllers\Web\SecurityController;
 use App\Http\Controllers\Web\ShopAccountController;
@@ -24,6 +25,8 @@ Route::middleware('guest')->group(function () {
     Route::get('/login/two-factor', [AuthController::class, 'showTwoFactor']);
     Route::post('/login/two-factor', [AuthController::class, 'twoFactor'])->middleware('throttle:10,1');
 });
+Route::get('/cart/resume/{cart}', [NotificationController::class, 'resumeCart'])->middleware(['signed', 'throttle:20,1'])->name('cart.resume');
+Route::get('/cart-reminders/stop/{user}', [NotificationController::class, 'stopCartReminders'])->middleware(['signed', 'throttle:20,1'])->name('cart-reminders.stop');
 Route::get('/account/email/confirm/{token}', [SecurityController::class, 'confirmEmail'])
     ->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:20,1')->name('account.email.confirm');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -44,6 +47,11 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
     Route::post('badges/seen', [AccountController::class, 'badgesSeen'])->middleware(['feature:badges', 'throttle:30,1'])->name('badges.seen');
 
     Route::get('security', [SecurityController::class, 'show'])->name('security');
+
+    // Notification centre (bell), what to hear about, monthly goal
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications');
+    Route::post('notifications/settings', [NotificationController::class, 'settings'])->middleware('throttle:20,1')->name('notifications.settings');
+    Route::post('goal', [NotificationController::class, 'goal'])->middleware('throttle:20,1')->name('goal');
 
     // Wishlist, saved addresses, buy again
     Route::middleware('feature:shop.wishlist')->group(function () {

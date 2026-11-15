@@ -10,7 +10,7 @@ use App\Models\Membership;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\UserBadge;
-use App\Models\UserNotification;
+use App\Notify\Inbox;
 use App\Notify\Message;
 use App\Referral\Engagement;
 use App\Support\Activity;
@@ -102,8 +102,7 @@ class BadgeEngine
             return false; // unlocked at the same moment by another job
         }
         Activity::log('badge.unlocked', $user, ['badge' => $badge->key], null, $user->id);
-        UserNotification::query()->create(['user_id' => $user->id, 'type' => 'badge_unlocked', 'title' => 'New badge: '.$badge->name,
-            'body' => $badge->description, 'url' => '/account/badges', 'data' => ['badge_id' => $badge->id]]);
+        Inbox::add($user, 'badge_unlocked', 'New badge: '.$badge->name, $badge->description, '/account/badges', "badge:{$badge->id}");
         if (Features::enabled('badges.messages')) {
             $text = strtr(Settings::string('notify.badge_unlocked'), ['{name}' => $user->first_name, '{badge}' => $badge->name,
                 '{site}' => Settings::string('site.name'), '{url}' => url('/account/badges')]);

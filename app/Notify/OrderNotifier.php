@@ -23,7 +23,11 @@ class OrderNotifier
             return;
         }
         $body = self::render(Settings::string('notify.order_'.$event->change->to), $order, $event->change->note);
-        $telegram = $order->user_id ? User::query()->whereKey($order->user_id)->value('telegram_user_id') : null;
+        $owner = $order->user_id ? User::query()->find($order->user_id) : null;
+        $telegram = $owner?->telegram_user_id;
+        if ($owner) {
+            Inbox::add($owner, 'order', "Order {$order->number}: ".self::word($event->change->to), null, '/account/orders', "order:{$event->change->id}");
+        }
 
         SendCustomerMessage::dispatch(new Message(
             subject: "Order {$order->number}: ".str_replace('_', ' ', $event->change->to),
@@ -33,6 +37,14 @@ class OrderNotifier
             telegramChatId: $telegram ? (int) $telegram : null,
             type: 'order_'.$event->change->to,
         ), $event->change->id);
+    }
+
+    private static function word(string $status): string
+    {
+        return match ($status) {
+            Order::PAID => 'paid, thank you', Order::MAKING => 'being made', Order::SHIPPED => 'on its way',
+            Order::DELIVERED => 'delivered', Order::CANCELLED => 'cancelled', default => str_replace('_', ' ', $status),
+        };
     }
 
     /** The tracking page, or (switched off) the account's orders / the home page. */
