@@ -1,0 +1,1 @@
+import{r as e}from"./catalog-pages-DiAmol4X.js";var t=e;export{t as component};

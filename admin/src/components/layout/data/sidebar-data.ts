@@ -3,6 +3,7 @@ import {
   BadgePercent,
   Banknote,
   BookOpen,
+  Medal,
   Bot,
   Boxes,
   FileText,
@@ -56,6 +57,7 @@ export const sidebarData: SidebarData = {
         { title: 'Members', url: '/members', icon: Users, ability: 'manage-members' },
         { title: 'Referral tree', url: '/referrals', icon: Network, ability: 'manage-referrals', feature: 'referral' },
         { title: 'Commissions', url: '/commissions', icon: BookOpen, ability: 'manage-referrals', feature: 'referral' },
+        { title: 'Badges', url: '/badges', icon: Medal, ability: 'manage-settings', feature: 'badges' },
       ],
     },
     {

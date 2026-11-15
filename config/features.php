@@ -30,7 +30,8 @@ return [
     'referral.commission.membership' => ['Commissions on membership', 'Referral', true, 'referral'],
     'referral.commission.signals' => ['Commissions on signals', 'Referral', true, 'referral'],
     'referral.commission.products' => ['Commissions on products', 'Referral', true, 'referral'],
-    'badges' => ['Badges', 'Referral', true, 'referral'],
+    'badges' => ['Badges (team, loyalty, earnings, shopper)', 'Referral', true, null],
+    'badges.messages' => ['Badge messages (SMS / email / Telegram when a badge unlocks; in-app always)', 'Referral', false, 'badges'],
     'top_referrers' => ['Top referrers list', 'Referral', true, 'referral'],
 
     'wallet' => ['Wallet', 'Wallet', true, null],

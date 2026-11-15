@@ -8,7 +8,7 @@
     <div class="flex flex-wrap items-end justify-between gap-3">
         <div><h1 class="text-4xl">Selam, {{ $user->first_name }}</h1>
             <p class="muted mt-1">@if ($isMember) Member · renews {{ $d($membership?->current_period_end) }}@if ($membership?->status === 'grace') · <b class="text-clay-600">grace period until {{ $d($membership->grace_ends_at) }}</b>@endif @else Not a member yet @endif</p></div>
-        <div class="flex gap-2"><a class="btn-ghost" href="{{ url('/account/security') }}">Security</a><form method="post" action="{{ url('/logout') }}">@csrf<button class="btn-ghost">Sign out</button></form></div>
+        <div class="flex gap-2">@if ($badges)<a class="btn-ghost" href="{{ url('/account/badges') }}">Badges ({{ $badges['unlocked'] }})</a>@endif<a class="btn-ghost" href="{{ url('/account/security') }}">Security</a><form method="post" action="{{ url('/logout') }}">@csrf<button class="btn-ghost">Sign out</button></form></div>
     </div>
     @if ($errors->any())<div class="mt-4 rounded-xl bg-clay-500/10 p-3 text-sm text-clay-700" role="alert">{{ $errors->first() }}</div>@endif
 
@@ -53,7 +53,7 @@
                 <div><h2 class="text-2xl">Your referral link</h2>
                     @if (!$referral['earning'])<p class="mt-1 text-sm text-clay-600">Become an active member to earn from your team.</p>@endif
                     @if ($referral['under_review'])<p class="mt-1 text-sm text-clay-600">Some of your earnings are being checked by our team. They stay safe and will be released after the check.</p>@endif</div>
-                @if ($referral['badge']['badge'])<span class="badge-gold text-sm capitalize">{{ $referral['badge']['badge'] }} badge</span>@endif
+                @if ($badges && $badges['highest'])<a href="{{ url('/account/badges') }}">@include('store.partials.badge-chip', ['b' => $badges['highest'], 'size' => 16])</a>@endif
             </div>
             <div class="mt-4 grid gap-4 sm:grid-cols-[1fr_auto]">
                 <div class="grid gap-2">
@@ -63,7 +63,7 @@
                         <a class="btn-ghost" href="{{ $referral['share']['telegram'] }}" target="_blank" rel="noopener">Share on Telegram</a>
                         <a class="btn-ghost" href="{{ $referral['share']['whatsapp'] }}" target="_blank" rel="noopener">Share on WhatsApp</a>
                     </div>
-                    @if ($referral['badge']['next'])<p class="muted text-sm">{{ $referral['badge']['next']['needed'] }} more active members for <span class="capitalize">{{ $referral['badge']['next']['badge'] }}</span>.</p>@endif
+                    @if ($badges && $badges['next'])<a href="{{ url('/account/badges') }}" class="mt-1 block rounded-xl border border-sand-200 p-3 dark:border-white/10"><span class="mb-2 block text-xs font-semibold uppercase tracking-wide text-clay-600">Next badge</span>@include('store.account.partials.badge-progress', ['b' => $badges['next']])</a>@endif
                     @if ($referral['can_change_code'])
                         <form method="post" action="{{ url('/account/referral-code') }}" class="mt-2 flex gap-2">@csrf<input name="code" class="input uppercase" placeholder="Choose your code (once)" maxlength="12"><button class="btn-ghost">Save</button></form>
                     @endif
@@ -153,4 +153,5 @@
         @endif
     </div>
 </div>
+@if ($badges)@include('store.account.partials.badge-celebration', ['unseen' => $badges['unseen']])@endif
 @endsection

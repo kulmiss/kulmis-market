@@ -63,9 +63,6 @@ return [
     // Engagement
     'loyalty.reward' => ['money', 30_000, 'Loyalty reward', 'Engagement'],
     'loyalty.every_months' => ['int', 3, 'Loyalty reward every (months)', 'Engagement'],
-    'badges.bronze' => ['int', 3, 'Bronze badge (active level-1 members)', 'Engagement'],
-    'badges.silver' => ['int', 10, 'Silver badge (active level-1 members)', 'Engagement'],
-    'badges.gold' => ['int', 25, 'Gold badge (active level-1 members)', 'Engagement'],
 
     // Site
     'site.name' => ['string', 'Kulmis Market', 'Shop name', 'Site'],
@@ -90,6 +87,8 @@ return [
     'notify.loyalty_reward' => ['text', 'Thank you for staying with us, {name}! We added {amount} to your wallet.', 'Message: loyalty reward', 'Messages'],
 
     'notify.signals_access' => ['text', 'Hi {name}, your trading signals access is ready. Open this personal link in Telegram to join (do not share it): {link}', 'Message: signals access link', 'Messages'],
+
+    'notify.badge_unlocked' => ['text', 'Congratulations {name}! You unlocked the {badge} badge on {site}. See your badges: {url}', 'Message: badge unlocked (only when "Badge messages" is on)', 'Messages'],
 
     'notify.payout_paid' => ['text', 'Hi {name}, we sent your cash-out of {amount}. Reference: {reference}', 'Message: cash-out paid', 'Messages'],
     'notify.payout_rejected' => ['text', 'Hi {name}, your cash-out of {amount} was not approved and is back in your wallet. {reason}', 'Message: cash-out rejected', 'Messages'],

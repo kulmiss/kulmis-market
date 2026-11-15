@@ -62,12 +62,10 @@ members' wallets, ever.
 with wallets) and `GET /api/v1/admin/referrals/commissions` (filters).
 
 ## Engagement (PR 13)
-- **Badges** go by the number of *active* level-1 members: Bronze 3, Silver 10,
-  Gold 25 (editable, `badges` switch). `progress` also says how many more
-  are needed for the next badge.
+- **Badges** (round 2, `app/Badges`): see [badges.md](badges.md).
 - **Top referrers** (`GET /api/v1/referral/top?month=YYYY-MM`, public,
   `top_referrers` switch): ranked by new level-1 people this month who are
-  active members. Shows **first name + badge only**. Cached for 1 hour.
+  active members. Shows **first name + highest badge only**. Cached for 1 hour.
 - **Dashboard data** (`GET /api/v1/referral`): link, code, team, earnings per
   level, pending/available balances, badge progress, Telegram and WhatsApp
   share links, renewal date. `GET /api/v1/referral/qr.svg` returns the QR

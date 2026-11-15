@@ -53,6 +53,10 @@ change any of them.
 | 44 | Currency change and existing amounts | Nothing is converted: amounts keep their numbers, only the symbol/format changes. Admin must confirm. | Decided (you) |
 | 45 | "Block checkout" when Chapa can't take the currency | Only the Chapa option is blocked, with a message; bank/Telebirr transfer with a receipt stays open so customers can still buy. Tell me if you want the whole checkout closed instead. | Decided (round 2) |
 | 46 | Currency decimals | Choice of "only when needed" (default, as today), never, or always 2. Amounts are still stored to 1/100. | Decided (round 2) |
+| 47 | "Team size" badges | Count **active** members you invited yourself (as before), so fake sign-ups don't earn badges. "Total team" counts active members in all 3 levels. | Decided (round 2) |
+| 48 | Badge messages | In-app notification + celebration always. SMS/email/Telegram for badges are off by default (`badges.messages`) because SMS costs money. | Decided (round 2) |
+| 49 | Top referrer badge | Awarded on the 1st of each month to last month's #1 (threshold = rank, editable). | Decided (round 2) |
+| 50 | "Highest badge" | The unlocked badge with the highest "importance" number (editable per badge). Diamond is highest by default. | Decided (round 2) |
 
 ## Still open: needs you
 | # | What | Why |

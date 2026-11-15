@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Badges\BadgeEngine;
 use App\Cart\CartManager;
 use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Controller;
@@ -55,9 +56,24 @@ class AccountController extends Controller
             'payoutAccount' => app(PayoutAccounts::class)->current($user),
             'orders' => Order::query()->where('user_id', $user->id)->latest('id')->limit(10)->get(),
             'signalsLink' => $signals?->deepLink(),
+            'badges' => Features::enabled('badges') ? app(BadgeEngine::class)->summary($user) : null,
             'earlyAccess' => $member && Features::enabled('shop.early_access')
                 ? Product::query()->visibleTo(true)->where('release_at', '>', now())->with(['images', 'variants'])->limit(6)->get() : collect(),
         ]);
+    }
+
+    public function badges(Request $request, BadgeEngine $engine): View
+    {
+        $engine->evaluate($request->user()); // catch up right away (thresholds may have been lowered)
+
+        return view('store.account.badges', ['badges' => $engine->progress($request->user()), 'summary' => $engine->summary($request->user())]);
+    }
+
+    public function badgesSeen(Request $request, BadgeEngine $engine): RedirectResponse
+    {
+        $engine->markSeen($request->user());
+
+        return back(fallback: url('/account/badges'));
     }
 
     public function payMembership(Request $request, MembershipService $memberships, PaymentService $payments, WalletPayments $wallet): RedirectResponse

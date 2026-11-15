@@ -30,7 +30,7 @@
     @feature('top_referrers')
         @if (!empty($top))
             <h2 class="mt-10 text-2xl">This month's top referrers</h2>
-            <ol class="mt-3 grid gap-2">@foreach ($top as $t)<li class="card flex justify-between py-3"><span>{{ $t['rank'] }}. {{ $t['name'] }} @if ($t['badge'])<span class="badge-gold ms-2 capitalize">{{ $t['badge'] }}</span>@endif</span><span class="muted">{{ $t['count'] }} new members</span></li>@endforeach</ol>
+            <ol class="mt-3 grid gap-2">@foreach ($top as $t)<li class="card flex justify-between py-3"><span>{{ $t['rank'] }}. {{ $t['name'] }} @if ($t['badge'])<span class="ms-2">@include('store.partials.badge-chip', ['b' => $t['badge']])</span>@endif</span><span class="muted">{{ $t['count'] }} new members</span></li>@endforeach</ol>
         @endif
     @endfeature
     <div class="mt-10 flex gap-3"><a href="{{ url('/register') }}" class="btn-primary">Join and get your link</a><a href="{{ url('/p/referral-rules') }}" class="btn-ghost">Full rules</a></div>

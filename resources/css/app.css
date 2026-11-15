@@ -44,3 +44,21 @@
 @utility badge-gold { @apply badge bg-gold-500/15 text-gold-500; }
 @utility prose-km { @apply space-y-4 leading-relaxed [&_a]:text-clay-600 [&_a]:underline [&_h2]:mt-8 [&_h2]:text-2xl [&_h3]:mt-6 [&_h3]:text-xl [&_li]:ms-5 [&_ol]:list-decimal [&_ul]:list-disc; }
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/tailwind.blade.php';
+
+/* Badge unlock celebration */
+.km-confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.km-confetti i { position: absolute; top: -12px; width: 9px; height: 14px; border-radius: 2px; opacity: .9; animation: km-fall 2.6s ease-in forwards; }
+.km-confetti i:nth-child(4n) { background: var(--color-clay-500); } .km-confetti i:nth-child(4n+1) { background: var(--color-gold-500); }
+.km-confetti i:nth-child(4n+2) { background: #3f8a4e; } .km-confetti i:nth-child(4n+3) { background: #f6efe6; }
+.km-confetti i:nth-child(1){left:4%;animation-delay:.0s}.km-confetti i:nth-child(2){left:9%;animation-delay:.3s}.km-confetti i:nth-child(3){left:14%;animation-delay:.1s}
+.km-confetti i:nth-child(4){left:19%;animation-delay:.5s}.km-confetti i:nth-child(5){left:24%;animation-delay:.2s}.km-confetti i:nth-child(6){left:29%;animation-delay:.6s}
+.km-confetti i:nth-child(7){left:34%;animation-delay:.15s}.km-confetti i:nth-child(8){left:39%;animation-delay:.45s}.km-confetti i:nth-child(9){left:44%;animation-delay:.05s}
+.km-confetti i:nth-child(10){left:49%;animation-delay:.35s}.km-confetti i:nth-child(11){left:54%;animation-delay:.25s}.km-confetti i:nth-child(12){left:59%;animation-delay:.55s}
+.km-confetti i:nth-child(13){left:64%;animation-delay:.1s}.km-confetti i:nth-child(14){left:69%;animation-delay:.4s}.km-confetti i:nth-child(15){left:74%;animation-delay:.2s}
+.km-confetti i:nth-child(16){left:79%;animation-delay:.6s}.km-confetti i:nth-child(17){left:84%;animation-delay:.3s}.km-confetti i:nth-child(18){left:89%;animation-delay:.05s}
+.km-confetti i:nth-child(19){left:94%;animation-delay:.5s}.km-confetti i:nth-child(20){left:7%;animation-delay:.7s}.km-confetti i:nth-child(21){left:37%;animation-delay:.8s}
+.km-confetti i:nth-child(22){left:57%;animation-delay:.75s}.km-confetti i:nth-child(23){left:77%;animation-delay:.85s}.km-confetti i:nth-child(24){left:97%;animation-delay:.65s}
+@keyframes km-fall { to { transform: translateY(105vh) rotate(540deg); opacity: .2; } }
+.km-pop { animation: km-pop .6s cubic-bezier(.2, 1.6, .4, 1) both; }
+@keyframes km-pop { from { transform: scale(.3); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .km-confetti { display: none; } .km-pop { animation: none; } }

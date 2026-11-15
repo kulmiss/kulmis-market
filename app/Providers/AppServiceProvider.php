@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Badges\BadgeListener;
 use App\Events\CatalogChanged;
 use App\Events\CustomerRegistered;
 use App\Events\MembershipActivated;
@@ -71,6 +72,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Referral program.
         Event::listen(PaymentSucceeded::class, [ReferralListener::class, 'paid']);
+        Event::listen(PaymentSucceeded::class, [BadgeListener::class, 'paid']); // after commissions exist
         Event::listen(PaymentRefunded::class, [ReferralListener::class, 'refunded']);
         Event::listen(CustomerRegistered::class,
             fn (CustomerRegistered $e) => app(Attribution::class)->attachAtSignup($e->request, $e->user));
