@@ -77,6 +77,15 @@ return [
 
     'notify.payout_paid' => ['text', 'Hi {name}, we sent your cash-out of {amount}. Reference: {reference}', 'Message: cash-out paid', 'Messages'],
     'notify.payout_rejected' => ['text', 'Hi {name}, your cash-out of {amount} was not approved and is back in your wallet. {reason}', 'Message: cash-out rejected', 'Messages'],
+    'notify.security_new_sign_in' => ['text', 'Hi {name}, someone signed in to your {site} account on {device} ({when}). If this was you, you can ignore this. If not, change your password and sign out all devices: {secure_url}', 'Security: new sign-in', 'Messages'],
+    'notify.security_password_changed' => ['text', 'Hi {name}, your {site} password was changed ({when}) and other devices were signed out. Not you? Reset your password now and contact us: {secure_url}', 'Security: password changed', 'Messages'],
+    'notify.security_email_change_requested' => ['text', 'Hi {name}, someone asked to change the email on your {site} account to {new_email}. It only changes after the link sent to that address is opened. Not you? Change your password: {secure_url}', 'Security: email change requested (to old address)', 'Messages'],
+    'notify.security_email_changed' => ['text', 'Hi {name}, the email on your {site} account is now {new_email} ({when}). Not you? Contact us right away.', 'Security: email changed', 'Messages'],
+    'notify.security_payout_account_changed' => ['text', 'Hi {name}, your cash-out account was changed to {account} ({when}). For your safety, cash-outs to it are possible after {usable_at}. Not you? Change your password and contact us: {secure_url}', 'Security: payout account changed', 'Messages'],
+    'notify.security_two_factor_on' => ['text', 'Hi {name}, two-step sign-in is now ON for your {site} account ({when}).', 'Security: 2FA on', 'Messages'],
+    'notify.security_two_factor_off' => ['text', 'Hi {name}, two-step sign-in was turned OFF for your {site} account ({when}). Not you? Change your password now: {secure_url}', 'Security: 2FA off', 'Messages'],
+    'notify.security_locked' => ['text', 'Hi {name}, there were too many wrong passwords on your {site} account, so sign-in is paused for a few minutes. Not you? Nothing to do — but a stronger password helps: {secure_url}', 'Security: sign-in paused', 'Messages'],
+    'notify.security_signed_out_everywhere' => ['text', 'Hi {name}, your {site} account was signed out on all devices ({when}).', 'Security: signed out everywhere', 'Messages'],
 
     // Manual payment instructions
     'payments.bank_details' => ['text', "Commercial Bank of Ethiopia\nAccount name: Kulmis Market\nAccount number: 1000000000000", 'Bank transfer details', 'Payments'],

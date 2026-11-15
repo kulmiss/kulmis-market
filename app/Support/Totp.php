@@ -36,7 +36,7 @@ class Totp
         if (! preg_match('/^\d{6}$/', $code)) {
             return null;
         }
-        $current = intdiv($now ?? time(), 30);
+        $current = intdiv($now ?? now()->getTimestamp(), 30);
         for ($i = -$window; $i <= $window; $i++) {
             $step = $current + $i;
             if ($lastStep !== null && $step <= $lastStep) {

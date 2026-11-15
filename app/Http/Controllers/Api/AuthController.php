@@ -5,13 +5,15 @@ namespace App\Http\Controllers\Api;
 use App\Events\CustomerRegistered;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Security\Devices;
+use App\Security\LoginGuard;
+use App\Security\PasswordPolicy;
+use App\Security\TwoFactor;
 use App\Support\Activity;
 use App\Support\Phone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 /** Customer accounts (token auth for the API and the future Flutter app). */
@@ -26,7 +28,7 @@ class AuthController extends Controller
             'last_name' => ['required', 'string', 'max:80'],
             'phone' => ['required', fn ($a, $v, $fail) => Phone::isValid($v) ?: $fail('Enter a valid Ethiopian mobile number.'), Rule::unique('users', 'phone')],
             'email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')],
-            'password' => ['required', 'string', Password::min(8)->letters()->numbers()],
+            'password' => PasswordPolicy::rules(false, $request->only(['phone', 'email', 'first_name', 'last_name'])),
             'device_name' => ['nullable', 'string', 'max:60'],
             'referral_code' => ['nullable', 'string', 'max:16'],
         ]);
@@ -45,11 +47,43 @@ class AuthController extends Controller
         $user = User::query()->where('phone', Phone::normalize($login) ?? '__none__')
             ->orWhere('email', mb_strtolower($login))->first();
         // Staff use the admin login (with 2FA), never API tokens.
-        if (! $user || $user->isStaff() || ! $user->isActiveAccount() || ! Hash::check($data['password'], $user->password)) {
-            throw ValidationException::withMessages(['login' => 'Wrong phone/email or password.']);
+        $user = app(LoginGuard::class)->attempt($user, $data['password'], 'api', fn (User $u) => ! $u->isStaff());
+        if ($user->hasTwoFactor()) {
+            // Step 2 with the code: POST auth/two-factor {challenge, code}. Valid 10 minutes.
+            $challenge = encrypt(['id' => $user->id, 'exp' => now()->addMinutes(10)->getTimestamp(), 'device' => $data['device_name'] ?? 'api']);
+
+            return response()->json(['two_factor' => true, 'challenge' => $challenge]);
         }
 
-        return response()->json(['token' => $this->token($user, $data['device_name'] ?? 'api'), 'user' => self::present($user)]);
+        return $this->issue($user, $data['device_name'] ?? 'api');
+    }
+
+    public function twoFactor(Request $request, TwoFactor $twoFactor): JsonResponse
+    {
+        $data = $request->validate(['challenge' => ['required', 'string', 'max:2000'], 'code' => ['required', 'string', 'max:32']]);
+        try {
+            $c = (array) decrypt($data['challenge']);
+        } catch (\Throwable) {
+            $c = [];
+        }
+        $user = isset($c['id'], $c['exp']) && $c['exp'] > now()->getTimestamp() ? User::query()->find($c['id']) : null;
+        if (! $user || ! $user->hasTwoFactor() || ! $user->isActiveAccount() || $user->isStaff()) {
+            throw ValidationException::withMessages(['challenge' => 'Your sign-in expired. Please sign in again.']);
+        }
+        if (! $twoFactor->check($user, $data['code'])) {
+            Activity::log('security.two_factor_failed', $user, ['channel' => 'api'], null, $user->id);
+            throw ValidationException::withMessages(['code' => 'That code is not right.']);
+        }
+
+        return $this->issue($user, (string) ($c['device'] ?? 'api'));
+    }
+
+    private function issue(User $user, string $device): JsonResponse
+    {
+        Activity::log('customer.login', $user, ['channel' => 'api'], null, $user->id);
+        app(Devices::class)->newToken($user, $device);
+
+        return response()->json(['token' => $this->token($user, $device), 'user' => self::present($user)]);
     }
 
     public function logout(Request $request): JsonResponse
@@ -76,6 +110,8 @@ class AuthController extends Controller
             'is_member' => $user->isActiveMember(),
             'membership' => $m ? ['status' => $m->status, 'renews_at' => $m->current_period_end?->toIso8601String(),
                 'access_until' => $m->accessEndsAt()?->toIso8601String()] : null,
+            'pending_email' => $user->pending_email,
+            'two_factor' => $user->hasTwoFactor(),
         ];
     }
 

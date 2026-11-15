@@ -57,13 +57,13 @@ class MembershipTest extends TestCase
     {
         $this->postJson('/api/v1/auth/register', ['first_name' => 'Abebe', 'last_name' => 'Kebede', 'phone' => '0912345678', 'password' => 'short'])
             ->assertUnprocessable()->assertJsonValidationErrors('password');
-        $token = $this->postJson('/api/v1/auth/register', ['first_name' => 'Abebe', 'last_name' => 'Kebede', 'phone' => '0912345678', 'password' => 'buna2026x'])
+        $token = $this->postJson('/api/v1/auth/register', ['first_name' => 'Abebe', 'last_name' => 'Kebede', 'phone' => '0912345678', 'password' => 'buna-time-2026x'])
             ->assertCreated()->assertJsonPath('user.phone', '+251912345678')->assertJsonPath('user.is_member', false)->json('token');
         $this->withToken($token)->getJson('/api/v1/me')->assertOk()->assertJsonPath('user.first_name', 'Abebe');
 
-        $this->postJson('/api/v1/auth/register', ['first_name' => 'X', 'last_name' => 'Y', 'phone' => '+251912345678', 'password' => 'buna2026x'])
+        $this->postJson('/api/v1/auth/register', ['first_name' => 'X', 'last_name' => 'Y', 'phone' => '+251912345678', 'password' => 'buna-time-2026x'])
             ->assertJsonValidationErrors('phone');
-        $this->postJson('/api/v1/auth/login', ['login' => '0912 345 678', 'password' => 'buna2026x'])->assertOk()->assertJsonStructure(['token']);
+        $this->postJson('/api/v1/auth/login', ['login' => '0912 345 678', 'password' => 'buna-time-2026x'])->assertOk()->assertJsonStructure(['token']);
         $this->postJson('/api/v1/auth/login', ['login' => '0912345678', 'password' => 'wrong'])->assertUnprocessable();
     }
 

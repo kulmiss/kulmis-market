@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web\AccountController;
 use App\Http\Controllers\Web\AuthController;
+use App\Http\Controllers\Web\SecurityController;
 use App\Referral\Engagement;
 use App\Referral\ReferralCodes;
 use Illuminate\Http\Request;
@@ -18,7 +19,11 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
     Route::get('/forgot', [AuthController::class, 'showForgot'])->name('forgot');
+    Route::get('/login/two-factor', [AuthController::class, 'showTwoFactor']);
+    Route::post('/login/two-factor', [AuthController::class, 'twoFactor'])->middleware('throttle:10,1');
 });
+Route::get('/account/email/confirm/{token}', [SecurityController::class, 'confirmEmail'])
+    ->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:20,1')->name('account.email.confirm');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware('auth')->prefix('account')->name('account.')->group(function () {
@@ -27,6 +32,16 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
     Route::post('membership/proof', [AccountController::class, 'membershipProof'])->middleware(['feature:membership', 'feature:payments.manual'])->name('membership.proof');
     Route::post('cash-out', [AccountController::class, 'cashOut'])->middleware(['feature:wallet', 'feature:wallet.cashout', 'throttle:5,1'])->name('cashout');
     Route::post('referral-code', [AccountController::class, 'referralCode'])->middleware('feature:referral')->name('referral-code');
+
+    Route::get('security', [SecurityController::class, 'show'])->name('security');
+    Route::middleware('throttle:10,1')->group(function () {
+        Route::post('security/password', [SecurityController::class, 'password'])->name('security.password');
+        Route::post('security/email', [SecurityController::class, 'email'])->name('security.email');
+        Route::post('security/two-factor', [SecurityController::class, 'twoFactorBegin'])->name('security.2fa.begin');
+        Route::post('security/two-factor/confirm', [SecurityController::class, 'twoFactorConfirm'])->name('security.2fa.confirm');
+        Route::post('security/two-factor/disable', [SecurityController::class, 'twoFactorDisable'])->name('security.2fa.disable');
+        Route::post('security/sign-out-everywhere', [SecurityController::class, 'signOutEverywhere'])->name('security.signout');
+    });
 });
 Route::post('/checkout', [AccountController::class, 'checkout'])->middleware(['auth', 'feature:shop', 'throttle:10,1'])->name('checkout.member');
 

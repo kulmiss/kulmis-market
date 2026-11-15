@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Security\Devices;
+use App\Security\LoginGuard;
+use App\Security\Sessions;
+use App\Security\TwoFactor;
 use App\Support\Activity;
-use App\Support\Totp;
+use App\Support\Phone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -23,13 +26,11 @@ class AuthController extends Controller
         ]);
 
         $user = User::query()
-            ->where('email', $data['login'])
-            ->orWhere('phone', $data['login'])
+            ->where('email', mb_strtolower($data['login']))
+            ->orWhere('phone', Phone::normalize($data['login']) ?? $data['login'])
             ->first();
-
-        if (! $user || ! Hash::check($data['password'], $user->password) || ! $user->isStaff() || ! $user->isActiveAccount()) {
-            throw ValidationException::withMessages(['login' => 'These credentials do not match an admin account.']);
-        }
+        $user = app(LoginGuard::class)->attempt($user, $data['password'], 'admin', fn (User $u) => $u->isStaff(),
+            wrong: 'These credentials do not match an admin account.');
 
         if ($user->hasTwoFactor()) {
             $request->session()->put('admin.2fa.pending', $user->id);
@@ -49,26 +50,23 @@ class AuthController extends Controller
             throw ValidationException::withMessages(['code' => 'Your login session expired. Sign in again.']);
         }
 
-        if (! empty($data['recovery_code'])) {
-            $codes = $user->two_factor_recovery_codes ?? [];
-            $match = array_search(strtoupper(trim($data['recovery_code'])), $codes, true);
-            if ($match === false) {
-                throw ValidationException::withMessages(['recovery_code' => 'Invalid recovery code.']);
-            }
-            unset($codes[$match]);
-            $user->forceFill(['two_factor_recovery_codes' => array_values($codes)])->save();
-            Activity::log('admin.recovery_code_used', $user, ['remaining' => count($codes)], null, $user->id);
-        } else {
-            $step = Totp::verify((string) $user->two_factor_secret, (string) ($data['code'] ?? ''), $user->two_factor_last_step);
-            if ($step === null) {
-                throw ValidationException::withMessages(['code' => 'Invalid code.']);
-            }
-            $user->forceFill(['two_factor_last_step' => $step])->save();
+        $recovery = ! empty($data['recovery_code']);
+        if (! app(TwoFactor::class)->check($user, (string) ($recovery ? $data['recovery_code'] : ($data['code'] ?? '')))) {
+            Activity::log('security.two_factor_failed', $user, ['channel' => 'admin'], null, $user->id);
+            throw ValidationException::withMessages([$recovery ? 'recovery_code' : 'code' => $recovery ? 'Invalid recovery code.' : 'Invalid code.']);
         }
 
         $request->session()->forget('admin.2fa.pending');
 
         return $this->completeLogin($request, $user);
+    }
+
+    /** Sign out every other browser/device of this admin. */
+    public function signOutOthers(Request $request, Sessions $sessions): JsonResponse
+    {
+        $count = $sessions->signOutOthers($request->user(), $request->session()->getId());
+
+        return response()->json(['ok' => true, 'ended' => $count]);
     }
 
     public function logout(Request $request): JsonResponse
@@ -102,7 +100,10 @@ class AuthController extends Controller
     {
         Auth::guard('web')->login($user);
         $request->session()->regenerate();
+        $request->session()->put('admin.signed_in_at', now()->getTimestamp());
+        $request->session()->put('admin.last_seen_at', now()->getTimestamp());
         Activity::log('admin.login', $user, [], null, $user->id);
+        app(Devices::class)->signedIn($user, $request, 'admin');
 
         return response()->json(['ok' => true, 'two_factor_setup_required' => config('permissions.require_2fa') && ! $user->hasTwoFactor()]);
     }

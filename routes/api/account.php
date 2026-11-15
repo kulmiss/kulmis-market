@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('auth/register', [AuthController::class, 'register'])->middleware('throttle:10,1')->name('auth.register');
 Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:login')->name('auth.login');
+Route::post('auth/two-factor', [AuthController::class, 'twoFactor'])->middleware('throttle:10,1')->name('auth.two-factor');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
@@ -44,8 +45,12 @@ Route::post('auth/forgot', [AccountController::class, 'forgot'])->middleware('th
 Route::post('auth/reset', [AccountController::class, 'reset'])->middleware('throttle:10,10')->name('auth.reset');
 
 Route::middleware('auth:sanctum')->prefix('me')->name('me.')->group(function () {
-    Route::put('/', [AccountController::class, 'update'])->name('update');
-    Route::put('password', [AccountController::class, 'password'])->name('password');
+    Route::put('/', [AccountController::class, 'update'])->middleware('throttle:10,1')->name('update');
+    Route::put('password', [AccountController::class, 'password'])->middleware('throttle:10,1')->name('password');
+    Route::post('sign-out-all', [AccountController::class, 'signOutAll'])->name('sign-out-all');
+    Route::post('two-factor', [AccountController::class, 'twoFactorSetup'])->middleware('throttle:10,1')->name('2fa.setup');
+    Route::post('two-factor/confirm', [AccountController::class, 'twoFactorConfirm'])->middleware('throttle:10,1')->name('2fa.confirm');
+    Route::delete('two-factor', [AccountController::class, 'twoFactorDisable'])->middleware('throttle:10,1')->name('2fa.disable');
     Route::get('orders', [AccountController::class, 'orders'])->name('orders');
     Route::get('orders/{number}', [AccountController::class, 'order'])->name('orders.show');
 });

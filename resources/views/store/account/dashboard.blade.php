@@ -8,7 +8,7 @@
     <div class="flex flex-wrap items-end justify-between gap-3">
         <div><h1 class="text-4xl">Selam, {{ $user->first_name }}</h1>
             <p class="muted mt-1">@if ($isMember) Member · renews {{ $d($membership?->current_period_end) }}@if ($membership?->status === 'grace') · <b class="text-clay-600">grace period until {{ $d($membership->grace_ends_at) }}</b>@endif @else Not a member yet @endif</p></div>
-        <form method="post" action="{{ url('/logout') }}">@csrf<button class="btn-ghost">Sign out</button></form>
+        <div class="flex gap-2"><a class="btn-ghost" href="{{ url('/account/security') }}">Security</a><form method="post" action="{{ url('/logout') }}">@csrf<button class="btn-ghost">Sign out</button></form></div>
     </div>
     @if ($errors->any())<div class="mt-4 rounded-xl bg-clay-500/10 p-3 text-sm text-clay-700" role="alert">{{ $errors->first() }}</div>@endif
 

@@ -110,8 +110,8 @@ class StorefrontTest extends TestCase
         app(ReferralCodes::class)->assign($ref);
 
         $this->get('/register')->assertOk();
-        $this->post('/register', ['first_name' => 'Meron', 'last_name' => 'Alemu', 'phone' => '0911456789', 'password' => 'buna2026x',
-            'password_confirmation' => 'buna2026x', 'referral_code' => $ref->fresh()->referral_code, 'terms' => '1'])->assertRedirect('/account?welcome=1');
+        $this->post('/register', ['first_name' => 'Meron', 'last_name' => 'Alemu', 'phone' => '0911456789', 'password' => 'buna-time-2026x',
+            'password_confirmation' => 'buna-time-2026x', 'referral_code' => $ref->fresh()->referral_code, 'terms' => '1'])->assertRedirect('/account?welcome=1');
         $user = User::query()->where('phone', '+251911456789')->firstOrFail();
         $this->assertSame($ref->id, $user->referrer_id);
 
@@ -120,7 +120,7 @@ class StorefrontTest extends TestCase
 
         $this->post('/logout')->assertRedirect('/');
         $this->post('/login', ['login' => '0911456789', 'password' => 'wrong'])->assertSessionHasErrors('login');
-        $this->post('/login', ['login' => '0911456789', 'password' => 'buna2026x'])->assertRedirect('/account');
+        $this->post('/login', ['login' => '0911456789', 'password' => 'buna-time-2026x'])->assertRedirect('/account');
     }
 
     public function test_account_requires_login(): void

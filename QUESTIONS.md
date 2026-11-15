@@ -33,10 +33,13 @@ change any of them.
 | 24 | Security headers | Strict CSP (one hashed inline script, nothing third-party), plus a meta CSP so cached pages keep it. `form-action` allows `checkout.chapa.co` for the payment redirect. | Decided (recommended) |
 | 25 | Backups | Nightly encrypted backup (libsodium) of the DB, proofs and uploads, kept 14 days on the server. **You still need to copy them off the server.** | Decided (recommended) |
 | 26 | Database name | `kulmis-market` (you asked, 15 Nov). | Decided (you) |
-| 27 | Admin password length | Minimum 5 characters (you asked, 15 Nov), set by `ADMIN_PASSWORD_MIN` in `.env`. 2FA is still required for every admin. Note: the ASVS L2 level in your brief asks for 12. | Decided (you) |
+| 27 | Password length | Staff ≥ 12, customers ≥ 10, plus a common-password list (your security review asked for strong rules, which replaces the 5-character minimum from earlier). Set by `ADMIN_PASSWORD_MIN` / `CUSTOMER_PASSWORD_MIN`; `km:doctor` turns red if staff is below 12. | Decided (review) |
 | 28 | Product reviews switch | Removed. Reviews were never built (the brief said "if added"), so the switch did nothing and only confused the overview. | Decided (review) |
 | 29 | What happens to background jobs when a feature is off? | They pause. Membership off: nothing expires, no reminders, members stay in the signals channel. Telegram bot off: nobody is marked removed (they couldn't actually be removed). Turning it back on catches up. | Decided (review) |
 | 30 | Paying an order while the shop is switched off | Not possible: the pay/track pages and payment API are hidden too. Unpaid orders are auto-cancelled as usual. | Decided (review) |
+| 31 | Customer 2FA | Optional, offered on Account → Security with a nudge when they have wallet earnings. Required for staff. | Decided (review) |
+| 32 | "New sign-in" detection without tracking | A random cookie set only after sign-in (hash stored), not IP or fingerprinting, so guests stay untracked. | Decided (review) |
+| 33 | Security notices vs notification switches | Security notices always go out (email/SMS/Telegram), even when order notifications are switched off. | Decided (review) |
 
 ## Still open: needs you
 | # | What | Why |

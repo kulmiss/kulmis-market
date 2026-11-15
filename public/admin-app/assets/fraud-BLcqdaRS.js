@@ -1,1 +1,0 @@
-import{r as e}from"./money-pages-6ac8A-gc.js";var t=e;export{t as component};

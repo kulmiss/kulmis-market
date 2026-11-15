@@ -215,7 +215,7 @@ class WalletCashOutTest extends ReferralTestCase
         $this->postJson('/api/v1/cart/items', ['product_id' => $p->id], ['X-Cart-Token' => $token]);
 
         $res = $this->withHeaders(['X-Cart-Token' => $token])->postJson('/api/v1/auth/register', [
-            'first_name' => 'Fake', 'last_name' => 'Friend', 'phone' => '0911777888', 'password' => 'abc12345', 'referral_code' => $ref->referral_code,
+            'first_name' => 'Fake', 'last_name' => 'Friend', 'phone' => '0911777888', 'password' => 'abc-12345-xyz-go', 'referral_code' => $ref->referral_code,
         ])->assertCreated();
         $this->assertNull(User::query()->findOrFail($res->json('user.id'))->referrer_id);
         $this->assertTrue(FraudFlag::query()->where('user_id', $ref->id)->where('type', 'self_referral_device')->exists());
@@ -227,7 +227,7 @@ class WalletCashOutTest extends ReferralTestCase
         $ref = $this->member(null, 'Abdi');
         foreach (range(1, 3) as $i) {
             $this->postJson('/api/v1/auth/register', ['first_name' => "N$i", 'last_name' => 'X', 'phone' => '091100000'.$i,
-                'password' => 'abc12345', 'referral_code' => $ref->referral_code])->assertCreated();
+                'password' => 'abc-12345-xyz-go', 'referral_code' => $ref->referral_code])->assertCreated();
         }
         $this->assertTrue(FraudFlag::query()->where('user_id', $ref->id)->where('type', 'daily_limit')->exists());
         $this->assertSame(3, $ref->referrals()->count(), 'still linked, but held for review');

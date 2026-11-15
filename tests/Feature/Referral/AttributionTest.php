@@ -11,7 +11,7 @@ class AttributionTest extends ReferralTestCase
     private function register(array $extra = [], array $cookies = []): User
     {
         $res = $this->withCredentials()->withCookies($cookies)->postJson('/api/v1/auth/register', array_merge([
-            'first_name' => 'New', 'last_name' => 'Person', 'phone' => '09'.random_int(10_000_000, 99_999_999), 'password' => 'abc12345',
+            'first_name' => 'New', 'last_name' => 'Person', 'phone' => '09'.random_int(10_000_000, 99_999_999), 'password' => 'abc-12345-xyz-go',
         ], $extra))->assertCreated();
 
         return User::query()->findOrFail($res->json('user.id'));
@@ -56,7 +56,7 @@ class AttributionTest extends ReferralTestCase
         $u = $this->register(['referral_code' => strtolower((string) $a->referral_code)], ['km_ref' => (string) $b->referral_code]);
         $this->assertSame($a->id, $u->referrer_id);
 
-        $this->postJson('/api/v1/auth/register', ['first_name' => 'X', 'last_name' => 'Y', 'phone' => '0911999888', 'password' => 'abc12345',
+        $this->postJson('/api/v1/auth/register', ['first_name' => 'X', 'last_name' => 'Y', 'phone' => '0911999888', 'password' => 'abc-12345-xyz-go',
             'referral_code' => 'DOESNOTEXIST'])->assertUnprocessable()->assertJsonValidationErrors('referral_code');
     }
 

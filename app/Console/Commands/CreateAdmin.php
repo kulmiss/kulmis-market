@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use App\Security\PasswordPolicy;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
 
@@ -20,10 +21,10 @@ class CreateAdmin extends Command
 
             return self::FAILURE;
         }
-        $min = max(1, (int) config('shop.admin_password_min'));
-        $password = (string) $this->secret("Password (min {$min} characters)");
+        $min = PasswordPolicy::minLength(true);
+        $password = (string) $this->secret("Password (min {$min} characters, not a common one)");
         $v = Validator::make(['email' => $this->argument('email'), 'password' => $password], [
-            'email' => ['required', 'email'], 'password' => ['required', 'min:'.$min],
+            'email' => ['required', 'email'], 'password' => PasswordPolicy::rules(true, ['email' => (string) $this->argument('email')]),
         ]);
         if ($v->fails()) {
             $this->error($v->errors()->first());

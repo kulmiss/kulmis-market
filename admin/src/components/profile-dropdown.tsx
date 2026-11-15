@@ -1,5 +1,7 @@
 import { Link } from '@tanstack/react-router'
-import { LogOut, Palette } from 'lucide-react'
+import { LogOut, MonitorX, Palette } from 'lucide-react'
+import { toast } from 'sonner'
+import { api, errorMessage } from '@/lib/api'
 import useDialogState from '@/hooks/use-dialog-state'
 import { useAuthStore } from '@/stores/auth-store'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -31,6 +33,15 @@ export function ProfileDropdown() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild><Link to='/settings'><Palette /> Appearance</Link></DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() =>
+              api.post<{ ended: number }>('/auth/sign-out-others')
+                .then((r) => toast.success(`Signed out ${r.data.ended} other session(s).`))
+                .catch((e) => toast.error(errorMessage(e)))
+            }
+          >
+            <MonitorX /> Sign out other devices
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant='destructive' onClick={() => setOpen(true)}><LogOut /> Sign out</DropdownMenuItem>
         </DropdownMenuContent>

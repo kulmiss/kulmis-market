@@ -31,6 +31,11 @@ use Laravel\Sanctum\HasApiTokens;
  * @property ?Carbon $referral_code_changed_at
  * @property ?int $referrer_id
  * @property ?Carbon $referred_at
+ * @property int $failed_logins
+ * @property ?Carbon $locked_until
+ * @property ?Carbon $password_changed_at
+ * @property ?string $pending_email
+ * @property ?Carbon $pending_email_expires_at
  * @property-read string $name
  */
 class User extends Authenticatable
@@ -47,7 +52,7 @@ class User extends Authenticatable
 
     protected $fillable = ['first_name', 'last_name', 'phone', 'email', 'password'];
 
-    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'];
+    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'pending_email_token'];
 
     protected function casts(): array
     {
@@ -61,6 +66,10 @@ class User extends Authenticatable
             'telegram_user_id' => 'integer',
             'referral_code_changed_at' => 'datetime',
             'referred_at' => 'datetime',
+            'failed_logins' => 'integer',
+            'locked_until' => 'datetime',
+            'password_changed_at' => 'datetime',
+            'pending_email_expires_at' => 'datetime',
         ];
     }
 

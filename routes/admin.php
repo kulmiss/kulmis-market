@@ -12,8 +12,9 @@ use Illuminate\Support\Facades\Route;
 Route::post('auth/login', [Admin\AuthController::class, 'login'])->middleware('throttle:login');
 Route::post('auth/two-factor', [Admin\AuthController::class, 'twoFactor'])->middleware('throttle:two-factor');
 
-Route::middleware(['auth', 'staff'])->group(function () {
+Route::middleware(['auth', 'staff', 'admin.timeout'])->group(function () {
     Route::post('auth/logout', [Admin\AuthController::class, 'logout']);
+    Route::post('auth/sign-out-others', [Admin\AuthController::class, 'signOutOthers']);
     Route::get('auth/me', [Admin\AuthController::class, 'me']);
     Route::post('two-factor/setup', [Admin\TwoFactorController::class, 'setup']);
     Route::post('two-factor/confirm', [Admin\TwoFactorController::class, 'confirm']);

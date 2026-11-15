@@ -4,71 +4,36 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Support\Activity;
-use App\Support\Totp;
-use chillerlan\QRCode\QRCode;
-use chillerlan\QRCode\QROptions;
+use App\Security\TwoFactor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 
+/** Admin 2FA (required for staff; see EnsureTwoFactor). */
 class TwoFactorController extends Controller
 {
+    public function __construct(private readonly TwoFactor $twoFactor) {}
+
     /** Start (or restart) setup: returns the secret and a QR code to scan. */
     public function setup(Request $request): JsonResponse
     {
-        /** @var User $user */
-        $user = $request->user();
-        if ($user->hasTwoFactor()) {
-            throw ValidationException::withMessages(['two_factor' => 'Two-factor authentication is already on.']);
-        }
-        $secret = Totp::generateSecret();
-        $user->forceFill(['two_factor_secret' => $secret, 'two_factor_confirmed_at' => null])->save();
-        $uri = Totp::uri($secret, $user->email ?? (string) $user->phone, config('app.name'));
-
-        return response()->json([
-            'secret' => $secret,
-            'otpauth_uri' => $uri,
-            'qr_svg' => (new QRCode(new QROptions(['outputType' => 'svg', 'outputBase64' => false, 'addQuietzone' => true])))->render($uri),
-        ]);
+        return response()->json($this->twoFactor->begin($request->user()));
     }
 
     /** Confirm with a code from the app; returns one-time recovery codes. */
     public function confirm(Request $request): JsonResponse
     {
         $data = $request->validate(['code' => ['required', 'string', 'max:16']]);
-        /** @var User $user */
-        $user = $request->user();
-        if (! $user->two_factor_secret || $user->hasTwoFactor()) {
-            throw ValidationException::withMessages(['code' => 'Start the setup first.']);
-        }
-        $step = Totp::verify($user->two_factor_secret, $data['code']);
-        if ($step === null) {
-            throw ValidationException::withMessages(['code' => 'Invalid code.']);
-        }
-        $codes = collect(range(1, 8))->map(fn () => strtoupper(Str::random(5).'-'.Str::random(5)))->all();
-        $user->forceFill([
-            'two_factor_confirmed_at' => now(),
-            'two_factor_last_step' => $step,
-            'two_factor_recovery_codes' => $codes,
-        ])->save();
-        Activity::log('admin.2fa_enabled', $user);
 
-        return response()->json(['ok' => true, 'recovery_codes' => $codes]);
+        return response()->json(['ok' => true, 'recovery_codes' => $this->twoFactor->confirm($request->user(), $data['code'])]);
     }
 
+    /** Reset (e.g. new phone): needs the password and a current or recovery code. Staff must set it up again right after. */
     public function disable(Request $request): JsonResponse
     {
-        $data = $request->validate(['password' => ['required', 'string']]);
+        $data = $request->validate(['password' => ['required', 'string'], 'code' => ['required', 'string', 'max:32']]);
         /** @var User $user */
         $user = $request->user();
-        if (! Hash::check($data['password'], $user->password)) {
-            throw ValidationException::withMessages(['password' => 'Wrong password.']);
-        }
-        $user->forceFill(['two_factor_secret' => null, 'two_factor_confirmed_at' => null, 'two_factor_recovery_codes' => null, 'two_factor_last_step' => null])->save();
-        Activity::log('admin.2fa_disabled', $user);
+        $this->twoFactor->disable($user, $data['password'], $data['code']);
 
         return response()->json(['ok' => true]);
     }

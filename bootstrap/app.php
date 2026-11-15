@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AdminSessionTimeout;
 use App\Http\Middleware\CachePage;
 use App\Http\Middleware\CaptureReferral;
 use App\Http\Middleware\EnsureFeature;
@@ -46,6 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'feature' => EnsureFeature::class,
             'staff' => EnsureStaff::class,
             'admin.2fa' => EnsureTwoFactor::class,
+            'admin.timeout' => AdminSessionTimeout::class,
         ]);
         $middleware->throttleApi();
         // Essential cookies only (cart token, referral code) — also readable by the API.

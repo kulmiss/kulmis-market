@@ -20,11 +20,14 @@ class AccountApiTest extends TestCase
         $token = $u->createToken('a')->plainTextToken;
         $other = $u->createToken('b')->plainTextToken;
 
+        $before = $u->email;
+        // A new email waits for the link sent to it.
         $this->withToken($token)->putJson('/api/v1/me', ['first_name' => 'Meron', 'last_name' => 'Alemu', 'email' => 'M@Example.com'])
-            ->assertOk()->assertJsonPath('user.email', 'm@example.com');
-        $this->withToken($token)->putJson('/api/v1/me/password', ['current_password' => 'nope', 'password' => 'newpass123'])->assertUnprocessable();
-        $this->withToken($token)->putJson('/api/v1/me/password', ['current_password' => 'oldpass123', 'password' => 'newpass123'])->assertOk();
-        $this->assertTrue(Hash::check('newpass123', $u->fresh()->password));
+            ->assertOk()->assertJsonPath('user.email', $before)->assertJsonPath('user.pending_email', 'm@example.com')
+            ->assertJsonPath('email_confirmation_sent', true);
+        $this->withToken($token)->putJson('/api/v1/me/password', ['current_password' => 'nope', 'password' => 'brand-new-pass-123'])->assertUnprocessable();
+        $this->withToken($token)->putJson('/api/v1/me/password', ['current_password' => 'oldpass123', 'password' => 'brand-new-pass-123'])->assertOk();
+        $this->assertTrue(Hash::check('brand-new-pass-123', $u->fresh()->password));
         $this->assertSame(1, $u->tokens()->count(), 'other sessions signed out');
     }
 
@@ -44,10 +47,10 @@ class AccountApiTest extends TestCase
         });
         Bus::assertDispatchedTimes(SendCustomerMessage::class, 1);
 
-        $this->postJson('/api/v1/auth/reset', ['phone' => '0911000555', 'code' => '000000', 'password' => 'fresh1234'])->assertUnprocessable();
-        $this->postJson('/api/v1/auth/reset', ['phone' => '0911000555', 'code' => $code, 'password' => 'fresh1234'])->assertOk();
-        $this->assertTrue(Hash::check('fresh1234', $u->fresh()->password));
-        $this->postJson('/api/v1/auth/reset', ['phone' => '0911000555', 'code' => $code, 'password' => 'again1234'])->assertUnprocessable();
+        $this->postJson('/api/v1/auth/reset', ['phone' => '0911000555', 'code' => '000000', 'password' => 'fresh-start-1234'])->assertUnprocessable();
+        $this->postJson('/api/v1/auth/reset', ['phone' => '0911000555', 'code' => $code, 'password' => 'fresh-start-1234'])->assertOk();
+        $this->assertTrue(Hash::check('fresh-start-1234', $u->fresh()->password));
+        $this->postJson('/api/v1/auth/reset', ['phone' => '0911000555', 'code' => $code, 'password' => 'again-and-again-1234'])->assertUnprocessable();
     }
 
     public function test_reset_code_expires_and_locks_after_5_attempts(): void
@@ -56,7 +59,7 @@ class AccountApiTest extends TestCase
         User::factory()->create(['phone' => '+251911000556']);
         $this->postJson('/api/v1/auth/forgot', ['phone' => '0911000556']);
         foreach (range(1, 5) as $_) {
-            $this->postJson('/api/v1/auth/reset', ['phone' => '0911000556', 'code' => '111111', 'password' => 'fresh1234']);
+            $this->postJson('/api/v1/auth/reset', ['phone' => '0911000556', 'code' => '111111', 'password' => 'fresh-start-1234']);
         }
         $this->assertSame(5, (int) \DB::table('password_reset_codes')->value('attempts'));
     }
