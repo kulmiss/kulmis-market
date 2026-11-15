@@ -3,7 +3,7 @@
     $s = fn ($k) => \App\Support\Settings::int($k);
 @endphp
 @section('content')
-<section class="bg-gradient-to-b from-sand-100 to-sand-50 dark:from-coffee-800 dark:to-coffee-900">
+<section class="bg-gradient-to-b from-mist-100 to-mist-50 dark:from-ink-800 dark:to-ink-900">
     <div class="container-km grid items-center gap-10 py-14 md:grid-cols-2 md:py-20">
         <div>
             <p class="badge mb-4">Handmade in Ethiopia</p>
@@ -39,7 +39,7 @@
 
 @if ($featured->count() > 1 || $latest->isNotEmpty())
 <section class="container-km mt-12">
-    <div class="mb-5 flex items-end justify-between"><h2 class="text-3xl">New from the workshop</h2><a href="{{ url('/shop') }}" class="text-sm font-semibold text-clay-600">See all →</a></div>
+    <div class="mb-5 flex items-end justify-between"><h2 class="text-3xl">New from the workshop</h2><a href="{{ url('/shop') }}" class="text-sm font-semibold text-brand-600">See all →</a></div>
     <div class="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4">
         @foreach ($latest as $p)@include('store.partials.product-card', ['p' => $p])@endforeach
     </div>
@@ -48,13 +48,13 @@
 
 @if ($membersOnly)
 <section class="container-km mt-16">
-    <div class="grid items-center gap-8 rounded-[2rem] bg-coffee-900 p-6 text-sand-100 md:grid-cols-2 md:p-10">
+    <div class="grid items-center gap-8 rounded-[2rem] bg-brand-700 p-6 text-white md:grid-cols-2 dark:bg-ink-800 md:p-10">
         <div class="aspect-square overflow-hidden rounded-2xl">@include('store.partials.picture', ['image' => $membersOnly->images->first()])</div>
         <div>
-            <p class="badge-gold">Members-only product of the month</p>
+            <p class="badge bg-white/15 text-white dark:bg-white/10">Members-only product of the month</p>
             <h2 class="mt-3 text-3xl">{{ $membersOnly->name }}</h2>
-            <p class="mt-3 text-sand-200">{{ $membersOnly->short_description }}</p>
-            <a href="{{ url('/shop/'.$membersOnly->slug) }}" class="btn-primary mt-6">See it</a>
+            <p class="mt-3 text-white/85">{{ $membersOnly->short_description }}</p>
+            <a href="{{ url('/shop/'.$membersOnly->slug) }}" class="btn mt-6 bg-white text-brand-700 hover:bg-mist-100">See it</a>
         </div>
     </div>
 </section>
@@ -62,10 +62,10 @@
 
 @feature('membership')
 <section class="container-km mt-16 grid gap-4 md:grid-cols-4">
-    <div class="card"><p class="text-3xl font-semibold text-clay-600">{{ $s('pricing.member_discount_bps') / 100 }}%</p><p class="muted">off every product for members</p></div>
-    @feature('shop.free_shipping')<div class="card"><p class="text-3xl font-semibold text-clay-600">Free</p><p class="muted">shipping over {{ \App\Support\Money::format($s('shipping.member_free_over')) }}</p></div>@endfeature
-    @feature('shop.early_access')<div class="card"><p class="text-3xl font-semibold text-clay-600">{{ $s('catalog.early_access_hours') }} h</p><p class="muted">early access to new pieces</p></div>@endfeature
-    @feature('signals')<div class="card"><p class="text-3xl font-semibold text-clay-600">Included</p><p class="muted">trading signals for members</p></div>@endfeature
+    <div class="card"><p class="text-3xl font-semibold text-brand-600">{{ $s('pricing.member_discount_bps') / 100 }}%</p><p class="muted">off every product for members</p></div>
+    @feature('shop.free_shipping')<div class="card"><p class="text-3xl font-semibold text-brand-600">Free</p><p class="muted">shipping over {{ \App\Support\Money::format($s('shipping.member_free_over')) }}</p></div>@endfeature
+    @feature('shop.early_access')<div class="card"><p class="text-3xl font-semibold text-brand-600">{{ $s('catalog.early_access_hours') }} h</p><p class="muted">early access to new pieces</p></div>@endfeature
+    @feature('signals')<div class="card"><p class="text-3xl font-semibold text-brand-600">Included</p><p class="muted">trading signals for members</p></div>@endfeature
 </section>
 <div class="container-km mt-6 text-center"><a href="{{ url('/membership') }}" class="btn-dark">See membership — {{ \App\Support\Money::format($s('membership.price')) }}/month</a></div>
 @endfeature

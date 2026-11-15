@@ -34,6 +34,11 @@ class BrandTest extends TestCase
         $home->assertSee(self::SMILE, false)->assertSee('apple-touch-icon.png', false)->assertSee('site.webmanifest', false)
             ->assertSee('og-default.png', false)->assertDontSee('M8 20c4-8 12-8 16 0', false);
         $this->get('/no-such-page')->assertNotFound()->assertSee(self::SMILE, false);
+        $home->assertSee('<meta name="theme-color" content="#1f8a4c">', false);
+        $css = (string) file_get_contents(resource_path('css/app.css'));
+        $this->assertStringContainsString('--color-brand-500: #1f8a4c;', $css, 'the shop uses the logo green');
+        $this->assertStringContainsString('--color-mist-50: #ffffff;', $css, 'and a white background');
+        $this->assertStringNotContainsString('#b5532b', $css, 'no brown clay colour left');
     }
 
     public function test_icon_files_and_social_preview(): void

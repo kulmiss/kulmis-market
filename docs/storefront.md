@@ -89,6 +89,18 @@ Lighthouse (desktop, as in CI): 100 / 98–100 / 100 / 100 on all key pages
 (best practices up from 96). Phone through nginx with the page cache:
 LCP 1.2–1.4 s. Cached pages answer in < 1 ms; uncached in ~30 ms.
 
+## Colours
+White and green, set once in `resources/css/app.css` (`@theme`):
+- `brand-500/600/700`: the logo green `#1f8a4c` and two darker shades.
+  Buttons use `brand-600` so white text passes WCAG AA (5.8:1).
+- `mist-50…300`: white and very light greens for backgrounds and borders.
+- `ink-700…950`: dark green-grey text, and the dark-mode background.
+- `gold-500`: small accents only.
+
+In dark mode, green text switches to a lighter green so it stays readable.
+Emails, PDF receipts, the social preview (`resources/brand/og-default.html`)
+and the browser theme colour use the same palette.
+
 ## Logo and icons
 Logo A, the "smiling mesob" (chosen from [three options](logo-options.png)), in
 the member-area green (`#1f8a4c`, the default of Settings → Appearance →

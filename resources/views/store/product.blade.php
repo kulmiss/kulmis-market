@@ -22,7 +22,7 @@
 @section('content')
 <div class="container-km grid gap-10 py-10 md:grid-cols-2">
     <div>
-        <div class="aspect-square overflow-hidden rounded-[1.75rem] bg-sand-100 dark:bg-coffee-800" data-zoom>
+        <div class="aspect-square overflow-hidden rounded-[1.75rem] bg-mist-100 dark:bg-ink-800" data-zoom>
             @include('store.partials.picture', ['image' => $img, 'eager' => true, 'sizes' => '(min-width: 768px) 50vw, 100vw', 'class' => 'h-full w-full object-cover transition-transform duration-200'])
         </div>
         @if ($product->images->count() > 1)
@@ -36,7 +36,7 @@
         @endif
     </div>
     <div>
-        @if ($product->category)<a href="{{ url('/c/'.$product->category->slug) }}" class="text-sm font-semibold text-clay-600">{{ $product->category->name }}</a>@endif
+        @if ($product->category)<a href="{{ url('/c/'.$product->category->slug) }}" class="text-sm font-semibold text-brand-600">{{ $product->category->name }}</a>@endif
         <h1 class="mt-1 text-4xl">{{ $product->name }}</h1>
         <div class="mt-4 text-xl" data-price>@include('store.partials.price', ['price' => $product->price])</div>
         <div class="mt-3 flex flex-wrap gap-2">
@@ -75,7 +75,7 @@
         @feature('membership')
         <div class="card mt-6 text-sm">
             <p class="font-semibold">Members pay {{ \App\Support\Money::format($memberPrice) }} for this</p>
-            <p class="muted mt-1">Plus free shipping over {{ \App\Support\Money::format(\App\Support\Settings::int('shipping.member_free_over')) }}, early access and signals. <a class="text-clay-600 underline" href="{{ url('/membership') }}">Join &amp; save</a></p>
+            <p class="muted mt-1">Plus free shipping over {{ \App\Support\Money::format(\App\Support\Settings::int('shipping.member_free_over')) }}, early access and signals. <a class="text-brand-600 underline" href="{{ url('/membership') }}">Join &amp; save</a></p>
         </div>
         @endfeature
 

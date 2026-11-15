@@ -31,7 +31,7 @@
     <section class="card mt-6" id="two-factor">
         <h2 class="text-2xl">Two-step sign-in</h2>
         @if ($recoveryCodes)
-            <div class="mt-3 rounded-xl bg-sand-100 p-4 dark:bg-coffee-900">
+            <div class="mt-3 rounded-xl bg-mist-100 p-4 dark:bg-ink-900">
                 <p class="font-semibold">Save these recovery codes now</p>
                 <p class="muted text-sm">Each works once if you lose your phone. We won't show them again.</p>
                 <pre class="mt-2 font-mono text-sm leading-7">{{ implode("\n", $recoveryCodes) }}</pre>
@@ -66,9 +66,9 @@
 
     <section class="card mt-6" id="devices">
         <h2 class="text-2xl">Where you're signed in</h2>
-        <ul class="mt-3 divide-y divide-sand-200 text-sm dark:divide-coffee-800">
+        <ul class="mt-3 divide-y divide-mist-200 text-sm dark:divide-ink-800">
             @forelse ($sessions as $s)
-                <li class="flex justify-between gap-3 py-2"><span>{{ $s['label'] }} @if ($s['current'])<b class="text-clay-600">(this device)</b>@endif</span><span class="muted">{{ $d($s['last_active']) }}</span></li>
+                <li class="flex justify-between gap-3 py-2"><span>{{ $s['label'] }} @if ($s['current'])<b class="text-brand-600">(this device)</b>@endif</span><span class="muted">{{ $d($s['last_active']) }}</span></li>
             @empty
                 <li class="py-2 muted">Only this device.</li>
             @endforelse

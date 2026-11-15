@@ -10,13 +10,13 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     @vite('resources/css/app.css')
 </head>
-<body class="min-h-svh bg-sand-50 text-coffee-900 dark:bg-coffee-950 dark:text-sand-50">
+<body class="min-h-svh bg-mist-50 text-ink-900 dark:bg-ink-950 dark:text-mist-50">
 <main class="container-km grid min-h-svh max-w-xl place-content-center py-16 text-center">
     <a href="/" class="mx-auto mb-8 inline-flex items-center gap-2 font-serif text-xl" aria-label="{{ config('app.name') }} home">
         @include('partials.logo-mark', ['size' => 32])
         {{ config('app.name') }}
     </a>
-    <p class="text-sm font-semibold text-clay-600">@yield('code')</p>
+    <p class="text-sm font-semibold text-brand-600">@yield('code')</p>
     <h1 class="mt-2 text-4xl">@yield('title')</h1>
     <p class="muted mt-3">@yield('message')</p>
     <div class="mt-8 flex flex-wrap justify-center gap-3">

@@ -41,7 +41,7 @@ const say = (el, text, ok = false) => {
     if (!el) return;
     el.textContent = text;
     el.classList.toggle('text-leaf-600', ok);
-    el.classList.toggle('text-clay-600', !ok);
+    el.classList.toggle('text-brand-600', !ok);
 };
 
 const formData = (form) => Object.fromEntries(new FormData(form).entries());
@@ -111,8 +111,8 @@ function totalsHtml(q) {
     const row = (l, v, cls = '') => `<div class="flex justify-between ${cls}"><span>${l}</span><span>${v}</span></div>`;
     return [
         row('Subtotal', etb(q.list_subtotal)),
-        q.member_discount ? row('Member discount', '−' + etb(q.member_discount), 'text-clay-600') : '',
-        q.coupon_discount ? row(`Coupon ${esc(q.coupon)}`, '−' + etb(q.coupon_discount), 'text-clay-600') : '',
+        q.member_discount ? row('Member discount', '−' + etb(q.member_discount), 'text-brand-600') : '',
+        q.coupon_discount ? row(`Coupon ${esc(q.coupon)}`, '−' + etb(q.coupon_discount), 'text-brand-600') : '',
         q.shipping ? row('Shipping', q.shipping_discount ? 'Free' : etb(q.shipping_payable)) : row('Shipping', 'at checkout'),
         row('Total', etb(q.total), 'mt-1 text-base font-semibold'),
     ].join('');
@@ -122,7 +122,7 @@ async function renderCart() {
     const body = $('[data-cart-body]');
     if (!body) return;
     let cart;
-    try { cart = await api('/cart'); } catch (e) { body.innerHTML = `<p class="text-clay-600">${esc(e.message)}</p>`; return; }
+    try { cart = await api('/cart'); } catch (e) { body.innerHTML = `<p class="text-brand-600">${esc(e.message)}</p>`; return; }
     if (!cart.items.length) { body.innerHTML = '<p class="muted">Your cart is empty. <a class="underline" href="/shop">Visit the shop</a></p>'; return; }
     body.innerHTML = $('#cart-tpl').innerHTML;
     const lines = $('[data-lines]', body);
@@ -130,13 +130,13 @@ async function renderCart() {
     lines.innerHTML = cart.items.map((i, idx) => {
         const l = q?.lines[idx];
         return `<div class="card flex items-center gap-4 p-3">
-            ${i.image ? `<img src="${esc(i.image)}" alt="" width="64" height="64" class="size-16 rounded-xl object-cover">` : '<div class="size-16 rounded-xl bg-sand-200"></div>'}
+            ${i.image ? `<img src="${esc(i.image)}" alt="" width="64" height="64" class="size-16 rounded-xl object-cover">` : '<div class="size-16 rounded-xl bg-mist-200"></div>'}
             <div class="flex-1"><a class="font-medium hover:underline" href="/shop/${esc(i.slug)}">${esc(i.name)}</a>
-              ${l ? `<div class="muted text-sm">${etb(l.unit_price)} each${!cart.is_member && l.member_unit_price < l.unit_price ? ` · <span class="text-clay-600">member price ${etb(l.member_unit_price)}</span>` : ''}</div>` : ''}</div>
+              ${l ? `<div class="muted text-sm">${etb(l.unit_price)} each${!cart.is_member && l.member_unit_price < l.unit_price ? ` · <span class="text-brand-600">member price ${etb(l.member_unit_price)}</span>` : ''}</div>` : ''}</div>
             <input type="number" min="0" max="99" value="${i.quantity}" class="input w-20" data-qty="${i.id}" aria-label="Quantity">
         </div>`;
     }).join('');
-    if (cart.problem) lines.insertAdjacentHTML('beforeend', `<p class="text-sm text-clay-600">${esc(cart.problem)}</p>`);
+    if (cart.problem) lines.insertAdjacentHTML('beforeend', `<p class="text-sm text-brand-600">${esc(cart.problem)}</p>`);
     if (q) $('[data-totals]', body).innerHTML = totalsHtml(q);
     if (q && q.member_savings_preview > 0) {
         const js = $('[data-join-save]', body);
@@ -169,7 +169,7 @@ if (checkoutForm) {
             const cart = await api('/cart?' + params);
             if (!cart.items.length) { summary.innerHTML = '<p>Your cart is empty. <a class="underline" href="/shop">Shop</a></p>'; return; }
             summary.innerHTML = cart.items.map((i) => `<div class="flex justify-between"><span>${i.quantity} × ${esc(i.name)}</span></div>`).join('')
-                + '<hr class="my-2 border-sand-200">' + (cart.quote ? totalsHtml(cart.quote) : `<p class="text-clay-600">${esc(cart.problem)}</p>`);
+                + '<hr class="my-2 border-mist-200">' + (cart.quote ? totalsHtml(cart.quote) : `<p class="text-brand-600">${esc(cart.problem)}</p>`);
         } catch (e) { summary.textContent = e.message; }
     };
     api('/shipping/zones').then(({ data }) => {
@@ -229,14 +229,14 @@ if (trackForm) {
                 <div class="flex flex-wrap justify-between gap-2"><b>${esc(o.number)}</b><span class="badge capitalize">${esc(o.status.replaceAll('_', ' '))}</span></div>
                 <ol class="mt-4 grid grid-cols-5 gap-1 text-center text-xs">${steps.map((s) => {
                     const done = o.timeline.some((t) => t.status === s);
-                    return `<li class="rounded-lg px-1 py-2 ${done ? 'bg-clay-500 text-white' : 'bg-sand-100 dark:bg-coffee-900'}">${s.replace('_', ' ')}</li>`;
+                    return `<li class="rounded-lg px-1 py-2 ${done ? 'bg-brand-500 text-white' : 'bg-mist-100 dark:bg-ink-900'}">${s.replace('_', ' ')}</li>`;
                 }).join('')}</ol>
                 ${o.tracking_number ? `<p class="mt-3 text-sm">Courier tracking: <b>${esc(o.tracking_number)}</b></p>` : ''}
                 <ul class="mt-4 grid gap-1 text-sm">${o.items.map((i) => `<li>${i.quantity} × ${esc(i.name)}${i.made_to_order ? ` <span class="muted">(made to order, ~${i.making_days} days)</span>` : ''}</li>`).join('')}</ul>
                 <p class="mt-3 font-semibold">Total ${etb(o.total)}</p>
                 ${o.amount_due > 0 ? `<a class="btn-primary mt-4" href="/pay/${encodeURIComponent(o.number)}?phone=${encodeURIComponent(trackForm.phone.value)}">Pay ${etb(o.amount_due)}</a>` : ''}
             </div>`;
-        } catch (err) { out.innerHTML = `<p class="text-clay-600">${esc(err.message)}</p>`; }
+        } catch (err) { out.innerHTML = `<p class="text-brand-600">${esc(err.message)}</p>`; }
     });
     if (trackForm.number.value && trackForm.phone.value) trackForm.requestSubmit();
 }

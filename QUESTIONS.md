@@ -29,7 +29,7 @@ change any of them.
 | 20 | "Device" for self-referral checks | Uses a hash of the essential cart token. No fingerprinting and no extra cookie. | Decided (recommended) |
 | 21 | Ship the admin build in git? | Yes. `public/admin-app` is committed, so shared hosting needs no Node. CI rebuilds it to make sure it compiles. | Decided (recommended) |
 | 22 | Guests and sessions | Public pages never start a session for guests, so the only cookies are `km_cart` and `km_ref`. Guest checkout uses the stateless API. Signed-in customers get a normal session. | Decided (recommended) |
-| 23 | Storefront look | Clay, sand and coffee colours, serif headings with the system font stack (no web fonts, for speed and privacy). Change the colours in `resources/css/app.css` (`@theme`). | Decided (recommended), easy to change |
+| 23 | Storefront look | **White and green** (same green as the logo and the member area), a touch of gold, serif headings with the system font stack (no web fonts, for speed and privacy). Change the colours in `resources/css/app.css` (`@theme`: `brand` = green, `mist` = white/light green, `ink` = text). | Decided (you, round 3) |
 | 24 | Security headers | Strict CSP (one hashed inline script, nothing third-party), plus a meta CSP so cached pages keep it. `form-action` is `'self'` only (no payment gateway to redirect to). | Decided (recommended) |
 | 25 | Backups | Nightly encrypted backup (libsodium) of the DB, proofs and uploads, kept 14 days on the server. **You still need to copy them off the server.** | Decided (recommended) |
 | 26 | Database name | `kulmis-market` (you asked, 15 Nov). | Decided (you) |
@@ -63,7 +63,8 @@ change any of them.
 | 54 | Member area look | Its own green & white layout (sidebar / bottom bar), accent editable in Settings → Appearance. The Super Admin dashboard is unchanged. | Decided (you) |
 | 55 | "Newest in your team" privacy | Level 1 by first name + initial; levels 2 and 3 show as "New member" (as before: counts only for levels 2–3). | Decided (round 2) |
 | 56 | Payment methods | **No Chapa / no online gateway.** Orders, membership and guest signals are paid by Telebirr or bank transfer with a receipt that staff approve, and members can use their wallet (all or part). Refunds of transfers are sent back by hand and recorded; wallet payments go back to the wallet. Existing page texts that mentioned Chapa are updated by a migration (only sentences you never edited). | Decided (you) |
-| 57 | Logo colour | Green `#1f8a4c` (the member-area accent default) with the gold knob and sand basket, everywhere the logo appears. The storefront keeps its clay/sand colours. If you change the member accent in Settings, the logo stays this green (it is also in the favicon and app icons). | Decided (you) |
+| 57 | Logo colour | Green `#1f8a4c` (the member-area accent default) with the gold knob and sand basket, everywhere the logo appears. The storefront is white and green too (#23). If you change the member accent in Settings, the logo stays this green (it is also in the favicon and app icons). | Decided (you) |
+| 58 | Religious images | None. Demo photos and products avoid religious symbols and festivals (the cross pendant and Meskel print were replaced by a quartz bracelet and a macramé wall hanging; a photo with evil-eye beads was cropped). Keep this in mind for your own product photos. | Decided (you) |
 
 ## Still open: needs you
 | # | What | Why |
@@ -71,4 +72,4 @@ change any of them.
 | A | **SMS provider**: which one, plus its API details | Until then SMS only go to the log. Email and Telegram work. |
 | B | **Domain + hosting** | Set `APP_URL`, `MAIL_FROM_ADDRESS`. Note: Proclamation 1321/2024 has rules on keeping personal data on servers in Ethiopia, so this may matter when you choose hosting. |
 | D | **Telegram bot + private channel** | Signals access. |
-| E | **Look & feel** | Logo A (smiling mesob) is in, in the member-area green. Colours and texts still fit "warm, handcrafted"; tell me what to change. |
+| E | **Look & feel** | Logo A (smiling mesob) is in, in the member-area green. The shop is white and green; tell me what to change. |

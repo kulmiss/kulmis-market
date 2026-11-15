@@ -40,8 +40,10 @@ the admin). Replace them with your own product photos before going live.
 | `spice-clay-pot.jpg` | [Spice powder in a clay pot](https://www.pexels.com/photo/brown-powder-in-brown-clay-pot-10966836/) | Amy Burry |
 | `spices-cinnamon.jpg` | [Spices in bowls with cinnamon sticks](https://www.pexels.com/photo/assorted-spices-in-bowls-with-cinnamon-sticks-32281706/) | Jorkael |
 | `beads-necklaces.jpg` | [Multicoloured bead necklaces](https://www.pexels.com/photo/rows-of-multicolored-beads-13677915/) | Markus Winkler |
-| `beads-handmade.jpg` | [Handmade beaded necklaces](https://www.pexels.com/photo/colorful-handmade-beaded-necklaces-display-37129475/) | Busra Demirci |
+| `beads-handmade.jpg` | [Handmade beaded necklaces](https://www.pexels.com/photo/colorful-handmade-beaded-necklaces-display-37129475/) (cropped) | Busra Demirci |
 | `beads-accra.jpg` | [Beaded jewellery at a market](https://www.pexels.com/photo/selection-of-colorful-jewelry-20618742/) | Zeal Creative Studios |
 | `beads-bracelets.jpg` | [Handmade beaded bracelets](https://www.pexels.com/photo/close-up-photo-of-handmade-bracelets-11449103/) | Enginakyurt |
-| `orthodox-cross.jpg` | [Handcrafted Ethiopian Orthodox cross](https://www.pexels.com/photo/handcrafted-ethiopian-orthodox-cross-in-cultural-ritual-37006126/) | Fasika Get |
-| `meskel-dresses.jpg` | [Women in traditional dresses at Meskel, Addis Ababa](https://www.pexels.com/photo/women-in-dresses-at-meskel-celebration-in-ethiopia-20865956/) | Lan Yao |
+| `quartz-bracelet.jpg` | [Smoky quartz bead bracelet](https://www.pexels.com/photo/close-up-photo-of-bead-bracelet-10429340/) | Pexels photographer |
+| `macrame-hanging.jpg` | [Colourful woven macramé textile](https://www.pexels.com/photo/close-up-of-colorful-woven-tribal-textile-art-35692211/) | Pexels photographer |
+
+No religious images or symbols are used in the demo photos.

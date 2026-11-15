@@ -3,7 +3,7 @@
 <div class="container-km py-10">
     <h1 class="text-4xl">{{ $category?->name ?? 'Shop' }}</h1>
     @if ($category?->description)<p class="muted mt-2 max-w-2xl">{{ $category->description }}</p>@endif
-    @foreach ($banners as $b)<p class="card mt-4">{{ $b->title }} @if ($b->link_url)<a class="text-clay-600 underline" href="{{ $b->link_url }}">{{ $b->link_text ?? 'More' }}</a>@endif</p>@endforeach
+    @foreach ($banners as $b)<p class="card mt-4">{{ $b->title }} @if ($b->link_url)<a class="text-brand-600 underline" href="{{ $b->link_url }}">{{ $b->link_text ?? 'More' }}</a>@endif</p>@endforeach
     <div class="mt-6 flex flex-wrap items-center gap-2">
         <a href="{{ url('/shop') }}" class="{{ $category ? 'btn-ghost' : 'btn-dark' }}">All</a>
         @foreach ($categories as $c)<a href="{{ url('/c/'.$c->slug) }}" class="{{ $category?->id === $c->id ? 'btn-dark' : 'btn-ghost' }}">{{ $c->name }}</a>@endforeach

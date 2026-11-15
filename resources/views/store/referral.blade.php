@@ -8,14 +8,14 @@
     <h1 class="text-4xl">Share Kulmis, earn every month.</h1>
     <p class="muted mt-4 text-lg">Every member gets a personal link and a short code (like <b>ABDI25</b>). When people you invite buy, you earn — on three levels.</p>
     <ol class="mt-8 grid gap-4 md:grid-cols-3">
-        <li class="card"><p class="text-3xl font-semibold text-clay-600">1</p><p class="mt-2 font-semibold">Become a member</p><p class="muted text-sm">Only active members earn.</p></li>
-        <li class="card"><p class="text-3xl font-semibold text-clay-600">2</p><p class="mt-2 font-semibold">Share your link or code</p><p class="muted text-sm">Telegram, WhatsApp or a QR code. Anyone can use it — even without an account.</p></li>
-        <li class="card"><p class="text-3xl font-semibold text-clay-600">3</p><p class="mt-2 font-semibold">Earn on their purchases</p><p class="muted text-sm">Earnings are ready to use after {{ \App\Support\Settings::int('referral.pending_days') }} days.</p></li>
+        <li class="card"><p class="text-3xl font-semibold text-brand-600">1</p><p class="mt-2 font-semibold">Become a member</p><p class="muted text-sm">Only active members earn.</p></li>
+        <li class="card"><p class="text-3xl font-semibold text-brand-600">2</p><p class="mt-2 font-semibold">Share your link or code</p><p class="muted text-sm">Telegram, WhatsApp or a QR code. Anyone can use it — even without an account.</p></li>
+        <li class="card"><p class="text-3xl font-semibold text-brand-600">3</p><p class="mt-2 font-semibold">Earn on their purchases</p><p class="muted text-sm">Earnings are ready to use after {{ \App\Support\Settings::int('referral.pending_days') }} days.</p></li>
     </ol>
     <div class="card mt-8 overflow-x-auto">
         <table class="w-full text-start text-sm">
             <thead><tr class="text-start"><th class="py-2 text-start">When someone in your team buys…</th>@foreach ([1, 2, 3] as $l)@if ($lv($l))<th class="text-start">Level {{ $l }}</th>@endif @endforeach</tr></thead>
-            <tbody class="divide-y divide-sand-200 dark:divide-coffee-700">
+            <tbody class="divide-y divide-mist-200 dark:divide-ink-700">
                 @feature('referral.commission.membership')<tr><td class="py-2">A membership month</td>@foreach ([1, 2, 3] as $l)@if ($lv($l))<td>{{ $r('membership', $l) }}</td>@endif @endforeach</tr>@endfeature
                 @feature('referral.commission.products')<tr><td class="py-2">Shop products (after discounts, without shipping)</td>@foreach ([1, 2, 3] as $l)@if ($lv($l))<td>{{ $r('products', $l) }}</td>@endif @endforeach</tr>@endfeature
                 @feature('referral.commission.signals')<tr><td class="py-2">Signals (guest buyers)</td>@if ($lv(1))<td>{{ $r('signals', 1) }}</td>@endif @if ($lv(2))<td>—</td>@endif @if ($lv(3))<td>—</td>@endif</tr>@endfeature
