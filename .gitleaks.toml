@@ -12,4 +12,6 @@ regexes = [
   '''JBSWY3DPEHPK3PXP''',
   '''whsec(_test)?''',
   '''CHASECK_TEST-x''',
+  '''CHASECK_TEST-abcDEF123''',                                   # fake key in the log-scrubbing test
+  '''123456789:AAFabcdefghijklmnopqrstuvwxyz0123456''',           # fake bot token in the same test
 ]
