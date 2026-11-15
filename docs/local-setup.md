@@ -16,6 +16,12 @@ docker compose exec app php artisan km:create-admin you@example.com
 - Mail inbox (Mailpit): http://localhost:8025
 - MySQL from your computer: `127.0.0.1:3307` (user `kulmis`, password `secret`)
 
+**"ports are not available"** when starting: another program on your computer
+uses that port. Pick a free one in `.env` (`APP_PORT`, `MAILPIT_PORT` or
+`DB_FORWARD_PORT`) and run `docker compose up -d` again. If you change
+`APP_PORT`, also change `APP_URL` and `SANCTUM_STATEFUL_DOMAINS` to match.
+The ports only listen on your own computer (127.0.0.1), not your network.
+
 The `queue` and `scheduler` containers run jobs and cron. SMS go to the log
 (`storage/logs`) until you set an SMS provider.
 
