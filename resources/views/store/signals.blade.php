@@ -40,7 +40,7 @@
             <button class="btn-primary">Send receipt · {{ $m('signals.guest_price') }}</button>
             @endfeature
             <p class="muted text-xs">Transfer {{ $m('signals.guest_price') }} by Telebirr or bank and send the receipt. Once we check it you get a personal one-time Telegram link by SMS. Access ends automatically after the month (+{{ \App\Support\Settings::int('signals.grace_days') }} days grace) unless you renew.</p>
-            <p data-form-message class="text-sm text-brand-600" role="alert"></p>
+            <p data-form-message class="text-sm text-danger-600" role="alert"></p>
         </form>
     </div>
 </section>

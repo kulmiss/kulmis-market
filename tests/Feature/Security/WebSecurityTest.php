@@ -10,6 +10,7 @@ use App\Logging\RedactSecrets;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\ShippingZone;
 use App\Models\User;
 use App\Payments\ProofStorage;
 use Illuminate\Http\UploadedFile;
@@ -237,5 +238,20 @@ class WebSecurityTest extends ReferralTestCase
         $this->assertSame(1, DB::table('activity_log')->where('action', 'security.login_failed')->count());
         $this->assertSame(1, DB::table('activity_log')->where('action', 'ledger.manual_entry')->count());
         $this->assertContains('security.login_failed', PruneLogs::ROUTINE);
+    }
+
+    public function test_control_and_rtl_override_characters_are_removed_from_input(): void
+    {
+        $p = Product::factory()->create(['price' => 50_000, 'stock' => 5]);
+        ShippingZone::query()->create(['name' => 'All', 'cities' => [], 'base_fee' => 10_000, 'is_default' => true]);
+        $token = $this->postJson('/api/v1/cart/items', ['product_id' => $p->id])->json('token');
+        $this->withHeaders(['X-Cart-Token' => $token])->postJson('/api/v1/checkout', [
+            'checkout_key' => (string) Str::uuid(), 'first_name' => "Li\u{202E}ya\x00", 'phone' => '0933445566',
+            'city' => 'Adama', 'address' => "ቤት 12 😀\nline two\x07", 'notes' => "tab\there",
+        ])->assertCreated();
+        $order = Order::query()->sole();
+        $this->assertSame('Liya', $order->first_name);
+        $this->assertSame("ቤት 12 😀\nline two", $order->address);
+        $this->assertSame("tab\there", $order->notes);
     }
 }

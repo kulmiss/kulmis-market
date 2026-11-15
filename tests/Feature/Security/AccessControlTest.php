@@ -98,7 +98,7 @@ class AccessControlTest extends ReferralTestCase
             $admin = $this->actingAsAdmin($role);
             foreach ($routes as $r) {
                 $ability = substr((string) collect($r->gatherMiddleware())->first(fn ($m) => is_string($m) && str_starts_with($m, 'can:')), 4);
-                $allowed = $admin->isSuperAdmin() || $admin->hasAbility($ability);
+                $allowed = $admin->can($ability); // through the Gate, so combined abilities like view-payments count
                 $status = $this->json($this->method($r), $this->uri($r))->status();
                 if ($allowed) {
                     $this->assertNotSame(403, $status, "$role should reach ".$this->method($r).' '.$r->uri());
@@ -216,5 +216,19 @@ class AccessControlTest extends ReferralTestCase
         $u = $this->member();
         $this->actingAsAdmin('manager');
         $this->postJson("/api/v1/admin/referrals/members/{$u->id}/referrer", ['referrer_id' => null, 'reason' => 'testing'])->assertForbidden();
+    }
+
+    public function test_every_staff_role_can_read_which_features_are_on(): void
+    {
+        foreach (['fulfilment', 'support', 'finance', 'manager'] as $role) {
+            $this->app['auth']->forgetGuards();
+            $this->actingAsAdmin($role);
+            $this->getJson('/api/v1/admin/features/state')->assertOk()->assertJsonFragment(['key' => 'shop', 'effective' => true])
+                ->assertJsonMissingPath('data.0.label');
+            $this->getJson('/api/v1/admin/features')->assertForbidden();
+        }
+        $this->app['auth']->forgetGuards();
+        $this->actingAs(User::factory()->create(), 'web');
+        $this->getJson('/api/v1/admin/features/state')->assertForbidden(); // customers: no
     }
 }

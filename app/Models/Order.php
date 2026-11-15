@@ -178,6 +178,13 @@ class Order extends Model implements Payable
     }
 
     /** What still has to be paid by transfer after the wallet part. */
+    /** A transfer receipt is waiting for staff to check it. */
+    public function receiptUnderReview(): bool
+    {
+        return Payment::query()->where('payable_type', $this->getMorphClass())->where('payable_id', $this->id)
+            ->where('status', Payment::AWAITING_REVIEW)->exists();
+    }
+
     public function amountDue(): int
     {
         return max(0, $this->total - $this->wallet_used);

@@ -41,10 +41,32 @@ const say = (el, text, ok = false) => {
     if (!el) return;
     el.textContent = text;
     el.classList.toggle('text-leaf-600', ok);
-    el.classList.toggle('text-brand-600', !ok);
+    el.classList.toggle('text-danger-600', !ok);
 };
 
 const formData = (form) => Object.fromEntries(new FormData(form).entries());
+
+/** Runs fn with the form's buttons disabled, so a double click sends it once. */
+const busy = async (form, fn) => {
+    if (form.dataset.busy) return;
+    form.dataset.busy = '1';
+    const buttons = [...form.querySelectorAll('button')];
+    buttons.forEach((b) => { b.disabled = true; });
+    try { await fn(); } finally { delete form.dataset.busy; buttons.forEach((b) => { b.disabled = false; }); }
+};
+
+/* Plain (non-JS) forms: block a second submit while the page is loading. */
+$$('form[method="post"]').forEach((f) => f.addEventListener('submit', (e) => {
+    if (f.dataset.sent) { e.preventDefault(); return; }
+    f.dataset.sent = '1';
+    setTimeout(() => {
+        // A JS handler took over (fetch): it manages its own buttons.
+        if (e.defaultPrevented) { delete f.dataset.sent; return; }
+        f.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+    }, 0);
+    // Back-button / bfcache: let the form be used again.
+    window.addEventListener('pageshow', () => { delete f.dataset.sent; f.querySelectorAll('button').forEach((b) => { b.disabled = false; }); }, { once: true });
+}));
 
 /* ---------- share (phones with a share sheet) ---------- */
 $$('[data-share]').forEach((b) => {
@@ -122,7 +144,7 @@ async function renderCart() {
     const body = $('[data-cart-body]');
     if (!body) return;
     let cart;
-    try { cart = await api('/cart'); } catch (e) { body.innerHTML = `<p class="text-brand-600">${esc(e.message)}</p>`; return; }
+    try { cart = await api('/cart'); } catch (e) { body.innerHTML = `<p class="text-danger-600">${esc(e.message)}</p>`; return; }
     if (!cart.items.length) { body.innerHTML = '<p class="muted">Your cart is empty. <a class="underline" href="/shop">Visit the shop</a></p>'; return; }
     body.innerHTML = $('#cart-tpl').innerHTML;
     const lines = $('[data-lines]', body);
@@ -136,7 +158,7 @@ async function renderCart() {
             <input type="number" min="0" max="99" value="${i.quantity}" class="input w-20" data-qty="${i.id}" aria-label="Quantity">
         </div>`;
     }).join('');
-    if (cart.problem) lines.insertAdjacentHTML('beforeend', `<p class="text-sm text-brand-600">${esc(cart.problem)}</p>`);
+    if (cart.problem) lines.insertAdjacentHTML('beforeend', `<p class="text-sm text-danger-600">${esc(cart.problem)}</p>`);
     if (q) $('[data-totals]', body).innerHTML = totalsHtml(q);
     if (q && q.member_savings_preview > 0) {
         const js = $('[data-join-save]', body);
@@ -155,6 +177,7 @@ async function renderCart() {
     });
 }
 renderCart();
+window.addEventListener('pageshow', (e) => { if (e.persisted) renderCart(); });
 
 /* ---------- checkout ---------- */
 const checkoutForm = $('[data-checkout-form]');
@@ -169,9 +192,11 @@ if (checkoutForm) {
             const cart = await api('/cart?' + params);
             if (!cart.items.length) { summary.innerHTML = '<p>Your cart is empty. <a class="underline" href="/shop">Shop</a></p>'; return; }
             summary.innerHTML = cart.items.map((i) => `<div class="flex justify-between"><span>${i.quantity} × ${esc(i.name)}</span></div>`).join('')
-                + '<hr class="my-2 border-mist-200">' + (cart.quote ? totalsHtml(cart.quote) : `<p class="text-brand-600">${esc(cart.problem)}</p>`);
+                + '<hr class="my-2 border-mist-200">' + (cart.quote ? totalsHtml(cart.quote) : `<p class="text-danger-600">${esc(cart.problem)}</p>`);
         } catch (e) { summary.textContent = e.message; }
     };
+    // Back button after placing an order: the page comes from the browser's memory, so show the real (now empty) cart.
+    window.addEventListener('pageshow', (e) => { if (e.persisted) refreshSummary(); });
     api('/shipping/zones').then(({ data }) => {
         zonesSel.insertAdjacentHTML('beforeend', data.map((z) => `<option value="${z.id}">${esc(z.name)} — from ${etb(z.base_fee)}</option>`).join(''));
         $('[data-cities]').innerHTML = [...new Set(data.flatMap((z) => z.cities))].map((c) => `<option value="${esc(c)}">`).join('');
@@ -206,11 +231,13 @@ if (payPage) {
         e.preventDefault();
         const form = new FormData(e.target);
         form.append('phone', phone);
-        try {
-            const { data } = await api(`/orders/${encodeURIComponent(number)}/payment-proof`, { method: 'POST', form });
-            say(msg, data.message, true);
-            e.target.reset();
-        } catch (err) { say(msg, err.message); }
+        await busy(e.target, async () => {
+            try {
+                const { data } = await api(`/orders/${encodeURIComponent(number)}/payment-proof`, { method: 'POST', form });
+                say(msg, data.message, true);
+                e.target.hidden = true; // one receipt is enough: no second click
+            } catch (err) { say(msg, err.message); }
+        });
     });
 }
 
@@ -234,9 +261,10 @@ if (trackForm) {
                 ${o.tracking_number ? `<p class="mt-3 text-sm">Courier tracking: <b>${esc(o.tracking_number)}</b></p>` : ''}
                 <ul class="mt-4 grid gap-1 text-sm">${o.items.map((i) => `<li>${i.quantity} × ${esc(i.name)}${i.made_to_order ? ` <span class="muted">(made to order, ~${i.making_days} days)</span>` : ''}</li>`).join('')}</ul>
                 <p class="mt-3 font-semibold">Total ${etb(o.total)}</p>
-                ${o.amount_due > 0 ? `<a class="btn-primary mt-4" href="/pay/${encodeURIComponent(o.number)}?phone=${encodeURIComponent(trackForm.phone.value)}">Pay ${etb(o.amount_due)}</a>` : ''}
+                ${o.receipt_under_review ? '<p class="mt-4 rounded-xl bg-mist-100 p-3 text-sm dark:bg-ink-900">We have your receipt and are checking it. No need to pay again.</p>'
+                    : o.amount_due > 0 ? `<a class="btn-primary mt-4" href="/pay/${encodeURIComponent(o.number)}?phone=${encodeURIComponent(trackForm.phone.value)}">Pay ${etb(o.amount_due)}</a>` : ''}
             </div>`;
-        } catch (err) { out.innerHTML = `<p class="text-brand-600">${esc(err.message)}</p>`; }
+        } catch (err) { out.innerHTML = `<p class="text-danger-600">${esc(err.message)}</p>`; }
     });
     if (trackForm.number.value && trackForm.phone.value) trackForm.requestSubmit();
 }
@@ -246,11 +274,13 @@ const signalsForm = $('[data-signals-form]');
 if (signalsForm) {
     signalsForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        try {
-            const { data } = await api('/signals/payment-proof', { method: 'POST', form: new FormData(signalsForm) });
-            say($('[data-form-message]', signalsForm), data.message || 'Thank you! We check your receipt and send your Telegram link by SMS.', true);
-            signalsForm.reset();
-        } catch (err) { say($('[data-form-message]', signalsForm), err.message); }
+        await busy(signalsForm, async () => {
+            try {
+                const { data } = await api('/signals/payment-proof', { method: 'POST', form: new FormData(signalsForm) });
+                say($('[data-form-message]', signalsForm), data.message || 'Thank you! We check your receipt and send your Telegram link by SMS.', true);
+                signalsForm.reset();
+            } catch (err) { say($('[data-form-message]', signalsForm), err.message); }
+        });
     });
 }
 

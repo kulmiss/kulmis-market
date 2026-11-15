@@ -39,6 +39,7 @@ class TrackingController extends Controller
                 'made_to_order' => $i->made_to_order, 'making_days' => $i->making_days]),
             'total' => $order->total,
             'amount_due' => $order->isPaid() ? 0 : $order->amountDue(),
+            'receipt_under_review' => ! $order->isPaid() && $order->receiptUnderReview(),
             'shipping' => $order->shippingPayable(),
             'city' => $order->city,
             'tracking_number' => $order->tracking_number,

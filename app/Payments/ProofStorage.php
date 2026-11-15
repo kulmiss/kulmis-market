@@ -21,6 +21,11 @@ class ProofStorage
 
     public const MAX_SIDE = 2400;
 
+    public function delete(string $path): void
+    {
+        Storage::disk('local')->delete($path);
+    }
+
     public function store(UploadedFile $file): string
     {
         $data = (string) file_get_contents($file->getRealPath());

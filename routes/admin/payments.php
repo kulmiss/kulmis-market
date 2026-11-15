@@ -3,7 +3,7 @@
 use App\Http\Controllers\Admin\PaymentController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('can:manage-orders')->group(function () {
+Route::middleware('can:view-payments')->group(function () {
     Route::get('payments', [PaymentController::class, 'index']);
     Route::get('payments/{payment}', [PaymentController::class, 'show']);
     Route::get('payments/{payment}/proof', [PaymentController::class, 'proof']);

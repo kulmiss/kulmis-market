@@ -2,12 +2,13 @@ import { create } from 'zustand'
 import { api } from '@/lib/api'
 
 export type FeatureRow = { key: string; label: string; group: string; enabled: boolean; effective: boolean; parent: string | null }
+type FeatureState = Pick<FeatureRow, 'key' | 'effective'>
 
 type FeaturesState = {
-  rows: FeatureRow[]
+  rows: FeatureState[]
   loaded: boolean
   load: () => Promise<void>
-  setRows: (rows: FeatureRow[]) => void
+  setRows: (rows: FeatureState[]) => void
   on: (key?: string) => boolean
 }
 
@@ -17,10 +18,10 @@ export const useFeatures = create<FeaturesState>()((set, get) => ({
   loaded: false,
   load: async () => {
     try {
-      const { data } = await api.get<{ data: FeatureRow[] }>('/features')
+      const { data } = await api.get<{ data: FeatureState[] }>('/features/state') // readable by every staff role
       set({ rows: data.data, loaded: true })
     } catch {
-      set({ loaded: true }) // staff without manage-features: show everything their role allows
+      set({ loaded: true })
     }
   },
   setRows: (rows) => set({ rows }),

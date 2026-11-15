@@ -70,6 +70,8 @@ class AppServiceProvider extends ServiceProvider
         foreach (config('permissions.abilities') as $ability) {
             Gate::define($ability, fn (User $user) => $user->hasAbility($ability));
         }
+        // Seeing payments: whoever handles orders, approves transfers or does refunds.
+        Gate::define('view-payments', fn (User $user) => $user->hasAbility('manage-orders') || $user->hasAbility('approve-payments') || $user->hasAbility('manage-ledger'));
 
         Event::listen(OrderStatusChanged::class, [OrderNotifier::class, 'handle']);
 
