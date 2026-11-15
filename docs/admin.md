@@ -53,3 +53,22 @@ Code: admin `admin/src/components/km/data-table.tsx` (server lists with
 (`?sort=amount` / `?sort=-amount`, only listed columns). Member area:
 `App\Member\MemberTable` + `MemberTables` and
 `resources/views/member/partials/table.blade.php`.
+
+## Search everything (Ctrl/⌘ K)
+
+The search box in the top bar (or Ctrl+K / ⌘K) looks in members (name,
+phone, email, referral code), orders (number, phone), products (name, SKU),
+payments and receipts (references), cash-outs, signals, coupons, badges,
+settings and feature switches, and the admin pages. Results are grouped.
+
+- Only what your role may open is searched; switched-off features are left out.
+- `#123` finds by ID; `"Abebe Kebede"` in quotes finds the exact words;
+  phone numbers work as 0911…, 911… or +251911….
+- **Advanced**: look in one type, status, from/to date, amount from/to.
+- Recent searches and quick actions (add a product, check receipts, pay
+  cash-outs, post a signal, badge bonus, feature switches).
+- Fast: one small query per group, by first letters on indexed columns
+  (`2026_11_19_000200_add_search_indexes`), typing is debounced; the time is
+  shown under the results (typically 10–20 ms).
+
+API: `GET /api/v1/admin/search?q=…&type=&status=&from=&to=&min=&max=` (`App\Search\GlobalSearch`).

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useLocation, useNavigate } from '@tanstack/react-router'
 import { api } from '@/lib/api'
 import { formatDate, formatMoney } from '@/lib/money'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
@@ -24,7 +25,12 @@ const columns: ResourceColumn<Payment>[] = [
 
 /** All payments; "awaiting review" first is the receipt-checking queue. Tap a row to check it. */
 export function PaymentsPage() {
-  const [open, setOpen] = useState<number | null>(null)
+  const navigate = useNavigate()
+  // ?open=12 (from the top-bar search) opens that payment.
+  const fromSearch = Number((useLocation({ select: (l) => l.search }) as { open?: string | number }).open) || null
+  const [picked, setOpen] = useState<number | null>(null)
+  const open = picked ?? fromSearch
+  const close = () => { setOpen(null); if (fromSearch) navigate({ to: '/payments', search: {} as never }) }
   const one = useQuery({
     queryKey: ['payments', 'one', open],
     enabled: open !== null,
@@ -39,7 +45,7 @@ export function PaymentsPage() {
           { key: 'provider', label: 'Method', options: opts('telebirr', 'bank_transfer', 'wallet') },
         ]}
         onRowClick={(p) => setOpen(p.id)} empty='No payments here.' />
-      <Sheet open={open !== null} onOpenChange={(o) => !o && setOpen(null)}>
+      <Sheet open={open !== null} onOpenChange={(o) => !o && close()}>
         <SheetContent className='w-full overflow-y-auto sm:max-w-lg'>
           <SheetHeader>
             <SheetTitle>{one.data ? forWhat(one.data) : 'Payment'}</SheetTitle>

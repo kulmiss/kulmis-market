@@ -33,7 +33,8 @@ const sectionId = (g: string) => `sw-${g.toLowerCase().replace(/[^a-z0-9]+/g, '-
 export function FeaturesPage() {
   const qc = useQueryClient()
   const setRows = useFeatures((s) => s.setRows)
-  const [q, setQ] = useState('')
+  // ?q=coupons (from the top-bar search) starts with that search.
+  const [q, setQ] = useState(() => new URLSearchParams(window.location.search).get('q') ?? '')
   const [show, setShow] = useState<Show>('all')
   const { data, isLoading } = useQuery({
     queryKey: ['features'],

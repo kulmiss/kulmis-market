@@ -1,1 +1,0 @@
-import{t as e}from"./members-pages-Dyqt9Wi_.js";import{d as t}from"./button-CLcLC9O1.js";import{r as n}from"./index-DO12WWb5.js";var r=t();function i(){let{id:t}=n.useParams();return(0,r.jsx)(e,{id:t},t)}export{i as component};

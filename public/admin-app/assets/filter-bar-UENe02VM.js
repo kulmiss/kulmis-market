@@ -1,0 +1,1 @@
+import"./input-Dcs_I62r.js";import"./search-provider-DcTMtiv7.js";import{d as e}from"./button-CLcLC9O1.js";var t=e();function n({children:e}){return(0,t.jsx)(`div`,{className:`mb-3 flex flex-wrap items-center gap-2`,children:e})}var r=(...e)=>e.map(e=>({value:e,label:e.replaceAll(`_`,` `)}));export{r as n,n as t};
