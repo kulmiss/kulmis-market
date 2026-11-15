@@ -46,7 +46,7 @@ English (ready for Amharic) and aimed at customers in Ethiopia.
 | 25 | `pr/25-web-security` | Draft. Web security: headers also from nginx/Apache, CORS, security.txt, per-route rate limits, proof re-encoding, log scrubbing, gitleaks + audits in CI, owner alerts, log retention ([docs/web-security.md](docs/web-security.md)) |
 | 26 | `pr/26-ops` | Draft. Ops: Docker runs PHP as your user, port 8090, pinned images, Dependabot, km:doctor security checks (fails when unsafe), km:backup-verify restore test, optional admin IP lock, production checklist ([docs/deploy.md](docs/deploy.md)) |
 | 27 | `pr/27-screens` | Draft. Screen review: branded error pages, dark-mode badge, admin logo, phone overflow, labels, heading order, gzip; Lighthouse before/after |
-| 28 | `pr/28-security-report` | Draft. **Top PR, targets main, ready for review (CI runs here).** SECURITY_REPORT.md: audit, scores before → after, remaining risks |
+| 28 | `pr/28-security-report` | **Top PR, targets main, ready for review (CI runs here).** SECURITY_REPORT.md: audit, scores before → after, remaining risks |
 
 **Merge:** the top PR (#28) targets `main` and contains every commit of
 #1–#27, so **one merge brings in everything**. Merge #28, then close
