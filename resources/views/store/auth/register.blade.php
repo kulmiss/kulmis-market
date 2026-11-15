@@ -16,7 +16,7 @@
         </div>
         @feature('referral')<div><label class="label" for="rc">Referral code (optional)</label><input id="rc" name="referral_code" class="input uppercase" value="{{ old('referral_code', $code) }}"></div>@endfeature
         <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="terms" value="1" required class="mt-1 size-4"> <span>I agree to the <a class="underline" href="{{ url('/p/terms') }}">terms</a> and <a class="underline" href="{{ url('/p/privacy') }}">privacy policy</a>.</span></label>
-        @if ($errors->any())<p class="text-sm text-clay-600" role="alert">{{ $errors->first() }}</p>@endif
+        @if ($errors->any())<p class="text-sm text-brand-600" role="alert">{{ $errors->first() }}</p>@endif
         <button class="btn-primary">Create account</button>
         <p class="muted text-sm">Already have one? <a class="underline" href="{{ url('/login') }}">Sign in</a></p>
     </form>

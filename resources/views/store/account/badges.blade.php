@@ -20,7 +20,7 @@
     </div>
     @if ($summary['next'])
         <div class="card mt-6">
-            <p class="text-sm font-semibold uppercase tracking-wide text-clay-600">Next badge</p>
+            <p class="text-sm font-semibold uppercase tracking-wide text-brand-600">Next badge</p>
             <div class="mt-3">@include('store.account.partials.badge-progress', ['b' => $summary['next']])</div>
         </div>
     @endif

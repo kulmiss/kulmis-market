@@ -126,7 +126,7 @@ class DemoSeeder extends Seeder
             ['Pottery', 'Clay pots, cups and coffee pots'],
             ['Leather', 'Bags and small leather goods'],
             ['Coffee & spices', 'Fresh coffee, berbere and mitmita'],
-            ['Jewellery', 'Beads, silver and crosses'],
+            ['Jewellery', 'Beads, silver and stones'],
             ['Home decor', 'Things that make a home warm'],
         ] as $i => [$name, $desc]) {
             $cats[$name] = Category::query()->create(['name' => $name, 'slug' => Str::slug($name), 'description' => $desc, 'position' => $i]);
@@ -145,7 +145,7 @@ class DemoSeeder extends Seeder
             ['Tibeb cotton scarf', 'Textiles', 1600, 550, 'scarves-traditional', ['variants' => [['Green & gold', null, 9], ['Red & gold', null, 7], ['Blue & silver', null, 1]]]],
             ['Netela shawl, soft cotton', 'Textiles', 2100, 700, 'scarves-ladder', []],
             ['Kemis dress fabric (3 m)', 'Textiles', 6800, 2600, 'scarves-traditional', ['made' => 21, 'early' => true]],
-            ['Jebena coffee pot', 'Pottery', 1400, 450, 'jebena-pot', ['featured' => true]],
+            ['Jebena coffee pot', 'Pottery', 1400, 450, 'jebena-pot', []],
             ['Clay cooking pot (dist)', 'Pottery', 1250, 400, 'clay-pot-shelf', []],
             ['Sini coffee cups, set of 6', 'Pottery', 950, 300, 'ceramic-cups', ['variants' => [['White', null, 12], ['Earth brown', null, 8]]]],
             ['Clay water jug', 'Pottery', 1100, 350, 'clay-jug', []],
@@ -158,7 +158,7 @@ class DemoSeeder extends Seeder
             ['Leather tote', 'Leather', 5600, 2000, 'leather-kenya', []],
             ['Leather messenger bag', 'Leather', 6900, 2500, 'leather-wheel', []],
             ['Leather card holder', 'Leather', 1200, 400, 'leather-artisan', []],
-            ['Yirgacheffe coffee beans, 1 kg', 'Coffee & spices', 1350, 600, 'coffee-sacks', ['featured' => true, 'variants' => [['Whole beans', null, 40], ['Ground for jebena', null, 25]]]],
+            ['Yirgacheffe coffee beans, 1 kg', 'Coffee & spices', 1350, 600, 'coffee-sacks', ['variants' => [['Whole beans', null, 40], ['Ground for jebena', null, 25]]]],
             ['Fresh roasted coffee, 500 g', 'Coffee & spices', 750, 330, 'coffee-beans-mug', []],
             ['Coffee ceremony starter set', 'Coffee & spices', 3900, 1400, 'coffee-grinding', ['members' => true]],
             ['Berbere spice blend, 500 g', 'Coffee & spices', 480, 160, 'spice-clay-pot', []],
@@ -169,8 +169,8 @@ class DemoSeeder extends Seeder
             ['Handmade bead necklace', 'Jewellery', 1350, 420, 'beads-handmade', []],
             ['Beaded bracelet set', 'Jewellery', 650, 200, 'beads-bracelets', ['variants' => [['Set of 3', null, 15], ['Set of 6', 1150, 6]]]],
             ['Market bead collection', 'Jewellery', 2200, 700, 'beads-accra', []],
-            ['Hand-carved cross pendant', 'Jewellery', 2900, 1000, 'orthodox-cross', ['made' => 10]],
-            ['Meskel celebration print', 'Home decor', 1500, 400, 'meskel-dresses', []],
+            ['Smoky quartz bead bracelet', 'Jewellery', 2900, 1000, 'quartz-bracelet', ['made' => 10, 'featured' => true]],
+            ['Macramé wall hanging', 'Home decor', 1500, 400, 'macrame-hanging', []],
         ];
         $images = app(ImageProcessor::class);
         foreach ($items as $i => [$name, $cat, $price, $cost, $photo, $x]) {
@@ -204,7 +204,7 @@ class DemoSeeder extends Seeder
 
         foreach ([
             ['WELCOME10', 'percent', 1000, 0, null, null, ['max_uses_per_customer' => 1, 'note' => 'First order']],
-            ['MESKEL15', 'percent', 1500, 200_000, now()->subMonths(2), now()->subMonths(2)->addDays(10), ['note' => 'Meskel sale (ended)']],
+            ['SEASON15', 'percent', 1500, 200_000, now()->subMonths(2), now()->subMonths(2)->addDays(10), ['note' => 'Season sale (ended)']],
             ['MEMBERS200', 'fixed', 20_000, 150_000, null, null, ['members_only' => true]],
             ['COFFEE5', 'percent', 500, 0, null, now()->addMonth(), ['max_uses' => 200]],
             ['OLDCODE', 'fixed', 10_000, 0, null, null, ['is_active' => false, 'note' => 'Switched off']],

@@ -21,7 +21,7 @@
     @feature('shop.free_shipping')<div class="card"><h2 class="text-xl">Free shipping over {{ $m('shipping.member_free_over') }}</h2><p class="muted mt-2">Anywhere we deliver in Ethiopia.</p></div>@endfeature
     @feature('shop.early_access')<div class="card"><h2 class="text-xl">{{ $i('catalog.early_access_hours') }}-hour early access</h2><p class="muted mt-2">See and buy new pieces before everyone else. Plus a members-only product every month.</p></div>@endfeature
     @feature('signals')<div class="card"><h2 class="text-xl">Trading signals included</h2><p class="muted mt-2">Normally {{ $m('signals.guest_price') }}/month — free for members, in a private Telegram channel.</p></div>@endfeature
-    @feature('referral')<div class="card"><h2 class="text-xl">Earn from referrals</h2><p class="muted mt-2">Share your link. Earn on memberships, signals and shop orders from people you invite. <a class="text-clay-600 underline" href="{{ url('/referral-program') }}">How it works</a></p></div>@endfeature
+    @feature('referral')<div class="card"><h2 class="text-xl">Earn from referrals</h2><p class="muted mt-2">Share your link. Earn on memberships, signals and shop orders from people you invite. <a class="text-brand-600 underline" href="{{ url('/referral-program') }}">How it works</a></p></div>@endfeature
     @feature('loyalty_reward')<div class="card"><h2 class="text-xl">{{ $m('loyalty.reward') }} thank-you</h2><p class="muted mt-2">Added to your wallet after every {{ $i('loyalty.every_months') }} months in a row.</p></div>@endfeature
 </section>
 <section class="container-km mt-12 max-w-3xl">

@@ -89,10 +89,10 @@ class PricingTest extends TestCase
 
     public function test_percent_and_fixed_coupons_apply_after_member_discount(): void
     {
-        Coupon::query()->create(['code' => 'meskel10', 'type' => 'percent', 'value' => 1_000]);
+        Coupon::query()->create(['code' => 'save10', 'type' => 'percent', 'value' => 1_000]);
         Coupon::query()->create(['code' => 'GIFT500', 'type' => 'fixed', 'value' => 50_000]);
 
-        $q = $this->calc->quote($this->items(200_000), true, 'MESKEL10');
+        $q = $this->calc->quote($this->items(200_000), true, 'SAVE10');
         $this->assertSame(17_000, $q->couponDiscount);   // 10% of 1,700
         $this->assertSame(153_000, $q->total());
 

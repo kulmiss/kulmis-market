@@ -15,7 +15,7 @@
     <title>{{ $title }}</title>
     <meta name="description" content="{{ $description }}">
     <link rel="canonical" href="{{ $canonical ?? url()->current() }}">
-    <meta name="theme-color" content="#b5532b">
+    <meta name="theme-color" content="#1f8a4c">
     <meta name="km-currency" content="{{ json_encode(\App\Support\Currency::forClients()) }}">
     <meta property="og:site_name" content="{{ $site }}">
     <meta property="og:title" content="{{ $title }}">
@@ -35,7 +35,7 @@
 <body class="flex min-h-full flex-col">
 <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:p-2">Skip to content</a>
 @if ($topBar)
-    <div class="bg-coffee-900 px-4 py-2 text-center text-sm text-sand-100">
+    <div class="bg-ink-900 px-4 py-2 text-center text-sm text-mist-100">
         {{ $topBar->title }} @if ($topBar->link_url)<a class="ms-2 underline" href="{{ $topBar->link_url }}">{{ $topBar->link_text ?? 'Learn more' }}</a>@endif
     </div>
 @endif

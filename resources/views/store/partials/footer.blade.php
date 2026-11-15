@@ -1,5 +1,5 @@
 @php($pages = \App\Models\Page::query()->where('is_published', true)->where('in_footer', true)->orderBy('position')->get(['slug', 'title']))
-<footer class="mt-16 border-t border-sand-200 bg-sand-100/60 py-10 text-sm dark:border-coffee-800 dark:bg-coffee-900">
+<footer class="mt-16 border-t border-mist-200 bg-mist-100/60 py-10 text-sm dark:border-ink-800 dark:bg-ink-900">
     <div class="container-km grid gap-8 sm:grid-cols-3">
         <div>
             <p class="font-serif text-lg font-semibold">{{ \App\Support\Settings::string('site.name') }}</p>

@@ -2,10 +2,10 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>Receipt {{ $payment->tx_ref }}</title>
 <style>
-  body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #2b2118; }
-  h1 { font-size: 18px; margin: 0 0 4px; } .muted { color: #8a7663; }
+  body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #11201a; }
+  h1 { font-size: 18px; margin: 0 0 4px; } .muted { color: #5b6b61; }
   table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-  th, td { padding: 6px 4px; border-bottom: 1px solid #eadfce; text-align: left; } td.r, th.r { text-align: right; }
+  th, td { padding: 6px 4px; border-bottom: 1px solid #e1ede5; text-align: left; } td.r, th.r { text-align: right; }
   .total td { font-weight: bold; border-bottom: none; font-size: 12px; }
 </style></head>
 <body>

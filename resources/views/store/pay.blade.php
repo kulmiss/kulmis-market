@@ -12,8 +12,8 @@
             <div class="card">
                 <h2 class="text-xl">Transfer and upload the receipt</h2>
                 <div class="mt-3 grid gap-3 text-sm sm:grid-cols-2">
-                    <pre class="rounded-xl bg-sand-100 p-3 whitespace-pre-wrap dark:bg-coffee-900">{{ $telebirr }}</pre>
-                    <pre class="rounded-xl bg-sand-100 p-3 whitespace-pre-wrap dark:bg-coffee-900">{{ $bank }}</pre>
+                    <pre class="rounded-xl bg-mist-100 p-3 whitespace-pre-wrap dark:bg-ink-900">{{ $telebirr }}</pre>
+                    <pre class="rounded-xl bg-mist-100 p-3 whitespace-pre-wrap dark:bg-ink-900">{{ $bank }}</pre>
                 </div>
                 <form class="mt-4 grid gap-3" data-proof-form enctype="multipart/form-data">
                     <div class="grid gap-3 sm:grid-cols-2">
@@ -26,7 +26,7 @@
                 </form>
             </div>
             @endfeature
-            <p data-form-message class="text-sm text-clay-600" role="alert"></p>
+            <p data-form-message class="text-sm text-brand-600" role="alert"></p>
         </div>
     @endif
 </div>

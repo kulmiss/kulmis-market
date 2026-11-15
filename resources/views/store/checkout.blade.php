@@ -7,7 +7,7 @@
             <p class="card mt-6">Please <a class="underline" href="{{ url('/login') }}">sign in</a> or <a class="underline" href="{{ url('/register') }}">create an account</a> to order.</p>
         @else
             @if (!$user)<p class="muted mt-2 text-sm">No account needed. Members, <a class="underline" href="{{ url('/login') }}">sign in</a> for member prices.</p>@endif
-            @if ($errors->any())<div class="mt-4 rounded-xl bg-clay-500/10 p-3 text-sm text-clay-700" role="alert">{{ $errors->first() }}</div>@endif
+            @if ($errors->any())<div class="mt-4 rounded-xl bg-brand-500/10 p-3 text-sm text-brand-700" role="alert">{{ $errors->first() }}</div>@endif
             <form class="mt-6 grid gap-4" method="post" action="{{ url('/checkout') }}" @if (!$user) data-guest-checkout @endif data-checkout-form>
                 @if ($user) @csrf @endif
                 <input type="hidden" name="checkout_key" value="{{ \Illuminate\Support\Str::uuid() }}">
@@ -34,7 +34,7 @@
                 @endif
                 <label class="flex items-start gap-2 text-sm"><input type="checkbox" required class="mt-1 size-4"> <span>I agree to the <a class="underline" href="{{ url('/p/terms') }}">terms</a> and <a class="underline" href="{{ url('/p/refund-shipping') }}">refund &amp; shipping policy</a>.</span></label>
                 <button class="btn-primary">Place order</button>
-                <p data-form-message class="text-sm text-clay-600" role="alert"></p>
+                <p data-form-message class="text-sm text-brand-600" role="alert"></p>
             </form>
         @endif
     </div>

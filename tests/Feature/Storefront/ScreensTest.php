@@ -28,8 +28,8 @@ class ScreensTest extends TestCase
     {
         Product::factory()->create(['stock_mode' => 'made_to_order', 'making_days' => 5]);
         $html = $this->get('/shop')->getContent();
-        $this->assertStringContainsString('dark:text-sand-100">Made to order', $html);
-        $this->assertStringContainsString('dark:bg-coffee-900/90', $html);
+        $this->assertStringContainsString('dark:text-mist-100">Made to order', $html);
+        $this->assertStringContainsString('dark:bg-ink-900/90', $html);
     }
 
     public function test_shop_has_a_proper_heading_order(): void

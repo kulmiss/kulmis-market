@@ -109,6 +109,11 @@ class DemoDataTest extends TestCase
             $this->assertGreaterThan(0, DB::table($t)->count(), "$t has demo rows");
             $this->assertSame(0, DB::table($t)->where('is_demo', false)->count(), "every $t row is demo");
         }
+        $texts = DB::table('products')->pluck('name')->merge(DB::table('categories')->pluck('description'))->merge(DB::table('coupons')->pluck('code'))->implode(' | ');
+        $this->assertDoesNotMatchRegularExpression('/cross|meskel|orthodox|church|mosque|icon|saint|holy/i', $texts, 'no religious items in demo data');
+        foreach (['orthodox-cross', 'meskel-dresses'] as $photo) {
+            $this->assertFileDoesNotExist(database_path("seeders/demo-photos/$photo.jpg"));
+        }
         $statuses = DB::table('orders')->pluck('status')->unique()->all();
         foreach (['delivered', 'shipped', 'pending_payment', 'cancelled'] as $s) {
             $this->assertContains($s, $statuses);
