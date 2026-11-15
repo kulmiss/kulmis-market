@@ -28,11 +28,11 @@ final class Demo
         'shipping_zones', 'couriers', 'orders', 'payments', 'refunds', 'commissions', 'payout_accounts', 'payout_requests',
         'fraud_flags', 'signals', 'signal_subscriptions', 'signal_purchases', 'activity_log', 'journal_entries',
         'ledger_postings', 'user_badges', 'user_notifications', 'badge_bonus_runs', 'badge_bonuses', 'product_reviews',
-        'rewards',
+        'rewards', 'membership_gifts',
     ];
 
     /** Tables made after the is_demo migration: they create their own column. */
-    public const LATER_TABLES = ['badge_bonus_runs', 'badge_bonuses', 'product_reviews', 'rewards'];
+    public const LATER_TABLES = ['badge_bonus_runs', 'badge_bonuses', 'product_reviews', 'rewards', 'membership_gifts'];
 
     private static ?bool $actingDemo = null;
 
@@ -159,6 +159,7 @@ final class Demo
             $in('coupon_redemptions', 'order_id', $orders);
             DB::table('badge_bonuses')->where('is_demo', true)->delete();
             DB::table('rewards')->where('is_demo', true)->delete();
+            DB::table('membership_gifts')->where('is_demo', true)->delete();
             DB::table('badge_bonus_runs')->where('is_demo', true)->delete();
             foreach (['refunds', 'commissions', 'payments', 'loyalty_rewards', 'user_badges', 'user_notifications', 'payout_requests',
                 'payout_accounts', 'fraud_flags', 'signal_purchases', 'signal_subscriptions', 'activity_log', 'orders'] as $t) {

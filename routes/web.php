@@ -3,6 +3,7 @@
 use App\Http\Controllers\Web\AccountController;
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\ContestController;
+use App\Http\Controllers\Web\GiftController;
 use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\PushController;
 use App\Http\Controllers\Web\ReviewController;
@@ -29,6 +30,10 @@ Route::middleware('guest')->group(function () {
     Route::get('/login/two-factor', [AuthController::class, 'showTwoFactor']);
     Route::post('/login/two-factor', [AuthController::class, 'twoFactor'])->middleware('throttle:10,1');
 });
+// Gift membership: the receiver's private page and starting it.
+Route::get('/gift/{code}', [GiftController::class, 'show'])->where('code', '[A-Za-z0-9]{1,32}')->middleware('throttle:30,1')->name('gift.show');
+Route::get('/gift/{code}/start', [GiftController::class, 'show'])->where('code', '[A-Za-z0-9]{1,32}')->middleware(['auth', 'throttle:30,1'])->name('gift.start');
+Route::post('/gift/{code}', [GiftController::class, 'redeem'])->where('code', '[A-Za-z0-9]{1,32}')->middleware(['auth', 'throttle:10,1'])->name('gift.redeem');
 Route::get('/cart/resume/{cart}', [NotificationController::class, 'resumeCart'])->middleware(['signed', 'throttle:20,1'])->name('cart.resume');
 Route::get('/cart-reminders/stop/{user}', [NotificationController::class, 'stopCartReminders'])->middleware(['signed', 'throttle:20,1'])->name('cart-reminders.stop');
 Route::get('/account/email/confirm/{token}', [SecurityController::class, 'confirmEmail'])

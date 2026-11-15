@@ -38,6 +38,7 @@ return [
     'membership.member_discount' => ['Member discount on products', 'Membership', true, 'membership', 'Members pay a lower price in the shop.'],
     'loyalty_reward' => ['Loyalty reward', 'Membership', true, 'wallet', 'Members who stay long get money in their wallet (amount in Settings).'],
     'membership.comeback_reward' => ['Welcome-back reward', 'Membership', true, 'membership', 'Members who come back after some time get a thank-you in their wallet. Set the amount in Settings (0 = none).'],
+    'membership.gifts' => ['Gift membership', 'Membership', true, 'membership', 'Anyone can pay a month for someone else. The receiver gets a private link; they join the giver\'s team if nobody invited them.'],
 
     // Referral
     'referral' => ['Referral program', 'Referral', true, 'membership', 'Members get a link and earn when people join with it.'],
@@ -102,6 +103,7 @@ return [
     'messages.badge_bonus' => ['Badge bonus', 'Messages', true, 'badges.bonus', 'Tell the member how much badge bonus they got this month.'],
     'messages.payout_rejected' => ['Cash-out not approved', 'Messages', true, 'wallet.cashout', 'Tell the member their cash-out was not approved.'],
     'messages.cart_reminder' => ['Cart reminder', 'Messages', true, 'shop', 'One reminder 24 hours after a signed-in customer leaves items in the cart. Never for guests; they can stop it.'],
+    'messages.gift' => ['Gift membership', 'Messages', true, 'membership.gifts', 'Send the gift link to the receiver and a thank-you to the giver.'],
 
     // Look and speed
     'appearance.theme_switch' => ['Light / dark switch', 'Look and speed', true, null, 'Customers can switch between light and dark. Off: always light.'],

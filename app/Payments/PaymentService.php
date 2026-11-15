@@ -108,7 +108,7 @@ class PaymentService
 
             /** @var Model&Payable $payable */
             $payable = $locked->payable;
-            if ($locked->provider !== Payment::WALLET) {
+            if (! in_array($locked->provider, [Payment::WALLET, Payment::GIFT], true)) {
                 $lines = [[Account::CASH, $locked->amount], [$payable->payableIncomeAccount(), -$locked->amount]];
                 $this->ledger->post('payment.received', $lines, "payment:{$locked->id}:received", $locked,
                     description: $payable->payableTitle());

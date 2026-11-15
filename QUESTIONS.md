@@ -111,6 +111,9 @@ change any of them.
 | 102 | Picture cards | Made on the member's phone (no upload, no server load): product or kit picture, name, price, code and QR. On phones it opens the share sheet (WhatsApp, Telegram…); on computers it downloads. | Decided (recommended) |
 | 103 | Share kit | Three starter posts (shop, membership, signals) you can edit, with {name}, {code} and {link}; {link} is required. Pictures optional (re-encoded). | Decided (recommended) |
 | 104 | Earnings tips | Up to 3 tips picked from the member's situation (no team yet, people who signed up but didn't pay, a challenge almost done, a running contest, product links) with one-tap WhatsApp/Telegram messages. No phone numbers of team members are shown or used. | Decided (recommended) |
+| 105 | Gift membership | Anyone (member or guest) fills one form: who it is for (phone or email), a short message, their own name/phone and the receipt. After you approve the receipt, the receiver gets a private link (valid 180 days) and the giver a thank-you. The receiver signs in or makes an account and presses "Start my month". | Decided (recommended) |
+| 106 | Gift: whose team | The giver's team if the giver has a code; otherwise the referral link the giver came from. Only if the receiver has nobody yet (an existing inviter is never changed). Team earnings and the first-payment bonus work as for any membership, counted when the month starts. | Decided (you + recommended) |
+| 107 | Gift money | Kept as "owed" (liability: gift memberships) until the gift is used, then it becomes membership money. A gift can be refunded only before it is used; after that, refund the membership instead. | Decided (recommended) |
 
 ## Still open: needs you
 | # | What | Why |

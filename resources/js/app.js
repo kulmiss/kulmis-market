@@ -310,6 +310,20 @@ $('[data-contact-form]')?.addEventListener('submit', async (e) => {
     });
 });
 
+/* ---------- gift membership ---------- */
+$('[data-gift-form]')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const msg = $('[data-form-message]', form);
+    await busy(form, async () => {
+        try {
+            const { data } = await api('/gifts', { method: 'POST', form: new FormData(form) });
+            say(msg, data.message, true);
+            form.reset();
+        } catch (err) { say(msg, err.message); }
+    });
+});
+
 /* ---------- pay page ---------- */
 const payPage = $('[data-pay-page]');
 if (payPage) {
