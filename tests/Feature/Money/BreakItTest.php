@@ -3,6 +3,7 @@
 namespace Tests\Feature\Money;
 
 use App\Ledger\Ledger;
+use App\Ledger\LedgerException;
 use App\Ledger\Posting;
 use App\Ledger\Wallet;
 use App\Membership\MembershipService;
@@ -222,7 +223,7 @@ class BreakItTest extends ReferralTestCase
     {
         try {
             $fn();
-        } catch (InvalidArgumentException|ValidationException|\App\Ledger\LedgerException|\App\Pricing\PricingException) {
+        } catch (InvalidArgumentException|ValidationException|LedgerException|\App\Pricing\PricingException) {
             $this->addToAssertionCount(1);
 
             return;
