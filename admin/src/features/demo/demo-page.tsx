@@ -55,7 +55,7 @@ export function DemoPage() {
   return (
     <Page title='Demo data' description='Sample shop, members, orders and money to try everything. It is never counted with real money.'>
       {!d ? <PageSkeleton cards={2} rows={3} /> : (
-        <div className='grid gap-4 lg:grid-cols-2'>
+        <div className='grid gap-4 lg:grid-cols-2 [&>*]:min-w-0'>
           <Card>
             <CardHeader>
               <CardTitle className='text-base'>Show demo data</CardTitle>

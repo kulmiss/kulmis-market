@@ -81,6 +81,7 @@ Result: **358 tests** pass on SQLite and MariaDB; Larastan level 6 with 0 errors
 | 19 | Accessibility | Shop pagination used prohibited ARIA (Lighthouse a11y 96) | Low | pr/43 |
 | 20 | Admin | (found in the final check) The new dashboard cache returned lists as broken objects on the second load ("top_products.map is not a function"); stored as plain arrays now, test uses the real cache store | High (caught before merge) | pr/43 |
 | 21 | Accessibility | ~50 admin fields had no accessible name (placeholder-only filters, labels not linked to their inputs) | Low | pr/44 |
+| 22 | Admin | Demo data page scrolled sideways on phones | Low | pr/44 |
 
 ### Speed (before → after, Docker + nginx, demo data)
 
