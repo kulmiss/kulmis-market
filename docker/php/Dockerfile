@@ -1,4 +1,4 @@
-FROM php:8.3-fpm-alpine3.22
+FROM php:8.5-fpm-alpine3.22
 
 # Run PHP as your own user id, so files it creates (cache, logs, uploads,
 # vendor/) belong to you on the host — no permission errors on Linux/WSL.
