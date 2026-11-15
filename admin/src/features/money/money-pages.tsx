@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { type ColumnDef } from '@tanstack/react-table'
 import { Check, Copy, Eye, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { useMutate } from '@/hooks/use-mutate'
@@ -14,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { FilterBar, SearchInput, SelectFilter, opts } from '@/components/km/filter-bar'
 import { FormDialog } from '@/components/km/form-dialog'
 import { Page } from '@/components/km/page'
-import { ResourceTable } from '@/components/km/resource-table'
+import { ResourceTable, type ResourceColumn } from '@/components/km/resource-table'
 import { StatusBadge } from '@/components/km/status-badge'
 
 /* ---------- Cash-outs ---------- */
@@ -28,7 +27,7 @@ type Payout = {
 export function CashOutsPage() {
   const [status, setStatus] = useState('requested')
   const [overdue, setOverdue] = useState(false)
-  const columns: ColumnDef<Payout, unknown>[] = [
+  const columns: ResourceColumn<Payout>[] = [
     { header: 'Requested', cell: ({ row }) => formatDate(row.original.created_at, true) },
     { header: 'Member', cell: ({ row }) => `${row.original.user.first_name} ${row.original.user.last_name}` },
     { header: 'Amount', cell: ({ row }) => <b>{formatMoney(row.original.amount)}</b> },
@@ -98,7 +97,7 @@ export function LedgerPage() {
   const [type, setType] = useState('')
   const [user, setUser] = useState('')
   const accounts = useQuery({ queryKey: ['ledger-accounts'], queryFn: async () => (await api.get<{ data: { code: string; name: string; type: string; balance: number }[] }>('/ledger/accounts')).data.data })
-  const columns: ColumnDef<Entry, unknown>[] = [
+  const columns: ResourceColumn<Entry>[] = [
     { header: 'When', cell: ({ row }) => formatDate(row.original.created_at, true) },
     { header: 'Type', cell: ({ row }) => <code className='text-xs'>{row.original.type}</code> },
     { header: 'Description', cell: ({ row }) => <span>{row.original.description}{row.original.reason && <span className='block text-xs text-muted-foreground'>Reason: {row.original.reason}</span>}</span> },
@@ -132,7 +131,7 @@ type Flag = { id: number; type: string; status: string; details: Record<string, 
 
 export function FraudPage() {
   const [status, setStatus] = useState('open')
-  const columns: ColumnDef<Flag, unknown>[] = [
+  const columns: ResourceColumn<Flag>[] = [
     { header: 'When', cell: ({ row }) => formatDate(row.original.created_at, true) },
     { header: 'Member', cell: ({ row }) => <a className='underline' href={`/admin/members/${row.original.user.id}`}>{row.original.user.first_name} {row.original.user.last_name}</a> },
     { header: 'Signal', cell: ({ row }) => row.original.type.replaceAll('_', ' ') },
@@ -178,7 +177,7 @@ export function CommissionsPage() {
   const [status, setStatus] = useState('all')
   const [type, setType] = useState('all')
   const [level, setLevel] = useState('all')
-  const columns: ColumnDef<CommissionRow, unknown>[] = [
+  const columns: ResourceColumn<CommissionRow>[] = [
     { header: 'When', cell: ({ row }) => formatDate(row.original.created_at, true) },
     { header: 'Recipient', cell: ({ row }) => `${row.original.recipient.first_name} ${row.original.recipient.last_name}` },
     { header: 'Sale', cell: ({ row }) => `${row.original.type} · L${row.original.level}` },

@@ -4,8 +4,9 @@ import {
   type ColumnDef,
   type RowSelectionState,
   flexRender,
-  getCoreRowModel,
-  useReactTable,
+  rowSelectionFeature,
+  tableFeatures,
+  useTable,
 } from '@tanstack/react-table'
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 import { api, type Paginated } from '@/lib/api'
@@ -13,10 +14,16 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
-type ResourceTableProps<T> = {
+/** Table features used by every admin list (only row selection; paging and filters run on the server). */
+const features = tableFeatures({ rowSelectionFeature })
+
+/** Column definition for a ResourceTable row of type T. */
+export type ResourceColumn<T extends object> = ColumnDef<typeof features, T, unknown>
+
+type ResourceTableProps<T extends object> = {
   queryKey: string
   path: string
-  columns: ColumnDef<T, unknown>[]
+  columns: ResourceColumn<T>[]
   params?: Record<string, string | number | boolean | undefined | null>
   selectable?: boolean
   bulkActions?: (rows: T[], clear: () => void) => React.ReactNode
@@ -26,7 +33,7 @@ type ResourceTableProps<T> = {
 }
 
 /** Server-paginated table for any Laravel paginator endpoint. */
-export function ResourceTable<T>({
+export function ResourceTable<T extends object>({
   queryKey, path, columns, params = {}, selectable, bulkActions, onRowClick, empty = 'Nothing here yet.', rowId,
 }: ResourceTableProps<T>) {
   const [page, setPage] = useState(1)
@@ -39,7 +46,7 @@ export function ResourceTable<T>({
     placeholderData: keepPreviousData,
   })
 
-  const allColumns = useMemo<ColumnDef<T, unknown>[]>(() => {
+  const allColumns = useMemo<ResourceColumn<T>[]>(() => {
     if (!selectable) return columns
     return [
       {
@@ -60,12 +67,11 @@ export function ResourceTable<T>({
     ]
   }, [columns, selectable])
 
-  const table = useReactTable({
-    data: query.data?.data ?? [],
+  const data = useMemo(() => query.data?.data ?? [], [query.data])
+  const table = useTable({
+    features,
+    data,
     columns: allColumns,
-    getCoreRowModel: getCoreRowModel(),
-    manualPagination: true,
-    pageCount: query.data?.last_page ?? 1,
     state: { rowSelection: selection },
     onRowSelectionChange: setSelection,
     getRowId: rowId ?? ((row, i) => String((row as { id?: number }).id ?? i)),
@@ -103,7 +109,7 @@ export function ResourceTable<T>({
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}
                   className={onRowClick ? 'cursor-pointer' : undefined} onClick={() => onRowClick?.(row.original)}>
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getAllCells().map((cell) => (
                     <TableCell key={cell.id} className='whitespace-nowrap'>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                   ))}
                 </TableRow>

@@ -1,17 +1,16 @@
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { type ColumnDef } from '@tanstack/react-table'
 import { Crown } from 'lucide-react'
 import { useMutate } from '@/hooks/use-mutate'
 import { formatDate, formatMoney } from '@/lib/money'
 import { Button } from '@/components/ui/button'
 import { FilterBar, SearchInput, SelectFilter, opts } from '@/components/km/filter-bar'
 import { Page } from '@/components/km/page'
-import { ResourceTable } from '@/components/km/resource-table'
+import { ResourceTable, type ResourceColumn } from '@/components/km/resource-table'
 import { StatusBadge } from '@/components/km/status-badge'
 import { type Order } from './types'
 
-const columns: ColumnDef<Order, unknown>[] = [
+const columns: ResourceColumn<Order>[] = [
   { header: 'Order', cell: ({ row }) => <span className='font-mono text-xs'>{row.original.number}</span> },
   { header: 'Date', cell: ({ row }) => formatDate(row.original.created_at, true) },
   { header: 'Customer', cell: ({ row }) => (

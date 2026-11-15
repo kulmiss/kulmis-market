@@ -65,6 +65,7 @@ change any of them.
 | 56 | Payment methods | **No Chapa / no online gateway.** Orders, membership and guest signals are paid by Telebirr or bank transfer with a receipt that staff approve, and members can use their wallet (all or part). Refunds of transfers are sent back by hand and recorded; wallet payments go back to the wallet. Existing page texts that mentioned Chapa are updated by a migration (only sentences you never edited). | Decided (you) |
 | 57 | Logo colour | Green `#1f8a4c` (the member-area accent default) with the gold knob and sand basket, everywhere the logo appears. The storefront is white and green too (#23). If you change the member accent in Settings, the logo stays this green (it is also in the favicon and app icons). | Decided (you) |
 | 58 | Religious images | None. Demo photos and products avoid religious symbols and festivals (the cross pendant and Meskel print were replaced by a quartz bracelet and a macramé wall hanging; a photo with evil-eye beads was cropped). Keep this in mind for your own product photos. | Decided (you) |
+| 59 | PHP version | **PHP 8.3** on the live server, in Docker and in CI, because almost every host offers it. phpunit 13 and the PHP 8.5 Docker image need PHP 8.4+, so Dependabot skips them for now (`.github/dependabot.yml`). TypeScript 7 is skipped too until typescript-eslint supports it. To move to PHP 8.4 later: change `composer.json`, the Dockerfile and CI together, then remove those ignore rules. | Decided (you) |
 
 ## Still open: needs you
 | # | What | Why |

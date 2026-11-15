@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { type ColumnDef } from '@tanstack/react-table'
 import { CheckCircle2, Lock, Plus, Send, Trash2, UserMinus } from 'lucide-react'
 import { useMutate } from '@/hooks/use-mutate'
 import { api } from '@/lib/api'
@@ -14,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { FilterBar, SearchInput, SelectFilter, opts } from '@/components/km/filter-bar'
 import { FormDialog } from '@/components/km/form-dialog'
 import { Page } from '@/components/km/page'
-import { ResourceTable } from '@/components/km/resource-table'
+import { ResourceTable, type ResourceColumn } from '@/components/km/resource-table'
 import { Flag, StatusBadge } from '@/components/km/status-badge'
 
 type Signal = { id: number; pair: string; direction: 'long' | 'short'; entry: string; targets: string[]; stop_loss: string; notes: string | null
@@ -23,7 +22,7 @@ type Signal = { id: number; pair: string; direction: 'long' | 'short'; entry: st
 
 export function SignalsPage() {
   const [status, setStatus] = useState('all')
-  const columns: ColumnDef<Signal, unknown>[] = [
+  const columns: ResourceColumn<Signal>[] = [
     { header: 'Posted', cell: ({ row }) => formatDate(row.original.posted_at, true) },
     { header: 'Pair', cell: ({ row }) => <b>{row.original.pair}</b> },
     { header: 'Side', cell: ({ row }) => <span className={row.original.direction === 'long' ? 'text-emerald-600' : 'text-red-600'}>{row.original.direction.toUpperCase()}</span> },
@@ -101,7 +100,7 @@ export function SubscribersPage() {
   const [q, setQ] = useState('')
   const [source, setSource] = useState('all')
   const [status, setStatus] = useState('all')
-  const columns: ColumnDef<Sub, unknown>[] = [
+  const columns: ResourceColumn<Sub>[] = [
     { header: 'Name', cell: ({ row }) => `${row.original.first_name} ${row.original.last_name}` },
     { header: 'Phone', accessorKey: 'phone' },
     { header: 'Source', accessorKey: 'source' },

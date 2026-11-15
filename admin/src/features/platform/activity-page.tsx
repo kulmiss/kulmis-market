@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import { type ColumnDef } from '@tanstack/react-table'
 import { formatDate } from '@/lib/money'
 import { FilterBar, SearchInput } from '@/components/km/filter-bar'
 import { Page } from '@/components/km/page'
-import { ResourceTable } from '@/components/km/resource-table'
+import { ResourceTable, type ResourceColumn } from '@/components/km/resource-table'
 
 type Row = {
   id: number; action: string; reason: string | null; created_at: string; ip_address: string | null
@@ -11,7 +10,7 @@ type Row = {
   actor: { first_name: string; last_name: string; role: string } | null
 }
 
-const columns: ColumnDef<Row, unknown>[] = [
+const columns: ResourceColumn<Row>[] = [
   { header: 'When', cell: ({ row }) => formatDate(row.original.created_at, true) },
   { header: 'Who', cell: ({ row }) => (row.original.actor ? `${row.original.actor.first_name} ${row.original.actor.last_name}` : 'System') },
   { header: 'Action', accessorKey: 'action', cell: ({ row }) => <code className='text-xs'>{row.original.action}</code> },
