@@ -55,7 +55,7 @@ class MembershipController extends Controller
         $request->validate(['method' => ['required', Rule::in(['wallet'])]]);
         try {
             $purchase = $this->memberships->newPurchase($request->user());
-            app(WalletPayments::class)->apply($purchase, $request->user());
+            app(WalletPayments::class)->apply($purchase, $request->user(), fullOnly: true);
             if (! $purchase->fresh()->isSettled()) {
                 throw new InvalidArgumentException('Not enough in your wallet. Use it for part of the price and transfer the rest (send the receipt).');
             }

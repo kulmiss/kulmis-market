@@ -209,6 +209,12 @@ class MembershipTest extends TestCase
 
         app(Ledger::class)->post('manual.adjustment', [[Account::ADJUSTMENTS, 100_000],
             [app(Ledger::class)->userAccount($user->id, Wallet::AVAILABLE), -100_000]], reason: 'test');
+        // "Pay from wallet" with too little: refused and nothing is taken from the wallet.
+        $this->postJson('/api/v1/membership/pay', ['method' => 'wallet'])->assertUnprocessable();
+        $this->assertSame(100_000, Wallet::for($user)->available());
+        $this->actingAs($user, 'web')->post('/account/membership/pay', ['method' => 'wallet'])->assertSessionHasErrors('membership');
+        $this->assertSame(100_000, Wallet::for($user)->available());
+        $this->actingAs($user, 'sanctum');
         $this->postJson('/api/v1/membership/payment-proof', ['method' => 'telebirr', 'use_wallet' => true,
             'proof' => UploadedFile::fake()->image('r.jpg')])->assertCreated()->assertJsonPath('data.status', 'awaiting_review');
 
