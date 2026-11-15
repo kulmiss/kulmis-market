@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Badges\BadgeEngine;
 use App\Badges\BadgeListener;
 use App\Events\CatalogChanged;
 use App\Events\CustomerRegistered;
@@ -25,10 +26,13 @@ use App\Signals\MembershipSignalsListener;
 use App\Storefront\PageCache;
 use App\Support\Features;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
@@ -38,6 +42,8 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // One per request / queue job, so it can remember what it already worked out.
+        $this->app->scoped(BadgeEngine::class);
         $this->app->singleton(CheckoutExtras::class);
         $this->app->bind(ShippingQuoter::class, ZoneShippingQuoter::class);
         $this->app->bind(SmsGateway::class, fn () => match (config('services.sms.driver')) {
@@ -51,6 +57,18 @@ class AppServiceProvider extends ServiceProvider
         // Every link, asset and image URL uses APP_URL, never the Host header a
         // visitor sends (stops host-header injection into cached pages and emails).
         URL::forceRootUrl(rtrim((string) config('app.url'), '/'));
+        // `php artisan optimize` (every deploy) also empties the page cache: new CSS/JS names.
+        $this->optimizes(optimize: 'km:clear-page-cache', clear: 'km:clear-page-cache', key: 'page cache');
+
+        // Development: every query slower than SLOW_QUERY_MS (default 50 ms) goes to the log.
+        $slow = (int) config('database.slow_query_ms');
+        if ($slow > 0 && ! $this->app->isProduction()) {
+            DB::listen(function (QueryExecuted $q) use ($slow) {
+                if ($q->time >= $slow) {
+                    Log::warning('Slow query ('.round($q->time).' ms)', ['sql' => $q->sql, 'url' => request()->fullUrl()]);
+                }
+            });
+        }
         if (str_starts_with((string) config('app.url'), 'https://')) {
             URL::forceScheme('https');
         }

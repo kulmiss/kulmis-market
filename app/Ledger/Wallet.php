@@ -42,10 +42,23 @@ class Wallet
         return $this->ledger->balance($this->ledger->userAccount($this->user, self::PAYOUT));
     }
 
-    /** @return array{pending:int, available:int, payout:int} */
+    /**
+     * All three balances in one query (the member pages show them together).
+     *
+     * @return array{pending:int, available:int, payout:int}
+     */
     public function summary(): array
     {
-        return ['pending' => $this->pending(), 'available' => $this->available(), 'payout' => $this->onPayoutHold()];
+        $codes = array_map(fn (string $b) => "user:{$this->user->id}:$b", self::BUCKETS);
+        $sums = Account::query()->whereIn('code', $codes)
+            ->leftJoin('ledger_postings', 'ledger_postings.ledger_account_id', '=', 'ledger_accounts.id')
+            ->groupBy('ledger_accounts.id', 'ledger_accounts.code')
+            ->selectRaw('ledger_accounts.code, COALESCE(SUM(ledger_postings.amount), 0) as total')
+            ->pluck('total', 'code');
+        // Wallet accounts are liabilities: the balance is the credit side (negative postings).
+        $get = fn (string $b) => -(int) ($sums["user:{$this->user->id}:$b"] ?? 0);
+
+        return ['pending' => $get(self::PENDING), 'available' => $get(self::AVAILABLE), 'payout' => $get(self::PAYOUT)];
     }
 
     public function account(string $bucket): Account

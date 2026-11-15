@@ -29,8 +29,9 @@
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
     <link rel="manifest" href="{{ asset('site.webmanifest') }}">
     @feature('appearance.theme_switch')<script>{!! \App\Support\Csp::THEME_SCRIPT !!}</script>@endfeature
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script type="speculationrules">{!! \App\Support\Csp::SPECULATION_RULES !!}</script>
 </head>
 <body class="flex min-h-full flex-col">
 <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:p-2">Skip to content</a>

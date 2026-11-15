@@ -308,3 +308,28 @@ $$('[data-copy]').forEach((b) => b.addEventListener('click', () => {
     const src = $('[data-copy-source]', b.parentElement);
     navigator.clipboard?.writeText(src.value).then(() => { b.textContent = 'Copied!'; setTimeout(() => { b.textContent = 'Copy'; }, 1500); });
 }));
+
+/* ---------- instant navigation fallback (browsers without Speculation Rules) ---------- */
+const NO_PREFETCH = /^\/(account|admin|api|cart|checkout|pay|login|register|logout|r)(\/|$)/;
+if (!(HTMLScriptElement.supports && HTMLScriptElement.supports('speculationrules'))) {
+    const done = new Set();
+    const warm = (e) => {
+        const a = e.target.closest && e.target.closest('a[href]');
+        if (!a || a.origin !== location.origin || a.search || a.hasAttribute('data-no-prefetch') || NO_PREFETCH.test(a.pathname) || done.has(a.pathname)) return;
+        done.add(a.pathname);
+        const l = document.createElement('link');
+        l.rel = 'prefetch'; l.href = a.pathname;
+        document.head.appendChild(l);
+    };
+    document.addEventListener('pointerover', warm, { passive: true });
+    document.addEventListener('touchstart', warm, { passive: true });
+}
+
+/* ---------- service worker: fast repeat visits + offline page ---------- */
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+    // Signing in or out forgets saved pages.
+    $$('form[action$="/logout"], form[action$="/login"]').forEach((f) => f.addEventListener('submit', () => {
+        navigator.serviceWorker.controller?.postMessage('km-clear-pages');
+    }));
+}

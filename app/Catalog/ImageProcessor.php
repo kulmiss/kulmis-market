@@ -97,8 +97,10 @@ class ImageProcessor
     {
         ob_start();
         match ($format) {
-            'avif' => imageavif($img, null, 55, 6),
-            'webp' => imagewebp($img, null, 80),
+            // Quality picked by eye on craft photos: AVIF 45 looks the same as 55 and is ~30% smaller
+            // (the product photo is what phones wait for).
+            'avif' => imageavif($img, null, 45, 6),
+            'webp' => imagewebp($img, null, 75),
             default => imagejpeg($img, null, 82),
         };
 

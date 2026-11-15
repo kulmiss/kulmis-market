@@ -14,6 +14,7 @@ import { FilterBar, SearchInput, SelectFilter, opts } from '@/components/km/filt
 import { Page } from '@/components/km/page'
 import { ResourceTable, type ResourceColumn } from '@/components/km/resource-table'
 import { StatusBadge } from '@/components/km/status-badge'
+import { PageSkeleton } from '@/components/km/page-skeleton'
 
 export type Member = {
   id: number; first_name: string; last_name: string; phone: string | null; email: string | null; status: string
@@ -67,7 +68,7 @@ export function MemberDetail({ id }: { id: string }) {
   const [amount, setAmount] = useState(0)
 
   const d = q.data
-  if (!d) return <Page title='Member'>Loading…</Page>
+  if (!d) return <Page title='Member'><PageSkeleton cards={3} /></Page>
   const u = d.user
   const m = u.membership
 

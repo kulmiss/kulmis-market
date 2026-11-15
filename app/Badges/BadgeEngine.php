@@ -77,6 +77,7 @@ class BadgeEngine
      */
     public function evaluate(User $user): array
     {
+        unset($this->summaries[$user->id]);
         if (Features::disabled('badges') || $user->isStaff()) {
             return [];
         }
@@ -94,6 +95,7 @@ class BadgeEngine
 
     public function unlock(User $user, Badge $badge): bool
     {
+        unset($this->summaries[$user->id]);
         try {
             UserBadge::query()->create(['user_id' => $user->id, 'badge_id' => $badge->id, 'unlocked_at' => now()]);
         } catch (QueryException) {
@@ -156,6 +158,15 @@ class BadgeEngine
      */
     public function summary(User $user): array
     {
+        return $this->summaries[$user->id] ??= $this->buildSummary($user);
+    }
+
+    /** @var array<int, array<string, mixed>> per request (the engine is a scoped binding) */
+    private array $summaries = [];
+
+    /** @return array{badge:?string, highest:?array<string,mixed>, next:?array<string,mixed>, unseen:list<array<string,mixed>>, unlocked:int, total:int, active_level1:int} */
+    private function buildSummary(User $user): array
+    {
         if (Features::disabled('badges')) {
             return ['badge' => null, 'highest' => null, 'next' => null, 'unseen' => [], 'unlocked' => 0, 'total' => 0, 'active_level1' => 0];
         }
@@ -178,6 +189,7 @@ class BadgeEngine
 
     public function markSeen(User $user): void
     {
+        unset($this->summaries[$user->id]);
         UserBadge::query()->where('user_id', $user->id)->whereNull('seen_at')->update(['seen_at' => now()]);
     }
 

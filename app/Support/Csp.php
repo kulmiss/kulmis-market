@@ -10,16 +10,28 @@ final class Csp
 {
     public const THEME_SCRIPT = "(function(){try{var t=localStorage.getItem('km-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}})();";
 
+    /**
+     * Instant navigation: Chrome/Edge fetch a public page as soon as the pointer
+     * rests on its link (~200 ms) or a finger touches it. Private and money pages
+     * are never fetched ahead. (Other browsers: tiny fallback in app.js.)
+     */
+    public const SPECULATION_RULES = '{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":["/account*","/admin*","/logout","/login*","/register","/cart","/checkout","/pay/*","/api/*","/r/*","/*\\\\?*"]}},{"not":{"selector_matches":"[rel~=nofollow], [data-no-prefetch]"}}]},"eagerness":"moderate"}]}';
+
     public static function themeHash(): string
     {
-        return "'sha256-".base64_encode(hash('sha256', self::THEME_SCRIPT, true))."'";
+        return self::hash(self::THEME_SCRIPT);
+    }
+
+    private static function hash(string $inline): string
+    {
+        return "'sha256-".base64_encode(hash('sha256', $inline, true))."'";
     }
 
     public static function storefront(): string
     {
         return implode('; ', [
             "default-src 'self'",
-            "script-src 'self' ".self::themeHash(),
+            "script-src 'self' ".self::themeHash().' '.self::hash(self::SPECULATION_RULES),
             // No inline <style> blocks at all; style="" attributes (badge colours, member accent) stay allowed.
             "style-src 'self'",
             "style-src-attr 'unsafe-inline'",

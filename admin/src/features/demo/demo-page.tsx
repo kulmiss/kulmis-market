@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Page } from '@/components/km/page'
+import { PageSkeleton } from '@/components/km/page-skeleton'
 
 type DemoState = { visible: boolean; exists: boolean; counts: Record<string, number>; confirm_text: string; can_seed: boolean }
 
@@ -53,7 +54,7 @@ export function DemoPage() {
 
   return (
     <Page title='Demo data' description='Sample shop, members, orders and money to try everything. It is never counted with real money.'>
-      {!d ? <p className='text-muted-foreground'>Loading…</p> : (
+      {!d ? <PageSkeleton cards={2} rows={3} /> : (
         <div className='grid gap-4 lg:grid-cols-2'>
           <Card>
             <CardHeader>

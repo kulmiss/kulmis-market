@@ -4,6 +4,7 @@ namespace App\Ledger;
 
 use App\Demo\Demo;
 use App\Models\User;
+use App\Reports\Dashboard;
 use App\Security\SecurityAlerts;
 use App\Support\Activity;
 use Illuminate\Database\Eloquent\Model;
@@ -103,6 +104,7 @@ class Ledger
                     DB::afterCommit(fn () => app(SecurityAlerts::class)->critical(
                         "Manual ledger entry ($type) by user #".($actorId ?? 0).': '.$reason, ['entry' => $entry->id]));
                 }
+                DB::afterCommit(fn () => Dashboard::moneyMoved());
 
                 return $entry;
             });

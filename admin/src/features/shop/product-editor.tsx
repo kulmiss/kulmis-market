@@ -16,6 +16,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { MoneyInput } from '@/components/km/money-input'
 import { Page } from '@/components/km/page'
 import { type Category, type Product, type Variant } from './types'
+import { PageSkeleton } from '@/components/km/page-skeleton'
 
 type Draft = Omit<Product, 'id' | 'images' | 'warnings' | 'available_stock' | 'total_cost' | 'profit' | 'tags' | 'slug'> & { slug?: string; tags: string[] }
 
@@ -39,7 +40,7 @@ export function ProductEditor({ id }: { id: string }) {
 
   const loaded: Draft | null = isNew ? empty : product.data ? { ...product.data, tags: (product.data.tags ?? []).map((t) => t.name) } : null
   const current = draft ?? loaded
-  if (!current) return <Page title='Product'>Loading…</Page>
+  if (!current) return <Page title='Product'><PageSkeleton cards={0} rows={10} /></Page>
   const d: Draft = current
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setDraft({ ...d, [k]: v })
   const setVariant = (i: number, patch: Partial<Variant>) => set('variants', d.variants.map((v, j) => (j === i ? { ...v, ...patch } : v)))

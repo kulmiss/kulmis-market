@@ -1,7 +1,9 @@
 @extends('layouts.store')
 @php
     $s = fn ($k) => \App\Support\Settings::int($k);
+    $hero = $featured->first()?->images->first();
 @endphp
+@push('head')@include('store.partials.preload-image', ['image' => $hero, 'sizes' => '(min-width: 768px) 50vw, 100vw'])@endpush
 @section('content')
 <section class="bg-gradient-to-b from-mist-100 to-mist-50 dark:from-ink-800 dark:to-ink-900">
     <div class="container-km grid items-center gap-10 py-14 md:grid-cols-2 md:py-20">
@@ -16,7 +18,7 @@
         </div>
         @if ($featured->first())
             <a href="{{ url('/shop/'.$featured->first()->slug) }}" class="block aspect-[4/5] overflow-hidden rounded-[2rem] shadow-xl">
-                @include('store.partials.picture', ['image' => $featured->first()->images->first(), 'eager' => true, 'sizes' => '(min-width: 768px) 50vw, 100vw'])
+                @include('store.partials.picture', ['image' => $hero, 'eager' => true, 'sizes' => '(min-width: 768px) 50vw, 100vw'])
             </a>
         @endif
     </div>

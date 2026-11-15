@@ -18,7 +18,7 @@
     'ogType' => 'product',
     'ogImage' => $img ? $img->url(in_array(1600, $img->widths, true) ? 1600 : max($img->widths), in_array('jpg', $img->formats, true) ? 'jpg' : $img->formats[0]) : null,
 ])
-@push('head')<script type="application/ld+json">{!! json_encode($jsonLd, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}</script>@endpush
+@push('head')@include('store.partials.preload-image', ['image' => $img, 'sizes' => '(min-width: 768px) 50vw, 100vw'])<script type="application/ld+json">{!! json_encode($jsonLd, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}</script>@endpush
 @section('content')
 <div class="container-km grid gap-10 py-10 md:grid-cols-2">
     <div>

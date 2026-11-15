@@ -8,6 +8,7 @@ import { formatMoney } from '@/lib/money'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Page } from '@/components/km/page'
+import { PageSkeleton } from '@/components/km/page-skeleton'
 
 type D = {
   revenue: { products: number; memberships: number; signals: number; total: number }
@@ -49,7 +50,7 @@ export function Dashboard() {
   return (
     <Page title='Dashboard' description='Money from the ledger, so refunds are already taken off.'
       actions={ranges.map((r) => <Button key={r.days} size='sm' variant={days === r.days ? 'default' : 'outline'} onClick={() => setDays(r.days)}>{r.label}</Button>)}>
-      {!d ? <p className='text-muted-foreground'>Loading…</p> : (
+      {!d ? <PageSkeleton /> : (
         <div className='grid gap-4'>
           {d.demo.visible && d.demo.exists && (
             <div className='flex flex-wrap items-center gap-2 rounded-md border border-dashed p-3 text-sm' data-testid='dataset-switch'>

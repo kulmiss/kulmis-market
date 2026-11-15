@@ -23,8 +23,12 @@ class DashboardController extends Controller
 
         $dataset = Demo::dataset($request->input('data'));
 
-        return response()->json(['data' => $dashboard->build($from, $to, $dataset === 'demo')
-            + ['demo' => ['visible' => Demo::visible(), 'exists' => Demo::exists()]]]);
+        // ~50 aggregate queries: keep the result for a minute, and start over as soon as
+        // any money moves (the ledger bumps the version), so it is fast but never wrong for long.
+        $key = sprintf('dashboard:%d:%s:%s:%s', (int) Cache::get(Dashboard::VERSION_KEY, 0), $from->toDateString(), $to->toDateString(), $dataset);
+        $numbers = Cache::remember($key, 60, fn () => $dashboard->build($from, $to, $dataset === 'demo'));
+
+        return response()->json(['data' => $numbers + ['demo' => ['visible' => Demo::visible(), 'exists' => Demo::exists()]]]);
     }
 
     /** Health page: is cron running, queue backlog, what's off. */
