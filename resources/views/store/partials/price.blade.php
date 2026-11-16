@@ -3,7 +3,8 @@
     $calc = app(\App\Pricing\PriceCalculator::class);
     $regularPrice = $price;
     if (! empty($sale) && $sale->price < $price) { $price = $sale->price; }
-    $memberPrice = \App\Support\Features::enabled('membership') && empty($noMemberPrice) ? $calc->memberPrice($price) : $price;
+    // Visitors see the member price only while membership is on; a member who still has a paid month always sees theirs.
+    $memberPrice = (\App\Support\Features::enabled('membership') || ($isMember ?? false)) && empty($noMemberPrice) ? $calc->memberPrice($price) : $price;
 @endphp
 <span class="flex flex-wrap items-baseline gap-x-2">
     @if ($price < $regularPrice)<span class="muted text-sm line-through"><span class="sr-only">Was </span>{{ \App\Support\Money::format($regularPrice) }}</span>@endif

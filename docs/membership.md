@@ -33,8 +33,11 @@
 
 ## When membership (or signals) is switched off
 - Nobody can buy or renew (pages and API answer 404; visitors see nothing of it).
-- People who already paid keep it until their paid month ends — member
-  status, team earnings and the signals channel. There is no grace time while
+- People who already paid keep ALL member benefits until their paid month
+  ends: member prices, free delivery, early access, the members-only
+  product, the signals channel and team earnings (`Features::memberBenefit`
+  skips the membership switch for them; the benefit's own switch still
+  counts). Everyone else sees nothing of membership. There is no grace time while
   it is off (nobody can pay), then they leave as normal (hourly sweep), also
   from the Telegram channel. Signals bought without membership work the same.
 - Before switching off, the Super Admin sees how many people keep it and until

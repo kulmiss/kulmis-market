@@ -50,7 +50,7 @@ class MoreFeatureSwitchesTest extends TestCase
         }
         foreach (array_keys(config('settings')) as $setting) {
             // Each customer message type has its own switch (account-safety messages are always sent).
-            if (str_starts_with($setting, 'notify.') && ! str_starts_with($setting, 'notify.security_') && $setting !== 'notify.badge_unlocked') {
+            if (str_starts_with($setting, 'notify.') && ! Message::isAccountSafety(substr($setting, 7)) && $setting !== 'notify.badge_unlocked') {
                 $this->assertTrue(Features::exists('messages.'.substr($setting, 7)), $setting.' has no switch');
             }
         }
@@ -91,26 +91,29 @@ class MoreFeatureSwitchesTest extends TestCase
         $sms = Mockery::mock(SmsGateway::class);
         $this->app->instance(SmsGateway::class, $sms);
 
-        Features::set('messages.payout_paid', false);
+        Features::set('messages.order_paid', false);
         $sms->shouldNotReceive('send');
-        (new SendCustomerMessage(new Message('Your cash-out', 'sent', '+251911223344', 'a@example.com', null, 'payout_paid')))
+        (new SendCustomerMessage(new Message('Order', 'paid', '+251911223344', 'a@example.com', null, 'order_paid')))
             ->handle($sms, app(TelegramClient::class));
         Mail::assertNothingSent();
 
+        // Account safety (cash-outs too): always, even with the wallet and every channel switch off.
+        Features::set('wallet', false);
+        Features::set('notifications.sms', false);
         $sms2 = Mockery::mock(SmsGateway::class);
         $sms2->shouldReceive('send')->once();
-        (new SendCustomerMessage(new Message('Security notice', 'x', '+251911223344', null, null, 'payout_paid'), null, true))
+        (new SendCustomerMessage(new Message('Your cash-out', 'sent', '+251911223344', null, null, 'payout_paid')))
             ->handle($sms2, app(TelegramClient::class));
 
-        Features::set('messages.payout_paid', true);
-        $this->assertTrue((new Message('s', 'b', type: 'payout_paid'))->allowed());
+        Features::set('messages.order_paid', true);
+        $this->assertTrue((new Message('s', 'b', type: 'order_paid'))->allowed());
         $this->assertTrue((new Message('s', 'b'))->allowed(), 'untyped messages (password reset) are always allowed');
     }
 
     public function test_message_type_follows_its_feature(): void
     {
-        Features::set('wallet', false);
-        $this->assertFalse((new Message('s', 'b', type: 'payout_paid'))->allowed(), 'cash-out messages go with the wallet');
+        Features::set('shop', false);
+        $this->assertFalse((new Message('s', 'b', type: 'order_paid'))->allowed(), 'order messages go with the shop');
     }
 
     public function test_order_tracking_off_hides_links_and_points_messages_elsewhere(): void

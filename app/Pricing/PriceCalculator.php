@@ -25,7 +25,8 @@ class PriceCalculator
 {
     public function memberDiscountActive(): bool
     {
-        return Features::enabled('membership.member_discount');
+        // Member prices are only given to active members; while membership is off, those who paid keep them.
+        return Features::memberBenefit('membership.member_discount');
     }
 
     public function memberPrice(int $price): int
@@ -184,7 +185,7 @@ class PriceCalculator
 
     public function freeShippingApplies(int $merchandiseTotal): bool
     {
-        return Features::enabled('shop.free_shipping') && $merchandiseTotal >= Settings::int('shipping.member_free_over');
+        return Features::memberBenefit('shop.free_shipping') && $merchandiseTotal >= Settings::int('shipping.member_free_over');
     }
 
     private function assertPurchasable(Product $product, ?ProductVariant $variant, int $qty, bool $member, bool $checkStock): void

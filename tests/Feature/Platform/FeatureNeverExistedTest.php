@@ -4,6 +4,7 @@ namespace Tests\Feature\Platform;
 
 use App\Http\Middleware\ThrottlePerRoute;
 use App\Membership\Benefits;
+use App\Membership\Members;
 use App\Models\User;
 use App\Notify\Message;
 use App\Support\Features;
@@ -38,6 +39,9 @@ class FeatureNeverExistedTest extends ReferralTestCase
         ['member', '/api/v1/wallet'], ['member', '/api/v1/badges'], ['member', '/api/v1/notifications'], ['member', '/api/v1/me/orders'],
         ['member', '/api/v1/signals/member-access'],
     ];
+
+    /** Words a member who still has a paid month may see while membership is off: their own benefits. */
+    private const PAID_BENEFIT_WORDS = ['member price', 'member prices', 'members pay', 'free shipping', 'free delivery', 'early access'];
 
     /** Files that are always checked. */
     private const FILES = ['/sitemap.xml', '/robots.txt', '/account.webmanifest', '/site.webmanifest', '/offline.html'];
@@ -124,6 +128,15 @@ class FeatureNeverExistedTest extends ReferralTestCase
         }
     }
 
+    /** Is the person of this page ("member /cart", "api member /api/…") still within a paid membership month? */
+    private function stillPaid(string $key): bool
+    {
+        $who = str_starts_with($key, 'api ') ? explode(' ', $key)[1] : $this->splitKey($key)[0];
+        $user = $this->users()[$who] ?? null;
+
+        return $user !== null && Members::isActive($user->fresh());
+    }
+
     /** @return array{0:string, 1:string} */
     private function splitKey(string $key): array
     {
@@ -177,8 +190,12 @@ class FeatureNeverExistedTest extends ReferralTestCase
                 continue;
             }
             $text = $this->visible($body);
+            $paid = $feature === 'membership' && $this->stillPaid($key);
             foreach ($family as $f) {
                 foreach (config('feature_words')[$f] as $w) {
+                    if ($paid && in_array($w, self::PAID_BENEFIT_WORDS, true)) {
+                        continue; // they keep their member benefits until their paid month ends
+                    }
                     if (preg_match('/(?<![\p{L}\p{N}])'.preg_quote($w, '/').'(?![\p{L}\p{N}])/u', $text, $m, PREG_OFFSET_CAPTURE)) { // same as has(), with the place
                         $ctx = preg_replace('/\s+/', ' ', mb_strcut($text, max(0, $m[0][1] - 70), 140));
                         $this->report[] = "WORD [$feature] '$w' on $key :: $ctx";
@@ -218,6 +235,9 @@ class FeatureNeverExistedTest extends ReferralTestCase
                 continue;
             }
             $type = substr($key, 7);
+            if (Message::isAccountSafety($type)) {
+                continue; // account-safety messages are always sent, whatever the switches say (your rule)
+            }
             $needs = Message::featureOf($type);
             if ((Features::exists("messages.$type") && Features::disabled("messages.$type")) || ($needs && Features::disabled($needs))) {
                 continue;

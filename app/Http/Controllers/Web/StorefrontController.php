@@ -36,7 +36,7 @@ class StorefrontController extends Controller
         return view('store.home', [
             'featured' => Product::query()->visibleTo($member)->where('is_featured', true)->with(['images', 'variants'])->latest('id')->limit(8)->get(),
             'latest' => Product::query()->visibleTo($member)->with(['images', 'variants'])->latest('release_at')->latest('id')->limit(8)->get(),
-            'membersOnly' => Features::enabled('shop.members_only_product')
+            'membersOnly' => Features::enabled('shop.members_only_product') || ($member && Features::memberBenefit('shop.members_only_product'))
                 ? Product::query()->visibleTo($member)->where('is_members_only', true)->with(['images', 'variants'])->latest('id')->first() : null,
             'categories' => Category::query()->where('is_active', true)->orderBy('position')->limit(8)->get(),
             'banners' => Banner::query()->live('home')->get()->filter(fn (Banner $b) => $b->shownNow())->values(),

@@ -38,7 +38,8 @@ class SendCustomerMessage implements ShouldQueue
 
             return;
         }
-        if (! $m->featureOn() || (! $this->security && ! $m->allowed())) {
+        $security = $this->security || Message::isAccountSafety($m->type); // account safety: always, every channel
+        if (! $m->featureOn() || (! $security && ! $m->allowed())) {
             Log::info('Message type switched off, not sent: '.$m->type);
             if ($this->statusChangeId) {
                 OrderStatusChange::query()->whereKey($this->statusChangeId)->update(['notified' => json_encode(['all' => 'off'])]);
@@ -46,13 +47,13 @@ class SendCustomerMessage implements ShouldQueue
 
             return;
         }
-        if ($m->phone && ($this->security || Features::enabled('notifications.sms'))) {
+        if ($m->phone && ($security || Features::enabled('notifications.sms'))) {
             $this->attempt('sms', fn () => $sms->send($m->phone, $m->body), $sent);
         }
-        if ($m->email && ($this->security || Features::enabled('notifications.email'))) {
+        if ($m->email && ($security || Features::enabled('notifications.email'))) {
             $this->attempt('email', fn () => Mail::to($m->email)->send(new PlainMessage($m->subject, $m->body)), $sent);
         }
-        if ($m->telegramChatId && ($this->security || Features::enabled('notifications.telegram')) && $telegram->configured()) {
+        if ($m->telegramChatId && ($security || Features::enabled('notifications.telegram')) && $telegram->configured()) {
             $this->attempt('telegram', fn () => $telegram->sendMessage($m->telegramChatId, e($m->body)), $sent);
         }
         if ($this->statusChangeId) {
