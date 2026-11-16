@@ -34,7 +34,7 @@ class ReportController extends Controller
         if ($from->diffInDays($to) > 800) {
             $from = $to->copy()->subDays(800)->startOfDay(); // keep it quick
         }
-        $report = $reports->run($type, $from->utc(), $to->utc());
+        $report = $reports->run($type, $from, $to); // the database keeps times in the shop's time zone
         $format = $data['format'] ?? 'json';
         $name = "report-$type-".$from->timezone($tz)->toDateString().'-'.$to->timezone($tz)->toDateString();
         if ($format !== 'json') {

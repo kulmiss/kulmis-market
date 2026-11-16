@@ -162,6 +162,7 @@ One stack on `main`: `pr/67-auto-close` (#75) → `pr/74-admin-off`. The top PR 
 | `pr/86-member-help` | /help articles (23, live numbers), 20 FAQ, search, "Was this helpful?", "?" links, admin article editor |
 | `pr/87-admin-guide` | docs/admin-guide (25 pages) + Guide in the admin + "?" on every screen + PDF; `km:reset-2fa` |
 | `pr/88-docs` | CONTRIBUTING.md (keep the guides right), docs/help.md, QUESTIONS #161–#168, this file, testing guide without Chapa |
+| `pr/89-report-dates` | Reports and monthly signal results: sales after 21:00 were missing from "today" (time-zone bug, found by the evening test run) |
 
 ## Key decisions
 All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
@@ -182,6 +183,7 @@ All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
 See [docs/local-setup.md](docs/local-setup.md).
 
 ## Test status
+- Round 9: 600 backend tests pass on SQLite and MariaDB. Setup wizard, welcome tour, Help and Guide checked in a browser on a phone and a desktop (light and dark).
 - Round 8: the whole TESTING_GUIDE.md run in a browser (Must 1–10 on a phone and again on a desktop, Should 1–10, Nice 1–4); all numbers match, ending at 60,050 / 5,780 / 54,270 = 90.4%. 573 backend tests pass on SQLite and MariaDB.
 - Round 6: 535 backend tests pass on SQLite and MariaDB (Pint, Larastan level 6). The never-existed crawl takes about 2 minutes.
 - Round 5: 507 backend tests pass on SQLite and MariaDB (Pint, Larastan level 6, audits and gitleaks clean). Every screen re-checked at 360/390/414 px and desktop, light and dark, as 6 member types and 5 staff roles; new flows (gift card, download, gift membership, custom order, bell, contests, share) run in a phone-size browser; real parallel requests for flash-sale stock, gift cards and download limits; a product-order simulation (270 random orders) proves no paid order loses money.
