@@ -28,7 +28,7 @@ Result: **507 tests** pass on SQLite and MariaDB.
 | Profit guards | **A big coupon on top of member/sale prices could make an order lose money** (up to ~94 ETB) | ✅ Coupon safety | 8 → 9.5 |
 | Access control | **Fulfilment and Support could make gift cards for cash** (money to spend); the role test only read the first rule | ✅ | 8 → 9.5 |
 | Admin screens | Template "My account" page (fake Display tab, raw-data pop-up, hard words, sideways scroll on phones, unlabeled radios); dashboard asked for by roles without it (403) ; 401 on the sign-in page | ✅ | 8 → 9.5 |
-| Performance | Flash sales read the cache once per product card (32 queries on /shop → 8); cart badge sometimes delayed the first paint on phones (+0.5 s) | ✅ | 8.5 → 9.5 |
+| Performance | Flash sales read the cache once per product card (32 queries on /shop → 8); cart badge sometimes delayed the first paint on phones (+0.5 s); member-only script made the shop's first download bigger (phone LCP budget in CI missed by 50 ms) | ✅ | 8.5 → 9.5 |
 | Concurrency (stock, gift cards, downloads, rewards) | none (verified with real parallel requests; rewards have a row lock + unique key) | — | 9.5 → 9.5 |
 | Web security (XSS, CSRF, headers, CSP, CORS) | none new (honeypot fields got a label) | ✅ | 9.5 → 9.5 |
 | Ops | Slow-query log only in development; demo data had none of the new features | ✅ | 8.5 → 9.5 |
@@ -51,7 +51,7 @@ Result: **507 tests** pass on SQLite and MariaDB.
 | Lighthouse phone + desktop (perf / a11y / best practices / SEO) | 100 / 96–100 / 100 / 100 | **100 / 100 / 100 / 100** on all 22 runs |
 | Phone LCP, text pages (5 runs each) | 0.94–0.96 s | 0.95–1.17 s (target 1.2 s) |
 | CLS / tap response (4× slower CPU) | 0 / — | 0 / ≤ 40 ms |
-| Store JS + CSS (gzip) | 5 + 9 KB | 8.7 + 9.8 KB |
+| Store JS + CSS (gzip) | 5 + 9 KB | 7.1 + 9.8 KB (member-only parts, about 1 KB each, load only where used) |
 | Admin first download (gzip) | ~170 KB | ~170 KB (new pages load on demand) |
 
 ### Not done, or only partly, and why
