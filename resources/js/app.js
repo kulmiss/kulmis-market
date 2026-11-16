@@ -99,7 +99,10 @@ async function refreshCount() {
         badge.classList.toggle('hidden', n === 0);
     } catch { /* ignore */ }
 }
-refreshCount();
+// After the page has loaded and the phone is idle: the count never delays the first view.
+const whenIdle = (fn) => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 1500 }) : setTimeout(fn, 150));
+if (document.readyState === 'complete') whenIdle(refreshCount);
+else window.addEventListener('load', () => whenIdle(refreshCount), { once: true });
 
 /* ---------- product page ---------- */
 $$('[data-add-to-cart]').forEach((form) =>
