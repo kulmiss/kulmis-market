@@ -37,6 +37,7 @@ import { Route as AuthenticatedFraudRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedGiftCardsRouteImport } from './routes/_authenticated/gift-cards'
 import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
 import { Route as AuthenticatedLedgerRouteImport } from './routes/_authenticated/ledger'
+import { Route as AuthenticatedMoneyHealthRouteImport } from './routes/_authenticated/money-health'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
 import { Route as AuthenticatedReferralsRouteImport } from './routes/_authenticated/referrals'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
@@ -198,6 +199,12 @@ const AuthenticatedLedgerRoute = AuthenticatedLedgerRouteImport.update({
   path: '/ledger',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMoneyHealthRoute =
+  AuthenticatedMoneyHealthRouteImport.update({
+    id: '/money-health',
+    path: '/money-health',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPaymentsRoute = AuthenticatedPaymentsRouteImport.update({
   id: '/payments',
   path: '/payments',
@@ -332,6 +339,7 @@ export interface FileRoutesByFullPath {
   '/gift-cards': typeof AuthenticatedGiftCardsRoute
   '/help': typeof AuthenticatedHelpRoute
   '/ledger': typeof AuthenticatedLedgerRoute
+  '/money-health': typeof AuthenticatedMoneyHealthRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/referrals': typeof AuthenticatedReferralsRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -378,6 +386,7 @@ export interface FileRoutesByTo {
   '/gift-cards': typeof AuthenticatedGiftCardsRoute
   '/help': typeof AuthenticatedHelpRoute
   '/ledger': typeof AuthenticatedLedgerRoute
+  '/money-health': typeof AuthenticatedMoneyHealthRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/referrals': typeof AuthenticatedReferralsRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -428,6 +437,7 @@ export interface FileRoutesById {
   '/_authenticated/gift-cards': typeof AuthenticatedGiftCardsRoute
   '/_authenticated/help': typeof AuthenticatedHelpRoute
   '/_authenticated/ledger': typeof AuthenticatedLedgerRoute
+  '/_authenticated/money-health': typeof AuthenticatedMoneyHealthRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/referrals': typeof AuthenticatedReferralsRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
@@ -479,6 +489,7 @@ export interface FileRouteTypes {
     | '/gift-cards'
     | '/help'
     | '/ledger'
+    | '/money-health'
     | '/payments'
     | '/referrals'
     | '/reports'
@@ -525,6 +536,7 @@ export interface FileRouteTypes {
     | '/gift-cards'
     | '/help'
     | '/ledger'
+    | '/money-health'
     | '/payments'
     | '/referrals'
     | '/reports'
@@ -574,6 +586,7 @@ export interface FileRouteTypes {
     | '/_authenticated/gift-cards'
     | '/_authenticated/help'
     | '/_authenticated/ledger'
+    | '/_authenticated/money-health'
     | '/_authenticated/payments'
     | '/_authenticated/referrals'
     | '/_authenticated/reports'
@@ -804,6 +817,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLedgerRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/money-health': {
+      id: '/_authenticated/money-health'
+      path: '/money-health'
+      fullPath: '/money-health'
+      preLoaderRoute: typeof AuthenticatedMoneyHealthRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/payments': {
       id: '/_authenticated/payments'
       path: '/payments'
@@ -975,6 +995,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGiftCardsRoute: typeof AuthenticatedGiftCardsRoute
   AuthenticatedHelpRoute: typeof AuthenticatedHelpRoute
   AuthenticatedLedgerRoute: typeof AuthenticatedLedgerRoute
+  AuthenticatedMoneyHealthRoute: typeof AuthenticatedMoneyHealthRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedReferralsRoute: typeof AuthenticatedReferralsRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
@@ -1016,6 +1037,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGiftCardsRoute: AuthenticatedGiftCardsRoute,
   AuthenticatedHelpRoute: AuthenticatedHelpRoute,
   AuthenticatedLedgerRoute: AuthenticatedLedgerRoute,
+  AuthenticatedMoneyHealthRoute: AuthenticatedMoneyHealthRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedReferralsRoute: AuthenticatedReferralsRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,

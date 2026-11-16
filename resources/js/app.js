@@ -550,3 +550,23 @@ $$('details[data-collapse]').forEach((d) => {
 if ($('[data-card]')) import('./chunks/picture-card.js');
 if ($('[data-install], [data-push]')) import('./chunks/member-app.js');
 if ($('[data-mtable]')) import('./chunks/member-tables.js');
+
+/* "What you could earn" (member home): the same sums as App\Reports\WhatIf::forMember, from the real settings. */
+$$('[data-earn-calc]').forEach((box) => {
+    const c = JSON.parse(box.dataset.earnCalc);
+    const fmt = etb;
+    const out = $('[data-earn-result]', box);
+    const row = (label, v, strong) => `<div class="flex justify-between gap-2${strong ? ' font-semibold' : ''}"><dt>${label}</dt><dd class="tabular-nums">${fmt(v)}</dd></div>`;
+    const draw = () => {
+        const d = Math.max(0, Math.min(500, parseInt($('[data-earn-direct]', box).value, 10) || 0));
+        const t = Math.max(0, Math.min(50, parseInt($('[data-earn-theirs]', box).value, 10) || 0));
+        const l1 = c.rates[0] * d, l2 = c.rates[1] * d * t, l3 = c.rates[2] * d * t * t;
+        const badge = c.ladder.find(([th]) => d >= th);
+        const bonus = badge ? Math.min(badge[1], Math.floor(d * c.price * c.teamLimit / 10000)) : 0;
+        out.innerHTML = row(`Level 1 (${d} people)`, l1) + (c.rates[1] ? row(`Level 2 (${d * t} people)`, l2) : '')
+            + (c.rates[2] ? row(`Level 3 (${d * t * t} people)`, l3) : '') + (bonus ? row(`${badge[2]} badge bonus`, bonus) : '')
+            + row('Every month', l1 + l2 + l3 + bonus, true) + (c.first ? row('Once, at their first payment', c.first * d) : '');
+    };
+    $$('input', box).forEach((i) => i.addEventListener('input', draw));
+    draw();
+});

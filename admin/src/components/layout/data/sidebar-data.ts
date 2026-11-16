@@ -1,4 +1,5 @@
 import {
+  HeartPulse,
   Activity,
   BarChart3,
   Hammer,
@@ -48,6 +49,7 @@ export const sidebarData: SidebarData = {
       title: 'General',
       items: [
         { title: 'Dashboard', url: '/', icon: LayoutDashboard, ability: 'view-reports' },
+        { title: 'Money health', url: '/money-health', icon: HeartPulse, ability: 'view-reports' },
         { title: 'Reports', url: '/reports', icon: BarChart3, ability: 'view-reports' },
         { title: 'Feature switches', url: '/features', icon: ToggleRight, ability: 'manage-features' },
       ],

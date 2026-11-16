@@ -228,6 +228,7 @@
     </ul>
 </section>
 @endif
+@if ($ref)@include('member.partials.how-you-earn')@endif
 <section class="mt-3 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
     <div class="m-card lg:col-span-2" id="referral">
         <h2 class="font-semibold">Your referral link</h2>

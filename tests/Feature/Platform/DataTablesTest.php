@@ -99,7 +99,7 @@ class DataTablesTest extends TestCase
         $res = $this->get('/account/earnings?export=earnings&status=pending');
         $res->assertOk()->assertHeader('content-type', 'text/csv; charset=utf-8');
         $csv = $res->streamedContent();
-        $this->assertStringStartsWith("\u{FEFF}Date,From,Level,Amount,Status", $csv);
+        $this->assertStringStartsWith("\u{FEFF}Date,\"From whom\",Payment,Level,Amount,Status,\"Ready on\"", $csv);
         $this->assertSame(1 + 23, substr_count(trim($csv), "\n") + 1, 'header + all 23 pending rows, not just one page');
         $this->assertStringContainsString('On the way', $csv);
 

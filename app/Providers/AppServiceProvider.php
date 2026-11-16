@@ -32,6 +32,7 @@ use App\Storefront\PageCache;
 use App\Support\Currency;
 use App\Support\Features;
 use App\Support\Settings;
+use App\Support\TestClock;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Request;
@@ -64,11 +65,14 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Testing by hand on your own computer: `php artisan km:test-clock +15days`. A live shop always uses the real time.
+        TestClock::apply();
         // Every link, asset and image URL uses APP_URL, never the Host header a
         // visitor sends (stops host-header injection into cached pages and emails).
         URL::forceRootUrl(rtrim((string) config('app.url'), '/'));
         // A queue worker runs for hours: every job reads the current switches and settings.
         Queue::before(function (): void {
+            TestClock::apply();
             Features::forgetMemo();
             Settings::forgetMemo();
             Currency::flush();

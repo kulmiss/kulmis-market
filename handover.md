@@ -133,8 +133,19 @@ One stack on `main`: `pr/67-auto-close` (#75) → `pr/74-admin-off`. The top PR 
 | `pr/74-admin-off` | Admin: preview before switching off, "Switched-off features" menu group with history, text warnings, page texts with {if …} |
 
 - **How it is checked**: `FeatureNeverExistedTest` turns every switch off one at a time, crawls the shop as a guest, a member with a team, a new member, an expired member and a shopper (plus sitemap, robots, manifests, offline page, 404 page, API, message templates), fails on any word/link/page of that feature, then switches it back on and checks the words come back. A new feature needs its words in `config/feature_words.php`.
-- **Decisions**: QUESTIONS.md #135–#149.
+- **Decisions**: QUESTIONS.md #135–#155.
 - After #82 (`pr/75-paid-benefits`): paid members keep all member benefits while membership is off; account-safety messages always sent.
+
+**Testing by hand:** [TESTING_GUIDE.md](TESTING_GUIDE.md): the Abdi story (10 steps, every ETB number), then the rest of the shop.
+
+## Round 7 (earning by inviting + the shop never collapses)
+| Branch | What |
+|--------|------|
+| `pr/76-test-tools` | `km:test-clock +15days` and `km:story` (local only); 30-day link memory checked by the shop; AbdiStoryTest |
+| `pr/77-never-collapses` | Money rules after every money test; every money path with exact amounts; 10,000 members × 24 months (3 scenarios), summary in the CI log ([docs/never-collapses.md](docs/never-collapses.md)) |
+| `pr/78-money-health` | Admin → Money health (in / paid to members / kept / owed, green-yellow-red) + What if calculator |
+| `pr/79-how-you-earn` | Member "How you earn" card + calculator; earnings history with from whom, which payment, ready date |
+| `pr/80-testing-guide` | TESTING_GUIDE.md rewritten around the story; QUESTIONS #150–#155 |
 
 ## Key decisions
 All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:

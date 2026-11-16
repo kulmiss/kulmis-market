@@ -33,15 +33,34 @@ class Attribution
             return;
         }
         $days = Settings::int('referral.cookie_days');
-        Cookie::queue(Cookie::make(config('referral.cookie'), $this->codes->normalize($code), $days * 24 * 60, '/', null, null, true, false, 'lax'));
+        // "CODE.1763280000": the code and when the link was opened, so the
+        // shop itself checks the 30 days (the browser's own expiry is a backup).
+        Cookie::queue(Cookie::make(config('referral.cookie'), $this->codes->normalize($code).'.'.now()->getTimestamp(), $days * 24 * 60, '/', null, null, true, false, 'lax'));
+    }
+
+    /** The code a link left in this browser, if it is still within the link memory days. */
+    public function rememberedCode(Request $request): ?string
+    {
+        $raw = $request->cookie(config('referral.cookie'));
+        if (! is_string($raw) || $raw === '') {
+            return null;
+        }
+        if (preg_match('/^([A-Za-z0-9]+)\.(\d{9,11})$/', $raw, $m)) {
+            if ((int) $m[2] < now()->subDays(Settings::int('referral.cookie_days'))->getTimestamp()) {
+                return null; // opened too long ago
+            }
+            $raw = $m[1];
+        }
+
+        return $this->codes->normalize($raw);
     }
 
     /** Explicit code field wins over the cookie (it's the backup). */
     public function codeFrom(Request $request): ?string
     {
-        $code = $request->input('referral_code') ?: $request->cookie(config('referral.cookie'));
+        $typed = $request->input('referral_code');
 
-        return is_string($code) && $code !== '' ? $this->codes->normalize($code) : null;
+        return is_string($typed) && $typed !== '' ? $this->codes->normalize($typed) : $this->rememberedCode($request);
     }
 
     /** @return array{0:?User, 1:?string} [referrer, reason it was refused] */

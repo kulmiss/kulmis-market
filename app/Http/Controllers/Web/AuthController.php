@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Events\CustomerRegistered;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Referral\Attribution;
 use App\Security\Devices;
 use App\Security\LoginGuard;
 use App\Security\PasswordPolicy;
@@ -88,7 +89,7 @@ class AuthController extends Controller
 
     public function showRegister(Request $request): View
     {
-        return view('store.auth.register', ['code' => $request->cookie(config('referral.cookie'))]);
+        return view('store.auth.register', ['code' => app(Attribution::class)->rememberedCode($request)]);
     }
 
     public function register(Request $request): RedirectResponse
