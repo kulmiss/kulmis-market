@@ -48,6 +48,8 @@ import { Route as AuthenticatedShareKitRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedShippingRouteImport } from './routes/_authenticated/shipping'
 import { Route as AuthenticatedStatusRouteImport } from './routes/_authenticated/status'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
+import { Route as AuthenticatedGuideIndexRouteImport } from './routes/_authenticated/guide/index'
+import { Route as AuthenticatedGuideSlugRouteImport } from './routes/_authenticated/guide/$slug'
 import { Route as AuthenticatedMembersIndexRouteImport } from './routes/_authenticated/members/index'
 import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authenticated/members/$id'
 import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders/index'
@@ -258,6 +260,16 @@ const AuthenticatedErrorsErrorRoute =
     path: '/errors/$error',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedGuideIndexRoute = AuthenticatedGuideIndexRouteImport.update({
+  id: '/guide/',
+  path: '/guide/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGuideSlugRoute = AuthenticatedGuideSlugRouteImport.update({
+  id: '/guide/$slug',
+  path: '/guide/$slug',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedMembersIndexRoute =
   AuthenticatedMembersIndexRouteImport.update({
     id: '/members/',
@@ -355,11 +367,13 @@ export interface FileRoutesByFullPath {
   '/shipping': typeof AuthenticatedShippingRoute
   '/status': typeof AuthenticatedStatusRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/guide/$slug': typeof AuthenticatedGuideSlugRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/products/$id': typeof AuthenticatedProductsIdRoute
   '/signals/subscribers': typeof AuthenticatedSignalsSubscribersRoute
   '/signals/telegram': typeof AuthenticatedSignalsTelegramRoute
+  '/guide/': typeof AuthenticatedGuideIndexRoute
   '/members/': typeof AuthenticatedMembersIndexRoute
   '/orders/': typeof AuthenticatedOrdersIndexRoute
   '/products/': typeof AuthenticatedProductsIndexRoute
@@ -404,11 +418,13 @@ export interface FileRoutesByTo {
   '/status': typeof AuthenticatedStatusRoute
   '/': typeof AuthenticatedIndexRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/guide/$slug': typeof AuthenticatedGuideSlugRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/products/$id': typeof AuthenticatedProductsIdRoute
   '/signals/subscribers': typeof AuthenticatedSignalsSubscribersRoute
   '/signals/telegram': typeof AuthenticatedSignalsTelegramRoute
+  '/guide': typeof AuthenticatedGuideIndexRoute
   '/members': typeof AuthenticatedMembersIndexRoute
   '/orders': typeof AuthenticatedOrdersIndexRoute
   '/products': typeof AuthenticatedProductsIndexRoute
@@ -456,11 +472,13 @@ export interface FileRoutesById {
   '/_authenticated/status': typeof AuthenticatedStatusRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/_authenticated/guide/$slug': typeof AuthenticatedGuideSlugRoute
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
   '/_authenticated/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/_authenticated/products/$id': typeof AuthenticatedProductsIdRoute
   '/_authenticated/signals/subscribers': typeof AuthenticatedSignalsSubscribersRoute
   '/_authenticated/signals/telegram': typeof AuthenticatedSignalsTelegramRoute
+  '/_authenticated/guide/': typeof AuthenticatedGuideIndexRoute
   '/_authenticated/members/': typeof AuthenticatedMembersIndexRoute
   '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
   '/_authenticated/products/': typeof AuthenticatedProductsIndexRoute
@@ -508,11 +526,13 @@ export interface FileRouteTypes {
     | '/shipping'
     | '/status'
     | '/errors/$error'
+    | '/guide/$slug'
     | '/members/$id'
     | '/orders/$id'
     | '/products/$id'
     | '/signals/subscribers'
     | '/signals/telegram'
+    | '/guide/'
     | '/members/'
     | '/orders/'
     | '/products/'
@@ -557,11 +577,13 @@ export interface FileRouteTypes {
     | '/status'
     | '/'
     | '/errors/$error'
+    | '/guide/$slug'
     | '/members/$id'
     | '/orders/$id'
     | '/products/$id'
     | '/signals/subscribers'
     | '/signals/telegram'
+    | '/guide'
     | '/members'
     | '/orders'
     | '/products'
@@ -608,11 +630,13 @@ export interface FileRouteTypes {
     | '/_authenticated/status'
     | '/_authenticated/'
     | '/_authenticated/errors/$error'
+    | '/_authenticated/guide/$slug'
     | '/_authenticated/members/$id'
     | '/_authenticated/orders/$id'
     | '/_authenticated/products/$id'
     | '/_authenticated/signals/subscribers'
     | '/_authenticated/signals/telegram'
+    | '/_authenticated/guide/'
     | '/_authenticated/members/'
     | '/_authenticated/orders/'
     | '/_authenticated/products/'
@@ -907,6 +931,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedErrorsErrorRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/guide/': {
+      id: '/_authenticated/guide/'
+      path: '/guide'
+      fullPath: '/guide/'
+      preLoaderRoute: typeof AuthenticatedGuideIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guide/$slug': {
+      id: '/_authenticated/guide/$slug'
+      path: '/guide/$slug'
+      fullPath: '/guide/$slug'
+      preLoaderRoute: typeof AuthenticatedGuideSlugRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/members/': {
       id: '/_authenticated/members/'
       path: '/members'
@@ -1025,11 +1063,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedStatusRoute: typeof AuthenticatedStatusRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
+  AuthenticatedGuideSlugRoute: typeof AuthenticatedGuideSlugRoute
   AuthenticatedMembersIdRoute: typeof AuthenticatedMembersIdRoute
   AuthenticatedOrdersIdRoute: typeof AuthenticatedOrdersIdRoute
   AuthenticatedProductsIdRoute: typeof AuthenticatedProductsIdRoute
   AuthenticatedSignalsSubscribersRoute: typeof AuthenticatedSignalsSubscribersRoute
   AuthenticatedSignalsTelegramRoute: typeof AuthenticatedSignalsTelegramRoute
+  AuthenticatedGuideIndexRoute: typeof AuthenticatedGuideIndexRoute
   AuthenticatedMembersIndexRoute: typeof AuthenticatedMembersIndexRoute
   AuthenticatedOrdersIndexRoute: typeof AuthenticatedOrdersIndexRoute
   AuthenticatedProductsIndexRoute: typeof AuthenticatedProductsIndexRoute
@@ -1067,11 +1107,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedStatusRoute: AuthenticatedStatusRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
+  AuthenticatedGuideSlugRoute: AuthenticatedGuideSlugRoute,
   AuthenticatedMembersIdRoute: AuthenticatedMembersIdRoute,
   AuthenticatedOrdersIdRoute: AuthenticatedOrdersIdRoute,
   AuthenticatedProductsIdRoute: AuthenticatedProductsIdRoute,
   AuthenticatedSignalsSubscribersRoute: AuthenticatedSignalsSubscribersRoute,
   AuthenticatedSignalsTelegramRoute: AuthenticatedSignalsTelegramRoute,
+  AuthenticatedGuideIndexRoute: AuthenticatedGuideIndexRoute,
   AuthenticatedMembersIndexRoute: AuthenticatedMembersIndexRoute,
   AuthenticatedOrdersIndexRoute: AuthenticatedOrdersIndexRoute,
   AuthenticatedProductsIndexRoute: AuthenticatedProductsIndexRoute,

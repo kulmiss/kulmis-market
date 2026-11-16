@@ -132,7 +132,7 @@ function ArticleDialog({ article, topics, tokens }: { article?: Article; topics:
             <p className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>Preview: what members see</p>
             {preview?.mentions_off?.length ? <p className='rounded bg-amber-500/10 p-2 text-xs text-amber-700 dark:text-amber-300'>Talks about switched-off: {preview.mentions_off.join(', ')}. Those parts are hidden.</p> : null}
             <h2 className='text-xl font-semibold'>{preview?.title || d.title}</h2>
-            <div className='prose prose-sm max-w-none text-sm dark:prose-invert [&_li]:ms-5 [&_ol]:list-decimal [&_p]:my-2 [&_table]:w-full [&_td]:border-b [&_td]:py-1 [&_ul]:list-disc' dangerouslySetInnerHTML={{ __html: preview?.html ?? '' }} />
+            <div className='km-prose' dangerouslySetInnerHTML={{ __html: preview?.html ?? '' }} />
           </div>
         </div>
         <DialogFooter><Button variant='ghost' onClick={() => setOpen(false)}>Cancel</Button><Button onClick={save}>Save</Button></DialogFooter>

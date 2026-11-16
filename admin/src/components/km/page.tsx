@@ -1,3 +1,8 @@
+import { Link, useLocation } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
+import { CircleHelp } from 'lucide-react'
+import { guideFor, guideListQuery } from '@/features/guide/api'
+import { Button } from '@/components/ui/button'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
@@ -18,6 +23,7 @@ export function Page({ title, description, actions, children }: PageProps) {
       <Header fixed>
         <Search />
         <div className='ms-auto flex items-center space-x-4'>
+          <PageHelp />
           <ThemeSwitch />
           <ProfileDropdown />
         </div>
@@ -33,5 +39,18 @@ export function Page({ title, description, actions, children }: PageProps) {
         {children}
       </Main>
     </>
+  )
+}
+
+/** "?" in the top bar: opens the guide page about this screen. */
+function PageHelp() {
+  const path = useLocation({ select: (l) => l.pathname })
+  const { data } = useQuery(guideListQuery)
+  const slug = guideFor(data, path)
+  if (!slug) return null
+  return (
+    <Button variant='ghost' size='icon' className='rounded-full' asChild>
+      <Link to='/guide/$slug' params={{ slug }} aria-label='Help for this page' title='Help for this page' data-page-help><CircleHelp className='size-5' /></Link>
+    </Button>
   )
 }

@@ -7,7 +7,8 @@
 // Writes:  public/help-screens/*.jpg   (member Help, phone size)
 //          docs/screenshots/*.jpg      (Super Admin guide, desktop and phone)
 // Staff sign in with two-step codes: the first time the script sets up two-step
-// sign-in for the demo Super Admin and keeps the secret in .screenshots/ (not committed).
+// sign-in for the demo Super Admin and keeps the secret in .screenshots/admin.secret
+// (not committed). If it was set up before, put that secret in the file yourself.
 import { createHmac } from 'node:crypto'
 import { createRequire } from 'node:module'
 import { execSync } from 'node:child_process'
@@ -65,8 +66,42 @@ const SHOTS = [
   ['docs/admin-status', 'admin', '/admin/status', DESKTOP],
   ['docs/admin-demo', 'admin', '/admin/demo', DESKTOP],
   ['docs/admin-guide', 'admin', '/admin/guide', DESKTOP],
+  ['docs/admin-guide-page', 'admin', '/admin/guide/daily-wallets-cash-outs', DESKTOP],
+  ['docs/admin-guide-phone', 'admin', '/admin/guide', PHONE],
+  // Setup wizard (opened again for the pictures, then finished) and the to-do list
+  ...[1, 2, 3, 4, 5].flatMap((n) => [[`docs/wizard-${n}-desktop`, 'admin', '/admin/', DESKTOP, wizardPage(n)], [`docs/wizard-${n}-phone`, 'admin', '/admin/', PHONE, wizardPage(n)]]),
+  ['docs/dashboard-checklist-desktop', 'admin', '/admin/', DESKTOP, finishWizard],
+  // Member welcome tour
+  ...[1, 2, 3].flatMap((n) => [[`docs/tour-${n}-phone`, 'member', '/account?tour=1', PHONE, tourSlide(n)], [`docs/tour-${n}-desktop`, 'member', '/account?tour=1', DESKTOP, tourSlide(n)]]),
   ['docs/admin-guide-question-button', 'admin', '/admin/cash-outs', DESKTOP, async (p) => { await p.locator('[data-page-help]').click(); await p.waitForTimeout(1500) }],
 ]
+
+async function adminApi(p, method, path, body) {
+  return p.evaluate(async ([method, path, body]) => {
+    const xsrf = decodeURIComponent((document.cookie.match(/XSRF-TOKEN=([^;]+)/) || [])[1] || '')
+    const r = await fetch('/api/v1/admin' + path, { method, credentials: 'same-origin', headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-XSRF-TOKEN': xsrf }, body: body ? JSON.stringify(body) : undefined })
+    return r.status
+  }, [method, path, body])
+}
+function wizardPage(n) {
+  return async (p) => {
+    await adminApi(p, 'PUT', '/setup', { restart: true })
+    await adminApi(p, 'PUT', '/setup', { step: n })
+    await p.goto(`${BASE}/admin/setup`)
+    await p.waitForSelector(`[data-page='${n}']`)
+    await p.waitForTimeout(1200)
+  }
+}
+async function finishWizard(p) {
+  await adminApi(p, 'PUT', '/setup', { finished: true })
+  await p.goto(`${BASE}/admin/`)
+  await p.waitForTimeout(2500)
+}
+function tourSlide(n) {
+  return async (p) => {
+    for (let i = 1; i < n; i++) { await p.click('[data-tour-next]'); await p.waitForTimeout(300) }
+  }
+}
 
 function totp(secret) {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
@@ -107,7 +142,10 @@ async function signInAdmin(ctx) {
       await p.locator('input').last().fill(totp(secret))
       await p.keyboard.press('Enter')
       await p.waitForTimeout(2500)
-    } else if (existsSync(secretFile)) {
+    } else if (!existsSync(secretFile)) {
+      console.error(`The demo Super Admin already has two-step sign-in. Put its secret (the 32 letters shown at set-up) in ${secretFile} and run again.`)
+      process.exit(1)
+    } else {
       if (Date.now() % 30000 > 25000) await p.waitForTimeout(6000)
       await p.locator('input[inputmode=numeric], input[autocomplete=one-time-code]').first().fill(totp(readFileSync(secretFile, 'utf8').trim()))
       await p.keyboard.press('Enter')

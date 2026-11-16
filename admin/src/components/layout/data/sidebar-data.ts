@@ -11,6 +11,7 @@ import {
   Timer,
   BadgePercent,
   Banknote,
+  BookMarked,
   BookOpen,
   FlaskConical,
   Medal,
@@ -52,6 +53,7 @@ export const sidebarData: SidebarData = {
         { title: 'Money health', url: '/money-health', icon: HeartPulse, ability: 'view-reports' },
         { title: 'Reports', url: '/reports', icon: BarChart3, ability: 'view-reports' },
         { title: 'Feature switches', url: '/features', icon: ToggleRight, ability: 'manage-features' },
+        { title: 'Guide', url: '/guide', icon: BookMarked },
       ],
     },
     {
