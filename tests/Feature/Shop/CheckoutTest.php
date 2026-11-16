@@ -135,8 +135,16 @@ class CheckoutTest extends TestCase
     public function test_invalid_coupon_is_not_saved_on_cart(): void
     {
         $token = $this->addToCart(Product::factory()->create());
-        $this->withHeaders(['X-Cart-Token' => $token])->putJson('/api/v1/cart/coupon', ['code' => 'NOPE'])->assertUnprocessable();
+        $this->withHeaders(['X-Cart-Token' => $token])->putJson('/api/v1/cart/coupon', ['code' => 'NOPE'])->assertUnprocessable()
+            ->assertJsonPath('message', fn (string $m) => str_contains(strtolower($m), 'coupon'));
         $this->assertNull(Cart::query()->firstOrFail()->coupon_code);
+    }
+
+    public function test_cart_and_checkout_show_problems_on_the_page_not_in_a_pop_up(): void
+    {
+        $js = (string) file_get_contents(resource_path('js/app.js'));
+        $this->assertDoesNotMatchRegularExpression('/(?<![\w.])alert\(/', $js, 'Use sayError(): a browser pop-up is hard to read on a phone.');
+        $this->assertStringContainsString("setAttribute('role', 'alert')", $js);
     }
 
     public function test_cart_shows_join_and_save_for_guests(): void

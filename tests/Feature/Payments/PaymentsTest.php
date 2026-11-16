@@ -4,6 +4,7 @@ namespace Tests\Feature\Payments;
 
 use App\Events\PaymentRefunded;
 use App\Events\PaymentSucceeded;
+use App\Jobs\SendCustomerMessage;
 use App\Ledger\Account;
 use App\Ledger\Ledger;
 use App\Models\Order;
@@ -11,11 +12,13 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ShippingZone;
 use App\Models\User;
+use App\Notify\Message;
 use App\Payments\PaymentService;
 use App\Payments\Receipt;
 use App\Support\Features;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -139,6 +142,27 @@ class PaymentsTest extends TestCase
         $this->postJson("/api/v1/admin/payments/{$payment->id}/reject", ['reason' => 'Amount does not match'])->assertOk();
         $this->assertSame('rejected', $payment->fresh()->status);
         $this->assertSame('pending_payment', $order->fresh()->status);
+    }
+
+    public function test_customer_is_told_why_a_receipt_was_not_accepted_and_can_send_a_new_one(): void
+    {
+        Storage::fake('local');
+        Bus::fake([SendCustomerMessage::class]);
+        $order = $this->order();
+        $this->postJson("/api/v1/orders/{$order->number}/payment-proof", ['phone' => '0933445566', 'method' => 'telebirr',
+            'proof' => UploadedFile::fake()->image('r.jpg')])->assertCreated();
+        $this->actingAsAdmin();
+        $this->postJson('/api/v1/admin/payments/'.Payment::query()->value('id').'/reject', ['reason' => 'Amount does not match'])->assertOk();
+
+        Bus::assertDispatched(SendCustomerMessage::class, fn ($j) => $j->message->type === 'receipt_rejected'
+            && $j->message->phone === '+251933445566'
+            && str_contains($j->message->body, "order {$order->number}. Reason: Amount does not match. Please send a new receipt"));
+        $this->get("/pay/{$order->number}?phone=0933445566")->assertOk()
+            ->assertSee('We could not accept your last receipt.')->assertSee('Amount does not match')->assertSee('data-proof-form', false);
+
+        // The message has its own switch, under bank / Telebirr transfers.
+        Features::set('messages.receipt_rejected', false);
+        $this->assertFalse((new Message('s', 'b', type: 'receipt_rejected'))->allowed());
     }
 
     public function test_partial_then_full_refund(): void

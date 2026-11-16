@@ -141,6 +141,15 @@ class Features
         return array_key_exists($key, config('features'));
     }
 
+    /** Changes whenever any switch changes: for caching things that depend on the switches. */
+    public static function fingerprint(): string
+    {
+        $o = self::overrides();
+        ksort($o);
+
+        return md5(json_encode($o).'|'.json_encode(array_map(fn ($b) => $b['active'], self::badges())));
+    }
+
     /**
      * Forget only this process's copy (queue workers live long: each job
      * must see switches the Super Admin changed since the worker started).

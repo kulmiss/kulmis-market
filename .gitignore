@@ -28,3 +28,4 @@ Thumbs.db
 /admin/*.tsbuildinfo
 /admin/node_modules/.tmp
 /public/page-cache
+/.screenshots

@@ -77,6 +77,32 @@ class ImageProcessor
         return $path;
     }
 
+    /** A logo: re-encoded with its transparency kept, at most 512 px wide, as PNG. */
+    public function logo(UploadedFile $file): string
+    {
+        $src = $this->load($file);
+        $w = imagesx($src);
+        $h = imagesy($src);
+        if ($w > 4000 || $h > 4000 || $w < 32 || $h < 32) {
+            throw new RuntimeException('Use a picture between 32 and 4000 px.');
+        }
+        $tw = min(512, $w);
+        $th = (int) round($h * $tw / $w);
+        $img = imagecreatetruecolor($tw, $th);
+        imagealphablending($img, false);
+        imagesavealpha($img, true);
+        imagefill($img, 0, 0, (int) imagecolorallocatealpha($img, 0, 0, 0, 127));
+        imagecopyresampled($img, $src, 0, 0, 0, 0, $tw, $th, $w, $h);
+        $path = 'branding/logo-'.Str::lower(Str::random(12)).'.png';
+        ob_start();
+        imagepng($img, null, 9);
+        Storage::disk('public')->put($path, (string) ob_get_clean());
+        imagedestroy($img);
+        imagedestroy($src);
+
+        return $path;
+    }
+
     public function delete(ProductImage $image): void
     {
         $disk = Storage::disk('public');

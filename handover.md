@@ -147,6 +147,24 @@ One stack on `main`: `pr/67-auto-close` (#75) → `pr/74-admin-off`. The top PR 
 | `pr/79-how-you-earn` | Member "How you earn" card + calculator; earnings history with from whom, which payment, ready date |
 | `pr/80-testing-guide` | TESTING_GUIDE.md rewritten around the story; QUESTIONS #150–#155 |
 
+## Round 8 (the testing guide run by hand + money-cheating check)
+| Branch | What |
+|--------|------|
+| `pr/81-guide-run` | Bugs found by running TESTING_GUIDE.md in a browser: admin payments say who paid ("Membership · Sara Tesfaye") and search by name/phone/order; member home Join / Cash out / Renew buttons and "Receipt sent · we are checking it"; total earned includes bonuses; wallet-paid order shows its number and total; rejected receipts tell the customer why (new switch "Receipt not accepted"); refund warning when earnings were already spent, minus wallet explained; cart errors on the page, not pop-ups; staff buttons wait while working; shop name on one line on phones; share-kit text not cut off; friendlier "phone already has an account" |
+| `pr/82-security-check` | MoneyCheatingTest + RefundAfterSpendTest (prices from the browser, two tabs, double clicks, someone else's account or code, refunds above the paid amount); SECURITY_REPORT Round 7 |
+| `pr/83-guide-update` | TESTING_GUIDE.md steps fixed (terms box, Filters → Status all for refunds, courier, product without sizes, new messages); QUESTIONS #156–#160; this file |
+
+## Round 9 (documentation and first-time guidance)
+| Branch | What |
+|--------|------|
+| `pr/84-setup-wizard` | Super Admin setup wizard (5 pages), logo + shop colour, "still to do" list on the dashboard, Settings → Run setup again |
+| `pr/85-welcome-tour` | Member welcome tour (3 slides), Help in the member menu |
+| `pr/86-member-help` | /help articles (23, live numbers), 20 FAQ, search, "Was this helpful?", "?" links, admin article editor |
+| `pr/87-admin-guide` | docs/admin-guide (25 pages) + Guide in the admin + "?" on every screen + PDF; `km:reset-2fa` |
+| `pr/88-docs` | CONTRIBUTING.md (keep the guides right), docs/help.md, QUESTIONS #161–#168, this file, testing guide without Chapa |
+| `pr/89-report-dates` | Reports and monthly signal results: sales after 21:00 were missing from "today" (time-zone bug, found by the evening test run) |
+| `pr/90-shop-speed` | Tour and "Was this helpful?" scripts load only where used; help article styles in their own small CSS (phone speed budget in CI) |
+
 ## Key decisions
 All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
 - Money is integer santim and double-entry. Balances are never stored.
@@ -166,6 +184,8 @@ All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
 See [docs/local-setup.md](docs/local-setup.md).
 
 ## Test status
+- Round 9: 601 backend tests pass on SQLite and MariaDB. Setup wizard, welcome tour, Help and Guide checked in a browser on a phone and a desktop (light and dark).
+- Round 8: the whole TESTING_GUIDE.md run in a browser (Must 1–10 on a phone and again on a desktop, Should 1–10, Nice 1–4); all numbers match, ending at 60,050 / 5,780 / 54,270 = 90.4%. 573 backend tests pass on SQLite and MariaDB.
 - Round 6: 535 backend tests pass on SQLite and MariaDB (Pint, Larastan level 6). The never-existed crawl takes about 2 minutes.
 - Round 5: 507 backend tests pass on SQLite and MariaDB (Pint, Larastan level 6, audits and gitleaks clean). Every screen re-checked at 360/390/414 px and desktop, light and dark, as 6 member types and 5 staff roles; new flows (gift card, download, gift membership, custom order, bell, contests, share) run in a phone-size browser; real parallel requests for flash-sale stock, gift cards and download limits; a product-order simulation (270 random orders) proves no paid order loses money.
 - Round 4: 424 backend tests passed on SQLite and MariaDB 10.11 (every money path in

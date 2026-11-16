@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Save } from 'lucide-react'
+import { useNavigate } from '@tanstack/react-router'
+import { Save, Wand2 } from 'lucide-react'
+import { useAuthStore } from '@/stores/auth-store'
 import { toast } from 'sonner'
 import { api, errorMessage } from '@/lib/api'
 import { type CurrencyFormat, formatBps, formatMoney, setCurrency } from '@/lib/money'
@@ -53,6 +55,20 @@ export function SettingsPage() {
     }
   }
 
+  const isSuperAdmin = useAuthStore((s) => s.user?.role === 'super_admin')
+  const fetchMe = useAuthStore((s) => s.fetchMe)
+  const navigate = useNavigate()
+  async function runSetup() {
+    try {
+      await api.put('/setup', { restart: true })
+      await fetchMe()
+      qc.invalidateQueries({ queryKey: ['setup'] })
+      navigate({ to: '/setup' })
+    } catch (e) {
+      toast.error(errorMessage(e))
+    }
+  }
+
   const value = (r: SettingRow) => (r.key in draft ? draft[r.key] : r.value)
   const preview = currencyFrom(rows, draft)
   const set = (k: string, v: unknown) => setDraft((d) => ({ ...d, [k]: v }))
@@ -62,6 +78,7 @@ export function SettingsPage() {
       actions={<>
         <Input className='h-9 w-full sm:w-64' placeholder='Reason (optional, logged)' value={reason} onChange={(e) => setReason(e.target.value)} />
         <Button onClick={() => save()} disabled={changed.length === 0}><Save /> {changed.length > 1 ? `Save ${changed.length} changes` : 'Save change'}</Button>
+        {isSuperAdmin && <Button variant='outline' onClick={runSetup} data-run-setup><Wand2 /> Run setup again</Button>}
       </>}>
       <div className='mb-4 flex flex-wrap gap-2'>
         {groups.map((g) => (

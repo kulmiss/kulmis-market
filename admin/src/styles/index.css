@@ -102,3 +102,24 @@
     height: 0;
   }
 }
+
+/* Guide and help previews: Markdown turned into HTML on the server. */
+@layer components {
+  .km-prose { @apply text-sm leading-relaxed; }
+  .km-prose > * + * { @apply mt-3; }
+  .km-prose h2 { @apply mt-6 text-lg font-semibold; }
+  .km-prose h3 { @apply mt-6 text-base font-semibold; }
+  .km-prose a { @apply underline underline-offset-2; }
+  .km-prose ul { @apply ms-5 list-disc space-y-1; }
+  .km-prose ol { @apply ms-5 list-decimal space-y-1; }
+  .km-prose li.task { @apply -ms-5 list-none; }
+  .km-prose li.task input { @apply me-1.5 align-middle; }
+  .km-prose code { @apply rounded bg-muted px-1 py-0.5 text-[0.85em]; }
+  .km-prose pre { @apply overflow-x-auto rounded-md bg-muted p-3 text-xs; }
+  .km-prose pre code { @apply bg-transparent p-0; }
+  .km-prose table { @apply block w-full overflow-x-auto text-sm sm:table; }
+  .km-prose th { @apply border-b px-2 py-1.5 text-start font-medium; }
+  .km-prose td { @apply border-b px-2 py-1.5 align-top; }
+  .km-prose blockquote { @apply rounded-md border-s-4 bg-muted/50 p-3; }
+  .km-prose img { @apply my-2 max-h-[480px] rounded-md border; }
+}

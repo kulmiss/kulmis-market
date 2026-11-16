@@ -1,7 +1,7 @@
 @php $fmt = fn ($v) => \App\Support\Money::format((int) $v); @endphp
 @extends('layouts.member', ['title' => 'Earnings'])
 @section('content')
-<h1 class="font-serif text-3xl font-semibold">Earnings</h1>
+<div class="flex items-center gap-2"><h1 class="font-serif text-3xl font-semibold">Earnings</h1>@include('member.partials.help-link', ['slug' => 'how-earning-works', 'label' => 'how earning works'])</div>
 <section class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
     @include('member.partials.stat', ['label' => 'Total earned', 'value' => $fmt($dash['money']['earned']), 'icon' => 'coins', 'tone' => 'accent'])
     @include('member.partials.stat', ['label' => 'This month', 'value' => $fmt($dash['money']['this_month']), 'icon' => 'trending-up', 'sub' => 'Last month '.$fmt($dash['money']['last_month'])])

@@ -8,6 +8,7 @@ use App\Security\Devices;
 use App\Security\LoginGuard;
 use App\Security\Sessions;
 use App\Security\TwoFactor;
+use App\Setup\SetupWizard;
 use App\Support\Activity;
 use App\Support\Currency;
 use App\Support\Phone;
@@ -99,6 +100,7 @@ class AuthController extends Controller
             'two_factor' => $user->hasTwoFactor(),
             'two_factor_required' => (bool) config('permissions.require_2fa'),
             'currency' => Currency::forClients(),
+            'setup_needed' => SetupWizard::needed($user),
         ]);
     }
 

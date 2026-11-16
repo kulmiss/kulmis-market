@@ -58,6 +58,7 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
     Route::get('contests', [ContestController::class, 'index'])->name('contests');
     Route::get('share', [ShareController::class, 'index'])->name('share');
     Route::get('badges', [AccountController::class, 'badges'])->middleware('feature:badges')->name('badges');
+    Route::post('tour/seen', [AccountController::class, 'tourSeen'])->middleware(['feature:account.welcome_tour', 'throttle:30,1'])->name('tour.seen');
     Route::post('badges/seen', [AccountController::class, 'badgesSeen'])->middleware(['feature:badges', 'throttle:30,1'])->name('badges.seen');
 
     Route::get('security', [SecurityController::class, 'show'])->name('security');

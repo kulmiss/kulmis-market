@@ -21,7 +21,13 @@ return [
     'currency.decimal_point' => ['choice', '.', 'Decimal separator', 'General', Currency::DECIMAL_POINTS],
 
     // Appearance: the member area (the admin keeps its own look).
+    'appearance.shop_color' => ['color', '#18743f', 'Shop main colour (buttons and links in the shop)', 'Appearance'],
     'appearance.member_accent' => ['color', '#1f8a4c', 'Member area accent colour (green by default; light and dark mode follow it)', 'Appearance'],
+
+    // Internal (group starting with "_"): not listed in Settings, changed only by their own screens.
+    'appearance.logo' => ['string', '', 'Logo file (upload it in Settings → Appearance or the setup wizard)', '_internal'],
+    'setup.step' => ['int', 1, 'Setup wizard: the page the Super Admin is on', '_internal'],
+    'setup.finished' => ['bool', false, 'Setup wizard finished', '_internal'],
 
     // Demo data (Super Admin → Demo data). Off hides every demo record everywhere.
     'demo.show' => ['bool', true, 'Show demo data (storefront, member areas, admin lists and dashboards)', 'Demo data'],

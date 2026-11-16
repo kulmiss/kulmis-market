@@ -36,5 +36,8 @@ export type Payment = {
   id: number; uuid: string; provider: string; tx_ref: string; amount: number; fee: number; refunded_amount: number; status: string
   provider_reference: string | null; proof_path: string | null; proof_reference: string | null; payer_account: string | null
   reject_reason: string | null; paid_at: string | null; created_at: string; payable_type: string; payable_id: number
+  /** "Membership · Sara Tesfaye", "Order KM… · Guest" */
+  for?: string
+  refund_preview?: { taken_back: number; people: number; already_used: { name: string; amount: number }[] } | null
   payable?: { number?: string; first_name?: string } | null; refunds?: { id: number; amount: number; reason: string; method: string; created_at: string }[]
 }

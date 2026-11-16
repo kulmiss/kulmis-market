@@ -31,6 +31,16 @@ Route::middleware(['auth', 'staff', 'admin.timeout'])->group(function () {
         Route::post('features/paid-access/{feature}/end', [Admin\FeatureController::class, 'endAccess'])->can('manage-features')->middleware('throttle:5,1');
         Route::get('settings', [Admin\SettingController::class, 'index'])->can('manage-settings');
         Route::put('settings', [Admin\SettingController::class, 'update'])->can('manage-settings');
+        Route::get('guide', [Admin\GuideController::class, 'index']);
+        Route::get('guide/pdf', [Admin\GuideController::class, 'pdf'])->middleware('throttle:6,1');
+        Route::get('guide/images/{file}', [Admin\GuideController::class, 'image'])->where('file', '[a-z0-9-]+\.(jpg|png)');
+        Route::get('guide/{slug}', [Admin\GuideController::class, 'show'])->where('slug', '[a-z0-9-]{1,80}');
+        Route::get('setup', [Admin\SetupController::class, 'show']);
+        Route::put('setup', [Admin\SetupController::class, 'update']);
+        Route::post('setup/preview', [Admin\SetupController::class, 'preview'])->middleware('throttle:60,1');
+        Route::post('setup/logo', [Admin\SetupController::class, 'logo'])->middleware('throttle:10,1');
+        Route::delete('setup/logo', [Admin\SetupController::class, 'removeLogo']);
+        Route::post('setup/test/{service}', [Admin\SetupController::class, 'test'])->whereIn('service', ['telegram', 'email', 'sms'])->middleware('throttle:6,1');
         Route::get('demo', [Admin\DemoController::class, 'show'])->can('manage-settings');
         Route::put('demo', [Admin\DemoController::class, 'update'])->can('manage-settings');
         Route::delete('demo', [Admin\DemoController::class, 'destroy'])->can('manage-settings')->middleware('throttle:5,1');

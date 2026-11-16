@@ -163,19 +163,29 @@ export function PaymentRow({ payment: p }: { payment: Payment }) {
       {p.status === 'awaiting_review' && !canApprove && <p className='text-xs text-muted-foreground'>Waiting for Finance or a Manager to approve this transfer.</p>}
       {p.status === 'awaiting_review' && canApprove && (
         <div className='flex flex-wrap items-center gap-2'>
-          <Button size='sm' onClick={() => act.mutate({ path: `/payments/${p.id}/approve` })}><Check /> Approve</Button>
+          <Button size='sm' disabled={act.isPending} onClick={() => act.mutate({ path: `/payments/${p.id}/approve` })}><Check /> Approve</Button>
           <Input className='h-8 w-full sm:w-64' placeholder='Reason to reject' value={reason} onChange={(e) => setReason(e.target.value)} />
-          <Button size='sm' variant='destructive' disabled={!reason} onClick={() => act.mutate({ path: `/payments/${p.id}/reject`, body: { reason } })}><X /> Reject</Button>
+          <Button size='sm' variant='destructive' disabled={!reason || act.isPending} onClick={() => act.mutate({ path: `/payments/${p.id}/reject`, body: { reason } })}><X /> Reject</Button>
         </div>
       )}
       {['paid', 'partially_refunded'].includes(p.status) && (refunding ? (
         <div className='flex flex-wrap items-center gap-2'>
           <div className='w-full sm:w-40'><MoneyInput value={amount} onChange={setAmount} /></div>
           <Input className='h-9 w-full sm:w-64' placeholder='Reason (required)' value={reason} onChange={(e) => setReason(e.target.value)} />
-          <label className='flex items-center gap-2'><Switch checked={restock} onCheckedChange={setRestock} /> Put items back in stock</label>
-          <Button size='sm' variant='destructive' disabled={!reason || amount < 1}
+          {p.payable_type.endsWith('Order') && <label className='flex items-center gap-2'><Switch checked={restock} onCheckedChange={setRestock} /> Put items back in stock</label>}
+          <Button size='sm' variant='destructive' disabled={!reason || amount < 1 || act.isPending}
             onClick={() => act.mutate({ path: `/payments/${p.id}/refund`, body: { amount, reason, restock } })}>Refund {formatMoney(amount)}</Button>
           <Button size='sm' variant='ghost' onClick={() => setRefunding(false)}>Cancel</Button>
+          {p.refund_preview && p.refund_preview.taken_back > 0 && (
+            <p className='w-full text-xs text-muted-foreground'>
+              A full refund takes back {formatMoney(p.refund_preview.taken_back)} of team earnings from {p.refund_preview.people} {p.refund_preview.people === 1 ? 'person' : 'people'}.
+              {p.refund_preview.already_used.map((u) => (
+                <span key={u.name} className='block text-amber-700 dark:text-amber-300'>
+                  {u.name} already used {formatMoney(u.amount)} of it: their wallet will show −{formatMoney(u.amount)} and their next earnings pay it back first.
+                </span>
+              ))}
+            </p>
+          )}
         </div>
       ) : (
         <div><Button size='sm' variant='outline' onClick={() => setRefunding(true)}><RotateCcw /> Refund…</Button>

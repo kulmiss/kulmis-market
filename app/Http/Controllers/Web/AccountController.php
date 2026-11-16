@@ -33,6 +33,7 @@ use App\Support\Settings;
 use App\Wallet\CashOuts;
 use App\Wallet\PayoutAccounts;
 use App\Wallet\WalletPayments;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -155,6 +156,14 @@ class AccountController extends Controller
         return view('store.account.badges', ['badges' => $engine->progress($request->user()), 'summary' => $engine->summary($request->user())]);
     }
 
+    /** The welcome tour was closed (skipped or finished): don't show it again. */
+    public function tourSeen(Request $request): RedirectResponse|JsonResponse
+    {
+        $request->user()->forceFill(['welcome_tour_seen_at' => now()])->save();
+
+        return $request->expectsJson() ? response()->json(['ok' => true]) : redirect('/account');
+    }
+
     public function badgesSeen(Request $request, BadgeEngine $engine): RedirectResponse
     {
         $engine->markSeen($request->user());
@@ -273,7 +282,7 @@ class AccountController extends Controller
 
         return $order->status === Order::PENDING_PAYMENT
             ? redirect('/pay/'.$order->number)
-            : redirect('/track?number='.$order->number)->with('status', 'Order placed and paid. Thank you!');
+            : redirect()->route('account.orders')->with('status', 'Order '.$order->number.' is placed and paid ('.number_format($order->total / 100, $order->total % 100 === 0 ? 0 : 2).' ETB). Thank you!');
     }
 
     /** @param array<string, mixed> $data */

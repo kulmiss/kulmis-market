@@ -103,7 +103,9 @@ class AuthController extends Controller
             'password' => array_merge(PasswordPolicy::rules(false, $request->only(['phone', 'email', 'first_name', 'last_name'])), ['confirmed']),
             'referral_code' => ['nullable', 'string', 'max:16'],
             'terms' => ['accepted'],
-        ], ['terms.accepted' => 'Please accept the terms.']);
+        ], ['terms.accepted' => 'Please accept the terms.',
+            'phone.unique' => 'This phone number already has an account. Please sign in instead.',
+            'email.unique' => 'This email already has an account. Please sign in instead.']);
         $user = User::query()->create(array_intersect_key($data, array_flip(['first_name', 'last_name', 'phone', 'email', 'password'])));
         CustomerRegistered::dispatch($request, $user);
         Activity::log('customer.registered', $user, [], null, $user->id);

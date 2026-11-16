@@ -130,6 +130,20 @@ class StorefrontTest extends TestCase
         $this->get('/?signed_out=1')->assertDontSee('You are signed out.'); // signed in again: no message
     }
 
+    public function test_sign_up_with_a_used_phone_or_email_says_sign_in_instead(): void
+    {
+        User::factory()->create(['phone' => '+251911456789', 'email' => 'meron@example.com']);
+        $form = ['first_name' => 'Meron', 'last_name' => 'Alemu', 'phone' => '0911456789', 'email' => 'Meron@Example.com',
+            'password' => 'buna-time-2026x', 'password_confirmation' => 'buna-time-2026x', 'terms' => '1'];
+
+        $this->from('/register')->post('/register', $form)->assertRedirect('/register')->assertSessionHasErrors([
+            'phone' => 'This phone number already has an account. Please sign in instead.',
+            'email' => 'This email already has an account. Please sign in instead.',
+        ]);
+        $this->postJson('/api/v1/auth/register', $form)->assertUnprocessable()
+            ->assertJsonPath('errors.phone.0', 'This phone number already has an account. Please sign in instead.');
+    }
+
     public function test_account_requires_login(): void
     {
         $this->get('/account')->assertRedirect('/login');

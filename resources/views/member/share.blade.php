@@ -1,6 +1,6 @@
 @extends('layouts.member', ['title' => 'Share kit'])
 @section('content')
-<h1 class="font-serif text-3xl font-semibold">Share kit</h1>
+<div class="flex items-center gap-2"><h1 class="font-serif text-3xl font-semibold">Share kit</h1>@include('member.partials.help-link', ['slug' => 'share-your-link', 'label' => 'sharing'])</div>
 <p class="mt-1 text-sm m-muted">Ready-made posts with your code <b class="font-mono">{{ $user->referral_code }}</b>. Copy{{ \App\Support\Features::enabled('referral.qr_codes') ? ', send, or make a picture card with your QR code' : ' and send them' }}.</p>
 <div class="mt-5 grid gap-4 lg:grid-cols-2">
     @foreach ($items as $row)

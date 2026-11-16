@@ -1,7 +1,7 @@
 @php use App\Badges\BadgeIcons as I; $t = $ref['team']; @endphp
 @extends('layouts.member', ['title' => 'Team'])
 @section('content')
-<h1 class="font-serif text-3xl font-semibold">Your team</h1>
+<div class="flex items-center gap-2"><h1 class="font-serif text-3xl font-semibold">Your team</h1>@include('member.partials.help-link', ['slug' => 'your-team', 'label' => 'your team'])</div>
 <p class="mt-1 text-sm m-muted">People you invited (level 1), the people they invited (level 2), and the next ones (level 3). To keep people's privacy, you see names only for the people you invited.</p>
 <section class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
     {{-- A level that is switched off is not shown (no earnings there). --}}

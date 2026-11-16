@@ -10,6 +10,7 @@ use App\Ledger\Wallet;
 use App\Models\GiftCard;
 use App\Models\Payment;
 use App\Models\Refund;
+use App\Notify\ReceiptRejectedNotifier;
 use App\Shop\GiftCards;
 use App\Support\Activity;
 use App\Support\Currency;
@@ -83,6 +84,7 @@ class PaymentService
         }
         $payment->update(['status' => Payment::REJECTED, 'reviewed_by' => $actorId, 'reviewed_at' => now(), 'reject_reason' => $reason]);
         Activity::log('payment.rejected', $payment, [], $reason, $actorId);
+        ReceiptRejectedNotifier::send($payment);
 
         return $payment;
     }

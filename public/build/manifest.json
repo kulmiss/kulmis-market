@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-CrUufjIk.css",
+    "file": "assets/app-CLjo7nsc.css",
     "name": "app",
     "names": [
       "app.css"
@@ -8,19 +8,39 @@
     "src": "resources/css/app.css",
     "isEntry": true
   },
+  "resources/css/help.css": {
+    "file": "assets/help-C6dVxlyO.css",
+    "name": "help",
+    "names": [
+      "help.css"
+    ],
+    "src": "resources/css/help.css",
+    "isEntry": true
+  },
   "resources/js/app.js": {
-    "file": "assets/app-CFuIHmCQ.js",
+    "file": "assets/app-D08I6Sxt.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "dynamicImports": [
       "resources/js/chunks/picture-card.js",
       "resources/js/chunks/member-app.js",
-      "resources/js/chunks/member-tables.js"
+      "resources/js/chunks/member-tables.js",
+      "resources/js/chunks/welcome-tour.js",
+      "resources/js/chunks/help-feedback.js"
+    ]
+  },
+  "resources/js/chunks/help-feedback.js": {
+    "file": "assets/help-feedback-CBRNHVin.js",
+    "name": "help-feedback",
+    "src": "resources/js/chunks/help-feedback.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
     ]
   },
   "resources/js/chunks/member-app.js": {
-    "file": "assets/member-app-D41pgtYi.js",
+    "file": "assets/member-app-CBbhdPLe.js",
     "name": "member-app",
     "src": "resources/js/chunks/member-app.js",
     "isDynamicEntry": true,
@@ -29,7 +49,7 @@
     ]
   },
   "resources/js/chunks/member-tables.js": {
-    "file": "assets/member-tables-Dwhk6u18.js",
+    "file": "assets/member-tables-DGjP2uun.js",
     "name": "member-tables",
     "src": "resources/js/chunks/member-tables.js",
     "isDynamicEntry": true,
@@ -38,9 +58,18 @@
     ]
   },
   "resources/js/chunks/picture-card.js": {
-    "file": "assets/picture-card-Dr2VtV2Z.js",
+    "file": "assets/picture-card-CEZ_nNfT.js",
     "name": "picture-card",
     "src": "resources/js/chunks/picture-card.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "resources/js/chunks/welcome-tour.js": {
+    "file": "assets/welcome-tour-CiT6PWru.js",
+    "name": "welcome-tour",
+    "src": "resources/js/chunks/welcome-tour.js",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js"

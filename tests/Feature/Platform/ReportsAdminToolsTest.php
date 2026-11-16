@@ -17,6 +17,17 @@ use Tests\Feature\Referral\ReferralTestCase;
 /** Reports (CSV/PDF), bulk edit, CSV import with preview, low-stock alerts, announcement bar, staff overview. */
 class ReportsAdminToolsTest extends ReferralTestCase
 {
+    public function test_an_evening_sale_is_in_todays_report(): void
+    {
+        $this->travelTo(now(config('app.timezone'))->setTime(22, 30)); // 22:30 in the shop's time zone: sales after 21:00 used to drop out of today's report
+        $this->buyProducts(200_000);
+        $this->actingAsAdmin();
+        $this->assertSame(200_000, $this->getJson('/api/v1/admin/reports/products')->json('data.totals.revenue'));
+        $this->travelTo(now(config('app.timezone'))->addDay()->setTime(1, 0)); // early next morning: yesterday's sale is not "today"
+        $today = now(config('app.timezone'))->toDateString();
+        $this->assertSame(0, (int) $this->getJson("/api/v1/admin/reports/products?from=$today&to=$today")->json('data.totals.revenue'));
+    }
+
     public function test_every_report_runs_and_exports_safely(): void
     {
         $this->buyProducts(200_000);

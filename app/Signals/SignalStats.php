@@ -44,7 +44,7 @@ class SignalStats
         $tz = (string) config('app.timezone');
         $from = now()->timezone($tz)->subMonthsNoOverflow($months - 1)->startOfMonth();
         $byMonth = Signal::query()->where('status', 'closed')->whereIn('result', ['win', 'loss'])
-            ->where('closed_at', '>=', $from->copy()->utc())->when($pair, fn ($q, $p) => $q->where('pair', $p))
+            ->where('closed_at', '>=', $from)->when($pair, fn ($q, $p) => $q->where('pair', $p))
             ->get(['closed_at', 'result'])
             ->groupBy(fn (Signal $s) => Carbon::parse($s->closed_at)->timezone($tz)->format('Y-m'));
         $out = [];

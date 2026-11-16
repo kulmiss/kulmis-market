@@ -1,6 +1,33 @@
 # Kulmis Market — security and quality review
 
-_Newest review first: Round 5, then Round 3, then round 1 (before the first merge)._
+_Newest review first: Round 7, Round 5, Round 3, then round 1 (before the first merge)._
+
+## Round 7 — the testing guide run by hand + money-cheating check (16 Nov 2026)
+
+Branch `pr/81-guide-run`, from `main`.
+
+**How it was checked**
+- **The whole TESTING_GUIDE.md in a real browser** (headless Chrome, Docker + nginx + MySQL, port 8090), each person in their own browser session: the Abdi story (Must 1–10) from a clean reset with `km:story` and `km:test-clock` (day 15, day 29 vs 31, expiry), every ETB number compared, ending with Money health **60,050 in / 5,780 paid / 54,270 kept = 90.4%**; then Should 1–10 and Nice 1–4 on the demo data. Members on a 390 px phone, the admin on a desktop; the story was run again at the end with members on a desktop too.
+- **Money cheating (new tests, `MoneyCheatingTest`, `RefundAfterSpendTest`):** prices, totals, discounts, wallet amounts and "paid" status sent by the browser; membership price sent by the browser; cash-out above the balance, negative, from two tabs and as a double click; cash-out to someone else's account; changing someone else's referral code; approving a receipt twice; refunding more than was paid, or twice; a refund after the earnings were already spent; `km:story` / `km:test-clock` with `APP_ENV=production` (refused, already tested).
+- **Access:** every page and API as guest, customer, member, expired member, each staff role and Super Admin (existing `AccessControlTest`, `FeatureSwitchMatrixTest`, re-run); fulfilment checked by hand in the browser (cash-outs, Money health, switches → 403).
+- **Web:** headers/CSP on shop, member area, admin and API; `/.env` and logs not served; forms without a CSRF token → 419; sign-in rate limit; stored XSS in names, notes, addresses and reasons (existing tests + the new reject reason and refund warning are escaped); uploads (existing tests).
+- **Tools:** Pint, Larastan (0 errors), `composer audit`, `npm audit` (shop + admin): no advisories; gitleaks on all 115 commits: no leaks (the only hits on disk are in `vendor/` and ignored caches).
+
+### Scores (Round 7)
+
+| Area | Found | Fixed? | Score /10 before → after |
+|---|---|---|---|
+| Money: refunds | **A refund after the earnings were spent made a wallet go below zero with no explanation** ("Ready to use −750 ETB · You can cash it out"), and staff had no warning | ✅ member sees "Money given back: your next earnings pay this first"; staff see who already used how much before refunding; cash-out and spending stay blocked until it is above zero | 8 → 9.5 |
+| Money: tampering, double clicks, two tabs | none (prices, totals, membership price, wallet amount and status from the browser are ignored; cash-out never above the balance; one cash-out per double click; refund never above what was paid) | — new tests | 9.5 → 9.5 |
+| Staff double clicks | Approve / Reject / Refund buttons could be clicked again while the first click was still working (the server already refused a second refund above the paid amount, but two small partial refunds could both go through) | ✅ buttons wait | 9 → 9.5 |
+| Customer messages | **A rejected receipt was never told to the customer** (order silently cancelled after 48 h) | ✅ message with the reason + notice on the payment page / member home; own switch | 7.5 → 9.5 |
+| Admin screens | Payments list showed "MembershipPurchase #6" instead of who paid; search found only references; "Put items back in stock" shown on membership refunds | ✅ "Membership · Sara Tesfaye", search by name, phone (any format) or order number | 7 → 9.5 |
+| Member screens | Total earned left out first-payment bonuses and badge bonuses (Omar: 500 instead of 750); "Join" button shown while a receipt was waiting; wallet-paid order had no order number; share-kit posts cut off; browser pop-ups for cart errors | ✅ | 8 → 9.5 |
+| Storefront | Shop name wrapped to 2 lines on phones; unclear "phone has already been taken" | ✅ | 9 → 9.5 |
+| Access control | none | — | 9.5 → 9.5 |
+| Web security (XSS, CSRF, headers, CSP, uploads) | none | — | 9.5 → 9.5 |
+| Test tools in production | none (`km:story`, `km:test-clock` refuse anything but `APP_ENV=local`) | — | 9.5 → 9.5 |
+| Dependencies & secrets | none | — | 9.5 → 9.5 |
 
 ## Round 5 — review of the new earning features (16 Nov 2026)
 

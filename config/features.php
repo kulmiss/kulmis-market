@@ -90,6 +90,7 @@ return [
     'account.notifications' => ['Notification centre (bell)', 'Accounts', true, null, 'A bell in the account area with news: earnings, team joins, badges, bonuses, orders, membership and cash-outs.'],
     'account.goals' => ['Monthly goals', 'Accounts', true, 'referral', 'Members can set "Earn X this month" and see a progress bar on their home page.'],
     'account.push' => ['Phone notifications', 'Accounts', true, 'account.notifications', 'Members can say yes to a phone notification for earnings, orders, bonuses and cash-outs. No amounts on the lock screen.'],
+    'account.welcome_tour' => ['Welcome tour', 'Accounts', true, null, '3 short slides the first time someone opens their account. They can open it again from Help.'],
     'account.app' => ['Member app (home-screen icon)', 'Accounts', true, null, 'Members can add the account area to their phone home screen like an app.'],
 
     // Notification channels
@@ -104,6 +105,7 @@ return [
     'messages.order_shipped' => ['Order sent', 'Messages', true, 'shop', 'Tell the customer their order is on its way.'],
     'messages.order_delivered' => ['Order delivered', 'Messages', true, 'shop', 'Tell the customer their order arrived.'],
     'messages.order_cancelled' => ['Order cancelled', 'Messages', true, 'shop', 'Tell the customer their order was cancelled.'],
+    'messages.receipt_rejected' => ['Receipt not accepted', 'Messages', true, 'payments.manual', 'Tell the customer we could not accept their payment receipt, why, and that they can send a new one.'],
     'messages.back_in_stock' => ['Back in stock', 'Messages', true, 'shop.stock_alerts', 'Tell people a sold-out item they asked about is back.'],
     'messages.membership_activated' => ['Membership started', 'Messages', true, 'membership', 'Welcome message when a membership starts.'],
     'messages.membership_before' => ['Renew soon', 'Messages', true, 'membership', 'Reminder before the membership ends.'],
@@ -121,5 +123,7 @@ return [
     'appearance.theme_switch' => ['Light / dark switch', 'Look and speed', true, null, 'Customers can switch between light and dark. Off: always light.'],
     'site.instant_loading' => ['Instant page loading', 'Look and speed', true, null, 'Pages load before the click, so the shop feels instant.'],
     'site.offline_page' => ['Offline page', 'Look and speed', true, null, 'Saves pages on the phone, and shows a friendly page with no internet.'],
+    'site.help_feedback' => ['"Was this helpful?" buttons', 'Help and contact', true, 'site.help_centre', 'Yes / No buttons under each help article. You see the counts in Admin → Help centre.'],
+    'admin.setup_wizard' => ['Setup wizard', 'Help and contact', true, null, '5-page setup for the Super Admin at the first sign-in, and the "still to do" list on the dashboard.'],
     'site.help_centre' => ['Help centre', 'Help and contact', true, null, 'A /help page with answers you can edit, a search box and a contact form, plus WhatsApp, Telegram and email links.'],
 ];

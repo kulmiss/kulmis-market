@@ -1,8 +1,8 @@
 <header class="sticky top-0 z-30 border-b border-mist-200 bg-mist-50/90 backdrop-blur dark:border-ink-800 dark:bg-ink-900/90">
-    <div class="container-km flex h-16 items-center gap-4">
-        <a href="{{ url('/') }}" class="flex items-center gap-2 font-serif text-xl font-semibold" aria-label="{{ \App\Support\Settings::string('site.name') }} home">
+    <div class="container-km flex h-16 items-center gap-2 sm:gap-4">
+        <a href="{{ url('/') }}" class="flex min-w-0 items-center gap-2 font-serif text-base font-semibold sm:text-xl" aria-label="{{ \App\Support\Settings::string('site.name') }} home">
             @include('partials.logo-mark', ['size' => 28])
-            <span>{{ \App\Support\Settings::string('site.name') }}</span>
+            <span class="truncate whitespace-nowrap" data-brand-name>{{ \App\Support\Settings::string('site.name') }}</span>
         </a>
         <nav class="ms-4 hidden items-center gap-5 text-sm font-medium md:flex" aria-label="Main">
             @feature('shop')<a href="{{ url('/shop') }}" class="hover:text-brand-600">Shop</a>@endfeature

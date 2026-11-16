@@ -27,6 +27,12 @@
             </div>
             @else
             @feature('payments.manual')
+            @php $rejected = $order->payments()->latest('id')->first(); @endphp
+            @if ($rejected && $rejected->status === \App\Models\Payment::REJECTED)
+            <div class="rounded-xl bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-200" role="status" data-receipt-rejected>
+                <b>We could not accept your last receipt.</b> Reason: {{ $rejected->reject_reason }}. Please send a new receipt below.
+            </div>
+            @endif
             <div class="card">
                 <h2 class="text-xl">Transfer and upload the receipt</h2>
                 <div class="mt-3 grid gap-3 text-sm sm:grid-cols-2">

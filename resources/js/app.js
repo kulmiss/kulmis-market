@@ -224,7 +224,7 @@ function renderSuggestions(box, items, after) {
         if (b.disabled) return;
         b.disabled = true;
         try { await api('/cart/items', { method: 'POST', body: { product_id: Number(b.dataset.quickAdd), quantity: 1 } }); refreshCount(); after(); }
-        catch (err) { b.disabled = false; alert(err.message); }
+        catch (err) { b.disabled = false; sayError(b.parentElement, err.message); }
     }));
 }
 
@@ -253,7 +253,7 @@ async function renderCart() {
         if (cart.gift_card) gf.code.placeholder = `Gift card ••••${cart.gift_card.last4} added`;
         gf.addEventListener('submit', async (e) => {
             e.preventDefault();
-            try { await api('/cart/gift-card', { method: 'PUT', body: { code: gf.code.value || null } }); renderCart(); } catch (err) { alert(err.message); }
+            try { await api('/cart/gift-card', { method: 'PUT', body: { code: gf.code.value || null } }); renderCart(); } catch (err) { sayError(gf, err.message); }
         });
     }
     renderSuggestions($('[data-suggestions]', body), cart.suggestions, renderCart);
@@ -263,18 +263,31 @@ async function renderCart() {
         js.innerHTML = `<b>Join &amp; save ${etb(q.member_savings_preview)}</b> on this order as a member — plus free signals and earnings. <a class="underline" href="/membership">See membership</a>`;
     }
     $$('[data-qty]', body).forEach((inp) => inp.addEventListener('change', async () => {
-        await api(`/cart/items/${inp.dataset.qty}`, { method: 'PATCH', body: { quantity: Number(inp.value) } }).catch((e) => alert(e.message));
-        renderCart(); refreshCount();
+        await api(`/cart/items/${inp.dataset.qty}`, { method: 'PATCH', body: { quantity: Number(inp.value) } }).then(() => { renderCart(); refreshCount(); }, (e) => sayError(inp.parentElement, e.message));
     }));
     const cf = $('[data-coupon-form]', body);
     if (cart.coupon_code) cf.code.value = cart.coupon_code;
     cf.addEventListener('submit', async (e) => {
         e.preventDefault();
-        try { await api('/cart/coupon', { method: 'PUT', body: { code: cf.code.value || null } }); renderCart(); } catch (err) { alert(err.message); }
+        try { await api('/cart/coupon', { method: 'PUT', body: { code: cf.code.value || null } }); renderCart(); } catch (err) { sayError(cf, err.message); }
     });
 }
 renderCart();
 window.addEventListener('pageshow', (e) => { if (e.persisted) renderCart(); });
+
+/** A clear message right under a form or button, instead of a browser pop-up (read out by screen readers). */
+function sayError(near, message) {
+    if (!near) return;
+    let box = near.nextElementSibling;
+    if (!box || !box.matches('[data-inline-error]')) {
+        box = document.createElement('p');
+        box.dataset.inlineError = '';
+        box.setAttribute('role', 'alert');
+        box.className = 'mt-2 text-sm text-red-600 dark:text-red-400';
+        near.after(box);
+    }
+    box.textContent = message || 'Something went wrong. Please try again.';
+}
 
 /* ---------- checkout ---------- */
 const checkoutForm = $('[data-checkout-form]');
@@ -303,7 +316,7 @@ if (checkoutForm) {
     // Paid extras (gift wrap, express, insurance): saved on the cart, priced by the server.
     $$('[data-extra]', checkoutForm).forEach((box) => box.addEventListener('change', async () => {
         const extras = $$('[data-extra]:checked', checkoutForm).map((b) => b.value);
-        try { await api('/cart/extras', { method: 'PUT', body: { extras } }); } catch (e) { alert(e.message); }
+        try { await api('/cart/extras', { method: 'PUT', body: { extras } }); } catch (e) { sayError(box.closest('label') ?? box, e.message); }
         refreshSummary();
     }));
     checkoutForm.city.addEventListener('change', refreshSummary);
@@ -550,6 +563,8 @@ $$('details[data-collapse]').forEach((d) => {
 if ($('[data-card]')) import('./chunks/picture-card.js');
 if ($('[data-install], [data-push]')) import('./chunks/member-app.js');
 if ($('[data-mtable]')) import('./chunks/member-tables.js');
+if ($('[data-tour]')) import('./chunks/welcome-tour.js');
+if ($('[data-help-feedback]')) import('./chunks/help-feedback.js');
 
 /* "What you could earn" (member home): the same sums as App\Reports\WhatIf::forMember, from the real settings. */
 $$('[data-earn-calc]').forEach((box) => {

@@ -11,7 +11,7 @@ import { StatusBadge } from '@/components/km/status-badge'
 import { PaymentRow } from './order-detail'
 import { type Payment } from './types'
 
-const forWhat = (p: Payment) => `${p.payable_type.split('\\').pop()} ${p.payable?.number ?? `#${p.payable_id}`}`
+const forWhat = (p: Payment) => p.for ?? `${p.payable_type.split('\\').pop()} ${p.payable?.number ?? `#${p.payable_id}`}`
 
 const columns: ResourceColumn<Payment>[] = [
   { header: 'For', cell: ({ row }) => forWhat(row.original), meta: { csv: forWhat } },
@@ -39,7 +39,7 @@ export function PaymentsPage() {
 
   return (
     <Page title='Payments' description='Check bank / Telebirr receipts, give money back, download receipts. Tap a payment to open it.'>
-      <ResourceTable<Payment> queryKey='payments' path='/payments' columns={columns} search={{ placeholder: 'Reference' }}
+      <ResourceTable<Payment> queryKey='payments' path='/payments' columns={columns} search={{ placeholder: 'Name, phone, order or reference' }}
         filters={[
           { key: 'status', label: 'Status', default: 'awaiting_review', options: opts('awaiting_review', 'pending', 'paid', 'partially_refunded', 'refunded', 'rejected', 'failed') },
           { key: 'provider', label: 'Method', options: opts('telebirr', 'bank_transfer', 'wallet') },

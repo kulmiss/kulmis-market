@@ -7,7 +7,16 @@
     $money = $dash['money'];
     $ref = $dash['referral'];
     $badges = $dash['badges'];
+    // A receipt for the membership is waiting for the shop to check it.
+    $checking = \App\Models\Payment::query()->where('status', \App\Models\Payment::AWAITING_REVIEW)
+        ->whereHasMorph('payable', [\App\Models\MembershipPurchase::class], fn ($q) => $q->where('user_id', auth()->id()))->exists();
+    // …or the last one was not accepted (staff wrote why).
+    $lastReceipt = $checking ? null : \App\Models\Payment::query()->whereHasMorph('payable', [\App\Models\MembershipPurchase::class], fn ($q) => $q->where('user_id', auth()->id()))
+        ->whereNotNull('proof_path')->latest('id')->first();
+    $rejected = $lastReceipt && $lastReceipt->status === \App\Models\Payment::REJECTED ? $lastReceipt : null;
     $statusChip = match (true) {
+        $checking && ! $m['active'] => ['Receipt sent · we are checking it', 'muted'],
+        $rejected && ! $m['active'] => ['Receipt not accepted · please send a new one', 'warn'],
         $m['status'] === 'grace' => ['Please pay: your benefits stop on '.$day($m['grace_until']), 'warn'],
         $m['active'] => ['Active member · renews '.$day($m['ends']), 'ok'],
         $m['status'] === 'none' => ['Not a member yet', 'muted'],
@@ -26,9 +35,12 @@
             'bg-black/5 dark:bg-white/10' => $statusChip[1] === 'muted']) data-membership-status>{!! I::svg($statusChip[1] === 'ok' ? 'circle-check' : 'clock', 14) !!}{{ $statusChip[0] }}</span>@endif
     </div>
     <div class="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto" aria-label="Quick actions">
-        @feature('wallet')<a href="{{ url('/account/wallet') }}" class="m-btn">{!! I::svg('banknote', 17) !!}{{ \App\Support\Features::enabled('wallet.cashout') ? 'Cash out' : 'My wallet' }}</a>@endfeature
+        {{-- The main button is what this person can do next: join, or cash out when there is enough ready money. --}}
+        @php $canCashOut = F::enabled('wallet.cashout') && $wallet['available'] >= \App\Support\Settings::int('wallet.cashout_min'); @endphp
+        @if (F::enabled('membership') && ! $m['active'] && ! $checking)<a href="#membership" class="m-btn">{!! I::svg('user-plus', 17) !!}Join</a>@endif
+        @feature('wallet')<a href="{{ url('/account/wallet') }}" @class(['m-btn' => $canCashOut, 'm-btn-ghost' => ! $canCashOut])>{!! I::svg('banknote', 17) !!}{{ $canCashOut ? 'Cash out' : 'My wallet' }}</a>@endfeature
         @feature('shop')<a href="{{ url('/shop') }}" class="m-btn-ghost">{!! I::svg('store', 17) !!}Shop</a>@endfeature
-        @feature('membership')<a href="#membership" class="m-btn-ghost">{!! I::svg('refresh-cw', 17) !!}{{ $m['active'] ? 'Renew' : 'Join' }}</a>@endfeature
+        @if (F::enabled('membership') && $m['active'])<a href="#membership" class="m-btn-ghost">{!! I::svg('refresh-cw', 17) !!}Renew</a>@endif
     </div>
 </div>
 
@@ -62,7 +74,7 @@
 <section class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Your money">
     @include('member.partials.stat', ['label' => 'Total earned', 'value' => $fmt($money['earned']), 'icon' => 'coins', 'tone' => 'accent', 'sub' => 'Since you joined, after money given back'])
     @include('member.partials.stat', ['label' => 'On the way', 'value' => $fmt($money['pending']), 'icon' => 'clock', 'sub' => 'Ready to use in '.\App\Support\Settings::int('referral.pending_days').' days'])
-    @include('member.partials.stat', ['label' => 'Ready to use', 'value' => $fmt($money['available']), 'icon' => 'wallet', 'sub' => F::enabled('wallet.cashout') ? 'You can cash it out or spend it' : (F::enabled('wallet.spend') ? 'You can spend it' : 'Earnings that are ready')])
+    @include('member.partials.stat', ['label' => 'Ready to use', 'value' => $fmt($money['available']), 'icon' => 'wallet', 'sub' => $money['available'] < 0 ? 'Money given back: your next earnings pay this first' : (F::enabled('wallet.cashout') ? 'You can cash it out or spend it' : (F::enabled('wallet.spend') ? 'You can spend it' : 'Earnings that are ready'))])
     @if (F::enabled('wallet.cashout'))@include('member.partials.stat', ['label' => 'Paid out', 'value' => $fmt($money['paid_out']), 'icon' => 'banknote', 'sub' => $money['requested'] > 0 ? $fmt($money['requested']).' asked for' : 'To Telebirr / bank'])@endif
 </section>
 @endif
@@ -287,7 +299,8 @@
 
     @feature('membership')
     <div class="m-card" id="membership">
-        <h2 class="font-semibold">Membership</h2>
+        <div class="flex items-center gap-2"><h2 class="font-semibold">Membership</h2>@include('member.partials.help-link', ['slug' => 'become-a-member', 'label' => 'membership'])</div>
+        @if ($rejected)<p class="mt-2 rounded-xl bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-200" role="status" data-receipt-rejected><b>We could not accept your last receipt.</b> Reason: {{ $rejected->reject_reason }}. Please send a new one below.</p>@endif
         @if ($m['active'])
             <p class="mt-1 text-sm">Active until <b>{{ $day($m['ends']) }}</b>@if ($m['grace_until']) · if you pay late, benefits stop on {{ $day($m['grace_until']) }}@endif</p>
             <div class="mt-3 flex items-center gap-3 rounded-xl p-3 m-soft">
@@ -371,5 +384,7 @@
     <div class="mt-3 grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">@foreach ($earlyAccess as $p)@include('store.partials.product-card', ['p' => $p])@endforeach</div>
 </section>
 @endif
-@if ($badges)@include('store.account.partials.badge-celebration', ['unseen' => $badges['unseen']])@endif
+@php $showTour = \App\Support\Features::enabled('account.welcome_tour') && (! $user->welcome_tour_seen_at || request()->boolean('tour')); @endphp
+@if ($showTour)@include('member.partials.welcome-tour')
+@elseif ($badges)@include('store.account.partials.badge-celebration', ['unseen' => $badges['unseen']])@endif
 @endsection
