@@ -90,6 +90,7 @@ return [
     'account.notifications' => ['Notification centre (bell)', 'Accounts', true, null, 'A bell in the account area with news: earnings, team joins, badges, bonuses, orders, membership and cash-outs.'],
     'account.goals' => ['Monthly goals', 'Accounts', true, 'referral', 'Members can set "Earn X this month" and see a progress bar on their home page.'],
     'account.push' => ['Phone notifications', 'Accounts', true, 'account.notifications', 'Members can say yes to a phone notification for earnings, orders, bonuses and cash-outs. No amounts on the lock screen.'],
+    'account.welcome_tour' => ['Welcome tour', 'Accounts', true, null, '3 short slides the first time someone opens their account. They can open it again from Help.'],
     'account.app' => ['Member app (home-screen icon)', 'Accounts', true, null, 'Members can add the account area to their phone home screen like an app.'],
 
     // Notification channels

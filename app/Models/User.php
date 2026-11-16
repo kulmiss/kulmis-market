@@ -20,6 +20,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string $first_name
  * @property string $last_name
  * @property ?string $phone
+ * @property ?Carbon $welcome_tour_seen_at
  * @property ?string $email
  * @property string $role
  * @property string $status
@@ -70,6 +71,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'phone_verified_at' => 'datetime',
+            'welcome_tour_seen_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_secret' => 'encrypted',
             'two_factor_recovery_codes' => 'encrypted:array',

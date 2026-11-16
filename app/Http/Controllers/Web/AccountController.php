@@ -33,6 +33,7 @@ use App\Support\Settings;
 use App\Wallet\CashOuts;
 use App\Wallet\PayoutAccounts;
 use App\Wallet\WalletPayments;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -153,6 +154,14 @@ class AccountController extends Controller
         $engine->evaluate($request->user()); // catch up right away (thresholds may have been lowered)
 
         return view('store.account.badges', ['badges' => $engine->progress($request->user()), 'summary' => $engine->summary($request->user())]);
+    }
+
+    /** The welcome tour was closed (skipped or finished): don't show it again. */
+    public function tourSeen(Request $request): RedirectResponse|JsonResponse
+    {
+        $request->user()->forceFill(['welcome_tour_seen_at' => now()])->save();
+
+        return $request->expectsJson() ? response()->json(['ok' => true]) : redirect('/account');
     }
 
     public function badgesSeen(Request $request, BadgeEngine $engine): RedirectResponse

@@ -148,6 +148,8 @@ class BadgesTest extends ReferralTestCase
         Bus::assertNotDispatched(SendCustomerMessage::class); // messages are off by default
 
         $this->actingAs($me, 'web');
+        $this->get('/account')->assertSee('data-tour', false)->assertDontSee('data-celebrate', false); // the welcome tour comes first
+        $this->post('/account/tour/seen');
         $this->get('/account')->assertOk()->assertSee('data-celebrate', false)->assertSee('2 new badges unlocked!')->assertSee('Bronze');
         $this->post('/account/badges/seen')->assertRedirect();
         $this->get('/account')->assertDontSee('data-celebrate', false)->assertSee('Next badge');

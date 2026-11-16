@@ -26,6 +26,7 @@ class SwitchedOffFeaturesAreHiddenTest extends ReferralTestCase
         'shop' => ['~href="[^"]*/shop"~', 'Track order'],
         'shop.guest_checkout' => ['data-guest-checkout'],
         'shop.coupons' => ['data-coupon'],
+        'account.welcome_tour' => ['data-tour-slide'],
         'shop.free_shipping' => ['shipping over', 'Free shipping over'],
         'shop.members_only_product' => ['Members-only product of the month'],
         'shop.early_access' => ['early access to new pieces', '-hour early access'],

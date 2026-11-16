@@ -384,5 +384,7 @@
     <div class="mt-3 grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">@foreach ($earlyAccess as $p)@include('store.partials.product-card', ['p' => $p])@endforeach</div>
 </section>
 @endif
-@if ($badges)@include('store.account.partials.badge-celebration', ['unseen' => $badges['unseen']])@endif
+@php $showTour = \App\Support\Features::enabled('account.welcome_tour') && (! $user->welcome_tour_seen_at || request()->boolean('tour')); @endphp
+@if ($showTour)@include('member.partials.welcome-tour')
+@elseif ($badges)@include('store.account.partials.badge-celebration', ['unseen' => $badges['unseen']])@endif
 @endsection

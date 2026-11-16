@@ -7,6 +7,7 @@
         <input id="help-q" name="q" type="search" class="input" placeholder="Search, e.g. {{ implode(', ', array_slice(array_values(array_filter([\App\Support\Features::enabled('shop') ? 'delivery' : null, \App\Support\Features::enabled('wallet.cashout') ? 'cash-out' : null, \App\Support\Features::enabled('membership') ? 'renew' : null, 'password'])), 0, 3)) }}" value="{{ $q }}" autocomplete="off" maxlength="80">
     </form>
 
+    @auth @feature('account.welcome_tour')<p class="mt-3 text-sm"><a class="underline" href="{{ url('/account?tour=1') }}" data-show-tour>Show the welcome tour</a></p>@endfeature @endauth
     <div class="mt-8 grid gap-8" data-help-list>
         @forelse ($faqs as $category => $items)
             <section data-help-group>
