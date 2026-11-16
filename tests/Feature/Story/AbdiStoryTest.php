@@ -13,6 +13,7 @@ use App\Models\Product;
 use App\Models\ShippingZone;
 use App\Models\User;
 use App\Payments\PaymentService;
+use App\Reports\MoneyHealth;
 use App\Wallet\CashOuts;
 use Database\Seeders\ShopBasicsSeeder;
 use Illuminate\Database\Eloquent\Model;
@@ -279,5 +280,15 @@ class AbdiStoryTest extends ReferralTestCase
         // ── Step 12: the shop's money (case 12) ────────────────────────────────
         $this->assertSame(60_050 * 100, $this->cashIn, 'money paid in: 60,050 ETB');
         $this->assertTrue(LedgerCheck::balanced(), 'every entry balances');
+        $h = app(MoneyHealth::class)->summary(now()->subYears(2), now()->addMinute());
+        $this->assertSame(60_050 * 100, $h['money_in']);
+        $this->assertSame(5_780 * 100, $h['paid_to_members'], 'Abdi 3,930 + Sara 850 + Hana 250 + Omar 750');
+        $this->assertSame(['team_earnings' => 4_080 * 100, 'badge_bonus' => 200 * 100, 'rewards_and_prizes' => 1_500 * 100, 'loyalty' => 0], $h['parts'],
+            'team earnings 4,080, badge bonus 200, first-payment bonuses 1,500');
+        $this->assertSame(54_270 * 100, $h['kept']);
+        $this->assertSame(90.4, $h['kept_percent']);
+        $this->assertSame('green', $h['light']);
+        // Owed now: Abdi 240 on the way + 840 ready, Sara 850, Hana 250, Omar 750 ready.
+        $this->assertSame([240 * 100, (840 + 850 + 250 + 750) * 100, 0], [$h['on_the_way'], $h['ready_to_use'], $h['cash_outs_waiting']]);
     }
 }

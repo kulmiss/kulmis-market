@@ -1,1 +1,0 @@
-import{s as e}from"./index-C2jUrdNw.js";var t=e;export{t as component};

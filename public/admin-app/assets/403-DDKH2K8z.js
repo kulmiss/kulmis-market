@@ -1,0 +1,1 @@
+import{t as e}from"./forbidden-DS_xzhnG.js";var t=e;export{t as component};

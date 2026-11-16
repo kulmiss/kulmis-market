@@ -86,3 +86,20 @@ settings and feature switches, and the admin pages. Results are grouped.
   shown under the results (typically 10–20 ms).
 
 API: `GET /api/v1/admin/search?q=…&type=&status=&from=&to=&min=&max=` (`App\Search\GlobalSearch`).
+
+## Money health (General → Money health)
+For Super Admin, Manager and Finance. Real data only. Pick This month, Last
+month, This year or All time.
+- **Money in** (customers' payments after refunds; wallet and gift-card
+  payments are not new money), **Paid to members** (team earnings, badge
+  bonus, first-payment bonuses, prizes and rewards, loyalty), **Kept by the
+  shop** (ETB and %, before product costs) and **Members are owed** (on the
+  way + ready to use + cash-outs waiting) next to what the shop has received.
+- **Light:** red when members got more than 35%, when they are owed more than
+  the shop has received, or when a money rule (docs/never-collapses.md) is
+  broken; yellow when members got more than 25% or a cash-out waited longer
+  than the payout days; green otherwise. The reasons are listed under it.
+- **Last 6 months:** the share the shop kept each month.
+- **What if…:** type a number of members and how many paying people each
+  brings; it shows one month's money in, team earnings, badge bonus, what the
+  shop keeps and what one such member earns — from the real settings.
