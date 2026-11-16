@@ -4,6 +4,9 @@ namespace App\Shop;
 
 use App\Models\Bundle;
 use App\Models\BundleItem;
+use App\Models\Product;
+use App\Models\ProductImage;
+use App\Models\ProductVariant;
 use App\Pricing\Line;
 use App\Pricing\PriceCalculator;
 use App\Support\Features;
@@ -29,12 +32,47 @@ class Bundles
             return collect();
         }
 
-        // Cached for five minutes; any product or bundle change clears it.
-        return $this->live ??= Cache::remember(self::CACHE, 300, fn () => Bundle::query()->where('is_active', true)
-            ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()))
-            ->with(['items.product.images', 'items.product.variants', 'items.variant'])->get())
-            ->filter(fn (Bundle $b) => $b->isLive() && $b->items->isNotEmpty() && $b->items->every(fn (BundleItem $i) => $i->product->status === 'active'))
-            ->values();
+        if ($this->live !== null) {
+            return $this->live;
+        }
+        // Plain rows in the cache for five minutes (it refuses objects); any product or bundle change clears it.
+        $data = Cache::remember(self::CACHE, 300, function () {
+            $bundles = Bundle::query()->where('is_active', true)->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()))->toBase()->get();
+            if ($bundles->isEmpty()) {
+                return ['bundles' => [], 'items' => [], 'products' => [], 'images' => [], 'variants' => []];
+            }
+            $items = BundleItem::query()->whereIn('bundle_id', $bundles->pluck('id'))->toBase()->get();
+            $ids = $items->pluck('product_id')->unique()->values();
+            $rows = fn ($q) => $q->toBase()->get()->map(fn ($r) => (array) $r)->all();
+
+            return [
+                'bundles' => $bundles->map(fn ($r) => (array) $r)->all(),
+                'items' => $items->map(fn ($r) => (array) $r)->all(),
+                'products' => $rows(Product::query()->whereKey($ids)),
+                'images' => $rows(ProductImage::query()->whereIn('product_id', $ids)->orderBy('position')->orderBy('id')),
+                'variants' => $rows(ProductVariant::query()->whereIn('product_id', $ids)->orderBy('position')->orderBy('id')),
+            ];
+        });
+        if ($data['bundles'] === []) {
+            return $this->live = collect();
+        }
+        $items = BundleItem::hydrate($data['items']);
+        $images = ProductImage::hydrate($data['images'])->groupBy('product_id');
+        $variants = ProductVariant::hydrate($data['variants'])->groupBy('product_id');
+        $products = Product::hydrate($data['products'])->each(function (Product $p) use ($images, $variants) {
+            $p->setRelation('images', new \Illuminate\Database\Eloquent\Collection(($images->get($p->id) ?? collect())->all()));
+            $p->setRelation('variants', new \Illuminate\Database\Eloquent\Collection(($variants->get($p->id) ?? collect())->all()));
+        })->keyBy('id');
+        foreach ($items as $i) {
+            $i->setRelation('product', $products->get($i->product_id));
+            $i->setRelation('variant', $i->product_variant_id ? $products->get($i->product_id)?->variants->firstWhere('id', $i->product_variant_id) : null);
+        }
+        $byBundle = $items->groupBy('bundle_id');
+
+        return $this->live = Bundle::hydrate($data['bundles'])
+            ->each(fn (Bundle $b) => $b->setRelation('items', new \Illuminate\Database\Eloquent\Collection(($byBundle->get($b->id) ?? collect())->all())))
+            ->filter(fn (Bundle $b) => $b->isLive() && $b->items->isNotEmpty() && $b->items->every(fn (BundleItem $i) => $products->has($i->product_id) && $i->product->status === 'active'))
+            ->values()->toBase();
     }
 
     public function forget(): void

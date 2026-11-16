@@ -69,6 +69,22 @@ class FlashSalesBundlesTest extends TestCase
         $this->assertSame(200_000, $calc->quote($this->items($p), false)->lines[0]->unitPrice);
     }
 
+    public function test_live_sales_and_bundles_survive_the_real_cache(): void
+    {
+        // The real cache refuses objects (serializable_classes = false): only plain data may be cached.
+        [$a, $b] = [Product::factory()->create(['price' => 100_000]), Product::factory()->create(['price' => 50_000])];
+        $this->sale($a, 90_000);
+        $bundle = Bundle::query()->create(['name' => 'Set', 'slug' => 'set', 'price' => 120_000]);
+        $bundle->items()->create(['product_id' => $a->id, 'quantity' => 1]);
+        $bundle->items()->create(['product_id' => $b->id, 'quantity' => 1]);
+        foreach ([1, 2] as $_) { // second time: from the cache
+            $this->app->forgetScopedInstances();
+            $this->assertSame(90_000, app(FlashSales::class)->for($a->fresh())?->price);
+            $this->assertSame('Set', app(Bundles::class)->containing($a->id)->first()?->name);
+            $this->assertSame(2, app(Bundles::class)->containing($a->id)->first()?->items->count());
+        }
+    }
+
     public function test_flash_sale_switch_off_and_future_sale(): void
     {
         $p = Product::factory()->create(['price' => 200_000]);

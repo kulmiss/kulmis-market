@@ -32,9 +32,11 @@ class FlashSales
 
         // Sales that are on and not over yet, cached for a minute (no query on most pages).
         // "sold" may be a little old here: the checkout counts it again with a lock.
-        return $this->live ??= Cache::remember(self::CACHE, 60, fn () => FlashSale::query()
-            ->where('is_active', true)->where('ends_at', '>', now())->orderBy('price')->get())
-            ->filter(fn (FlashSale $s) => $s->isLive())->values();
+        // Plain rows in the cache (it refuses objects), models again here.
+        $rows = Cache::remember(self::CACHE, 60, fn () => FlashSale::query()
+            ->where('is_active', true)->where('ends_at', '>', now())->orderBy('price')->toBase()->get()->map(fn ($r) => (array) $r)->all());
+
+        return $this->live ??= FlashSale::hydrate($rows)->filter(fn (FlashSale $s) => $s->isLive())->values()->toBase();
     }
 
     public function forget(): void
