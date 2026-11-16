@@ -71,6 +71,25 @@ class WalletCashOutTest extends ReferralTestCase
         $this->assertSame(190_000, app(Ledger::class)->balance('income:sales'));
     }
 
+    public function test_website_wallet_order_confirmation_shows_number_and_total(): void
+    {
+        $buyer = $this->member(null, 'Dawit');
+        $this->credit($buyer, 500_000);
+        $p = Product::factory()->create(['price' => 200_000]);
+        $token = $this->actingAs($buyer, 'sanctum')->postJson('/api/v1/cart/items', ['product_id' => $p->id])->json('token');
+
+        $res = $this->actingAs($buyer)->withCookie('km_cart', $token)->withUnencryptedCookie('km_cart', $token)
+            ->withHeader('X-Cart-Token', $token)
+            ->post('/checkout', ['checkout_key' => (string) Str::uuid(), 'first_name' => 'Dawit', 'phone' => '0977000222',
+                'city' => 'Adama', 'address' => 'x', 'use_wallet' => '1']);
+
+        $order = Order::query()->latest('id')->firstOrFail();
+        $this->assertSame('paid', $order->status);
+        $res->assertRedirect(route('account.orders'))
+            ->assertSessionHas('status', 'Order '.$order->number.' is placed and paid ('.number_format($order->total / 100).' ETB). Thank you!');
+        $this->get(route('account.orders'))->assertOk()->assertSee($order->number);
+    }
+
     public function test_partial_wallet_then_transfer_for_the_rest(): void
     {
         $buyer = $this->member(null, 'Dawit');

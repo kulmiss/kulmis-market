@@ -1,0 +1,1 @@
+import{t as e}from"./forbidden-BLYY_8nG.js";var t=e;export{t as component};

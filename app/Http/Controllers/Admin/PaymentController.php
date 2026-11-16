@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\MembershipPurchase;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Orders\OrderService;
 use App\Payments\PaymentService;
 use App\Payments\Receipt;
+use App\Payments\RefundPreview;
 use App\Support\Activity;
+use App\Support\Phone;
 use App\Support\TableQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,15 +36,20 @@ class PaymentController extends Controller
             ->when($request->input('provider'), fn ($q, $v) => $q->where('provider', $v))
             ->when($request->input('order_id'), fn ($q, $v) => $q->where('payable_type', (new Order)->getMorphClass())->where('payable_id', $v))
             ->when($request->input('q'), fn ($q, $v) => $q->where(fn ($w) => $w->where('tx_ref', 'like', "%$v%")
-                ->orWhere('provider_reference', 'like', "%$v%")->orWhere('proof_reference', 'like', "%$v%")))
+                ->orWhere('provider_reference', 'like', "%$v%")->orWhere('proof_reference', 'like', "%$v%")
+                // …or the name / phone of who paid (memberships and orders).
+                ->orWhereHasMorph('payable', [Order::class], fn ($o) => $o->where('number', 'like', "%$v%")->orWhere('first_name', 'like', "%$v%")->orWhere('phone', 'like', '%'.(Phone::normalize($v) ?? $v).'%'))
+                ->orWhereHasMorph('payable', [MembershipPurchase::class], fn ($m) => $m->whereHas('user', fn ($u) => $u->where('first_name', 'like', "%$v%")->orWhere('last_name', 'like', "%$v%")->orWhere('phone', 'like', '%'.(Phone::normalize($v) ?? $v).'%')))))
             ->tap(fn ($q) => TableQuery::sort($q, $request, ['amount' => 'amount', 'status' => 'status', 'method' => 'provider', 'created' => 'created_at']))->paginate((int) $request->input('per_page', 25));
+        $page->getCollection()->each(fn (Payment $p) => $p->setAttribute('for', $p->forLabel()));
 
         return response()->json($page);
     }
 
     public function show(Payment $payment): JsonResponse
     {
-        return response()->json(['data' => $payment->load(['payable', 'refunds'])->makeVisible('meta')]);
+        return response()->json(['data' => $payment->load(['payable', 'refunds'])->makeVisible('meta')->setAttribute('for', $payment->forLabel())
+            ->setAttribute('refund_preview', in_array($payment->status, [Payment::PAID, Payment::PARTIALLY_REFUNDED], true) ? RefundPreview::for($payment) : null)]);
     }
 
     /** Sent as an inert file: no scripts, no sniffing, never cached by proxies. */

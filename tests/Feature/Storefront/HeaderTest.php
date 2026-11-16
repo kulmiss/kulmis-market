@@ -29,6 +29,13 @@ class HeaderTest extends TestCase
         $this->assertSame(0, substr_count(substr($h, $account), '<a '), 'the account link is the last link in the header');
     }
 
+    public function test_shop_name_stays_on_one_line_on_phones(): void
+    {
+        $h = $this->header($this->get('/')->assertOk()->getContent());
+        $this->assertMatchesRegularExpression('/<span class="[^"]*\btruncate\b[^"]*\bwhitespace-nowrap\b[^"]*" data-brand-name>/', $h);
+        $this->assertStringContainsString('min-w-0', $h);
+    }
+
     public function test_signed_in_user_is_shown(): void
     {
         $user = User::factory()->create(['first_name' => 'Selam']);

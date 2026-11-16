@@ -1,7 +1,7 @@
 {{-- One "share" block: text, buttons, picture card made on the phone (canvas). --}}
 @php use App\Badges\BadgeIcons as I; @endphp
 <div class="grid gap-2" data-share-block>
-    <textarea class="m-input min-h-24 text-sm" readonly data-copy-source aria-label="Text to share">{{ $text }}</textarea>
+    <textarea class="m-input min-h-24 text-sm [field-sizing:content]" rows="5" readonly data-copy-source aria-label="Text to share">{{ $text }}</textarea>
     <div class="flex flex-wrap gap-2">
         <button type="button" class="m-btn" data-copy>{!! I::svg('copy', 16) !!}Copy</button>
         @feature('referral.share_buttons')

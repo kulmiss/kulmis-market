@@ -273,7 +273,7 @@ class AccountController extends Controller
 
         return $order->status === Order::PENDING_PAYMENT
             ? redirect('/pay/'.$order->number)
-            : redirect('/track?number='.$order->number)->with('status', 'Order placed and paid. Thank you!');
+            : redirect()->route('account.orders')->with('status', 'Order '.$order->number.' is placed and paid ('.number_format($order->total / 100, $order->total % 100 === 0 ? 0 : 2).' ETB). Thank you!');
     }
 
     /** @param array<string, mixed> $data */

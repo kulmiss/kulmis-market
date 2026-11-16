@@ -104,6 +104,7 @@ return [
     'messages.order_shipped' => ['Order sent', 'Messages', true, 'shop', 'Tell the customer their order is on its way.'],
     'messages.order_delivered' => ['Order delivered', 'Messages', true, 'shop', 'Tell the customer their order arrived.'],
     'messages.order_cancelled' => ['Order cancelled', 'Messages', true, 'shop', 'Tell the customer their order was cancelled.'],
+    'messages.receipt_rejected' => ['Receipt not accepted', 'Messages', true, 'payments.manual', 'Tell the customer we could not accept their payment receipt, why, and that they can send a new one.'],
     'messages.back_in_stock' => ['Back in stock', 'Messages', true, 'shop.stock_alerts', 'Tell people a sold-out item they asked about is back.'],
     'messages.membership_activated' => ['Membership started', 'Messages', true, 'membership', 'Welcome message when a membership starts.'],
     'messages.membership_before' => ['Renew soon', 'Messages', true, 'membership', 'Reminder before the membership ends.'],

@@ -75,6 +75,26 @@ class Payment extends Model
             'reviewed_at' => 'datetime', 'meta' => 'array'];
     }
 
+    /** "Membership · Sara Tesfaye", "Order KM261116-0001 · Guest Abebe": what was paid for, and by whom, in plain words. */
+    public function forLabel(): string
+    {
+        $p = $this->getRelationValue('payable'); // null when the thing paid for was deleted
+        if (! $p instanceof Payable) {
+            return 'Payment #'.$this->id;
+        }
+        $what = match (true) {
+            $p instanceof Order => 'Order '.$p->number,
+            $p instanceof MembershipPurchase => 'Membership',
+            $p instanceof SignalPurchase => 'Signals',
+            $p instanceof GiftCard => 'Gift card',
+            default => $p->payableTitle(),
+        };
+        $c = $p->payableCustomer();
+        $who = trim($c['first_name'].' '.$c['last_name']);
+
+        return $who !== '' ? "$what · $who" : $what;
+    }
+
     /** @return MorphTo<Model, $this> */
     public function payable(): MorphTo
     {

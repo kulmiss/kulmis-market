@@ -15,7 +15,7 @@ final class Message
     public const FEATURES = [
         'order_' => 'shop', 'back_in_stock' => 'shop', 'cart_reminder' => 'shop', 'winback' => 'shop',
         'membership_' => 'membership', 'loyalty_reward' => 'loyalty_reward', 'signals_access' => 'signals',
-        'badge_unlocked' => 'badges', 'badge_bonus' => 'badges.bonus',
+        'badge_unlocked' => 'badges', 'badge_bonus' => 'badges.bonus', 'receipt_rejected' => 'payments.manual',
     ];
 
     /**

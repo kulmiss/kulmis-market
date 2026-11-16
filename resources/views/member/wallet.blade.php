@@ -7,7 +7,8 @@
 <h1 class="font-serif text-3xl font-semibold">Wallet</h1>
 <section class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3" id="wallet">
     @include('member.partials.stat', ['label' => 'On the way', 'value' => $fmt($wallet['pending']), 'icon' => 'clock', 'sub' => 'Ready in '.\App\Support\Settings::int('referral.pending_days').' days'])
-    @include('member.partials.stat', ['label' => 'Ready to use', 'value' => $fmt($wallet['available']), 'icon' => 'wallet', 'tone' => 'accent'])
+    @include('member.partials.stat', ['label' => 'Ready to use', 'value' => $fmt($wallet['available']), 'icon' => 'wallet', 'tone' => 'accent']
+        + ($wallet['available'] < 0 ? ['sub' => 'Money given back: your next earnings pay this first'] : []))
     @include('member.partials.stat', ['label' => \App\Member\MemberTables::buckets()[\App\Ledger\Wallet::PAYOUT], 'value' => $fmt($wallet['payout']), 'icon' => 'banknote'])
 </section>
 <section class="m-card mt-3">

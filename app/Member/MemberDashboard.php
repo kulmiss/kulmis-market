@@ -54,13 +54,13 @@ class MemberDashboard
     public function money(User $user): array
     {
         $w = Wallet::for($user)->summary();
-        $net = fn (Carbon $from, Carbon $to) => (int) Commission::query()->where('recipient_id', $user->id)->whereIn('status', self::EARNED)
-            ->whereBetween('created_at', [$from, $to])->sum(\DB::raw('amount - reversed_amount'));
-        $this1 = $net(now()->startOfMonth(), now());
-        $last = $net(now()->subMonthNoOverflow()->startOfMonth(), now()->subMonthNoOverflow()->endOfMonth());
+        [$all, $this1, $last] = $this->earnedIn($user, [
+            [now()->startOfMonth(), now()],
+            [now()->subMonthNoOverflow()->startOfMonth(), now()->subMonthNoOverflow()->endOfMonth()],
+        ]);
 
         return [
-            'earned' => (int) Commission::query()->where('recipient_id', $user->id)->whereIn('status', self::EARNED)->sum(\DB::raw('amount - reversed_amount')),
+            'earned' => $all,
             'pending' => $w['pending'],
             'available' => $w['available'],
             'requested' => $w['payout'],
@@ -69,6 +69,41 @@ class MemberDashboard
             'last_month' => $last,
             'change' => $last > 0 ? (int) round(($this1 - $last) * 100 / $last) : null,
         ];
+    }
+
+    /**
+     * Everything a member earned (after money taken back): team earnings,
+     * first-payment bonuses, prizes and rewards, badge bonus and loyalty —
+     * the same money that lands in the wallet, so the numbers agree.
+     */
+    public function earned(User $user, ?Carbon $from = null, ?Carbon $to = null): int
+    {
+        return $from ? $this->earnedIn($user, [[$from, $to ?? now()]])[1] : $this->earnedIn($user, [])[0];
+    }
+
+    /**
+     * One query: [all time, then one total per [from, to] range].
+     *
+     * @param  list<array{0: Carbon, 1: Carbon}>  $ranges
+     * @return list<int>
+     */
+    private function earnedIn(User $user, array $ranges): array
+    {
+        $rows = \DB::query()->fromSub(
+            Commission::query()->where('recipient_id', $user->id)->whereIn('status', self::EARNED)->selectRaw('created_at, amount - reversed_amount AS v')
+                ->unionAll(\DB::table('rewards')->where('user_id', $user->id)->selectRaw('created_at, amount - reversed_amount AS v'))
+                ->unionAll(\DB::table('badge_bonuses')->where('user_id', $user->id)->selectRaw('created_at, amount - reduced_amount AS v'))
+                ->unionAll(\DB::table('loyalty_rewards')->where('user_id', $user->id)->selectRaw('created_at, amount AS v')),
+            'e');
+        $select = ['COALESCE(SUM(v), 0) AS t0'];
+        $bindings = [];
+        foreach ($ranges as $i => [$from, $to]) {
+            $select[] = 'COALESCE(SUM(CASE WHEN created_at BETWEEN ? AND ? THEN v ELSE 0 END), 0) AS t'.($i + 1);
+            array_push($bindings, $from->toDateTimeString(), $to->toDateTimeString());
+        }
+        $row = (array) $rows->selectRaw(implode(', ', $select), $bindings)->first();
+
+        return array_map(fn ($k) => (int) ($row['t'.$k] ?? 0), range(0, count($ranges)));
     }
 
     /** @return list<array{label:string, value:int}> last 30 days */

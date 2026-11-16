@@ -101,6 +101,7 @@ class SwitchedOffFeaturesAreHiddenTest extends ReferralTestCase
         'notifications.email' => 'A way of sending messages, not a page.',
         'notifications.telegram' => 'A way of sending messages, not a page.',
         'messages.order_paid' => 'A message sent to the customer, not a page.',
+        'messages.receipt_rejected' => 'A message sent to the customer, not a page (the notice on the payment page belongs to bank / Telebirr transfers).',
         'messages.order_making' => 'A message sent to the customer, not a page.',
         'messages.order_shipped' => 'A message sent to the customer, not a page.',
         'messages.order_delivered' => 'A message sent to the customer, not a page.',
