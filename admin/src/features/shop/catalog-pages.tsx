@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Pencil, Plus } from 'lucide-react'
 import { useMutate } from '@/hooks/use-mutate'
 import { api } from '@/lib/api'
-import { formatBps, formatDate, formatMoney } from '@/lib/money'
+import { formatBps, formatDate, formatMoney, toBirr, toSantim } from '@/lib/money'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -125,6 +125,7 @@ const zoneColumns: DataColumn<Zone>[] = [
   { header: 'Cities', cell: ({ row }) => <span className='block max-w-xs truncate'>{row.original.cities.join(', ')}</span>, meta: { csv: (z) => z.cities.join(', ') } },
   { header: 'First kg', cell: ({ row }) => formatMoney(row.original.base_fee), meta: { sort: 'base_fee', align: 'end', csv: (z) => z.base_fee / 100 } },
   { header: 'Each extra kg', cell: ({ row }) => formatMoney(row.original.per_kg_fee), meta: { sort: 'per_kg_fee', align: 'end', csv: (z) => z.per_kg_fee / 100 } },
+  { header: 'Courier charges you', cell: ({ row }) => <span title={row.original.courier_warning ?? undefined} className={row.original.courier_warning ? 'font-medium text-destructive' : undefined}>{row.original.courier_cost === null ? 'same' : formatMoney(row.original.courier_cost)}{row.original.courier_warning ? ' ⚠' : ''}</span>, meta: { align: 'end', csv: (z) => (z.courier_cost ?? z.base_fee) / 100 } },
   { header: 'Delivery', cell: ({ row }) => `${row.original.eta_days_min ?? '?'}–${row.original.eta_days_max ?? '?'} days`, meta: { sort: 'eta_days_max', csv: (z) => `${z.eta_days_min ?? ''}-${z.eta_days_max ?? ''}` } },
   { header: '', id: 'edit', meta: { label: 'Edit' }, cell: ({ row }) => <div className='text-end'><ZoneDialog zone={row.original} /></div> },
 ]
@@ -154,7 +155,7 @@ export function ShippingPage() {
 function ZoneDialog({ zone }: { zone?: Zone }) {
   const [d, setD] = useState({
     name: zone?.name ?? '', cities: zone?.cities.join(', ') ?? '', base_fee: zone?.base_fee ?? 15000, included_grams: zone?.included_grams ?? 1000,
-    per_kg_fee: zone?.per_kg_fee ?? 5000, eta_days_min: zone?.eta_days_min ?? 1, eta_days_max: zone?.eta_days_max ?? 3,
+    per_kg_fee: zone?.per_kg_fee ?? 5000, courier_cost: zone?.courier_cost ?? null as number | null, courier_per_kg: zone?.courier_per_kg ?? null as number | null, eta_days_min: zone?.eta_days_min ?? 1, eta_days_max: zone?.eta_days_max ?? 3,
     is_default: zone?.is_default ?? false, is_active: zone?.is_active ?? true, position: zone?.position ?? 0,
   })
   const save = useMutate(zone ? 'put' : 'post', ['zones'], 'Zone saved')
@@ -167,6 +168,10 @@ function ZoneDialog({ zone }: { zone?: Zone }) {
       <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
         <L label='Fee (first kg)'><MoneyInput value={d.base_fee} onChange={(v) => setD({ ...d, base_fee: v })} /></L>
         <L label='Each extra kg'><MoneyInput value={d.per_kg_fee} onChange={(v) => setD({ ...d, per_kg_fee: v })} /></L>
+        <L label='Courier charges you (first kg)'><Input inputMode='decimal' placeholder='Same as the fee' value={toBirr(d.courier_cost)} onChange={(e) => setD({ ...d, courier_cost: e.target.value.trim() === '' ? null : toSantim(e.target.value) })} /></L>
+        <L label='Courier, each extra kg'><Input inputMode='decimal' placeholder='Same as the fee' value={toBirr(d.courier_per_kg)} onChange={(e) => setD({ ...d, courier_per_kg: e.target.value.trim() === '' ? null : toSantim(e.target.value) })} /></L>
+        <p className='text-xs text-muted-foreground sm:col-span-2'>What you pay the courier. Used so free-delivery orders never lose money. Empty = the same as the customer pays.</p>
+        {(d.courier_cost ?? d.base_fee) > d.base_fee && <p role='alert' className='text-xs font-medium text-destructive sm:col-span-2'>The courier costs more than customers pay for delivery here. Orders that pay delivery lose the difference: raise the fee or find a cheaper courier.</p>}
         <L label='Delivery from (days)'><Input type='number' value={d.eta_days_min} onChange={(e) => setD({ ...d, eta_days_min: Number(e.target.value) })} /></L>
         <L label='to (days)'><Input type='number' value={d.eta_days_max} onChange={(e) => setD({ ...d, eta_days_max: Number(e.target.value) })} /></L>
       </div>

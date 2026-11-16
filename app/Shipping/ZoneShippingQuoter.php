@@ -16,6 +16,17 @@ class ZoneShippingQuoter implements ShippingQuoter
         return $this->zoneFor($zoneId, $city)->feeFor($weightGrams);
     }
 
+    public function courierCost(?int $zoneId, string $city, int $weightGrams): int
+    {
+        return $this->zoneFor($zoneId, $city)->courierCostFor($weightGrams);
+    }
+
+    /** The most any active zone's courier charges for this weight (worst case for price checks). */
+    public static function maxCourierCost(int $weightGrams): int
+    {
+        return (int) ShippingZone::query()->where('is_active', true)->get()->max(fn (ShippingZone $z) => $z->courierCostFor($weightGrams));
+    }
+
     public function zoneFor(?int $zoneId, string $city): ShippingZone
     {
         $zones = ShippingZone::query()->where('is_active', true)->orderBy('position')->get();

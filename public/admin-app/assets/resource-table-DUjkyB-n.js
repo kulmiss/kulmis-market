@@ -1,1 +1,0 @@
-import{t as e}from"./data-table-C6osoip-.js";import{c as t}from"./dist-BXPugWsx.js";var n=t();function r({queryKey:t,search:r=!1,...i}){return(0,n.jsx)(e,{id:t,exportName:t,search:r,...i})}export{r as t};

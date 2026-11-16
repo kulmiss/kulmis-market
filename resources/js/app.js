@@ -201,6 +201,7 @@ function totalsHtml(q, gc = null) {
         q.bundle_discount ? row('Set saving' + (q.bundles?.length ? ' (' + q.bundles.map((b) => esc(b.name)).join(', ') + ')' : ''), '−' + etb(q.bundle_discount), 'text-brand-600') : '',
         q.coupon_discount ? row(`Coupon ${esc(q.coupon)}`, '−' + etb(q.coupon_discount), 'text-brand-600') : '',
         q.coupon_capped ? '<p class="muted text-xs">This coupon is smaller on this order: these items are already at their lowest price.</p>' : '',
+        q.shipping_capped ? '<p class="muted text-xs">Free delivery doesn\'t fit this order to your city, so part of the delivery is charged.</p>' : '',
         q.shipping ? row('Shipping', q.shipping_discount ? 'Free' : etb(q.shipping_payable)) : row('Shipping', 'at checkout'),
         ...(q.extras || []).map((x) => row(esc(x.label), etb(x.amount))),
         row('Total', etb(q.total), 'mt-1 text-base font-semibold'),

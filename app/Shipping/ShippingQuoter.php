@@ -9,4 +9,7 @@ interface ShippingQuoter
 {
     /** @throws PricingException when the destination is not served */
     public function quote(?int $zoneId, string $city, int $weightGrams): int;
+
+    /** What the courier charges the shop for it (santim). */
+    public function courierCost(?int $zoneId, string $city, int $weightGrams): int;
 }

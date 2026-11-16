@@ -1,1 +1,0 @@
-import{t as e}from"./forbidden-BdkL722X.js";var t=e;export{t as component};

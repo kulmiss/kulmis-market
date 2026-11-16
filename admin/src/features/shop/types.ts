@@ -15,7 +15,7 @@ export type Product = {
   seo_title: string | null; seo_description: string | null
   tags?: { name: string }[]; variants: Variant[]; images: ProductImage[]
   available_stock: number | null; warnings: Warning[]
-  profit?: { price: number; member_price: number; commission: number; payment_fee: number; cost: number; profit: number }
+  profit?: { price: number; member_price: number; commission: number; payment_fee: number; cost: number; courier?: number; profit: number }
 }
 export type Category = { id: number; name: string; slug: string; parent_id: number | null; description: string | null; position: number; is_active: boolean; products_count?: number }
 export type OrderItem = { id: number; name: string; quantity: number; list_unit_price: number; unit_price: number; unit_cost: number; line_total: number; made_to_order: boolean; making_days: number | null }
@@ -31,7 +31,7 @@ export type Order = {
   items_count?: number; allowed_next?: string[]
 }
 export type Courier = { id: number; name: string; phone: string | null; tracking_url: string | null; is_active: boolean }
-export type Zone = { id: number; name: string; cities: string[]; base_fee: number; included_grams: number; per_kg_fee: number; eta_days_min: number | null; eta_days_max: number | null; is_default: boolean; is_active: boolean; position: number }
+export type Zone = { id: number; name: string; cities: string[]; base_fee: number; included_grams: number; per_kg_fee: number; courier_cost: number | null; courier_per_kg: number | null; courier_warning?: string | null; eta_days_min: number | null; eta_days_max: number | null; is_default: boolean; is_active: boolean; position: number }
 export type Payment = {
   id: number; uuid: string; provider: string; tx_ref: string; amount: number; fee: number; refunded_amount: number; status: string
   provider_reference: string | null; proof_path: string | null; proof_reference: string | null; payer_account: string | null

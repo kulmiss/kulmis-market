@@ -25,6 +25,8 @@ final class Quote
         /** @var list<array{key:string,label:string,amount:int}> paid checkout extras */
         public readonly array $extras = [],
         public readonly bool $couponCapped = false, // the coupon was limited so the order doesn't lose money
+        public readonly int $courierCost = 0,        // what the courier charges the shop
+        public readonly bool $shippingCapped = false, // free delivery was limited so the order doesn't lose money
     ) {}
 
     public function extrasTotal(): int
@@ -72,6 +74,7 @@ final class Quote
             'coupon' => $this->coupon?->code,
             'coupon_discount' => $this->couponDiscount,
             'coupon_capped' => $this->couponCapped,
+            'shipping_capped' => $this->shippingCapped,
             'merchandise_total' => $this->merchandiseTotal(),
             'shipping' => $this->shipping,
             'shipping_discount' => $this->shippingDiscount,

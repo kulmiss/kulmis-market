@@ -32,7 +32,7 @@ return [
     'shop.custom_orders' => ['Custom orders', 'Shop', true, 'shop', 'People describe what they want (photos, budget). You send a quote; they pay a deposit, then the rest before shipping.'],
     'shop.low_stock_alerts' => ['Low-stock alerts', 'Shop', true, 'shop', 'A Telegram/email message to you when a product falls to its low-stock number after an order.'],
     'shop.winback' => ['Win-back offers', 'Shop', true, 'shop', 'One personal discount code, sent once, to customers who have not ordered for a while (Settings).'],
-    'shop.coupon_floor' => ['Coupon safety', 'Shop', true, 'shop', 'A coupon never takes an order below what it costs you (product cost, team earnings and payment fee). The coupon is made smaller only then.'],
+    'shop.coupon_floor' => ['Coupon and free-delivery safety', 'Shop', true, 'shop', 'An order never loses money: if a coupon or free delivery would (cost, team earnings, fee, courier), it is made smaller.'],
     'shop.gift_cards' => ['Gift cards', 'Shop', true, 'shop', 'People buy gift cards (fixed amounts) and spend them at checkout. Each code is secret and works until the money is used.'],
     'shop.extras.gift_wrap' => ['Gift wrapping (paid extra)', 'Shop', false, 'shop', 'A tick box at checkout for gift wrapping. Price in Settings → Checkout extras.'],
     'shop.extras.express' => ['Express making and delivery (paid extra)', 'Shop', false, 'shop', 'A tick box at checkout to have the order made and sent first. Price in Settings.'],

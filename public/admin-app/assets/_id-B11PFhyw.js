@@ -1,0 +1,1 @@
+import{t as e}from"./members-pages-DhVGhUAP.js";import{c as t}from"./dist-BXPugWsx.js";import{r as n}from"./index-BA5Qceru.js";var r=t();function i(){let{id:t}=n.useParams();return(0,r.jsx)(e,{id:t},t)}export{i as component};

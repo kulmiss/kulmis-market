@@ -47,7 +47,7 @@ class PriceCalculator
      * @param  ?Closure(Coupon): int  $customerUses  how often this customer already used the coupon
      * @param  list<string>  $extras  paid checkout extras chosen (gift_wrap, express, insurance)
      */
-    public function quote(array $items, bool $member, ?string $couponCode = null, int $shipping = 0, ?Closure $customerUses = null, bool $checkStock = true, array $extras = []): Quote
+    public function quote(array $items, bool $member, ?string $couponCode = null, int $shipping = 0, ?Closure $customerUses = null, bool $checkStock = true, array $extras = [], int $courier = 0): Quote
     {
         if ($items === []) {
             throw new PricingException('Your cart is empty.');
@@ -88,17 +88,27 @@ class PriceCalculator
             $coupon = $this->resolveCoupon($couponCode, $member, $afterBundles, $customerUses);
             $couponDiscount = $this->couponDiscount($coupon, $afterBundles);
         }
-        // A coupon never takes the order below what it costs you (cost + most team earnings + payment fee).
-        $capped = false;
-        if ($couponDiscount > 0) {
-            $allowed = max(0, $afterBundles - $this->lossFloor($lines));
-            if ($couponDiscount > $allowed) {
-                [$couponDiscount, $capped] = [$allowed, true];
-            }
-        }
-
         $merchandise = $afterBundles - $couponDiscount;
         $shippingDiscount = $member && $this->freeShippingApplies($merchandise) ? $shipping : 0;
+
+        // Safety: an order never loses money (product cost, most team earnings, payment fee and
+        // what the courier charges). First the coupon is made smaller, then free delivery.
+        $capped = false;
+        if ($couponDiscount > 0) {
+            $allowed = max(0, $afterBundles - $this->lossFloor($lines, $shipping - $shippingDiscount, $courier));
+            if ($couponDiscount > $allowed) {
+                [$couponDiscount, $capped] = [$allowed, true];
+                $merchandise = $afterBundles - $couponDiscount;
+                $shippingDiscount = $member && $this->freeShippingApplies($merchandise) ? $shipping : 0;
+            }
+        }
+        $shippingCapped = false;
+        if ($shippingDiscount > 0) {
+            $charge = min($shippingDiscount, $this->deliveryToCharge($lines, $merchandise, $courier));
+            if ($charge > 0) {
+                [$shippingDiscount, $shippingCapped] = [$shippingDiscount - $charge, true];
+            }
+        }
 
         $preview = 0;
         if (! $member && Features::enabled('membership')) {
@@ -110,21 +120,56 @@ class PriceCalculator
         }
 
         return new Quote($lines, $member, $listSubtotal, $memberDiscount, $couponDiscount, $coupon, $shipping, $shippingDiscount, $preview,
-            $bundles['discount'], $bundles['applied'], Extras::price($extras, $merchandise), $capped);
+            $bundles['discount'], $bundles['applied'], Extras::price($extras, $merchandise), $capped, $courier, $shippingCapped);
     }
 
     /**
-     * Smallest goods total (after discounts) at which this order still covers
-     * the product cost, the most team earnings (all levels) and the payment fee.
-     * 0 when no cost is filled in or the switch is off.
+     * Smallest goods total (after discounts) at which this order still covers the
+     * product cost, the most team earnings (all levels), the payment fee and the
+     * courier, given what the customer pays for delivery. 0 when the switch is off.
      *
      * @param  list<Line>  $lines
      */
-    public function lossFloor(array $lines): int
+    public function lossFloor(array $lines, int $deliveryCharged = 0, int $courier = 0): int
     {
         if (Features::disabled('shop.coupon_floor')) {
             return 0;
         }
+        [$cost, $keepGoods, $keepDelivery] = $this->margins($lines);
+        $need = $cost + $courier - intdiv($deliveryCharged * $keepDelivery, 10_000);
+        if ($need <= 0) {
+            return 0;
+        }
+
+        return intdiv($need * 10_000 + $keepGoods - 1, $keepGoods) + 4 * count($lines); // rounded up, plus rounding slack
+    }
+
+    /**
+     * How much of the delivery fee the customer must still pay so the order covers
+     * everything (0 = free delivery is fine). 0 when the switch is off.
+     *
+     * @param  list<Line>  $lines
+     */
+    public function deliveryToCharge(array $lines, int $goods, int $courier): int
+    {
+        if (Features::disabled('shop.coupon_floor')) {
+            return 0;
+        }
+        [$cost, $keepGoods, $keepDelivery] = $this->margins($lines);
+        $short = $cost + $courier - intdiv($goods * $keepGoods, 10_000) + 4 * count($lines);
+        if ($short <= 0) {
+            return 0;
+        }
+
+        return intdiv($short * 10_000 + $keepDelivery - 1, $keepDelivery);
+    }
+
+    /**
+     * @param  list<Line>  $lines
+     * @return array{0:int, 1:int, 2:int} product cost, share of the goods kept (bps), share of delivery kept (bps)
+     */
+    private function margins(array $lines): array
+    {
         $cost = 0;
         $bps = 0;
         $profit = app(ProfitCheck::class);
@@ -132,12 +177,9 @@ class PriceCalculator
             $cost += $l->product->totalCost() * $l->quantity;
             $bps = max($bps, $profit->maxProductCommissionBps($l->product));
         }
-        if ($cost <= 0) {
-            return 0;
-        }
-        $keep = 10_000 - min(9_000, $bps + Settings::int('payments.fee_bps'));
+        $fee = Settings::int('payments.fee_bps');
 
-        return intdiv($cost * 10_000 + $keep - 1, $keep) + 4 * count($lines); // rounded up, plus rounding slack
+        return [$cost, 10_000 - min(9_000, $bps + $fee), 10_000 - min(9_000, $fee)];
     }
 
     public function freeShippingApplies(int $merchandiseTotal): bool

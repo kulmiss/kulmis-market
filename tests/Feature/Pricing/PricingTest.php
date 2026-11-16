@@ -4,6 +4,7 @@ namespace Tests\Feature\Pricing;
 
 use App\Models\Coupon;
 use App\Models\Product;
+use App\Models\ShippingZone;
 use App\Pricing\PriceCalculator;
 use App\Pricing\PricingException;
 use App\Pricing\ProfitCheck;
@@ -123,6 +124,53 @@ class PricingTest extends TestCase
         // Switch off: the coupon applies in full (your choice).
         Features::set('shop.coupon_floor', false);
         $this->assertSame(85_000, $this->calc->quote([[$p, null, 2]], true, 'HALF')->couponDiscount);
+    }
+
+    public function test_free_delivery_never_makes_an_order_lose_money(): void
+    {
+        Settings::set('payments.fee_bps', 150);
+        Settings::set('shipping.member_free_over', 300_000);
+        // 4,000 ETB, cost 2,600: a member pays 3,400 and gets free delivery.
+        $p = Product::factory()->create(['price' => 400_000, 'stock' => 9, 'weight_grams' => 800, 'cost_materials' => 260_000, 'cost_labour' => 0, 'cost_packaging' => 0])->load('variants');
+
+        // Near: the courier costs 120 ETB, free delivery is fine.
+        $near = $this->calc->quote([[$p, null, 1]], true, null, 15_000, null, true, [], 12_000);
+        $this->assertSame(15_000, $near->shippingDiscount);
+        $this->assertFalse($near->shippingCapped);
+
+        // Far: the courier costs 600 ETB, more than what is left: part of the delivery is charged.
+        $far = $this->calc->quote([[$p, null, 1]], true, null, 40_000, null, true, [], 60_000);
+        $this->assertTrue($far->shippingCapped);
+        $this->assertTrue($far->toArray()['shipping_capped']);
+        $this->assertLessThan(40_000, $far->shippingDiscount);
+        $charged = $far->shipping - $far->shippingDiscount;
+        $goods = $far->merchandiseTotal();
+        $team = intdiv($goods * app(ProfitCheck::class)->maxProductCommissionBps($p), 10_000);
+        $fee = intdiv(($goods + $charged) * 150 + 9_999, 10_000);
+        $this->assertGreaterThanOrEqual(0, $goods + $charged - 260_000 - $team - $fee - 60_000, 'the order still pays for everything');
+
+        // Switch off: free delivery is always free (your choice).
+        Features::set('shop.coupon_floor', false);
+        $this->assertSame(40_000, $this->calc->quote([[$p, null, 1]], true, null, 40_000, null, true, [], 60_000)->shippingDiscount);
+    }
+
+    public function test_the_price_check_counts_the_courier_when_one_item_already_ships_free(): void
+    {
+        Settings::set('shipping.member_free_over', 300_000);
+        ShippingZone::query()->create(['name' => 'Near', 'cities' => ['Adama'], 'base_fee' => 15_000, 'courier_cost' => 12_000, 'is_default' => true]);
+        ShippingZone::query()->create(['name' => 'Far', 'cities' => ['Gambela'], 'base_fee' => 40_000, 'courier_cost' => 60_000]);
+        $cheap = Product::factory()->create(['price' => 100_000, 'weight_grams' => 500]);
+        $dear = Product::factory()->create(['price' => 400_000, 'weight_grams' => 500]);
+        $this->assertSame(0, app(ProfitCheck::class)->worstCase($cheap)['courier'], 'no free delivery for one cheap item');
+        $w = app(ProfitCheck::class)->worstCase($dear);
+        $this->assertSame(60_000, $w['courier'], 'the most any city costs');
+        $this->assertSame($w['member_price'] - $w['commission'] - $w['payment_fee'] - $w['cost'] - 60_000, $w['profit']);
+
+        // The admin is warned where the courier costs more than customers pay for delivery.
+        $this->actingAsAdmin();
+        $zones = collect($this->getJson('/api/v1/admin/shipping-zones')->assertOk()->json('data'))->keyBy('name');
+        $this->assertNull($zones['Near']['courier_warning']);
+        $this->assertStringContainsString('costs more than customers pay', (string) $zones['Far']['courier_warning']);
     }
 
     public function test_coupon_rules(): void
