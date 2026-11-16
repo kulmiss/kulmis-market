@@ -17,6 +17,9 @@ English (ready for Amharic) and aimed at customers in Ethiopia.
 - Built assets are committed, so the server needs no Node
 
 ## PRs (1–44 are merged into main; everything newer is one stack — merge the top PR)
+
+After every merge into `main`, the **Close PRs already in main** workflow closes open PRs that have nothing new left (for example the lower PRs of a stack). It never closes a PR with new changes. Script: `scripts/close-merged-prs.sh` (`--dry-run` to only list).
+
 | PR | Branch | Status |
 |----|--------|--------|
 | 1 | `pr/01-scaffold` | Merged. Laravel 13, Docker, CI, docs |
