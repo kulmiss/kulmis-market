@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use App\Shop\FlashSales;
 use App\Storefront\PageCache;
 use Illuminate\Database\Eloquent\Model;
@@ -26,6 +27,8 @@ use Illuminate\Support\Carbon;
  */
 class FlashSale extends Model
 {
+    use HidesDemo;
+
     protected $fillable = ['product_id', 'product_variant_id', 'price', 'starts_at', 'ends_at', 'stock_limit', 'is_active'];
 
     /** @var array<string, mixed> */

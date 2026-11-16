@@ -2,6 +2,7 @@
 
 namespace App\Shop;
 
+use App\Demo\Demo;
 use App\Models\Banner;
 use App\Models\FlashSale;
 use App\Models\Product;
@@ -33,7 +34,7 @@ class FlashSales
         // Sales that are on and not over yet, cached for a minute (no query on most pages).
         // "sold" may be a little old here: the checkout counts it again with a lock.
         // Plain rows in the cache (it refuses objects), models again here.
-        $rows = Cache::remember(self::CACHE, 60, fn () => FlashSale::query()
+        $rows = Cache::remember(self::CACHE.(Demo::visible() ? ':demo' : ''), 60, fn () => FlashSale::query()
             ->where('is_active', true)->where('ends_at', '>', now())->orderBy('price')->toBase()->get()->map(fn ($r) => (array) $r)->all());
 
         return $this->live ??= FlashSale::hydrate($rows)->filter(fn (FlashSale $s) => $s->isLive())->values()->toBase();
@@ -43,6 +44,7 @@ class FlashSales
     {
         $this->live = null;
         Cache::forget(self::CACHE);
+        Cache::forget(self::CACHE.':demo');
     }
 
     /**

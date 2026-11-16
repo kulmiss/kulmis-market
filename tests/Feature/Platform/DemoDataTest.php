@@ -14,6 +14,8 @@ use App\Notify\Sms\SmsGateway;
 use App\Payments\PaymentService;
 use App\Reports\Dashboard;
 use App\Security\LoginGuard;
+use App\Shop\Bundles;
+use App\Shop\FlashSales;
 use App\Support\Settings;
 use App\Support\Totp;
 use App\Telegram\TelegramClient;
@@ -131,6 +133,17 @@ class DemoDataTest extends TestCase
         $this->assertTrue(DB::table('signals')->whereNotNull('result')->exists());
         $this->assertTrue(DB::table('signal_subscriptions')->whereNotNull('telegram_user_id')->exists());
         $this->assertGreaterThan(0, Wallet::for($star)->pending() + Wallet::for($star)->available());
+        // The newer features have something to show, all flagged as demo.
+        foreach (['flash_sales', 'bundles', 'contests', 'challenges', 'gift_cards', 'custom_requests'] as $t) {
+            $this->assertGreaterThan(0, DB::table($t)->count(), "$t has demo rows");
+            $this->assertSame(0, DB::table($t)->where('is_demo', false)->count(), "every $t row is demo");
+        }
+        $this->assertTrue(Product::query()->where('kind', 'digital')->exists(), 'a download');
+        $this->assertTrue(Product::query()->whereNotNull('preorder_deposit_bps')->exists(), 'a pre-order');
+        $this->assertSame(1, app(FlashSales::class)->live()->count(), 'the flash sale is live');
+        $this->assertSame(1, app(Bundles::class)->live()->count(), 'the bundle is live');
+        $this->get('/shop')->assertOk()->assertSee('Coffee ceremony guide');
+        $this->get('/')->assertOk();
 
         // Running it again adds nothing.
         $users = DB::table('users')->count();
@@ -263,6 +276,7 @@ class DemoDataTest extends TestCase
         $this->assertModelExists($order);
         $this->assertNull($realUser->fresh()->referrer_id, 'real person keeps the account, without the demo referrer');
         $this->assertLessThan($photos, count(Storage::disk('public')->allFiles()), 'demo photos removed');
+        $this->assertSame([], Storage::disk('local')->allFiles('digital'), 'demo downloads removed');
         $this->assertDatabaseHas('activity_log', ['action' => 'demo.deleted']);
         $this->get('/shop/jebena-coffee-pot')->assertNotFound();
     }

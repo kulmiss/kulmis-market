@@ -2,6 +2,7 @@
 
 namespace App\Shop;
 
+use App\Demo\Demo;
 use App\Models\Bundle;
 use App\Models\BundleItem;
 use App\Models\Product;
@@ -36,7 +37,7 @@ class Bundles
             return $this->live;
         }
         // Plain rows in the cache for five minutes (it refuses objects); any product or bundle change clears it.
-        $data = Cache::remember(self::CACHE, 300, function () {
+        $data = Cache::remember(self::CACHE.(Demo::visible() ? ':demo' : ''), 300, function () {
             $bundles = Bundle::query()->where('is_active', true)->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()))->toBase()->get();
             if ($bundles->isEmpty()) {
                 return ['bundles' => [], 'items' => [], 'products' => [], 'images' => [], 'variants' => []];
@@ -79,6 +80,7 @@ class Bundles
     {
         $this->live = null;
         Cache::forget(self::CACHE);
+        Cache::forget(self::CACHE.':demo');
     }
 
     /** @return Collection<int, Bundle> */

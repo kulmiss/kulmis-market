@@ -28,11 +28,12 @@ final class Demo
         'shipping_zones', 'couriers', 'orders', 'payments', 'refunds', 'commissions', 'payout_accounts', 'payout_requests',
         'fraud_flags', 'signals', 'signal_subscriptions', 'signal_purchases', 'activity_log', 'journal_entries',
         'ledger_postings', 'user_badges', 'user_notifications', 'badge_bonus_runs', 'badge_bonuses', 'product_reviews',
-        'rewards', 'membership_gifts',
+        'rewards', 'membership_gifts', 'gift_cards', 'flash_sales', 'bundles', 'contests', 'challenges', 'custom_requests',
     ];
 
     /** Tables made after the is_demo migration: they create their own column. */
-    public const LATER_TABLES = ['badge_bonus_runs', 'badge_bonuses', 'product_reviews', 'rewards', 'membership_gifts'];
+    public const LATER_TABLES = ['badge_bonus_runs', 'badge_bonuses', 'product_reviews', 'rewards', 'membership_gifts', 'gift_cards',
+        'flash_sales', 'bundles', 'contests', 'challenges', 'custom_requests'];
 
     private static ?bool $actingDemo = null;
 
@@ -142,6 +143,7 @@ final class Demo
         $entries = $ids('journal_entries');
         $before = self::counts();
         $images = DB::table('product_images')->whereIn('product_id', $products)->get();
+        $files = DB::table('product_files')->whereIn('product_id', $products)->whereNotNull('path')->pluck('path')->all();
 
         DB::transaction(function () use ($users, $products, $orders, $entries) {
             $in = fn (string $table, string $col, array $vals) => $vals === [] ? 0 : DB::table($table)->whereIn($col, $vals)->delete();
@@ -160,6 +162,11 @@ final class Demo
             DB::table('badge_bonuses')->where('is_demo', true)->delete();
             DB::table('rewards')->where('is_demo', true)->delete();
             DB::table('membership_gifts')->where('is_demo', true)->delete();
+            foreach (['flash_sales', 'bundles', 'contests', 'challenges', 'custom_requests'] as $t) {
+                DB::table($t)->where('is_demo', true)->delete(); // children go with them (cascade)
+            }
+            DB::table('carts')->whereIn('gift_card_id', DB::table('gift_cards')->where('is_demo', true)->select('id'))->update(['gift_card_id' => null]);
+            DB::table('gift_cards')->where('is_demo', true)->delete();
             DB::table('badge_bonus_runs')->where('is_demo', true)->delete();
             foreach (['refunds', 'commissions', 'payments', 'loyalty_rewards', 'user_badges', 'user_notifications', 'payout_requests',
                 'payout_accounts', 'fraud_flags', 'signal_purchases', 'signal_subscriptions', 'activity_log', 'orders'] as $t) {
@@ -194,6 +201,7 @@ final class Demo
             DB::table('users')->where('is_demo', true)->delete();
         });
 
+        Storage::disk('local')->delete($files); // demo downloads (private disk)
         foreach ($images as $img) {
             foreach ((array) json_decode((string) $img->widths, true) as $w) {
                 foreach ((array) json_decode((string) $img->formats, true) as $f) {

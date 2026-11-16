@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use App\Support\Settings;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -25,6 +26,8 @@ use Illuminate\Support\Carbon;
  */
 class Contest extends Model
 {
+    use HidesDemo;
+
     public const RULES = [
         'new_paying_members' => 'Most new paying members (people you invited who pay for the first time)',
         'shop_sales' => 'Most shop sales through your link (ETB)',

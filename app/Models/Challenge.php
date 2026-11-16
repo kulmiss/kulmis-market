@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -17,6 +18,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Challenge extends Model
 {
+    use HidesDemo;
+
     protected $fillable = ['name', 'target', 'reward', 'monthly_cap', 'is_active'];
 
     /** @var array<string, mixed> */

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use App\Shop\Bundles;
 use App\Storefront\PageCache;
 use Illuminate\Database\Eloquent\Collection;
@@ -25,6 +26,8 @@ use Illuminate\Support\Carbon;
  */
 class Bundle extends Model
 {
+    use HidesDemo;
+
     protected $fillable = ['name', 'slug', 'description', 'price', 'is_active', 'starts_at', 'ends_at'];
 
     /** @var array<string, mixed> */

@@ -11,15 +11,21 @@ use App\Jobs\EvaluateBadges;
 use App\Jobs\SendCustomerMessage;
 use App\Ledger\Wallet;
 use App\Membership\MembershipService;
+use App\Models\Bundle;
 use App\Models\Cart;
 use App\Models\Category;
+use App\Models\Challenge;
+use App\Models\Contest;
 use App\Models\Coupon;
 use App\Models\Courier;
+use App\Models\CustomRequest;
+use App\Models\FlashSale;
 use App\Models\Membership;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PayoutRequest;
 use App\Models\Product;
+use App\Models\ProductFile;
 use App\Models\ProductReview;
 use App\Models\ShippingZone;
 use App\Models\Signal;
@@ -30,6 +36,7 @@ use App\Orders\OrderService;
 use App\Payments\PaymentService;
 use App\Referral\CommissionEngine;
 use App\Referral\ReferralCodes;
+use App\Shop\GiftCards;
 use App\Signals\SignalAccess;
 use App\Wallet\CashOuts;
 use App\Wallet\PayoutAccounts;
@@ -39,6 +46,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -701,6 +709,43 @@ class DemoSeeder extends Seeder
         }
         PayoutRequest::query()->where('status', 'requested')->where('user_id', '!=', $this->named['member']->id)->limit(1)
             ->update(['status' => 'on_hold', 'hold_reason' => 'First cash-out of a new account: waiting for review']);
+        $this->newFeatures();
+    }
+
+    /** Something to see in every newer feature: a live flash sale, a bundle, a contest, a challenge, a pre-order, a download, a gift card, a custom order. */
+    private function newFeatures(): void
+    {
+        [$a, $b, $c] = [$this->buyable[1], $this->buyable[2], $this->buyable[3]];
+        FlashSale::query()->create(['product_id' => $a->id, 'price' => (int) (round($a->price * 0.8 / 100) * 100),
+            'starts_at' => now()->subHours(5), 'ends_at' => now()->addDays(2)->setTime(20, 0), 'stock_limit' => 20, 'is_active' => true])
+            ->forceFill(['sold' => 6])->save();
+        $bundle = Bundle::query()->create(['name' => 'Coffee ceremony set', 'slug' => 'coffee-ceremony-set', 'description' => 'Everything for a coffee ceremony at home.',
+            'price' => (int) (round(($b->price + $c->price) * 0.9 / 100) * 100), 'is_active' => true, 'starts_at' => now()->subDays(3)]);
+        foreach ([$b, $c] as $p) {
+            $bundle->items()->create(['product_id' => $p->id, 'product_variant_id' => $p->variants()->value('id'), 'quantity' => 1]);
+        }
+        Contest::query()->create(['name' => 'Month-end team race', 'description' => 'Most new paying members this month wins.',
+            'rule' => 'new_paying_members', 'starts_at' => now()->startOfMonth(), 'ends_at' => now()->endOfMonth(),
+            'prizes' => [150_000, 100_000, 50_000], 'min_score' => 2, 'status' => 'active']);
+        Challenge::query()->create(['name' => 'Bring 5 this month', 'target' => 5, 'reward' => 30_000, 'monthly_cap' => 300_000, 'is_active' => true]);
+        // A pre-order (30% now) and a downloadable guide.
+        $this->buyable[4]->forceFill(['preorder_deposit_bps' => 3000, 'preorder_ships_on' => now()->addDays(21)->toDateString()])->save();
+        $guide = Product::query()->create(['category_id' => $a->category_id, 'name' => 'Coffee ceremony guide (PDF)', 'slug' => 'coffee-ceremony-guide',
+            'description' => 'A short guide to the Ethiopian coffee ceremony, step by step. Download it right after payment.',
+            'price' => 15_000, 'cost_materials' => 0, 'stock' => 0, 'kind' => 'digital', 'status' => 'active']);
+        $path = 'digital/'.$guide->id.'/'.Str::random(32).'.txt';
+        Storage::disk('local')->put($path, "Coffee ceremony guide (demo file)\n\n1. Roast the beans.\n2. Grind them.\n3. Brew in the jebena three times.\n");
+        ProductFile::query()->create(['product_id' => $guide->id, 'kind' => 'file', 'title' => 'Coffee ceremony guide', 'path' => $path,
+            'size' => Storage::disk('local')->size($path), 'position' => 0]);
+        // A gift card someone bought, and a custom order waiting for a price.
+        $cards = app(GiftCards::class);
+        $card = $cards->create(['amount' => GiftCards::amounts()[0] ?? 50_000, 'buyer_name' => 'Hanna', 'buyer_phone' => $this->phone(),
+            'recipient_name' => 'Meron', 'message' => 'Happy birthday!']);
+        $cards->activate($card);
+        $shopper = $this->named['shopper-0'] ?? null;
+        CustomRequest::query()->create(['user_id' => $shopper?->id, 'name' => $shopper->first_name ?? 'Mulu', 'phone' => $shopper->phone ?? $this->phone(),
+            'city' => 'Addis Ababa', 'address' => 'Bole, near Edna Mall', 'description' => 'A large mesob basket in red and gold for a wedding, about 80 cm high.',
+            'budget' => 600_000, 'status' => 'new']);
     }
 
     /** Options from the environment (not config: the seeder also runs when config is cached). */
