@@ -121,9 +121,9 @@ The **Story basket** costs **2,000 ETB**, plus **150 ETB** delivery in Addis Aba
 
 1. Chrome private: open **http://localhost:8090/r/ABDI**.
 2. Open the shop, find **Story basket**, click **Add to cart**, go to checkout.
-3. Type a name, phone `0911555001`, city `Addis Ababa`, an address. Place the order.
+3. Type a name, phone `0911555001`, city `Addis Ababa`, an address. Tick **I agree to the terms**. Place the order.
 4. Pay by **Telebirr or bank transfer**: upload any photo, click **Send receipt**.
-5. Edge: /admin → **Payments** → find the order → **Approve**.
+5. Edge: /admin → **Payments** → the order is in the list (column **For** shows the order number and the buyer's name) → open it → **Approve**.
 6. Chrome normal (Abdi): reload **/account/wallet** and **/account/earnings**.
 
 **You should see:**
@@ -139,9 +139,9 @@ The **Story basket** costs **2,000 ETB**, plus **150 ETB** delivery in Addis Aba
 **Who:** a new Chrome private window (Sara). Edge (owner). Chrome normal (Abdi).
 
 1. Close all Chrome private windows. Open a new one: **http://localhost:8090/r/ABDI**.
-2. Click **Sign up**. First name `Sara`, last name `Tesfaye`, phone `0900200002`, email `sara@story.test`, password `kulmis story 2026`. Create the account.
-3. On her dashboard: **Join by Telebirr or bank transfer · 5,000 ETB** → upload any photo → **Send receipt**.
-4. Edge: /admin → **Payments** → **Approve** Sara's membership.
+2. Click **Sign up**. First name `Sara`, last name `Tesfaye`, phone `0900200002`, email `sara@story.test`, password `kulmis story 2026`. Tick **I agree to the terms**. Create the account.
+3. On her dashboard tap **Join** (top) or scroll to **Join by Telebirr or bank transfer · 5,000 ETB** → upload any photo → **Send receipt**. Her dashboard now says **Receipt sent · we are checking it**.
+4. Edge: /admin → **Payments** → the line **Membership · Sara Tesfaye** → **Approve**.
 5. Chrome private (Sara): reload /account. Copy **Your referral link** (you need it in Must 4).
 6. Chrome normal (Abdi): reload /account/wallet and /account/earnings and **/account/team**.
 
@@ -206,7 +206,7 @@ The **Story basket** costs **2,000 ETB**, plus **150 ETB** delivery in Addis Aba
 
 **You should see:**
 - Step 4: still **1,540 ETB** (buying from yourself never pays). The shop keeps all **2,150 ETB**.
-- Step 5: a message that this phone is already used. No account is made.
+- Step 5: **This phone number already has an account. Please sign in instead.** No account is made.
 
 **If wrong:** screenshots.
 
@@ -214,7 +214,7 @@ The **Story basket** costs **2,000 ETB**, plus **150 ETB** delivery in Addis Aba
 **Checks:** when Omar gets his money back, everybody above him gives back what they earned from him.
 **Who:** Edge (owner). Chrome normal (each person).
 
-1. Edge: /admin → **Payments** → open **Omar's** membership payment → **Refund 5,000 ETB** (type a reason) → confirm.
+1. Edge: /admin → **Payments** → **Filters** → Status **all** (paid payments are hidden by default) → type `Omar` in the search → open **Membership · Omar …** → **Refund…** → type a reason → **Refund 5,000 ETB**.
 2. Check the wallets of Abdi, Sara, Hana, Omar.
 3. Abdi's /account/earnings: the line from Omar's payment.
 
@@ -240,14 +240,14 @@ The **Story basket** costs **2,000 ETB**, plus **150 ETB** delivery in Addis Aba
 
 1. Terminal: `docker compose exec app php artisan km:test-clock +15days`
 2. Abdi: /account/wallet. (Sign in again if asked.)
-3. Abdi: buy the **Story basket**; at checkout tick **Use my wallet**. Place the order.
+3. Abdi: buy the **Story basket**; at checkout fill the city and address, tick **Use my wallet** and **I agree to the terms**. Place the order.
 4. Abdi: /account/wallet → cash out **2,000 ETB**.
 5. Abdi: cash out **1,000 ETB**.
 6. Owner: /admin → **Cash-outs** → Abdi → **Pay** → tick "I checked the account", type reference `TB-STORY-1` → **I sent it — mark paid**.
 
 **You should see:**
 - Step 2: On the way **0**, Ready to use **3,690 ETB** (2,250 + 200 + 120 + 500 + 250 + 250 + 120; the 100 from Omar was taken back).
-- Step 3: the order is **Paid**, total **1,850 ETB** (member price 1,700 + 150 delivery). Ready to use **1,840 ETB**.
+- Step 3: you land on **My orders** with the message **Order KM… is placed and paid (1,850 ETB)** (member price 1,700 + 150 delivery). Ready to use **1,840 ETB**.
 - Step 4: refused — not enough ready money.
 - Step 5: Ready to use **840 ETB**, Cash-out asked **1,000 ETB**.
 - Step 6: Cash-out asked **0**, the cash-out shows **Paid** with your reference. Sara: Ready to use **850**.
@@ -351,7 +351,7 @@ Demo password for everyone: **`kulmis demo 2026`**. Super Admin: `demo-super_adm
 **You should see:** a line **"Money back for days not used"** in Selam's wallet, about the right amount for the days left. (Reset the demo data afterwards.)
 
 ### [ ] Should 5 — Two people try to buy the last piece
-1. Admin: set a product's stock to **1**.
+1. Admin → **Products** → open **Jebena coffee pot** (a product without sizes or colours) → set stock to **1** → save.
 2. Chrome private and Edge private: both add it and go to checkout. Place the order in the first, then in the second.
 
 **You should see:** only the first goes through; the second gets a clear "sold out" message.
@@ -362,7 +362,7 @@ Demo password for everyone: **`kulmis demo 2026`**. Super Admin: `demo-super_adm
 **You should see:** orders and shipping only; the others say "not allowed".
 
 ### [ ] Should 7 — Order emails
-1. Buy as a guest with an email, admin approves, then **Mark making**, **Mark shipped** (courier, tracking `123`), **Mark delivered**.
+1. Buy a product you can hold (e.g. **Woven bread basket**) as a guest with an email, admin approves, then **Mark making**, choose a **Courier** and type tracking `123` → **Mark shipped**, then **Mark delivered**.
 2. Open Mailpit http://localhost:8025 and http://localhost:8090/track.
 
 **You should see:** one clear email per step with the right order number; /track shows the same.
@@ -370,7 +370,7 @@ Demo password for everyone: **`kulmis demo 2026`**. Super Admin: `demo-super_adm
 ### [ ] Should 8 — A wrong receipt is rejected
 1. Buy as a guest, send a receipt. Admin → Payments → type a reason → **Reject**.
 
-**You should see:** the order stays unpaid, the customer can send a new receipt, nobody earned anything.
+**You should see:** the order stays unpaid; the customer's payment page says **We could not accept your last receipt. Reason: …** and shows the upload form again; the customer also gets a message (Mailpit, if they gave an email); nobody earned anything.
 
 ### [ ] Should 9 — Coupon
 1. Admin → **Coupons** → 10% coupon `TEST10`. Guest: add a product, type `TEST10` in the cart.
@@ -378,7 +378,7 @@ Demo password for everyone: **`kulmis demo 2026`**. Super Admin: `demo-super_adm
 **You should see:** 10% less on the goods (not on delivery); a wrong code says it is not valid.
 
 ### [ ] Should 10 — Phone check and sign out
-On a phone (or F12 → phone icon, iPhone 12 Pro): sign in as Selam, open every tab of the bottom bar and everything under **More**, then **More → Sign out** → **Sign out**.
+On a phone (or F12 → phone icon, iPhone 12 Pro): sign in as Selam (if a **New badge unlocked!** box shows, tap **Yay!**), open every tab of the bottom bar and everything under **More**, then **More → Sign out** → **Sign out**.
 
 **You should see:** nothing cut off, no sideways scrolling; "Do you want to sign out?", then "You are signed out."
 
@@ -396,7 +396,7 @@ Guest: buy a gift card at /gift-cards (receipt), admin approves. Use the code in
 Selam: **More → Badges**: unlocked badges and progress look right.
 
 ### [ ] Nice 4 — Share kit
-Selam: **More → Share kit**: posts have Selam's link and code; a picture card can be made.
+Selam: **More → Share kit**: each post shows its whole text with Selam's link and code; a picture card can be made.
 
 ### [ ] Nice 5 — Install the member app
 Real phone: open /account in Chrome (Android) or Safari (iPhone) → **Add to home screen**.
