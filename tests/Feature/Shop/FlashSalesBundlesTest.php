@@ -149,9 +149,12 @@ class FlashSalesBundlesTest extends TestCase
     public function test_product_page_shows_sale_and_countdown(): void
     {
         $p = Product::factory()->create(['price' => 200_000]);
-        $this->sale($p, 150_000, ['stock_limit' => 5]);
+        $sale = $this->sale($p, 150_000, ['stock_limit' => 5]);
+        $sale->forceFill(['sold' => 2])->save();
+        app(FlashSales::class)->forget();
         $this->get('/shop/'.$p->slug)->assertOk()->assertSee('data-countdown', false)->assertSee('Flash sale')
-            ->assertSee('only 5 pieces at this price')->assertSee('"price":"1500.00"', false);
+            ->assertSee('only 3 pieces left at this price')->assertSee('"price":"1500.00"', false)
+            ->assertSee('Members pay 1,275 ETB for this'); // the member price of the sale price, not of the normal price
         $this->get('/shop')->assertSee('Sale −25%');
     }
 

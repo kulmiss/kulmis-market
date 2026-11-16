@@ -51,8 +51,8 @@
                 <p class="font-semibold">Flash sale{{ $sale->variant ? ' on '.$sale->variant->name : '' }}: {{ \App\Support\Money::format($sale->price) }}</p>
                 <p class="muted mt-1 text-sm">
                     Ends in <span class="font-semibold tabular-nums" data-countdown="{{ $sale->ends_at->toIso8601String() }}">{{ $sale->ends_at->diffForHumans(null, \Carbon\CarbonInterface::DIFF_ABSOLUTE) }}</span>
-                    @if ($sale->stock_limit) · only {{ $sale->stock_limit }} pieces at this price @endif
-                    @if (\App\Support\Features::enabled('membership')) · members pay {{ \App\Support\Money::format(app(\App\Pricing\PriceCalculator::class)->memberPrice($sale->price)) }} @endif
+                    @if ($sale->remaining() !== null) · only {{ $sale->remaining() }} {{ $sale->remaining() === 1 ? 'piece' : 'pieces' }} left at this price @endif
+                    @if (\App\Support\Features::enabled('membership') && $product->member_discount !== false) · members pay {{ \App\Support\Money::format(app(\App\Pricing\PriceCalculator::class)->memberPrice($sale->price)) }} @endif
                 </p>
             </div>
         @endif

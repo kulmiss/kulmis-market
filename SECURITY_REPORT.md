@@ -1,6 +1,63 @@
 # Kulmis Market — security and quality review
 
-_Newest review first. Round 3 is below; round 1 (before the first merge) follows it._
+_Newest review first: Round 5, then Round 3, then round 1 (before the first merge)._
+
+## Round 5 — review of the new earning features (16 Nov 2026)
+
+Branch `pr/66-review` (PR #74), on top of the Round 5 features (#60–#73).
+
+**How it was checked**
+- **Every screen in a real browser** (headless Chrome, Docker + nginx + MySQL 8, port 8090, demo data that now includes every new feature):
+  - 360, 390 and 414 px and desktop, light and dark
+  - as a guest, a member with a big team, a new member, an expired member, a member in grace and a shopper, and as all 5 staff roles
+  - checks: console errors, failed requests, broken images, sideways scrolling, unlabeled fields, PHP warnings
+- **New flows in a phone-size browser:** buy a gift card; flash-sale product → cart → gift card code → checkout → pay page; custom order; gift membership → approval → the receiver starts it; buy a download → approval → download; bell, contests, share kit and picture card. Double clicks everywhere, Amharic, emoji and HTML in fields.
+- **Real parallel requests against MySQL:** 10 buyers for the last 2 flash-sale pieces (exactly 2 at the sale price), 4 checkouts with one 500 ETB gift card (the card paid once, balance never below 0), 12 clicks on a 3-use download link (exactly 3 downloads), cash-outs. Ledger total = 0 after every run.
+- **Attacks (new tests):** admin-typed text shown on member and shop pages (XSS), extra fields in admin forms (mass assignment), every admin route × every role (now every `can:` rule), a gift link used by two people, a payment event seen twice.
+- **Money:** a new product-order simulation (3 × 90 random orders) and the membership simulation with every new payout on.
+- **Tools:** Pint, Larastan level 6 (0 errors), `composer audit`, `npm audit` (store + admin) clean, gitleaks (88 commits) no leaks, Lighthouse (22 runs + 20 repeat runs), query counts and server timings.
+
+Result: **507 tests** pass on SQLite and MariaDB.
+
+### Scores (Round 5)
+
+| Area | Bugs found | Fixed? | Score /10 before → after |
+|---|---|---|---|
+| Storefront | **/shop and / crashed when a flash sale or bundle was live** (server cache refuses objects); `/r/CODE/shop` missing; pay page didn't say what the gift card paid; on a sale, "Members pay" used the normal price and "only N pieces" ignored pieces already sold | ✅ | 6.5 → 9.5 |
+| Money & payments | **Buying a gift card from the form always failed**; a digital product could show "Sold out"; download-only orders asked for an address | ✅ | 7.5 → 9.5 |
+| Profit guards | **A big coupon on top of member/sale prices could make an order lose money** (up to ~94 ETB) | ✅ Coupon safety | 8 → 9.5 |
+| Access control | **Fulfilment and Support could make gift cards for cash** (money to spend); the role test only read the first rule | ✅ | 8 → 9.5 |
+| Admin screens | Template "My account" page (fake Display tab, raw-data pop-up, hard words, sideways scroll on phones, unlabeled radios); dashboard asked for by roles without it (403) ; 401 on the sign-in page | ✅ | 8 → 9.5 |
+| Performance | Flash sales read the cache once per product card (32 queries on /shop → 8); cart badge sometimes delayed the first paint on phones (+0.5 s) | ✅ | 8.5 → 9.5 |
+| Concurrency (stock, gift cards, downloads, rewards) | none (verified with real parallel requests; rewards have a row lock + unique key) | — | 9.5 → 9.5 |
+| Web security (XSS, CSRF, headers, CSP, CORS) | none new (honeypot fields got a label) | ✅ | 9.5 → 9.5 |
+| Ops | Slow-query log only in development; demo data had none of the new features | ✅ | 8.5 → 9.5 |
+| Dependencies & secrets | none | — | 9.5 → 9.5 |
+
+### Speed (Docker + nginx, demo data; before = Round 4 build, after = this branch)
+
+| Page / action | Before | After |
+|---|---|---|
+| Cached pages (/, /shop, product, /membership, /signals) | 0.5–0.8 ms | 0.3–0.5 ms |
+| / (not cached) | 25.5 ms | 19.5 ms |
+| /shop (not cached) | 25.4 ms | 25.0 ms (with sale badges and bundles) |
+| Product page (not cached) | 25.1 ms | 25.3 ms |
+| /membership (not cached) | 15.2 ms | 10.7 ms |
+| API products / categories / one product (median) | 30.2 / 16.4 / 22.5 ms | 22.5 / 10.7 / 14.5 ms |
+| Member home /account | 101 ms | 81–91 ms |
+| Team / earnings / wallet / orders | 56 / 39 / 37 / 25 ms | 43–47 / 29 / 23 / 16 ms |
+| New member pages: contests / share / bell | — | 23 / 16 / 17 ms |
+| Admin API (every list, reports, search) p95 | — | ≤ 60 ms (dashboard first load 91 ms) |
+| Lighthouse phone + desktop (perf / a11y / best practices / SEO) | 100 / 96–100 / 100 / 100 | **100 / 100 / 100 / 100** on all 22 runs |
+| Phone LCP, text pages (5 runs each) | 0.94–0.96 s | 0.95–1.17 s (target 1.2 s) |
+| CLS / tap response (4× slower CPU) | 0 / — | 0 / ≤ 40 ms |
+| Store JS + CSS (gzip) | 5 + 9 KB | 8.7 + 9.8 KB |
+| Admin first download (gzip) | ~170 KB | ~170 KB (new pages load on demand) |
+
+### Not done, or only partly, and why
+- **Members' free delivery** (over 3,000 ETB) is your existing choice: the shop pays the courier on those orders. The profit checks leave delivery out (the delivery charge pays the courier and its share of the payment fee).
+- **Wallet balances** are computed 3 times on the member home (about 1 ms each); not cached inside the page so a balance is never wrong right after a cash-out.
+- **Real phones:** checked with phone-size headless Chrome and touch emulation, not on physical devices.
 
 ## Round 3 — second full review (15 Nov 2026, after round 2 + the Chapa removal)
 

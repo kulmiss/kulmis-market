@@ -81,9 +81,13 @@ class StorefrontController extends Controller
                 ->with(['images', 'variants'])->inRandomOrder()->limit(4)->get();
         }
 
+        $sale = app(FlashSales::class)->forDisplay($product);
+        // What a member really pays now: the sale price when the sale is on the whole product, and only if members get a discount here.
+        $base = $sale && $sale->product_variant_id === null ? (int) $sale->price : (int) $product->price;
+
         return view('store.product', ['product' => $product, 'related' => $related, 'together' => $together, 'isMember' => $member,
-            'memberPrice' => app(PriceCalculator::class)->memberPrice($product->price),
-            'sale' => app(FlashSales::class)->forDisplay($product),
+            'memberPrice' => $product->member_discount === false ? $base : app(PriceCalculator::class)->memberPrice($base),
+            'sale' => $sale,
             'bundles' => app(Bundles::class)->containing($product->id)]);
     }
 
