@@ -136,6 +136,8 @@ One stack on `main`: `pr/67-auto-close` (#75) → `pr/74-admin-off`. The top PR 
 - **Decisions**: QUESTIONS.md #135–#149.
 - After #82 (`pr/75-paid-benefits`): paid members keep all member benefits while membership is off; account-safety messages always sent.
 
+**Testing by hand:** [TESTING_GUIDE.md](TESTING_GUIDE.md) (10 must-test items, about 40 minutes).
+
 ## Key decisions
 All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
 - Money is integer santim and double-entry. Balances are never stored.
