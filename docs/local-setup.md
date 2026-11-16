@@ -37,7 +37,9 @@ low stock and sold out, made-to-order, members-only, early access), coupons,
 shipping zones, ~90 people with a deep referral tree, orders in every status,
 membership payments, commissions (pending/available), cash-outs in every
 status, fraud checks, badges, trading signals with results, Telegram
-subscribers, an activity log and dashboard history.
+subscribers, an activity log and dashboard history. It also adds one of each
+newer feature: a live flash sale, a bundle, a contest, a team challenge, a
+pre-order, a download (PDF guide), a gift card and a custom order request.
 
 - Every demo row is marked `is_demo`. **Admin → Demo data** has the
   **Show demo data** switch (off hides it everywhere, nothing is deleted)
