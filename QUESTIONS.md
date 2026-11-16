@@ -150,6 +150,8 @@ change any of them.
 | 141 | Phone app (API) | Field names stay the same when a feature is off, so the app does not crash; only the texts and links are cleaned. Pages and endpoints of the feature answer 404. | Decided (recommended) |
 | 142 | My orders while the shop is off | The orders page answers 404 too (the shop "never existed"). Orders are kept and come back when the shop is on. | Decided (recommended) |
 | 143 | Referrals while membership is off | Only active members earn (your rule). With membership off nobody can join, so earnings stop when the last paid month ends. The pages stop saying "become a member". | Decided (your rule) |
+| 144 | Paid people when membership or signals is switched off | They keep it until their paid month ends (member status, team earnings, the signals channel), then leave as normal. No grace days while it is off, because nobody can pay. Member prices, free delivery and early access are shop prices and stop with the switch at once. | Decided (your rule + recommended) |
+| 145 | End access now | Super Admin, only while the feature is off: ends it for everyone at once. Optional: the unused days go to their wallet, worked out from what each paid month cost. Members' signals stop too when membership ends; signals bought without an account get no wallet credit (the list shows the amount to refund by hand). | Decided (recommended) |
 
 ## Still open: needs you
 | # | What | Why |

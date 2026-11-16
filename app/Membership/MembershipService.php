@@ -149,7 +149,16 @@ class MembershipService
         $now ??= now();
         $stats = ['grace' => 0, 'expired' => 0, 'reminders' => 0];
         if (Features::disabled('membership')) {
-            return $stats; // paused: nothing expires and no reminders go out while it's off
+            // Switched off: nobody can renew, so a paid month simply ends (no grace, no reminders).
+            Membership::query()->whereIn('status', ['active', 'grace'])->where('current_period_end', '<', $now)
+                ->each(function (Membership $m) use (&$stats) {
+                    $m->update(['status' => 'expired', 'continuous_since' => null]);
+                    Activity::log('membership.expired', $m, ['while' => 'membership switched off']);
+                    MembershipEnded::dispatch($m, 'Expired');
+                    $stats['expired']++;
+                });
+
+            return $stats;
         }
 
         Membership::query()->where('status', 'active')->where('current_period_end', '<', $now)

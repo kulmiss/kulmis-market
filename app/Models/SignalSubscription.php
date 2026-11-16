@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Demo\HidesDemo;
 use App\Membership\Members;
+use App\Support\Features;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -63,6 +64,11 @@ class SignalSubscription extends Model
         $at ??= now();
         if ($this->source === self::MEMBERSHIP) {
             return Members::isActive($this->user);
+        }
+
+        if (Features::disabled('signals')) {
+            // Switched off: nobody can pay, so no grace; access ends with the paid month.
+            return $this->current_period_end !== null && $this->current_period_end->gte($at);
         }
 
         return $this->grace_ends_at !== null && $this->grace_ends_at->gte($at);

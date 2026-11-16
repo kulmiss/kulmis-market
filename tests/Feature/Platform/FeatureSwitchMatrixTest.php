@@ -107,23 +107,17 @@ class FeatureSwitchMatrixTest extends TestCase
         return (bool) preg_match('#/(KM1|ABCD|1)/|/r/ABCD$|/members/1/#', $uri);
     }
 
-    public function test_membership_off_pauses_expiry_reminders_and_signals_removal(): void
+    public function test_membership_off_ends_overdue_months_without_reminders_or_grace(): void
     {
         $user = User::factory()->member()->create();
         $m = Membership::query()->where('user_id', $user->id)->firstOrFail();
-        $m->update(['current_period_end' => now()->subDays(10), 'grace_ends_at' => now()->subDays(7)]);
+        $m->update(['current_period_end' => now()->subDays(1), 'grace_ends_at' => now()->addDays(2), 'status' => 'grace']);
         $sub = SignalSubscription::query()->create(['user_id' => $user->id, 'source' => SignalSubscription::MEMBERSHIP,
             'first_name' => 'A', 'status' => 'active', 'link_token' => Str::random(32)]);
 
+        // Switched off: nobody can pay, so the paid month is the end (no grace, no reminder) and they leave the channel.
         Features::set('membership', false);
-        $this->assertSame(['grace' => 0, 'expired' => 0, 'reminders' => 0], app(MembershipService::class)->sweep());
-        $this->assertSame(0, app(SignalAccess::class)->sweep());
-        $this->assertSame('active', $m->fresh()->status);
-        $this->assertSame('active', $sub->fresh()->status);
-
-        // Back on: the overdue membership ends and the member leaves the channel.
-        Features::set('membership', true);
-        $this->assertSame(1, app(MembershipService::class)->sweep()['expired']);
+        $this->assertSame(['grace' => 0, 'expired' => 1, 'reminders' => 0], app(MembershipService::class)->sweep());
         $this->assertSame('expired', $m->fresh()->status);
         $this->assertSame('ended', $sub->fresh()->status);
     }

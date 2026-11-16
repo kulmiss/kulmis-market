@@ -24,7 +24,7 @@ final class MemberTables
     public const MONEY_TYPES = [
         'commission.earned' => 'Team earnings', 'commission.released' => 'Team earnings ready', 'commission.reversed' => 'Team earnings taken back (refund)',
         'badge.bonus' => 'Badge bonus', 'badge.bonus.released' => 'Badge bonus ready', 'badge.bonus.reduced' => 'Badge bonus taken back (refund)',
-        'loyalty.reward' => 'Loyalty reward', 'wallet.spend' => 'Paid with your wallet', 'wallet.refunded' => 'Money back to your wallet',
+        'loyalty.reward' => 'Loyalty reward', 'wallet.spend' => 'Paid with your wallet', 'wallet.refunded' => 'Money back to your wallet', 'access.unused_credit' => 'Money back for days not used',
         'payout.requested' => 'Cash-out asked', 'payout.paid' => 'Cash-out sent to you', 'payout.rejected' => 'Cash-out not approved (back in your wallet)',
         'manual.adjustment' => 'Fixed by our team',
     ];

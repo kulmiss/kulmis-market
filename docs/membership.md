@@ -30,3 +30,19 @@
   the membership ends now.
 - **Admin:** `/api/v1/admin/members` (filters), member detail (membership,
   purchases, wallet), extend or end with a reason, suspend.
+
+## When membership (or signals) is switched off
+- Nobody can buy or renew (pages and API answer 404; visitors see nothing of it).
+- People who already paid keep it until their paid month ends — member
+  status, team earnings and the signals channel. There is no grace time while
+  it is off (nobody can pay), then they leave as normal (hourly sweep), also
+  from the Telegram channel. Signals bought without membership work the same.
+- Before switching off, the Super Admin sees how many people keep it and until
+  when (`GET /api/v1/admin/features/paid-access/{membership|signals}`).
+- **End access now** (`POST …/paid-access/{feature}/end`, `credit: true|false`,
+  only while the feature is off) ends it for everyone at once. With `credit`,
+  the days not used go to their wallet: each paid month counts at what it
+  cost (half a month left of 5,000 ETB = 2,500 ETB), ledger type
+  `access.unused_credit` ("Money back for days not used"). Guest signal
+  buyers without an account can't get a wallet credit; the list shows their
+  amount so you can refund by hand.

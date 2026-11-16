@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Demo\HidesDemo;
+use App\Support\Features;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -37,9 +38,17 @@ class Membership extends Model
         return $this->belongsTo(User::class);
     }
 
-    /** Benefits run until the end of the grace period. */
+    /**
+     * Benefits run until the end of the grace period. While membership is
+     * switched off nobody can pay, so there is no grace: access ends with
+     * the paid month.
+     */
     public function accessEndsAt(): ?Carbon
     {
+        if (Features::disabled('membership')) {
+            return $this->current_period_end;
+        }
+
         return $this->grace_ends_at ?? $this->current_period_end;
     }
 
