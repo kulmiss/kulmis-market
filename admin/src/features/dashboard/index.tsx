@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Page } from '@/components/km/page'
 import { PageSkeleton } from '@/components/km/page-skeleton'
+import { SetupChecklist } from '@/features/setup/checklist'
 
 type D = {
   revenue: { products: number; memberships: number; signals: number; total: number }
@@ -56,6 +57,7 @@ export function Dashboard() {
   return (
     <Page title='Dashboard' description='Money really received and paid. Money given back is already taken off.'
       actions={<div className='grid w-full grid-cols-4 gap-2 sm:flex sm:w-auto' role='group' aria-label='Time range'>{ranges.map((r) => <Button key={r.days} size='sm' className='px-1 sm:px-3' aria-pressed={days === r.days} variant={days === r.days ? 'default' : 'outline'} onClick={() => setDays(r.days)}><span className='sm:hidden'>{r.short}</span><span className='hidden sm:inline'>{r.label}</span></Button>)}</div>}>
+      <div className='mb-4 empty:hidden'><SetupChecklist /></div>
       {!d ? <PageSkeleton /> : (
         <div className='grid gap-4'>
           {d.demo.visible && d.demo.exists && (

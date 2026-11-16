@@ -1,0 +1,1 @@
+import{t as e}from"./order-detail-Dyz-zMyH.js";import{n as t}from"./index-DuvvNB0Q.js";import{c as n}from"./dist-BXPugWsx.js";var r=n();function i(){let{id:n}=t.useParams();return(0,r.jsx)(e,{id:n},n)}export{i as component};

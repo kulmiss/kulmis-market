@@ -12,6 +12,7 @@ export type AdminUser = {
   two_factor: boolean
   two_factor_required: boolean
   currency?: CurrencyFormat
+  setup_needed?: boolean
 }
 
 type AuthState = {

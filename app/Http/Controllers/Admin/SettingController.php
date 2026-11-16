@@ -26,7 +26,7 @@ class SettingController extends Controller
             'confirm_currency_change' => ['sometimes', 'boolean'],
         ]);
         foreach (array_keys($data['settings']) as $key) {
-            if (! Settings::exists((string) $key)) {
+            if (! Settings::editable((string) $key)) {
                 throw ValidationException::withMessages(["settings.$key" => 'Unknown setting.']);
             }
         }

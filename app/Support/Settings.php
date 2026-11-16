@@ -62,6 +62,9 @@ class Settings
     {
         $rows = [];
         foreach (config('settings') as $key => $def) {
+            if (str_starts_with($def[3], '_')) {
+                continue; // internal: changed only by its own screen
+            }
             $rows[] = ['key' => $key, 'type' => $def[0], 'label' => $def[2], 'group' => $def[3],
                 'value' => self::get($key), 'default' => $def[1]] + (isset($def[4]) ? ['options' => $def[4]] : []);
         }
@@ -72,6 +75,37 @@ class Settings
     public static function exists(string $key): bool
     {
         return array_key_exists($key, config('settings'));
+    }
+
+    /** Listed and editable in Settings (internal keys are changed only by their own screens). */
+    public static function editable(string $key): bool
+    {
+        return self::exists($key) && ! str_starts_with(config('settings')[$key][3], '_');
+    }
+
+    /**
+     * Run $fn as if these values were saved (checked like a real save), without
+     * saving anything: for "what would happen" previews.
+     *
+     * @template T
+     *
+     * @param  array<string, mixed>  $values
+     * @param  callable(): T  $fn
+     * @return T
+     */
+    public static function preview(array $values, callable $fn): mixed
+    {
+        $before = self::overrides();
+        $temp = $before;
+        foreach ($values as $key => $value) {
+            $temp[$key] = self::validate((string) $key, self::definition((string) $key)[0], $value);
+        }
+        self::$overrides = $temp;
+        try {
+            return $fn();
+        } finally {
+            self::$overrides = $before;
+        }
     }
 
     /** Forget only this process's copy (see Features::forgetMemo). */

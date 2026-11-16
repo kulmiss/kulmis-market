@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as SetupRouteImport } from './routes/setup'
 import { Route as authSignInRouteImport } from './routes/(auth)/sign-in'
 import { Route as authTwoFactorSetupRouteImport } from './routes/(auth)/two-factor-setup'
 import { Route as errors401RouteImport } from './routes/(errors)/401'
@@ -60,6 +61,11 @@ import { Route as AuthenticatedSignalsTelegramRouteImport } from './routes/_auth
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SetupRoute = SetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const authSignInRoute = authSignInRouteImport.update({
@@ -312,6 +318,7 @@ const AuthenticatedSignalsTelegramRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
+  '/setup': typeof SetupRoute
   '/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
   '/sign-in': typeof authSignInRoute
   '/two-factor-setup': typeof authTwoFactorSetupRoute
@@ -360,6 +367,7 @@ export interface FileRoutesByFullPath {
   '/signals/': typeof AuthenticatedSignalsIndexRoute
 }
 export interface FileRoutesByTo {
+  '/setup': typeof SetupRoute
   '/sign-in': typeof authSignInRoute
   '/two-factor-setup': typeof authTwoFactorSetupRoute
   '/401': typeof errors401Route
@@ -410,6 +418,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/setup': typeof SetupRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
   '/(auth)/sign-in': typeof authSignInRoute
   '/(auth)/two-factor-setup': typeof authTwoFactorSetupRoute
@@ -462,6 +471,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/setup'
     | '/settings'
     | '/sign-in'
     | '/two-factor-setup'
@@ -510,6 +520,7 @@ export interface FileRouteTypes {
     | '/signals/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/setup'
     | '/sign-in'
     | '/two-factor-setup'
     | '/401'
@@ -559,6 +570,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_authenticated'
+    | '/setup'
     | '/_authenticated/settings'
     | '/(auth)/sign-in'
     | '/(auth)/two-factor-setup'
@@ -610,6 +622,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  SetupRoute: typeof SetupRoute
   authSignInRoute: typeof authSignInRoute
   authTwoFactorSetupRoute: typeof authTwoFactorSetupRoute
   errors401Route: typeof errors401Route
@@ -626,6 +639,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(auth)/sign-in': {
@@ -1063,6 +1083,7 @@ const AuthenticatedRouteRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  SetupRoute: SetupRoute,
   authSignInRoute: authSignInRoute,
   authTwoFactorSetupRoute: authTwoFactorSetupRoute,
   errors401Route: errors401Route,
