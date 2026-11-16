@@ -37,15 +37,23 @@ const LIGHT = {
 /** Is the shop safe? Money in, paid to members, kept, owed — and a "what if" calculator. */
 export function MoneyHealthPage() {
   const [period, setPeriod] = useState('month')
-  const q = useQuery({ queryKey: ['money-health', period], queryFn: async () => (await api.get<{ data: Health }>('/money-health', { params: { period } })).data.data })
+  const [demo, setDemo] = useState(false)
+  const q = useQuery({ queryKey: ['money-health', period, demo], queryFn: async () => (await api.get<{ data: Health }>('/money-health', { params: { period, demo: demo ? 1 : 0 } })).data.data })
   const h = q.data
   if (!h) return <PageSkeleton cards={4} rows={4} />
   const light = LIGHT[h.light]
   const Icon = light.icon
 
   return (
-    <Page title='Money health' description='Is the shop safe? What came in, what members got, what the shop kept, and what it owes members. Real data only.'>
-      <Tabs value={period} onValueChange={setPeriod} className='mb-4'>
+    <Page title='Money health' description='Is the shop safe? What came in, what members got, what the shop kept, and what it owes members. Real data and demo data are never added together.'>
+      <div className='mb-4 flex flex-wrap gap-3'>
+      <Tabs value={demo ? 'demo' : 'real'} onValueChange={(v) => setDemo(v === 'demo')}>
+        <TabsList>
+          <TabsTrigger value='real' className='min-h-10'>Real data</TabsTrigger>
+          <TabsTrigger value='demo' className='min-h-10'>Demo data</TabsTrigger>
+        </TabsList>
+      </Tabs>
+      <Tabs value={period} onValueChange={setPeriod}>
         <TabsList>
           <TabsTrigger value='month' className='min-h-10'>This month</TabsTrigger>
           <TabsTrigger value='last_month' className='min-h-10'>Last month</TabsTrigger>
@@ -53,6 +61,7 @@ export function MoneyHealthPage() {
           <TabsTrigger value='all' className='min-h-10'>All time</TabsTrigger>
         </TabsList>
       </Tabs>
+      </div>
 
       <div role='status' className={cn('mb-4 flex items-start gap-3 rounded-lg border p-4', light.cls)} data-health-light={h.light}>
         <Icon className='mt-0.5 size-7 shrink-0' />

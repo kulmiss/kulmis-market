@@ -88,7 +88,7 @@ settings and feature switches, and the admin pages. Results are grouped.
 API: `GET /api/v1/admin/search?q=…&type=&status=&from=&to=&min=&max=` (`App\Search\GlobalSearch`).
 
 ## Money health (General → Money health)
-For Super Admin, Manager and Finance. Real data only. Pick This month, Last
+For Super Admin, Manager and Finance. Real data or demo data (never added together). Pick This month, Last
 month, This year or All time.
 - **Money in** (customers' payments after refunds; wallet and gift-card
   payments are not new money), **Paid to members** (team earnings, badge
