@@ -15,9 +15,15 @@ final class Message
     public const FEATURES = [
         'order_' => 'shop', 'back_in_stock' => 'shop', 'cart_reminder' => 'shop', 'winback' => 'shop',
         'membership_' => 'membership', 'loyalty_reward' => 'loyalty_reward', 'signals_access' => 'signals',
-        'badge_unlocked' => 'badges', 'badge_bonus' => 'badges.bonus', 'payout_' => 'wallet.cashout',
-        'security_payout_account_changed' => 'wallet.cashout', 'security_two_factor_' => 'accounts.two_factor',
+        'badge_unlocked' => 'badges', 'badge_bonus' => 'badges.bonus',
     ];
+
+    /**
+     * Account-safety messages (type prefixes): new sign-in, password, email,
+     * payout account, two-step changes, cash-outs. Always sent, on every
+     * channel the person has, whatever any switch says.
+     */
+    public const ALWAYS_SENT = ['security_', 'payout_'];
 
     public function __construct(
         public readonly string $subject,
@@ -28,6 +34,17 @@ final class Message
         /** Message type ("order_paid"…): its switch is "messages.<type>". */
         public readonly ?string $type = null,
     ) {}
+
+    public static function isAccountSafety(?string $type): bool
+    {
+        foreach (self::ALWAYS_SENT as $prefix) {
+            if ($type !== null && str_starts_with($type, $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /** The switch a message type needs, or null. */
     public static function featureOf(?string $type): ?string
@@ -44,6 +61,9 @@ final class Message
     /** False when the message's feature is switched off. Security notices too. */
     public function featureOn(): bool
     {
+        if (self::isAccountSafety($this->type)) {
+            return true;
+        }
         $f = self::featureOf($this->type);
 
         return $f === null || Features::enabled($f);

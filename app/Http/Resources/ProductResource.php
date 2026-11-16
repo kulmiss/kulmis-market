@@ -15,7 +15,7 @@ class ProductResource extends JsonResource
 {
     private function memberPrice(int $price): ?int
     {
-        return Features::enabled('membership') ? app(PriceCalculator::class)->memberPrice($price) : null;
+        return Features::enabled('membership') || (bool) request()->user()?->isActiveMember() ? app(PriceCalculator::class)->memberPrice($price) : null;
     }
 
     /** @return array<string, mixed> */

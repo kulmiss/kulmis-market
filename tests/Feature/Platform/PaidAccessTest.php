@@ -7,8 +7,10 @@ use App\Membership\Members;
 use App\Membership\MembershipService;
 use App\Membership\PaidAccess;
 use App\Models\Membership;
+use App\Models\Product;
 use App\Models\SignalSubscription;
 use App\Models\User;
+use App\Pricing\PriceCalculator;
 use App\Signals\SignalAccess;
 use App\Support\Features;
 use App\Support\Settings;
@@ -167,5 +169,44 @@ class PaidAccessTest extends ReferralTestCase
         Settings::set('membership.price', 600_000);
         $this->assertFileDoesNotExist(public_path('page-cache/membership.html'));
         $this->get('/membership')->assertOk()->assertSee('6,000');
+    }
+
+    public function test_while_membership_is_off_paid_members_keep_every_benefit_and_others_get_none(): void
+    {
+        $paid = $this->paidMember();
+        $guest = User::factory()->create(['first_name' => 'Abebe']);
+        $plain = Product::factory()->create(['price' => 400_000, 'stock' => 9, 'status' => 'active', 'weight_grams' => 500]);
+        $early = Product::factory()->create(['price' => 100_000, 'stock' => 9, 'status' => 'active', 'release_at' => now()->addHours(10)]);
+        $only = Product::factory()->create(['price' => 100_000, 'stock' => 9, 'status' => 'active', 'is_members_only' => true]);
+        Features::set('membership', false);
+        $calc = app(PriceCalculator::class);
+
+        // Member price and free delivery (goods over the free-delivery amount).
+        $q = $calc->quote([[$plain, null, 1]], $paid->fresh()->isActiveMember(), null, 20_000);
+        $this->assertSame($calc->memberPrice(400_000), $q->listSubtotal - $q->memberDiscount);
+        $this->assertLessThan(400_000, $calc->memberPrice(400_000));
+        $this->assertSame(0, $q->shipping - $q->shippingDiscount, 'free delivery');
+        // Early access and the members-only product.
+        $this->assertTrue($early->isPurchasableBy(true));
+        $this->assertTrue($only->isPurchasableBy(true));
+        $this->assertContains($only->id, Product::query()->visibleTo(true)->pluck('id'));
+        $this->assertContains($early->id, Product::query()->visibleTo(true)->pluck('id'));
+        $this->actingAs($paid)->get('/shop/'.$plain->slug)->assertOk()->assertSee('member price');
+        $this->app['auth']->forgetGuards();
+
+        // Everyone else: normal price, delivery charged, no early access, no members-only product, nothing about membership.
+        $this->assertFalse($guest->isActiveMember());
+        $g = $calc->quote([[$plain, null, 1]], false, null, 20_000);
+        $this->assertSame(0, $g->memberDiscount);
+        $this->assertSame(20_000, $g->shipping - $g->shippingDiscount);
+        $this->assertFalse($early->isPurchasableBy(false));
+        $this->assertNotContains($only->id, Product::query()->visibleTo(false)->pluck('id'));
+        $this->actingAs($guest)->get('/shop/'.$plain->slug)->assertOk()->assertDontSee('member price');
+        $this->get('/shop/'.$only->slug)->assertNotFound();
+
+        // Nobody new can join; when the paid month ends the benefits end.
+        $this->expectsNoRenewal($guest);
+        $this->travelTo(Membership::query()->where('user_id', $paid->id)->value('current_period_end')->addMinute());
+        $this->assertFalse($paid->fresh()->isActiveMember());
     }
 }

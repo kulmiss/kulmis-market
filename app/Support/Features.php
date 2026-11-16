@@ -38,6 +38,30 @@ class Features
         return $def[3] === null || self::enabled($def[3]);
     }
 
+    /**
+     * A member benefit (member price, free delivery, early access, members-only
+     * product) for someone who is an active member right now. While membership
+     * is switched off, people who already paid keep every benefit until their
+     * paid month ends, so the membership switch itself is skipped here; the
+     * benefit's own switch (and its other parents) still count.
+     */
+    public static function memberBenefit(string $key): bool
+    {
+        if (self::enabled($key)) {
+            return true;
+        }
+        if (self::enabled('membership')) {
+            return false;
+        }
+        for ($k = $key; $k !== null && $k !== 'membership'; $k = self::definition($k)[3]) {
+            if (! self::own($k)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public static function disabled(string $key): bool
     {
         return ! self::enabled($key);

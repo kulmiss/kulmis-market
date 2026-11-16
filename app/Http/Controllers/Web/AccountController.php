@@ -58,7 +58,7 @@ class AccountController extends Controller
             'dash' => $dashboard->for($user, $chart),
             'wallet' => Wallet::for($user)->summary(),
             'signalsLink' => $this->signalsLink($user, $member),
-            'earlyAccess' => $member && Features::enabled('shop.early_access')
+            'earlyAccess' => $member && Features::memberBenefit('shop.early_access')
                 ? Product::query()->visibleTo(true)->where('release_at', '>', now())->with(['images', 'variants'])->limit(6)->get() : collect(),
         ]);
     }

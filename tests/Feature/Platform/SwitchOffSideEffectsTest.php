@@ -15,9 +15,12 @@ use App\Models\User;
 use App\Models\UserBadge;
 use App\Notify\Inbox;
 use App\Notify\Message;
+use App\Notify\Sms\SmsGateway;
 use App\Security\SecurityAlerts;
 use App\Support\Features;
+use App\Telegram\TelegramClient;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Tests\Feature\Referral\ReferralTestCase;
 
@@ -45,26 +48,32 @@ class SwitchOffSideEffectsTest extends ReferralTestCase
         $this->assertSame(1, Commission::query()->where('recipient_id', $ref->id)->where('type', 'membership')->count());
     }
 
-    public function test_messages_of_a_switched_off_feature_are_never_sent_not_even_security_notices(): void
+    public function test_messages_of_a_switched_off_feature_are_not_sent_but_account_safety_messages_always_are(): void
     {
-        Bus::fake([SendCustomerMessage::class]);
+        Mail::fake();
         $u = $this->member();
-        Features::set('accounts.two_factor', false);
-        Features::set('wallet.cashout', false);
+        $u->forceFill(['email' => 'selam@example.com', 'phone' => '+251911223344'])->save();
+        // Everything that could stop a message is off.
+        foreach (['accounts.two_factor', 'wallet', 'notifications.sms', 'notifications.email', 'notifications.telegram', 'shop'] as $f) {
+            Features::set($f, false);
+        }
+        $sms = \Mockery::mock(SmsGateway::class);
+        $sms->shouldReceive('send')->times(7);
+        $run = fn (Message $m) => (new SendCustomerMessage($m))->handle($sms, app(TelegramClient::class));
+        foreach (['new_sign_in', 'password_changed', 'email_changed', 'payout_account_changed', 'two_factor_on', 'two_factor_off'] as $event) {
+            $run(new Message('Security notice', $event, $u->phone, $u->email, null, 'security_'.$event));
+        }
+        $run(new Message('Your cash-out', 'sent', $u->phone, $u->email, null, 'payout_paid'));
+        $run(new Message('Order', 'paid', $u->phone, $u->email, null, 'order_paid')); // shop off: not sent
+        Mail::assertSentCount(7);
+
+        // The security alerts really go out with their type.
+        Bus::fake([SendCustomerMessage::class]);
         app(SecurityAlerts::class)->notify($u, 'two_factor_off');
-        app(SecurityAlerts::class)->notify($u, 'payout_account_changed', ['account' => '••12']);
-        app(SecurityAlerts::class)->notify($u, 'password_changed');
-
-        $sent = [];
-        Bus::assertDispatched(SendCustomerMessage::class, function (SendCustomerMessage $job) use (&$sent) {
-            $sent[$job->message->type] = $job->message->featureOn();
-
-            return true;
-        });
-        $this->assertSame(['security_two_factor_off' => false, 'security_payout_account_changed' => false, 'security_password_changed' => true], $sent);
-        $this->assertSame('accounts.two_factor', Message::featureOf('security_two_factor_on'));
+        Bus::assertDispatched(SendCustomerMessage::class, fn (SendCustomerMessage $j) => $j->message->type === 'security_two_factor_off' && $j->message->featureOn());
+        $this->assertTrue(Message::isAccountSafety('payout_rejected'));
         $this->assertSame('shop', Message::featureOf('order_paid'));
-        $this->assertNull(Message::featureOf('security_new_sign_in'));
+        $this->assertNull(Message::featureOf('security_two_factor_on'));
     }
 
     public function test_badges_of_a_switched_off_feature_are_hidden_and_not_given(): void

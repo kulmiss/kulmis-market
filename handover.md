@@ -133,7 +133,8 @@ One stack on `main`: `pr/67-auto-close` (#75) → `pr/74-admin-off`. The top PR 
 | `pr/74-admin-off` | Admin: preview before switching off, "Switched-off features" menu group with history, text warnings, page texts with {if …} |
 
 - **How it is checked**: `FeatureNeverExistedTest` turns every switch off one at a time, crawls the shop as a guest, a member with a team, a new member, an expired member and a shopper (plus sitemap, robots, manifests, offline page, 404 page, API, message templates), fails on any word/link/page of that feature, then switches it back on and checks the words come back. A new feature needs its words in `config/feature_words.php`.
-- **Decisions**: QUESTIONS.md #135–#148.
+- **Decisions**: QUESTIONS.md #135–#149.
+- After #82 (`pr/75-paid-benefits`): paid members keep all member benefits while membership is off; account-safety messages always sent.
 
 ## Key decisions
 All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:

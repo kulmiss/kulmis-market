@@ -287,7 +287,7 @@ and MariaDB; Larastan 0 errors; gitleaks no real secrets; both audits clean.
 ## Round 6 changes that touch security
 - **Two-step sign-in for staff** is always required on the live shop (`APP_ENV=production`), whatever `ADMIN_REQUIRE_2FA` says. Tested for every staff role.
 - **Sign-out** asks first; the landing message comes from a `?signed_out` flag and is never saved in the page cache.
-- **Switched-off features**: customer pages and API answer 404; messages of a switched-off feature are never sent (also security notices about it, e.g. "two-step turned off" while two-step is off). Admin screens of a switched-off feature stay reachable for staff with the same permissions as before (no new rights).
+- **Switched-off features**: customer pages and API answer 404; messages of a switched-off feature are not sent. Account-safety messages (new sign-in, password, email, payout account, two-step changes, cash-outs) are always sent on every channel, whatever the switches say. Admin screens of a switched-off feature stay reachable for staff with the same permissions as before (no new rights).
 - **End access now** (Super Admin only, rate-limited, only while the feature is off) writes the money back through the ledger with an idempotency key and an activity-log line.
 
 ## How to check it yourself

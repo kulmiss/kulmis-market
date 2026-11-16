@@ -12,7 +12,8 @@
 - Admin API: `GET/PUT /api/v1/admin/features` (the on/off overview page:
   sections, search, On/Off filter).
 - Message types: `new Message(..., type: 'order_paid')` is skipped when
-  `messages.order_paid` is off. Account-safety messages are always sent.
+  `messages.order_paid` is off. Account-safety messages (security notices and
+  cash-outs) are always sent, on every channel, whatever the switches say.
 - Queue workers forget their copy of switches and settings before every job
   (`Queue::before` in AppServiceProvider), so a change is seen at once.
 
@@ -35,8 +36,10 @@ shop never had it:
   `{if !signals}Ask us about our next service.{/if}` (`FeatureText::apply`).
   `{benefits}` in the membership messages is the list of benefits that are on.
 - **Messages:** `Message::FEATURES` maps each message type to its feature. A
-  message of a switched-off feature is never sent — also not a security
-  notice (e.g. "two-step sign-in turned off" while two-step is off).
+  message of a switched-off feature is never sent. Exception: account-safety
+  messages (`Message::ALWAYS_SENT`: new sign-in, password, email, payout
+  account, two-step changes, cash-outs) are always sent on every channel the
+  person has, whatever any switch says.
 - **Money:** a switched-off feature earns nobody anything new (no team
   earnings from its payments, no badges or bonuses for it). Past money stays,
   with a neutral name ("Earlier earning", "Money sent out").

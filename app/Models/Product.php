@@ -170,7 +170,7 @@ class Product extends Model
             return true;
         }
 
-        return $member && Features::enabled('shop.early_access') && $this->memberReleaseAt()?->lte($now);
+        return $member && Features::memberBenefit('shop.early_access') && $this->memberReleaseAt()?->lte($now);
     }
 
     /** In early access right now (members see it, guests don't yet). */
@@ -187,7 +187,7 @@ class Product extends Model
         if ($this->status !== 'active' || ! $this->isReleasedFor($member)) {
             return false;
         }
-        if ($this->is_members_only && Features::enabled('shop.members_only_product')) {
+        if ($this->is_members_only && Features::memberBenefit('shop.members_only_product')) {
             return $member;
         }
 
@@ -243,10 +243,14 @@ class Product extends Model
         $now = now();
         $query->where('status', 'active')->where(function (Builder $q) use ($member, $now) {
             $q->whereNull('release_at')->orWhere('release_at', '<=', $now);
-            if ($member && Features::enabled('shop.early_access')) {
+            if ($member && Features::memberBenefit('shop.early_access')) {
                 $q->orWhere('release_at', '<=', $now->copy()->addHours(Settings::int('catalog.early_access_hours')));
             }
         });
+        // While membership is off, members-only products are only seen by those who still have a paid month.
+        if (! $member && Features::disabled('membership') && Features::memberBenefit('shop.members_only_product')) {
+            $query->where('is_members_only', false);
+        }
         // Downloads and add-ons disappear from the shop while their switch is off (nothing is deleted).
         $hidden = array_keys(array_filter([self::DIGITAL => 'shop.digital', self::ADDON => 'shop.addons'], fn (string $f) => Features::disabled($f)));
         if ($hidden !== []) {
