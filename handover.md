@@ -154,6 +154,15 @@ One stack on `main`: `pr/67-auto-close` (#75) → `pr/74-admin-off`. The top PR 
 | `pr/82-security-check` | MoneyCheatingTest + RefundAfterSpendTest (prices from the browser, two tabs, double clicks, someone else's account or code, refunds above the paid amount); SECURITY_REPORT Round 7 |
 | `pr/83-guide-update` | TESTING_GUIDE.md steps fixed (terms box, Filters → Status all for refunds, courier, product without sizes, new messages); QUESTIONS #156–#160; this file |
 
+## Round 9 (documentation and first-time guidance)
+| Branch | What |
+|--------|------|
+| `pr/84-setup-wizard` | Super Admin setup wizard (5 pages), logo + shop colour, "still to do" list on the dashboard, Settings → Run setup again |
+| `pr/85-welcome-tour` | Member welcome tour (3 slides), Help in the member menu |
+| `pr/86-member-help` | /help articles (23, live numbers), 20 FAQ, search, "Was this helpful?", "?" links, admin article editor |
+| `pr/87-admin-guide` | docs/admin-guide (25 pages) + Guide in the admin + "?" on every screen + PDF; `km:reset-2fa` |
+| `pr/88-docs` | CONTRIBUTING.md (keep the guides right), docs/help.md, QUESTIONS #161–#168, this file, testing guide without Chapa |
+
 ## Key decisions
 All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
 - Money is integer santim and double-entry. Balances are never stored.

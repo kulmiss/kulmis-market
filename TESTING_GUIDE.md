@@ -409,7 +409,7 @@ Test these **on the live server before you announce the shop**, with small amoun
 
 | What | Why not locally | When |
 |------|-----------------|------|
-| **Chapa card / mobile payments** | needs your Chapa keys and a public address for Chapa's "paid" message | after the Chapa keys are in `.env` on the live server: pay 10 ETB, check the order turns **Paid** by itself, then refund it |
+| **A real Telebirr payment** | money moves for real | buy something cheap with your own phone, send the real receipt, approve it, check the order turns **Paid** and the messages arrive, then refund it |
 | **Telegram bot and signals channel** | needs the bot token and a public address | after the bot is set up: buy signals, join with the personal link; end the access and check you are removed |
 | **SMS** | no SMS provider yet (QUESTIONS.md, A) | after you choose one: password reset by SMS, an order message on your phone |
 | **Real emails** | locally they stop in Mailpit | after domain and mail settings: sign up with your email (check spam) |
@@ -422,7 +422,7 @@ Test these **on the live server before you announce the shop**, with small amoun
 ## When all these pass, you're ready for the next step:
 
 1. **All 10 "Must test" steps match** → the money of the team program is right on screen too (the automatic tests already prove the maths and that the shop never collapses: see `docs/never-collapses.md`).
-2. **Set up** hosting + domain, Chapa keys, the Telegram bot and an SMS provider (QUESTIONS.md, "Still open").
+2. **Set up** hosting + domain, the Telegram bot and an SMS provider (QUESTIONS.md, "Still open"). The step-by-step is in the **Super Admin guide** (Admin → Guide, or docs/admin-guide.pdf).
 3. **Do the "can't test locally" checks** on the live server with small real amounts.
 4. **Delete the demo data** on the live server (Admin → Demo data → Delete all demo data), add your real products.
 5. **Invite your first real members**, and watch **Money health** every week: it should stay green.

@@ -167,6 +167,14 @@ change any of them.
 | 158 | Order paid from the wallet | A member whose order is fully paid from the wallet lands on **My orders** with "Order KM… is placed and paid (1,850 ETB)". | Decided (recommended) |
 | 159 | Sign-up with a used phone or email | "This phone number already has an account. Please sign in instead." Sign-up has always shown that the number is taken, so this tells nothing new; sign-in and password reset still never say who has an account. | Decided (recommended) |
 | 160 | Errors in the cart and checkout | Shown right under the field (read out by screen readers) instead of a browser pop-up, which is hard to read on phones. | Decided (recommended) |
+| 161 | Chapa in the setup and the guide | Chapa was removed earlier (your decision #56). The wizard's "Connect your services" page and the guide therefore show **Telebirr and bank details** instead of Chapa, and say that card payments are a new feature if you want them back. | Decided (recommended) |
+| 162 | Who sees the setup wizard | Only the Super Admin, on the first sign-in after this update (also on an existing install), until **Finish**. "Skip for now" on the last page also finishes. Reopen: Settings → Run setup again. Switch: Help and contact → Setup wizard. | Decided (recommended) |
+| 163 | Logo and shop colour | New: upload a logo (re-encoded as PNG, transparency kept, no SVG for safety) and a main colour for the shop's buttons and links. The member area keeps its own accent colour. | Decided (recommended) |
+| 164 | Help articles: files + your changes | The 23 starting articles come with the code (`resources/help`). Your changes are saved on top; **Back to the original** removes them. New code updates reach articles you never changed. | Decided (recommended) |
+| 165 | 20 questions (FAQ) | 12 new questions were added next to your 8 (none of yours changed, except "When can I use my earnings?" now reads the 14 days from the settings if you never edited it). | Decided (recommended) |
+| 166 | Welcome tour for existing members | Everyone sees it once, the next time they open their account (also people who joined before). | Decided (recommended) |
+| 167 | The guide for staff | All staff can read the Guide (it has no secrets). The "?" picks the page for the screen you are on. | Decided (recommended) |
+| 168 | Lost 2FA phone and no recovery codes | New server command `php artisan km:reset-2fa email`: only someone with server access can use it; the person gets a safety message and sets 2FA up again at the next sign-in. | Decided (recommended) |
 
 ## Still open: needs you
 | # | What | Why |
