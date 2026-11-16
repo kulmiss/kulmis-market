@@ -4,7 +4,7 @@
     use App\Badges\BadgeIcons as I;
     $icons = ['earning' => 'coins', 'team' => 'users', 'badge_unlocked' => 'award', 'bonus' => 'gift', 'order' => 'shopping-bag',
         'renewal' => 'calendar-check', 'cashout' => 'wallet', 'goal' => 'target'];
-    $prefNames = \App\Notify\Inbox::TYPES;
+    $prefNames = \App\Notify\Inbox::types(); // only kinds whose feature is on
 @endphp
 <h1 class="font-serif text-3xl font-semibold">Notifications</h1>
 <p class="mt-1 text-sm m-muted">News about your money, your team and your orders. Newest first.</p>
@@ -22,7 +22,8 @@
                 <span class="grid size-10 shrink-0 place-items-center rounded-full m-soft m-accent-text">{!! I::svg($icons[$n->type] ?? 'bell', 19) !!}</span>
                 <div class="min-w-0 flex-1">
                     <p class="font-semibold">
-                        @if ($n->url)<a href="{{ url($n->url) }}" class="hover:underline">{{ $n->title }}</a>@else{{ $n->title }}@endif
+                        @php $link = \App\Notify\Inbox::link($n->url); @endphp
+                        @if ($link)<a href="{{ url($link) }}" class="hover:underline">{{ $n->title }}</a>@else{{ $n->title }}@endif
                         @if ($new)<span class="ms-1 rounded-full px-2 py-0.5 text-xs font-semibold text-white" style="background: var(--m-accent)">New</span>@endif
                     </p>
                     @if ($n->body)<p class="mt-0.5 text-sm m-muted break-words">{{ $n->body }}</p>@endif
@@ -39,7 +40,7 @@
     <h2 id="push-h" class="font-semibold">Phone notifications</h2>
     <p class="mt-1 text-sm m-muted">Your phone shows a short note like “New team earnings”. Amounts and names never show on the lock screen.</p>
     <div class="mt-3 grid gap-1" data-push-kinds>
-        @foreach (['earning' => 'Team earnings', 'order' => 'My orders', 'bonus' => 'Badge bonus', 'cashout' => 'Cash-outs', 'signal' => 'New trading signals'] as $k => $label)
+        @foreach (array_intersect_key(['earning' => 'Team earnings', 'order' => 'My orders', 'bonus' => 'Badge bonus', 'cashout' => 'Cash-outs', 'signal' => 'New trading signals'], $prefNames) as $k => $label)
             <label class="flex min-h-12 items-center gap-3 text-sm"><input type="checkbox" class="size-5" value="{{ $k }}" @checked(\App\Notify\NotifyPrefs::on($user, 'push.'.$k) || (! \App\Notify\NotifyPrefs::on($user, 'push.earning') && $k !== 'signal'))> {{ $label }}</label>
         @endforeach
     </div>

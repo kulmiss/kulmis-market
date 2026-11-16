@@ -55,7 +55,7 @@ class PushController extends Controller
     /** Asked by the phone when a push arrives: only safe words for the lock screen. */
     public function latest(Request $request): JsonResponse
     {
-        $n = UserNotification::query()->where('user_id', $request->user()->id)->whereNull('read_at')->latest('id')->first();
+        $n = UserNotification::query()->shown()->where('user_id', $request->user()->id)->whereNull('read_at')->latest('id')->first();
 
         return response()->json(['data' => $n ? ['title' => Inbox::lockScreenTitle($n->type), 'body' => 'Tap to open.', 'url' => '/account/notifications']
             : ['title' => 'You have news', 'body' => 'Tap to open.', 'url' => '/account/notifications']])->header('Cache-Control', 'no-store, private');

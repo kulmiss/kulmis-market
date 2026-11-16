@@ -21,7 +21,7 @@
                 @feature('referral.commission.signals')<tr><td class="py-2">Signals (guest buyers)</td>@if ($lv(1))<td>{{ $r('signals', 1) }}</td>@endif @if ($lv(2))<td>—</td>@endif @if ($lv(3))<td>—</td>@endif</tr>@endfeature
             </tbody>
         </table>
-        <p class="muted mt-3 text-xs">Level 1 = people you invite directly (no limit). Level 2 = people they invite. Level 3 = the next step. If a member's membership has ended, that level's earning is skipped.</p>
+        <p class="muted mt-3 text-xs">{{ implode(' ', array_filter([$lv(1) ? 'Level 1 = people you invite directly (no limit).' : null, $lv(2) ? 'Level 2 = people they invite.' : null, $lv(3) ? 'Level 3 = the next step.' : null])) }} If a member's membership has ended, that level's earning is skipped.</p>
     </div>
     <div class="mt-6 grid gap-4 md:grid-cols-2">
         <div class="card text-sm"><p class="font-semibold">Use your earnings</p><p class="muted mt-1">Spend them in the shop or on your membership, or cash out from {{ \App\Support\Money::format(\App\Support\Settings::int('wallet.cashout_min')) }} to Telebirr or bank.</p></div>

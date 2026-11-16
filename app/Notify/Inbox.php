@@ -21,6 +21,58 @@ final class Inbox
         'cashout' => 'My cash-outs', 'goal' => 'My monthly goal', 'signal' => 'New trading signals',
     ];
 
+    /** The feature each kind of news belongs to: when it is switched off, the option is hidden and nothing is sent. */
+    public const FEATURES = [
+        'earning' => 'referral', 'team' => 'referral', 'badge' => 'badges', 'bonus' => 'badges.bonus',
+        'order' => 'shop', 'renewal' => 'membership', 'cashout' => 'wallet.cashout', 'goal' => 'account.goals',
+        'signal' => 'signals',
+    ];
+
+    /** @return array<string, string> the kinds of news whose feature is on (type => easy name) */
+    public static function types(): array
+    {
+        return array_filter(self::TYPES, fn (string $type) => Features::enabled(self::FEATURES[$type]), ARRAY_FILTER_USE_KEY);
+    }
+
+    /** Pages a notification can link to, and the feature each needs. */
+    private const URL_FEATURES = [
+        '/account/wallet' => 'wallet', '/account/badges' => 'badges', '/account/signals' => 'signals', '/account/orders' => 'shop',
+        '/account/team' => 'referral', '/account/earnings' => 'referral', '/account/share' => 'referral.share_kit',
+        '/signals' => 'signals', '/shop' => 'shop', '/membership' => 'membership',
+    ];
+
+    /** Shown in the bell list? (its kind of news belongs to a feature that is on) */
+    public static function visible(string $type): bool
+    {
+        $pref = self::PREF[$type] ?? $type;
+
+        return ! isset(self::FEATURES[$pref]) || Features::enabled(self::FEATURES[$pref]);
+    }
+
+    /** @return list<string> stored type names whose feature is off (hidden from every list and count) */
+    public static function hiddenTypes(): array
+    {
+        $types = array_merge(array_keys(self::FEATURES), array_keys(self::PREF));
+
+        return array_values(array_filter($types, fn (string $t) => ! self::visible($t)));
+    }
+
+    /** The link, or null when it points at a page whose feature is off. */
+    public static function link(?string $url): ?string
+    {
+        if ($url === null || $url === '') {
+            return null;
+        }
+        $path = '/'.ltrim((string) parse_url($url, PHP_URL_PATH), '/');
+        foreach (self::URL_FEATURES as $prefix => $feature) {
+            if (($path === $prefix || str_starts_with($path, $prefix.'/')) && Features::disabled($feature)) {
+                return null;
+            }
+        }
+
+        return $url;
+    }
+
     /** Kinds of news that can also go to the phone. */
     public const PUSH = ['earning', 'order', 'bonus', 'cashout', 'signal'];
 
@@ -29,7 +81,9 @@ final class Inbox
 
     public static function add(User $user, string $type, string $title, ?string $body = null, ?string $url = null, ?string $key = null): void
     {
-        if (Features::disabled('account.notifications') || ! NotifyPrefs::on($user, 'bell.'.(self::PREF[$type] ?? $type))) {
+        $pref = self::PREF[$type] ?? $type;
+        if (Features::disabled('account.notifications') || Features::disabled(self::FEATURES[$pref] ?? 'account.notifications')
+            || ! NotifyPrefs::on($user, 'bell.'.$pref)) {
             return;
         }
         // "Ignore" = the same event (same key) is never shown twice, even on a retry.
@@ -60,7 +114,7 @@ final class Inbox
             return 0;
         }
 
-        return UserNotification::query()->where('user_id', $user->id)->whereNull('read_at')->limit(100)->count();
+        return UserNotification::query()->shown()->where('user_id', $user->id)->whereNull('read_at')->limit(100)->count();
     }
 
     public static function markAllRead(User $user): void

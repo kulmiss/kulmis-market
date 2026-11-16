@@ -24,7 +24,7 @@ class NotificationController extends Controller
         abort_if(Features::disabled('account.notifications'), 404);
         /** @var User $user */
         $user = $request->user();
-        $items = UserNotification::query()->where('user_id', $user->id)->latest('id')->paginate(30);
+        $items = UserNotification::query()->shown()->where('user_id', $user->id)->latest('id')->paginate(30);
         $unreadIds = $items->getCollection()->whereNull('read_at')->pluck('id')->all();
         Inbox::markAllRead($user); // seen now; the list still shows which ones were new
 

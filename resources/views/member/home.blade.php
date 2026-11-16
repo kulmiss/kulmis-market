@@ -26,7 +26,7 @@
             'bg-black/5 dark:bg-white/10' => $statusChip[1] === 'muted']) data-membership-status>{!! I::svg($statusChip[1] === 'ok' ? 'circle-check' : 'clock', 14) !!}{{ $statusChip[0] }}</span>
     </div>
     <div class="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto" aria-label="Quick actions">
-        @feature('wallet')<a href="{{ url('/account/wallet') }}" class="m-btn">{!! I::svg('banknote', 17) !!}Cash out</a>@endfeature
+        @feature('wallet')<a href="{{ url('/account/wallet') }}" class="m-btn">{!! I::svg('banknote', 17) !!}{{ \App\Support\Features::enabled('wallet.cashout') ? 'Cash out' : 'My wallet' }}</a>@endfeature
         @feature('shop')<a href="{{ url('/shop') }}" class="m-btn-ghost">{!! I::svg('store', 17) !!}Shop</a>@endfeature
         @feature('membership')<a href="#membership" class="m-btn-ghost">{!! I::svg('refresh-cw', 17) !!}{{ $m['active'] ? 'Renew' : 'Join' }}</a>@endfeature
     </div>
@@ -45,7 +45,7 @@
                 <ol class="mt-3 grid gap-2 text-sm">
                     <li class="flex gap-2"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-accent)">1</span>Share your link or code with friends and family.</li>
                     <li class="flex gap-2"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-accent)">2</span>They join and shop. You earn from 3 levels.</li>
-                    <li class="flex gap-2"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-accent)">3</span>Earnings are ready after {{ \App\Support\Settings::int('referral.pending_days') }} days. Cash out to Telebirr or your bank.</li>
+                    <li class="flex gap-2"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-accent)">3</span>Earnings are ready after {{ \App\Support\Settings::int('referral.pending_days') }} days.@feature('wallet.cashout') Cash out to Telebirr or your bank.@endfeature</li>
                 </ol>
             </div>
             @if ($ref)<a href="#referral" class="m-btn">{!! I::svg('share-2', 17) !!}{{ $ref['share'] ? 'Share my link' : 'My link' }}</a>@endif
@@ -122,7 +122,7 @@
     <div class="m-card">
         <h2 class="font-semibold">Earnings per level</h2>
         <ul class="mt-3 grid gap-3">
-            @foreach ($dash['by_level'] as $lvl => $amt)
+            @foreach (array_filter($dash['by_level'], fn ($l) => \App\Support\Features::enabled("referral.level$l"), ARRAY_FILTER_USE_KEY) as $lvl => $amt)
                 <li><div class="flex justify-between text-sm"><span>Level {{ $lvl }}</span><b class="tabular-nums">{{ $fmt($amt) }}</b></div>
                     <div class="mt-1 h-2 rounded-full m-soft"><div class="h-2 rounded-full" style="width: {{ $amt > 0 ? max(3, $amt / $lvMax * 100) : 0 }}%; background: var(--m-accent)"></div></div></li>
             @endforeach
@@ -255,7 +255,7 @@
     <div class="m-card">
         <div class="flex items-center justify-between"><h2 class="font-semibold">Your team</h2><a href="{{ url('/account/team') }}" class="inline-flex min-h-12 items-center text-xs m-accent-text">See all →</a></div>
         <ul class="mt-3 grid gap-2">
-            @foreach ([1 => [$ref['team']['level1_count'], $ref['team']['level1_active']], 2 => [$ref['team']['level2_count'], null], 3 => [$ref['team']['level3_count'], null]] as $lvl => [$count, $active])
+            @foreach (array_filter([1 => [$ref['team']['level1_count'], $ref['team']['level1_active']], 2 => [$ref['team']['level2_count'], null], 3 => [$ref['team']['level3_count'], null]], fn ($l) => \App\Support\Features::enabled("referral.level$l"), ARRAY_FILTER_USE_KEY) as $lvl => [$count, $active])
                 <li class="flex items-center justify-between rounded-xl px-3 py-2.5 m-soft">
                     <span class="text-sm font-medium">Level {{ $lvl }}</span>
                     <span class="text-sm"><b class="text-lg tabular-nums">{{ $count }}</b>@if ($active !== null) <span class="m-muted">· {{ $active }} active · {{ $count - $active }} not active</span>@endif</span>
@@ -268,7 +268,7 @@
 <section class="mt-3 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
     <div class="m-card">
         <h2 class="font-semibold">Newest in your team</h2>
-        @forelse ($dash['newest'] as $p)
+        @forelse (array_filter($dash['newest'], fn ($p) => \App\Support\Features::enabled('referral.level'.$p['level'])) as $p)
             <div class="mt-3 flex items-center gap-3">
                 <span class="grid size-9 shrink-0 place-items-center rounded-full text-sm font-bold m-soft m-accent-text">{{ mb_substr($p['name'], 0, 1) }}</span>
                 <div class="min-w-0 flex-1"><p class="truncate text-sm font-medium">{{ $p['name'] }}</p><p class="text-xs m-muted">Level {{ $p['level'] }} · joined {{ $p['joined'] }}</p></div>

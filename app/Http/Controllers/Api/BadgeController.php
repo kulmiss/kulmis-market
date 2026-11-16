@@ -29,7 +29,7 @@ class BadgeController extends Controller
 
     public function notifications(Request $request): JsonResponse
     {
-        $q = UserNotification::query()->where('user_id', $request->user()->id);
+        $q = UserNotification::query()->shown()->where('user_id', $request->user()->id);
 
         return response()->json([
             'data' => (clone $q)->latest('id')->limit(30)->get(['id', 'type', 'title', 'body', 'url', 'read_at', 'created_at']),

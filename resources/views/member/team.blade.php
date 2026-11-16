@@ -4,13 +4,14 @@
 <h1 class="font-serif text-3xl font-semibold">Your team</h1>
 <p class="mt-1 text-sm m-muted">People you invited (level 1), the people they invited (level 2), and the next ones (level 3). To keep people's privacy, you see names only for the people you invited.</p>
 <section class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
-    @include('member.partials.stat', ['label' => 'Level 1', 'value' => $t['level1_count'], 'icon' => 'users', 'tone' => 'accent', 'sub' => $t['level1_active'].' active'])
-    @include('member.partials.stat', ['label' => 'Level 2', 'value' => $t['level2_count'], 'icon' => 'network'])
-    @include('member.partials.stat', ['label' => 'Level 3', 'value' => $t['level3_count'], 'icon' => 'network'])
+    {{-- A level that is switched off is not shown (no earnings there). --}}
+    @feature('referral.level1')@include('member.partials.stat', ['label' => 'Level 1', 'value' => $t['level1_count'], 'icon' => 'users', 'tone' => 'accent', 'sub' => $t['level1_active'].' active'])@endfeature
+    @feature('referral.level2')@include('member.partials.stat', ['label' => 'Level 2', 'value' => $t['level2_count'], 'icon' => 'network'])@endfeature
+    @feature('referral.level3')@include('member.partials.stat', ['label' => 'Level 3', 'value' => $t['level3_count'], 'icon' => 'network'])@endfeature
 </section>
 <section class="m-card mt-3">
     <div class="flex flex-wrap items-center justify-between gap-2">
-        <h2 class="font-semibold">Level 1: people you invited</h2>
+        <h2 class="font-semibold">People you invited</h2>
         <span class="text-xs m-muted">{{ $t['level1_active'] }} active · {{ $t['level1_count'] - $t['level1_active'] }} not active</span>
     </div>
     @if (count($t['level1']))

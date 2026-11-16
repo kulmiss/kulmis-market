@@ -151,10 +151,23 @@
         @endfeature
 
         @feature('membership')
+        @php
+            // Only perks that are switched on.
+            $perks = array_values(array_filter([
+                \App\Support\Features::enabled('shop.free_shipping') ? 'free shipping over '.\App\Support\Money::format(\App\Support\Settings::int('shipping.member_free_over')) : null,
+                \App\Support\Features::enabled('shop.early_access') ? 'early access' : null,
+                \App\Support\Features::enabled('signals') ? 'trading signals' : null,
+            ]));
+            $discount = \App\Support\Features::enabled('membership.member_discount') && $product->member_discount !== false && $memberPrice < $product->price;
+            $last = array_pop($perks);
+            $perkText = $perks ? implode(', ', $perks).' and '.$last : $last;
+        @endphp
+        @if ($discount || $perkText)
         <div class="card mt-6 text-sm">
-            <p class="font-semibold">Members pay {{ \App\Support\Money::format($memberPrice) }} for this</p>
-            <p class="muted mt-1">Plus free shipping over {{ \App\Support\Money::format(\App\Support\Settings::int('shipping.member_free_over')) }}, early access and signals. <a class="text-brand-600 underline" href="{{ url('/membership') }}">Join &amp; save</a></p>
+            @if ($discount)<p class="font-semibold">Members pay {{ \App\Support\Money::format($memberPrice) }} for this</p>@endif
+            <p @class(['muted mt-1' => $discount])>@if ($perkText){{ $discount ? 'Plus' : 'Members get' }} {{ $perkText }}. @endif<a class="text-brand-600 underline" href="{{ url('/membership') }}">Join &amp; save</a></p>
         </div>
+        @endif
         @endfeature
 
         @if ($product->description)<div class="prose-km mt-8">{!! \Illuminate\Support\Str::markdown($product->description, ['html_input' => 'escape', 'allow_unsafe_links' => false]) !!}</div>@endif

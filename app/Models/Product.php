@@ -247,5 +247,10 @@ class Product extends Model
                 $q->orWhere('release_at', '<=', $now->copy()->addHours(Settings::int('catalog.early_access_hours')));
             }
         });
+        // Downloads and add-ons disappear from the shop while their switch is off (nothing is deleted).
+        $hidden = array_keys(array_filter([self::DIGITAL => 'shop.digital', self::ADDON => 'shop.addons'], fn (string $f) => Features::disabled($f)));
+        if ($hidden !== []) {
+            $query->whereNotIn('kind', $hidden);
+        }
     }
 }

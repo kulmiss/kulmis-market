@@ -60,7 +60,7 @@ final class MemberTables
         ], [
             'status' => ['label' => 'Status', 'options' => ['pending' => 'On the way', 'available' => 'Ready to use', 'reversed' => 'Taken back']],
             'type' => ['label' => 'From', 'options' => ['membership' => 'Memberships', 'products' => 'Shop orders', 'signals' => 'Signals']],
-            'level' => ['label' => 'Level', 'options' => ['1' => 'Level 1', '2' => 'Level 2', '3' => 'Level 3']],
+            'level' => ['label' => 'Level', 'options' => array_filter(['1' => 'Level 1', '2' => 'Level 2', '3' => 'Level 3'], fn ($l) => Features::enabled("referral.level$l"), ARRAY_FILTER_USE_KEY)],
         ], null, '', 'Nothing yet. When someone in your team pays, you see it here.'))->fromQuery(
             $request,
             Commission::query()->where('recipient_id', $user->id)->where('status', '!=', Commission::SKIPPED),
