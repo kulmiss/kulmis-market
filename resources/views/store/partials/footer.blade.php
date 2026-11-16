@@ -1,4 +1,4 @@
-@php($pages = \App\Models\Page::query()->where('is_published', true)->where('in_footer', true)->orderBy('position')->get(['slug', 'title']))
+@php($pages = \App\Models\Page::query()->where('is_published', true)->where('in_footer', true)->orderBy('position')->get(['slug', 'title'])->filter(fn ($p) => $p->shownNow()))
 <footer class="mt-16 border-t border-mist-200 bg-mist-100/60 py-10 text-sm dark:border-ink-800 dark:bg-ink-900">
     <div class="container-km grid gap-8 sm:grid-cols-3">
         <div>
@@ -19,5 +19,5 @@
             @foreach ($pages as $p)<a href="{{ url('/p/'.$p->slug) }}" class="hover:underline">{{ $p->title }}</a>@endforeach
         </nav>
     </div>
-    <p class="container-km muted mt-8 text-xs">© {{ now()->year }} {{ \App\Support\Settings::string('site.name') }}. Prices in {{ \App\Support\Currency::code() }}. We use only essential cookies (cart and referral code) — no tracking.</p>
+    <p class="container-km muted mt-8 text-xs">© {{ now()->year }} {{ \App\Support\Settings::string('site.name') }}. Prices in {{ \App\Support\Currency::code() }}. We use only essential cookies ({{ \App\Membership\Benefits::join(['sign-in', \App\Support\Features::enabled('shop') ? 'cart' : null, \App\Support\Features::enabled('referral') ? 'referral code' : null]) }}) — no tracking.</p>
 </footer>

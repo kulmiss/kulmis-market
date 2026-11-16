@@ -3,7 +3,7 @@
 @section('content')
 <div class="max-w-3xl">
     <h1 class="font-serif text-3xl font-semibold">Security</h1>
-    <p class="muted mt-1">Keep your account, your wallet and your earnings safe.</p>
+    <p class="muted mt-1">Keep your account{{ \App\Support\Features::enabled('wallet') ? ', your wallet' : '' }}{{ \App\Support\Features::enabled('referral') ? ' and your earnings' : '' }} safe.</p>
 
     <section class="card mt-6" id="password">
         <h2 class="text-2xl">Password</h2>
@@ -61,7 +61,7 @@
                 </div>
             </div>
         @else
-            <p class="muted mt-1 text-sm">Optional, and strongly recommended if you have earnings in your wallet. Even with your password, nobody can sign in without your phone.</p>
+            <p class="muted mt-1 text-sm">Optional, and strongly recommended{{ \App\Support\Features::enabled('wallet') ? ' if you have earnings in your wallet' : '' }}. Even with your password, nobody can sign in without your phone.</p>
             <form method="post" action="{{ url('/account/security/two-factor') }}" class="mt-4">@csrf<button class="btn-primary">Set up two-step sign-in</button></form>
         @endif
     </section>
@@ -79,7 +79,7 @@
         @if ($devices->isNotEmpty())
             <p class="muted mt-4 text-xs">Browsers used before: {{ $devices->pluck('label')->unique()->implode(', ') }}.</p>
         @endif
-        <form method="post" action="{{ url('/account/security/sign-out-everywhere') }}" class="mt-4">@csrf<button class="btn-ghost">Sign out all other devices and apps</button></form>
+        <form method="post" action="{{ url('/account/security/sign-out-everywhere') }}" class="mt-4" data-confirm="Sign out on all your other phones and computers?" data-confirm-ok="Sign them out" data-confirm-more="You stay signed in here.">@csrf<button class="btn-ghost">Sign out all other devices and apps</button></form>
     </section>
 </div>
 @endsection

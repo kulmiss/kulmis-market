@@ -13,7 +13,8 @@ class ShippingController extends Controller
 {
     public function zones(): JsonResponse
     {
-        return response()->json(['data' => ShippingZone::query()->orderBy('position')->get()]);
+        return response()->json(['data' => ShippingZone::query()->orderBy('position')->get()
+            ->map(fn (ShippingZone $z) => $z->toArray() + ['courier_warning' => $z->courierWarning()])]);
     }
 
     public function storeZone(Request $request): JsonResponse
@@ -56,6 +57,7 @@ class ShippingController extends Controller
             'cities' => ['present', 'array', 'max:500'], 'cities.*' => ['string', 'max:80'],
             'base_fee' => ['required', 'integer', 'min:0'], 'included_grams' => ['nullable', 'integer', 'min:0'],
             'per_kg_fee' => ['nullable', 'integer', 'min:0'],
+            'courier_cost' => ['nullable', 'integer', 'min:0'], 'courier_per_kg' => ['nullable', 'integer', 'min:0'],
             'eta_days_min' => ['nullable', 'integer', 'min:0'], 'eta_days_max' => ['nullable', 'integer', 'gte:eta_days_min'],
             'is_default' => ['boolean'], 'is_active' => ['boolean'], 'position' => ['nullable', 'integer'],
         ]);

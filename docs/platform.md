@@ -16,6 +16,49 @@
 - Queue workers forget their copy of switches and settings before every job
   (`Queue::before` in AppServiceProvider), so a change is seen at once.
 
+### Switched off = "never existed"
+When a feature is off, customers and members see nothing of it, as if the
+shop never had it:
+- **Pages, API, old links:** the normal 404 page ("We can't find that page").
+  `App\Support\FeatureUrls::PAGES` lists which paths belong to which feature;
+  links to such pages are removed from the bell and the app's notifications
+  (`Inbox::link`). The 404 page itself only offers what is on.
+- **Words:** `config/feature_words.php` lists each feature's words (signals:
+  "signal", "trading", "telegram channel", "win rate"…). Texts written in the
+  code are built from what is on: `Benefits::sentence()` ("member prices,
+  free delivery over 3,000 ETB and team earnings"), `Benefits::join([...])`,
+  `Benefits::siteDescription()` (search-engine description), the footer,
+  the help topics, the FAQ answers, banners and share-kit posts.
+- **Texts you edit** (messages, FAQ, pages, announcements, share kit) can have
+  parts that disappear while a feature is off:
+  `Keep your discounts{if signals}, trading signals{/if} and earnings.` and
+  `{if !signals}Ask us about our next service.{/if}` (`FeatureText::apply`).
+  `{benefits}` in the membership messages is the list of benefits that are on.
+- **Messages:** `Message::FEATURES` maps each message type to its feature. A
+  message of a switched-off feature is never sent — also not a security
+  notice (e.g. "two-step sign-in turned off" while two-step is off).
+- **Money:** a switched-off feature earns nobody anything new (no team
+  earnings from its payments, no badges or bonuses for it). Past money stays,
+  with a neutral name ("Earlier earning", "Money sent out").
+- **Badges:** badges about a switched-off feature (team badges while referrals
+  are off, "Loyal" while membership is off…) are hidden and not given
+  (`BadgeRules::FEATURES`).
+- **Pages** (terms, privacy…): a page whose title or address names a
+  switched-off feature answers 404 and leaves the footer and sitemap; inside
+  a page, headings, list items and table rows about it are left out
+  (`FeatureText::markdown`). The first texts of the terms, privacy and rules
+  pages now use `{if …}` parts (migration `page_texts_follow_switches`
+  changes only sentences you never edited).
+- **Admin:** screens stay, in "Switched-off features" (see docs/admin.md).
+- **Cache:** switching anything clears the saved pages at once.
+- **Test:** `FeatureNeverExistedTest` switches every feature off (one at a
+  time), crawls every page for a guest, a member with a team, a new member,
+  an expired member and a shopper (plus sitemap, robots, app manifests,
+  offline page, the API and every message template) and fails on any word or
+  link of that feature, or on any of its pages not answering 404. Then it
+  switches the feature back on and checks its words are back. A new feature
+  needs its words in `config/feature_words.php`.
+
 ## Settings
 - Defaults and types: `config/settings.php`. Types: `money` (integer santim),
   `bps` (basis points, 1500 = 15%), `ratio` (×100), `int`, `bool`, `string`, `text`.

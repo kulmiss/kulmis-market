@@ -117,9 +117,9 @@ return [
 
     // Membership messages. Placeholders: {name} {date} {grace_date} {price} {renew_url} {site} {amount}
     'notify.membership_activated' => ['text', 'Welcome to {site} membership, {name}! Your benefits are active until {date}.', 'Message: membership active', 'Messages'],
-    'notify.membership_before' => ['text', 'Hi {name}, your membership ends on {date}. Pay now to keep your discounts, signals and earnings: {renew_url}', 'Message: renewal reminder (before)', 'Messages'],
-    'notify.membership_today' => ['text', 'Hi {name}, your membership ends today. Renew ({price}) to keep your benefits: {renew_url}', 'Message: renewal reminder (on the day)', 'Messages'],
-    'notify.membership_after' => ['text', 'Hi {name}, your membership has ended. Your benefits stay until {grace_date}. Pay here to keep them: {renew_url}', 'Message: renewal reminder (after)', 'Messages'],
+    'notify.membership_before' => ['text', 'Hi {name}, your membership ends on {date}. Pay now to keep your {benefits}: {renew_url}', 'Message: renewal reminder (before)', 'Messages'],
+    'notify.membership_today' => ['text', 'Hi {name}, your membership ends today. Renew ({price}) to keep your {benefits}: {renew_url}', 'Message: renewal reminder (on the day)', 'Messages'],
+    'notify.membership_after' => ['text', 'Hi {name}, your membership has ended. Your {benefits} stay until {grace_date}. Pay here to keep them: {renew_url}', 'Message: renewal reminder (after)', 'Messages'],
     'notify.loyalty_reward' => ['text', 'Thank you for staying with us, {name}! We added {amount} to your wallet.', 'Message: loyalty reward', 'Messages'],
 
     'notify.signals_access' => ['text', 'Hi {name}, your trading signals access is ready. Open this personal link in Telegram to join (do not share it): {link}', 'Message: signals access link', 'Messages'],

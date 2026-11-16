@@ -6,11 +6,13 @@
 </div>
 <template id="cart-tpl">
     <div class="grid gap-3" data-lines></div>
+    @feature('shop.coupons')
     <form class="mt-6 flex gap-2" data-coupon-form>
         <label class="sr-only" for="coupon">Coupon</label>
         <input id="coupon" name="code" class="input" placeholder="Coupon code">
         <button class="btn-ghost">Apply</button>
     </form>
+    @endfeature
     @feature('shop.gift_cards')
     <form class="mt-2 flex gap-2" data-giftcard-form>
         <label class="sr-only" for="giftcard">Gift card code</label>

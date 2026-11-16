@@ -1,4 +1,4 @@
-@extends('layouts.store', ['title' => $category?->name ?? 'Shop', 'description' => $category?->description ?? 'Handcrafted Ethiopian products — member prices shown on every item.'])
+@extends('layouts.store', ['title' => $category?->name ?? 'Shop', 'description' => $category?->description ?? 'Handcrafted Ethiopian products'.(\App\Support\Features::enabled('membership.member_discount') ? ' — member prices shown on every item.' : '.')])
 @section('content')
 <div class="container-km py-10">
     <h1 class="text-4xl">{{ $category?->name ?? 'Shop' }}</h1>

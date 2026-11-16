@@ -157,15 +157,13 @@ class SignalAccess
             return 0;
         }
         $removed = 0;
-        $membershipOff = Features::disabled('membership');
+        $signalsOff = Features::disabled('signals');
         SignalSubscription::query()->with('user.membership')->whereIn('status', ['active', 'pending'])
-            ->where(fn ($q) => $q->where('source', SignalSubscription::MEMBERSHIP)->orWhere('grace_ends_at', '<', now()))
-            ->each(function (SignalSubscription $sub) use (&$removed, $membershipOff) {
+            ->where(fn ($q) => $q->where('source', SignalSubscription::MEMBERSHIP)->orWhere('grace_ends_at', '<', now())
+                ->when($signalsOff, fn ($q) => $q->orWhere('current_period_end', '<', now())))
+            ->each(function (SignalSubscription $sub) use (&$removed) {
                 if ($sub->status === 'pending' && $sub->grace_ends_at === null) {
                     return; // never paid
-                }
-                if ($membershipOff && $sub->source === SignalSubscription::MEMBERSHIP) {
-                    return; // membership is paused, not ended: keep members in the channel
                 }
                 $removed += (int) $this->removeIfNotEntitled($sub);
             });
@@ -176,7 +174,7 @@ class SignalAccess
     public function sendAccessLink(SignalSubscription $sub): void
     {
         $link = $sub->deepLink();
-        $body = strtr(Settings::string('notify.signals_access'), [
+        $body = strtr(Settings::template('notify.signals_access'), [
             '{name}' => $sub->first_name, '{link}' => $link ?? '(Telegram bot not set up yet)',
             '{date}' => $sub->current_period_end?->timezone(config('app.timezone'))->format('d M Y') ?? '', '{site}' => Settings::string('site.name'),
         ]);

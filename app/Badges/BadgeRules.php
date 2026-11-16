@@ -2,6 +2,8 @@
 
 namespace App\Badges;
 
+use App\Support\Features;
+
 /**
  * The rules a badge can use. Super Admin picks one per badge and sets the
  * threshold. "lte" rules are positions (1 = first), the rest are counts.
@@ -19,6 +21,20 @@ final class BadgeRules
         'early_member' => ['label' => 'Early supporter (among the first N members)', 'unit' => 'position', 'compare' => 'lte', 'hint' => 'One of the first'],
         'orders_count' => ['label' => 'Shopper (paid orders)', 'unit' => 'orders', 'compare' => 'gte', 'hint' => 'orders to'],
     ];
+
+    /** The features a rule is about: while one is off, its badges are hidden and not given. */
+    public const FEATURES = [
+        'active_level1' => ['referral'], 'total_team' => ['referral'], 'loyalty_months' => ['membership'],
+        'link_sales' => ['referral', 'shop'], 'earnings_total' => ['referral'], 'top_referrer_month' => ['top_referrers'],
+        'early_member' => ['membership'], 'orders_count' => ['shop'],
+    ];
+
+    /** @return list<string> the rules whose features are all on now */
+    public static function onNow(): array
+    {
+        return array_values(array_filter(array_keys(self::RULES),
+            fn ($r) => collect(self::FEATURES[$r])->every(fn ($f) => Features::enabled($f))));
+    }
 
     public static function exists(string $rule): bool
     {

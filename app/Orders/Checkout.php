@@ -46,9 +46,11 @@ class Checkout
         $items = $this->carts->pricingItems($cart);
         $member = (bool) $user?->isActiveMember();
         $weight = array_sum(array_map(fn ($i) => ($i[1]->weight_grams ?? $i[0]->weight_grams) * $i[2], $items));
-        $fee = $items && ($zoneId || $city) && ! self::onlyDigital($items) ? $this->shipping->quote($zoneId, (string) $city, $weight) : 0;
+        $ship = $items && ($zoneId || $city) && ! self::onlyDigital($items);
+        $fee = $ship ? $this->shipping->quote($zoneId, (string) $city, $weight) : 0;
+        $courier = $ship ? $this->shipping->courierCost($zoneId, (string) $city, $weight) : 0;
 
-        return $this->prices->quote($items, $member, $cart->coupon_code, $fee, $this->couponUses($user, $phone), true, (array) ($cart->extras ?? []));
+        return $this->prices->quote($items, $member, $cart->coupon_code, $fee, $this->couponUses($user, $phone), true, (array) ($cart->extras ?? []), $courier);
     }
 
     /**
@@ -88,7 +90,8 @@ class Checkout
             $member = (bool) $user?->isActiveMember();
             $weight = array_sum(array_map(fn ($i) => ($i[1]->weight_grams ?? $i[0]->weight_grams) * $i[2], $items));
             $fee = self::onlyDigital($items) ? 0 : $this->shipping->quote($customer['shipping_zone_id'] ?? null, $customer['city'], $weight);
-            $quote = $this->prices->quote($items, $member, $cart->coupon_code, $fee, $this->couponUses($user, $customer['phone']), true, (array) ($cart->extras ?? []));
+            $courier = self::onlyDigital($items) ? 0 : $this->shipping->courierCost($customer['shipping_zone_id'] ?? null, $customer['city'], $weight);
+            $quote = $this->prices->quote($items, $member, $cart->coupon_code, $fee, $this->couponUses($user, $customer['phone']), true, (array) ($cart->extras ?? []), $courier);
 
             $order = Order::query()->create(array_merge([
                 'number' => $this->newNumber(),
@@ -112,6 +115,7 @@ class Checkout
                 'merchandise_total' => $quote->merchandiseTotal(),
                 'shipping' => $quote->shipping,
                 'shipping_discount' => $quote->shippingDiscount,
+                'courier_cost' => $quote->courierCost,
                 'total' => $quote->total(),
                 'extras' => $quote->extras ?: null,
                 'extras_total' => $quote->extrasTotal(),

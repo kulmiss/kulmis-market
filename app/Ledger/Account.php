@@ -35,6 +35,8 @@ class Account extends Model
 
     public const BADGE_BONUSES = 'expense:badge_bonuses';
 
+    public const UNUSED_ACCESS = 'expense:unused_access';  // money back for paid days of a switched-off feature
+
     public const WALLET_SALES = 'income:wallet_sales';      // orders/memberships paid with wallet
 
     public const ADJUSTMENTS = 'equity:adjustments';        // counterpart for manual corrections

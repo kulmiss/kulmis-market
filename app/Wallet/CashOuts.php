@@ -157,7 +157,7 @@ class CashOuts
             $this->ledger->post('payout.paid', $lines, "payout:{$r->id}:paid", $r, description: $fee > 0 ? 'Cash-out sent (fee '.Money::format($fee).')' : 'Cash-out sent', actorId: $actorId);
             $r->update(['status' => 'paid', 'processed_by' => $actorId, 'processed_at' => now(), 'payout_reference' => $reference]);
             Activity::log('payout.paid', $r, ['reference' => $reference], null, $actorId);
-            DB::afterCommit(fn () => $this->notify($r, Settings::string('notify.payout_paid'), null, 'payout_paid'));
+            DB::afterCommit(fn () => $this->notify($r, Settings::template('notify.payout_paid'), null, 'payout_paid'));
 
             return $r;
         });
@@ -176,7 +176,7 @@ class CashOuts
             ], "payout:{$r->id}:rejected", $r, $reason, $actorId, 'Cash-out returned to wallet');
             $r->update(['status' => 'rejected', 'processed_by' => $actorId, 'processed_at' => now(), 'reject_reason' => $reason]);
             Activity::log('payout.rejected', $r, [], $reason, $actorId);
-            DB::afterCommit(fn () => $this->notify($r, Settings::string('notify.payout_rejected'), $reason, 'payout_rejected'));
+            DB::afterCommit(fn () => $this->notify($r, Settings::template('notify.payout_rejected'), $reason, 'payout_rejected'));
 
             return $r;
         });

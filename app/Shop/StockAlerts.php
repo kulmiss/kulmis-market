@@ -56,7 +56,7 @@ final class StockAlerts
                     if (StockAlert::query()->whereKey($a->id)->whereNull('notified_at')->update(['notified_at' => now()]) === 0) {
                         continue;
                     }
-                    $body = strtr(Settings::string('notify.back_in_stock'), [
+                    $body = strtr(Settings::template('notify.back_in_stock'), [
                         '{product}' => $product->name, '{url}' => url('/shop/'.$product->slug), '{site}' => Settings::string('site.name'),
                     ]);
                     SendCustomerMessage::dispatch(new Message('Back in stock: '.$product->name, $body,

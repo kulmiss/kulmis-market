@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { OffFeatureNote } from '@/components/km/off-feature-note'
 import { FormDialog } from '@/components/km/form-dialog'
 import { Page } from '@/components/km/page'
 import { PageSkeleton } from '@/components/km/page-skeleton'
@@ -68,6 +69,7 @@ function ItemDialog({ item, targets }: { item?: Item; targets: Record<string, st
           <SelectContent>{Object.entries(targets).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select>
       </L>
       <L label='Text (keep {link}; you can use {name} and {code})'><Textarea rows={5} value={d.text} onChange={(e) => setD({ ...d, text: e.target.value })} /></L>
+      <OffFeatureNote text={`${d.title} ${d.text}`} hidden='This post is hidden from the share kit while it is off.' />
       <L label='Picture (optional, JPG/PNG/WebP)'><Input type='file' accept='image/jpeg,image/png,image/webp' onChange={(e) => setFile(e.target.files?.[0] ?? null)} /></L>
       {item?.has_image && <label className='flex items-center gap-2 text-sm'><Switch checked={remove} onCheckedChange={setRemove} /> Remove the picture</label>}
       <L label='Order'><Input type='number' min={0} value={d.position} onChange={(e) => setD({ ...d, position: Number(e.target.value) })} /></L>

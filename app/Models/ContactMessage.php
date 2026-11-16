@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Features;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -24,6 +25,20 @@ class ContactMessage extends Model
         'signals' => 'Signals', 'other' => 'Something else'];
 
     public const STATUSES = ['new', 'answered', 'spam'];
+
+    /** The topic needs this feature to be offered. */
+    private const TOPIC_FEATURES = ['order' => 'shop', 'membership' => 'membership', 'earnings' => 'referral', 'signals' => 'signals'];
+
+    /** @return array<string, string> topics of features that are on */
+    public static function topics(): array
+    {
+        $topics = array_filter(self::TOPICS, fn (string $k) => Features::enabled(self::TOPIC_FEATURES[$k] ?? 'site.help_centre'), ARRAY_FILTER_USE_KEY);
+        if (isset($topics['earnings']) && Features::disabled('wallet.cashout')) {
+            $topics['earnings'] = 'Earnings';
+        }
+
+        return $topics;
+    }
 
     protected $guarded = ['id'];
 

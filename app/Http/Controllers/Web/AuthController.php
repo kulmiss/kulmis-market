@@ -119,7 +119,8 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/')->withCookie(cookie()->forget((string) config('session.cookie')));
+        // The query string skips the page cache, so the home page can say "You are signed out".
+        return redirect('/?signed_out=1')->withCookie(cookie()->forget((string) config('session.cookie')));
     }
 
     public function showForgot(): View

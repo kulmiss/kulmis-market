@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { LogOut, MonitorX, Palette } from 'lucide-react'
 import { toast } from 'sonner'
@@ -9,10 +10,12 @@ import { Button } from '@/components/ui/button'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { SignOutDialog } from '@/components/sign-out-dialog'
 
 export function ProfileDropdown() {
   const [open, setOpen] = useDialogState()
+  const [others, setOthers] = useState(false)
   const user = useAuthStore((s) => s.user)
   const initials = (user?.name ?? 'KM').split(' ').map((p) => p[0]).join('').slice(0, 2).toUpperCase()
 
@@ -33,20 +36,27 @@ export function ProfileDropdown() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild><Link to='/settings'><Palette /> Appearance</Link></DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() =>
-              api.post<{ ended: number }>('/auth/sign-out-others')
-                .then((r) => toast.success(`Signed out ${r.data.ended} other session(s).`))
-                .catch((e) => toast.error(errorMessage(e)))
-            }
-          >
-            <MonitorX /> Sign out other devices
-          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setOthers(true)}><MonitorX /> Sign out other devices</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant='destructive' onClick={() => setOpen(true)}><LogOut /> Sign out</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       <SignOutDialog open={!!open} onOpenChange={setOpen} />
+      <ConfirmDialog
+        open={others}
+        onOpenChange={setOthers}
+        title='Sign out on your other devices?'
+        desc='Every other phone and computer is signed out. You stay signed in here.'
+        confirmText='Sign them out'
+        cancelBtnText='Cancel'
+        handleConfirm={() =>
+          api.post<{ ended: number }>('/auth/sign-out-others')
+            .then((r) => toast.success(r.data.ended === 1 ? 'Signed out 1 other device.' : `Signed out ${r.data.ended} other devices.`))
+            .catch((e) => toast.error(errorMessage(e)))
+            .finally(() => setOthers(false))
+        }
+        className='sm:max-w-sm'
+      />
     </>
   )
 }

@@ -1,0 +1,29 @@
+# After every merge into main: close open PRs that have nothing new left
+# (for example the lower PRs of a stack once the top one is merged).
+name: Close PRs already in main
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: close-merged-prs
+  cancel-in-progress: false
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Close open PRs whose changes are all in main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: scripts/close-merged-prs.sh origin/main

@@ -245,7 +245,7 @@ final class BonusRun
                 continue;
             }
             $u = $b->user;
-            $body = strtr(Settings::string('notify.badge_bonus'), [
+            $body = strtr(Settings::template('notify.badge_bonus'), [
                 '{name}' => $u->first_name, '{badge}' => $b->badge->name ?? 'badge', '{month}' => $b->month->format('F Y'),
                 '{amount}' => Money::format($b->amount), '{ready}' => $b->available_at?->timezone(config('app.timezone'))->format('d M') ?? '',
                 '{adjusted}' => $adjusted ? ' Bonus adjusted this month: many members earned a bonus, so everyone got the same smaller share.' : '',

@@ -8,7 +8,7 @@
 <section class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3" id="wallet">
     @include('member.partials.stat', ['label' => 'On the way', 'value' => $fmt($wallet['pending']), 'icon' => 'clock', 'sub' => 'Ready in '.\App\Support\Settings::int('referral.pending_days').' days'])
     @include('member.partials.stat', ['label' => 'Ready to use', 'value' => $fmt($wallet['available']), 'icon' => 'wallet', 'tone' => 'accent'])
-    @include('member.partials.stat', ['label' => 'Cash-out asked', 'value' => $fmt($wallet['payout']), 'icon' => 'banknote'])
+    @include('member.partials.stat', ['label' => \App\Member\MemberTables::buckets()[\App\Ledger\Wallet::PAYOUT], 'value' => $fmt($wallet['payout']), 'icon' => 'banknote'])
 </section>
 <section class="m-card mt-3">
             @feature('wallet.cashout')
@@ -57,9 +57,11 @@
     <p class="mt-1 text-xs m-muted">Every time money comes into or goes out of your wallet.</p>
     <div class="mt-3">@include('member.partials.table', ['table' => $moneyTable])</div>
 </section>
+@if (\App\Support\Features::enabled('wallet.cashout') || $cashoutTable->page->total())
 <section class="m-card mt-3">
-    <h2 class="font-semibold">Cash-outs</h2>
+    <h2 class="font-semibold">{{ \App\Support\Features::enabled('wallet.cashout') ? 'Cash-outs' : 'Money sent out' }}</h2>
     <div class="mt-3">@include('member.partials.table', ['table' => $cashoutTable])</div>
     @if (! $cashoutTable->page->total())<p class="mt-2 text-xs m-muted">Earnings become ready to use {{ \App\Support\Settings::int('referral.pending_days') }} days after a payment.</p>@endif
 </section>
+@endif
 @endsection

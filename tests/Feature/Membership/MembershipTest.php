@@ -238,7 +238,11 @@ class MembershipTest extends TestCase
     {
         Features::set('membership', false);
         $this->getJson('/api/v1/membership/info')->assertNotFound();
-        $this->assertFalse(User::factory()->member()->create()->isActiveMember());
+        // People who paid keep it until their paid month ends; there is no grace while it's off.
+        $paid = User::factory()->member()->create();
+        $this->assertTrue($paid->isActiveMember());
+        $paid->membership()->update(['status' => 'grace', 'current_period_end' => now()->subDay(), 'grace_ends_at' => now()->addDays(2)]);
+        $this->assertFalse($paid->fresh()->isActiveMember());
     }
 
     public function test_admin_adjust_and_suspend(): void

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Referral\ShareLinks;
+use App\Support\Features;
+use App\Support\FeatureText;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
@@ -39,8 +41,15 @@ class ShareKitItem extends Model
     }
 
     /** The text with this member's name, code and link filled in. */
+    /** Shown to members? Its page's feature is on and the text doesn't talk about a switched-off feature. */
+    public function shownNow(): bool
+    {
+        return Features::enabled($this->target === 'shop' ? 'shop' : $this->target)
+            && FeatureText::mentionsOff($this->title.' '.$this->text) === [];
+    }
+
     public function textFor(User $u): string
     {
-        return strtr($this->text, ['{name}' => $u->first_name, '{code}' => (string) $u->referral_code, '{link}' => ShareLinks::for($u, $this->path())]);
+        return strtr(FeatureText::apply($this->text), ['{name}' => $u->first_name, '{code}' => (string) $u->referral_code, '{link}' => ShareLinks::for($u, $this->path())]);
     }
 }

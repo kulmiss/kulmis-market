@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Badges\BadgeEngine;
 use App\Http\Controllers\Controller;
 use App\Models\UserNotification;
+use App\Notify\Inbox;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -29,10 +30,11 @@ class BadgeController extends Controller
 
     public function notifications(Request $request): JsonResponse
     {
-        $q = UserNotification::query()->where('user_id', $request->user()->id);
+        $q = UserNotification::query()->shown()->where('user_id', $request->user()->id);
 
         return response()->json([
-            'data' => (clone $q)->latest('id')->limit(30)->get(['id', 'type', 'title', 'body', 'url', 'read_at', 'created_at']),
+            'data' => (clone $q)->latest('id')->limit(30)->get(['id', 'type', 'title', 'body', 'url', 'read_at', 'created_at'])
+                ->each(fn (UserNotification $n) => $n->url = Inbox::link($n->url)), // no links to switched-off pages
             'unread' => (clone $q)->whereNull('read_at')->count(),
         ]);
     }

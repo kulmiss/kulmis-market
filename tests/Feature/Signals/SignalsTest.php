@@ -233,6 +233,6 @@ class SignalsTest extends TestCase
         Features::set('signals', false);
         $this->getJson('/api/v1/signals/info')->assertNotFound();
         $this->actingAsAdmin();
-        $this->getJson('/api/v1/admin/signals')->assertNotFound();
+        $this->getJson('/api/v1/admin/signals')->assertOk(); // its history stays in the admin
     }
 }

@@ -4,7 +4,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ProductController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['feature:shop', 'can:manage-products'])->group(function () {
+Route::middleware('can:manage-products')->group(function () {
     Route::get('products', [ProductController::class, 'index']);
     Route::post('products', [ProductController::class, 'store']);
     Route::post('products/bulk', [ProductController::class, 'bulk']);

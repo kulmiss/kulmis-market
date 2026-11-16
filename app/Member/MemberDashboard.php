@@ -3,6 +3,7 @@
 namespace App\Member;
 
 use App\Badges\BadgeEngine;
+use App\Badges\BadgeRules;
 use App\Badges\BonusCard;
 use App\Ledger\Wallet;
 use App\Membership\Members;
@@ -164,22 +165,25 @@ class MemberDashboard
     public function activity(User $user, int $limit = 8): array
     {
         $items = [];
+        // Past money stays, with neutral words when its feature is off now.
         foreach (Commission::query()->where('recipient_id', $user->id)->whereIn('status', self::EARNED)->latest('id')->limit($limit)->get() as $c) {
+            $neutral = Features::disabled('referral') || MemberTables::earningType($c->type) === 'Earlier earning';
             $items[] = ['when' => $c->created_at, 'icon' => 'coins', 'tone' => 'accent', 'amount' => $c->amount - $c->reversed_amount,
-                'text' => 'Earned from level '.$c->level.' ('.$c->type.')'.($c->status === Commission::PENDING ? ' · pending' : '')];
+                'text' => ($neutral ? 'Earlier earning' : 'Earned from level '.$c->level.' ('.$c->type.')').($c->status === Commission::PENDING ? ' · pending' : '')];
         }
         foreach (PayoutRequest::query()->where('user_id', $user->id)->latest('id')->limit(4)->get() as $p) {
             $items[] = ['when' => $p->created_at, 'icon' => 'handshake', 'tone' => $p->status === 'rejected' ? 'warn' : 'neutral', 'amount' => -$p->amount,
-                'text' => 'Cash-out '.($p->status === 'on_hold' ? 'requested' : $p->status)];
+                'text' => (Features::enabled('wallet.cashout') ? 'Cash-out ' : 'Money sent out · ').($p->status === 'on_hold' ? 'requested' : $p->status)];
         }
-        foreach (UserBadge::query()->with('badge')->where('user_id', $user->id)->latest('id')->limit(3)->get() as $b) {
+        foreach (Features::enabled('badges') ? UserBadge::query()->with('badge')->where('user_id', $user->id)
+            ->whereHas('badge', fn ($q) => $q->whereIn('rule', BadgeRules::onNow()))->latest('id')->limit(3)->get() : [] as $b) {
             $items[] = ['when' => $b->unlocked_at, 'icon' => $b->badge->icon, 'tone' => 'gold', 'amount' => null, 'text' => 'Unlocked the '.$b->badge->name.' badge'];
         }
-        foreach (Order::query()->where('user_id', $user->id)->latest('id')->limit(3)->get() as $o) {
+        foreach (Features::enabled('shop') ? Order::query()->where('user_id', $user->id)->latest('id')->limit(3)->get() : [] as $o) {
             $items[] = ['when' => $o->created_at, 'icon' => 'shopping-bag', 'tone' => 'neutral', 'amount' => null,
                 'text' => 'Order '.$o->number.' · '.str_replace('_', ' ', $o->status).' · '.Money::format($o->total)];
         }
-        foreach (MembershipPurchase::query()->where('user_id', $user->id)->where('status', 'paid')->latest('id')->limit(2)->get() as $mp) {
+        foreach (Features::enabled('membership') ? MembershipPurchase::query()->where('user_id', $user->id)->where('status', 'paid')->latest('id')->limit(2)->get() : [] as $mp) {
             $items[] = ['when' => $mp->paid_at ?? $mp->created_at, 'icon' => 'calendar-check', 'tone' => 'neutral', 'amount' => null, 'text' => 'Membership paid'];
         }
         usort($items, fn ($a, $b) => $b['when'] <=> $a['when']);

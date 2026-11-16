@@ -168,7 +168,7 @@ export function ProductEditor({ id }: { id: string }) {
             <div className='rounded-md bg-muted p-3 text-sm'>
               Cost {formatMoney(cost)} · price is <b>{ratio ? `${ratio.toFixed(2)}×` : '—'}</b> cost
               {p?.profit && <div className='mt-1 text-xs text-muted-foreground'>
-                Worst-case member sale: {formatMoney(p.profit.member_price)} − commissions {formatMoney(p.profit.commission)} − fee {formatMoney(p.profit.payment_fee)} − cost {formatMoney(p.profit.cost)} = <b>{formatMoney(p.profit.profit)}</b>
+                Worst-case member sale: {formatMoney(p.profit.member_price)} − commissions {formatMoney(p.profit.commission)} − fee {formatMoney(p.profit.payment_fee)} − cost {formatMoney(p.profit.cost)}{p.profit.courier ? <> − courier (free delivery) {formatMoney(p.profit.courier)}</> : null} = <b>{formatMoney(p.profit.profit)}</b>
               </div>}
             </div>
           </CardContent>

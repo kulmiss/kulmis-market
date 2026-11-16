@@ -18,9 +18,11 @@ export function AppSidebar() {
     if (!features.loaded) features.load()
   }, [features])
 
-  const groups = sidebarData.navGroups
-    .map((g) => ({ ...g, items: g.items.filter((i) => (!i.ability || can(i.ability)) && features.on(i.feature)) }))
-    .filter((g) => g.items.length > 0)
+  // Screens of switched-off features keep their history: they move to their own group at the end.
+  const mine = sidebarData.navGroups.map((g) => ({ ...g, items: g.items.filter((i) => !i.ability || can(i.ability)) }))
+  const groups = mine.map((g) => ({ ...g, items: g.items.filter((i) => features.on(i.feature)) })).filter((g) => g.items.length > 0)
+  const off = mine.flatMap((g) => g.items.filter((i) => !features.on(i.feature)))
+  if (off.length > 0) groups.push({ title: 'Switched-off features', items: off })
 
   return (
     <Sidebar collapsible={collapsible} variant={variant}>

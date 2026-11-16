@@ -1,0 +1,1 @@
+import{r as e}from"./signals-pages-B72H8hfv.js";var t=e;export{t as component};

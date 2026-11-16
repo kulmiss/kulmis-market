@@ -18,13 +18,13 @@ class HelpController extends Controller
         $q = trim(mb_substr((string) $request->query('q', ''), 0, 80));
         $faqs = Faq::query()->where('is_published', true)
             ->when($q !== '', fn ($w) => $w->where(fn ($x) => $x->where('question', 'like', "%$q%")->orWhere('answer', 'like', "%$q%")))
-            ->orderBy('category')->orderBy('position')->orderBy('id')->get();
+            ->orderBy('category')->orderBy('position')->orderBy('id')->get()->filter(fn (Faq $f) => $f->shownNow())->values();
         $whatsapp = preg_replace('/\D+/', '', Settings::string('site.whatsapp') ?: Settings::string('site.support_phone'));
         $telegram = ltrim(Settings::string('site.telegram_support'), '@');
 
         return view('store.help', [
             'faqs' => $faqs->groupBy(fn (Faq $f) => $f->category ?: 'Other questions'),
-            'q' => $q, 'topics' => ContactMessage::TOPICS,
+            'q' => $q, 'topics' => ContactMessage::topics(),
             'whatsapp' => $whatsapp !== '' ? 'https://wa.me/'.$whatsapp : null,
             'telegram' => $telegram !== '' && preg_match('/^[A-Za-z0-9_]{4,40}$/', $telegram) ? 'https://t.me/'.$telegram : null,
             'email' => Settings::string('site.support_email'),

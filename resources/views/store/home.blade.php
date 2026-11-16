@@ -16,7 +16,7 @@
                 @feature('membership')<a href="{{ url('/membership') }}" class="btn-ghost">Become a member — save {{ $s('pricing.member_discount_bps') / 100 }}%</a>@endfeature
             </div>
         </div>
-        @if ($featured->first())
+        @if (\App\Support\Features::enabled('shop') && $featured->first())
             <a href="{{ url('/shop/'.$featured->first()->slug) }}" class="block aspect-[4/5] overflow-hidden rounded-[2rem] shadow-xl">
                 @include('store.partials.picture', ['image' => $hero, 'eager' => true, 'sizes' => '(min-width: 768px) 50vw, 100vw'])
             </a>
@@ -39,7 +39,7 @@
 </section>
 @endif
 
-@if ($featured->count() > 1 || $latest->isNotEmpty())
+@if (\App\Support\Features::enabled('shop') && ($featured->count() > 1 || $latest->isNotEmpty()))
 <section class="container-km mt-12">
     <div class="mb-5 flex items-end justify-between"><h2 class="text-3xl">New from the workshop</h2><a href="{{ url('/shop') }}" class="inline-flex min-h-12 items-center text-sm font-semibold text-brand-600">See all →</a></div>
     <div class="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4">
@@ -48,7 +48,7 @@
 </section>
 @endif
 
-@if ($membersOnly)
+@if ($membersOnly && \App\Support\Features::enabled('shop'))
 <section class="container-km mt-16">
     <div class="grid items-center gap-8 rounded-[2rem] bg-brand-700 p-6 text-white md:grid-cols-2 dark:bg-ink-800 md:p-10">
         <div class="aspect-square overflow-hidden rounded-2xl">@include('store.partials.picture', ['image' => $membersOnly->images->first()])</div>

@@ -49,10 +49,35 @@ const busy = async (form, fn) => {
     try { await fn(); } finally { delete form.dataset.busy; buttons.forEach((b) => { b.disabled = false; }); }
 };
 
+/* "Are you sure?" box (partials/ask): data-confirm="Question?", data-confirm-ok="Button text",
+   data-confirm-more="Small print". Old browsers get the plain confirm box. */
+const askBox = $('[data-ask]');
+askBox?.addEventListener('click', (e) => { if (e.target === askBox) askBox.close('cancel'); }); // tap outside = Cancel
+const ask = (question, ok, more) => new Promise((resolve) => {
+    if (!askBox || typeof askBox.showModal !== 'function') { resolve(window.confirm(question)); return; }
+    $('[data-ask-text]', askBox).textContent = question;
+    $('[data-ask-ok]', askBox).textContent = ok || 'Yes';
+    const small = $('[data-ask-more]', askBox);
+    small.textContent = more || '';
+    small.hidden = !more;
+    askBox.returnValue = '';
+    askBox.addEventListener('close', () => resolve(askBox.returnValue === 'ok'), { once: true });
+    askBox.showModal();
+});
+
 /* Plain (non-JS) forms: block a second submit while the page is loading.
-   data-confirm="Question?" asks first (no inline scripts: the CSP forbids them). */
+   data-confirm asks first (no inline scripts: the CSP forbids them). */
 $$('form[method="post"]').forEach((f) => f.addEventListener('submit', (e) => {
-    if (f.dataset.confirm && !f.dataset.sent && !window.confirm(f.dataset.confirm)) { e.preventDefault(); return; }
+    if (f.dataset.confirm && !f.dataset.confirmed && !f.dataset.sent) {
+        e.preventDefault();
+        if (f.dataset.asking) return;
+        f.dataset.asking = '1';
+        ask(f.dataset.confirm, f.dataset.confirmOk, f.dataset.confirmMore).then((yes) => {
+            delete f.dataset.asking;
+            if (yes) { f.dataset.confirmed = '1'; f.requestSubmit(); }
+        });
+        return;
+    }
     if (f.dataset.sent) { e.preventDefault(); return; }
     f.dataset.sent = '1';
     setTimeout(() => {
@@ -61,8 +86,15 @@ $$('form[method="post"]').forEach((f) => f.addEventListener('submit', (e) => {
         f.querySelectorAll('button').forEach((b) => { b.disabled = true; });
     }, 0);
     // Back-button / bfcache: let the form be used again.
-    window.addEventListener('pageshow', () => { delete f.dataset.sent; f.querySelectorAll('button').forEach((b) => { b.disabled = false; }); }, { once: true });
+    window.addEventListener('pageshow', () => { delete f.dataset.sent; delete f.dataset.confirmed; f.querySelectorAll('button').forEach((b) => { b.disabled = false; }); }, { once: true });
 }));
+
+/* ---------- "You are signed out": keep the message, drop ?signed_out from the address bar ---------- */
+if (new URLSearchParams(location.search).has('signed_out')) {
+    const u = new URL(location.href);
+    u.searchParams.delete('signed_out');
+    history.replaceState(history.state, '', u.pathname + u.search + u.hash);
+}
 
 /* ---------- share (phones with a share sheet) ---------- */
 $$('[data-share]').forEach((b) => {
@@ -169,6 +201,7 @@ function totalsHtml(q, gc = null) {
         q.bundle_discount ? row('Set saving' + (q.bundles?.length ? ' (' + q.bundles.map((b) => esc(b.name)).join(', ') + ')' : ''), '−' + etb(q.bundle_discount), 'text-brand-600') : '',
         q.coupon_discount ? row(`Coupon ${esc(q.coupon)}`, '−' + etb(q.coupon_discount), 'text-brand-600') : '',
         q.coupon_capped ? '<p class="muted text-xs">This coupon is smaller on this order: these items are already at their lowest price.</p>' : '',
+        q.shipping_capped ? '<p class="muted text-xs">Free delivery doesn\'t fit this order to your city, so part of the delivery is charged.</p>' : '',
         q.shipping ? row('Shipping', q.shipping_discount ? 'Free' : etb(q.shipping_payable)) : row('Shipping', 'at checkout'),
         ...(q.extras || []).map((x) => row(esc(x.label), etb(x.amount))),
         row('Total', etb(q.total), 'mt-1 text-base font-semibold'),

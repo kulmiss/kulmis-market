@@ -4,6 +4,7 @@ namespace App\Pricing;
 
 use App\Models\Bundle;
 use App\Models\Product;
+use App\Shipping\ZoneShippingQuoter;
 use App\Support\Features;
 use App\Support\Money;
 use App\Support\Settings;
@@ -11,7 +12,8 @@ use App\Support\Settings;
 /**
  * Worst-case profit of one unit sold to a member:
  *   member price − maximum product commission (all enabled levels)
- *   − payment fee − cost.
+ *   − payment fee − cost − courier (when that one item already gets free
+ *   delivery: the most any city's courier charges).
  */
 class ProfitCheck
 {
@@ -33,7 +35,7 @@ class ProfitCheck
         return $bps;
     }
 
-    /** @return array{price:int, member_price:int, commission:int, payment_fee:int, cost:int, profit:int} */
+    /** @return array{price:int, member_price:int, commission:int, payment_fee:int, cost:int, courier:int, profit:int} */
     public function worstCase(Product $product, ?int $price = null): array
     {
         $price ??= $product->price;
@@ -41,9 +43,20 @@ class ProfitCheck
         $commission = Money::bpsRound($memberPrice, min(10_000, $this->maxProductCommissionBps($product)));
         $fee = Money::bpsRound($memberPrice, Settings::int('payments.fee_bps'));
         $cost = $product->totalCost();
+        $courier = $this->freeDeliveryCourier($memberPrice, $product->isDigital() ? 0 : (int) $product->weight_grams);
 
         return ['price' => $price, 'member_price' => $memberPrice, 'commission' => $commission,
-            'payment_fee' => $fee, 'cost' => $cost, 'profit' => $memberPrice - $commission - $fee - $cost];
+            'payment_fee' => $fee, 'cost' => $cost, 'courier' => $courier, 'profit' => $memberPrice - $commission - $fee - $cost - $courier];
+    }
+
+    /** What the shop pays the courier when one item at this member price already gets free delivery (else 0). */
+    private function freeDeliveryCourier(int $memberPrice, int $weightGrams): int
+    {
+        if ($weightGrams <= 0 || Features::disabled('membership') || ! $this->prices->freeShippingApplies($memberPrice)) {
+            return 0;
+        }
+
+        return ZoneShippingQuoter::maxCourierCost($weightGrams);
     }
 
     /** @return list<array{code:string,message:string}> */
@@ -67,7 +80,7 @@ class ProfitCheck
     /**
      * Worst case for one bundle set sold to a member at the bundle price.
      *
-     * @return array{price:int, member_price:int, commission:int, payment_fee:int, cost:int, profit:int}
+     * @return array{price:int, member_price:int, commission:int, payment_fee:int, cost:int, courier:int, profit:int}
      */
     public function bundle(Bundle $bundle): array
     {
@@ -76,9 +89,12 @@ class ProfitCheck
         $commission = Money::bpsRound($memberPrice, min(10_000, $this->maxProductCommissionBps()));
         $fee = Money::bpsRound($memberPrice, Settings::int('payments.fee_bps'));
         $cost = $bundle->cost();
+        $bundle->loadMissing('items.product');
+        $weight = (int) $bundle->items->sum(fn ($i) => ! $i->product->isDigital() ? (int) $i->product->weight_grams * $i->quantity : 0);
+        $courier = $this->freeDeliveryCourier($memberPrice, $weight);
 
         return ['price' => $price, 'member_price' => $memberPrice, 'commission' => $commission,
-            'payment_fee' => $fee, 'cost' => $cost, 'profit' => $memberPrice - $commission - $fee - $cost];
+            'payment_fee' => $fee, 'cost' => $cost, 'courier' => $courier, 'profit' => $memberPrice - $commission - $fee - $cost - $courier];
     }
 
     /** Easy-English line for the admin: "You keep X per member order" or "Loses X per member order". */

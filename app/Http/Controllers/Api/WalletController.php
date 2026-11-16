@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Ledger\Posting;
 use App\Ledger\Wallet;
+use App\Member\MemberTables;
 use App\Models\PayoutRequest;
 use App\Models\User;
 use App\Support\Settings;
@@ -23,7 +24,7 @@ class WalletController extends Controller
         $history = Posting::query()->with('entry:id,type,description,created_at')
             ->whereHas('account', fn ($q) => $q->where('user_id', $user->id)->where('code', 'like', '%:available'))
             ->latest('id')->limit(100)->get()
-            ->map(fn (Posting $p) => ['type' => $p->entry->type, 'description' => $p->entry->description,
+            ->map(fn (Posting $p) => ['type' => $p->entry->type, 'description' => MemberTables::neutral($p->entry->type) ?? $p->entry->description,
                 'amount' => -$p->amount, 'at' => $p->entry->created_at->toIso8601String()]);
 
         return response()->json(['data' => [

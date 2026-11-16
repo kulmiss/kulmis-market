@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Storefront\PageCache;
+use App\Support\FeatureText;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -26,5 +27,17 @@ class Faq extends Model
     protected function casts(): array
     {
         return ['position' => 'integer', 'is_published' => 'boolean'];
+    }
+
+    /** Shown to customers? Not while it talks about a switched-off feature (the admin is warned). */
+    public function shownNow(): bool
+    {
+        return FeatureText::mentionsOff($this->question.' '.$this->answer) === [];
+    }
+
+    /** The answer with {if feature} parts applied. */
+    public function answerNow(): string
+    {
+        return FeatureText::apply((string) $this->answer);
     }
 }

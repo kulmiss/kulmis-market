@@ -1,7 +1,7 @@
-@extends('layouts.member', ['title' => 'Contests'])
+@extends('layouts.member', ['title' => \App\Support\Features::enabled('referral.contests') ? 'Contests' : 'Challenges'])
 @section('content')
 @php use App\Badges\BadgeIcons as I; use App\Support\Money; $tz = config('app.timezone'); @endphp
-<h1 class="font-serif text-3xl font-semibold">Contests and challenges</h1>
+<h1 class="font-serif text-3xl font-semibold">{{ \App\Membership\Benefits::join([\App\Support\Features::enabled('referral.contests') ? 'Contests' : null, \App\Support\Features::enabled('referral.challenges') ? (\App\Support\Features::enabled('referral.contests') ? 'challenges' : 'Challenges') : null]) }}</h1>
 <p class="mt-1 text-sm m-muted">Invite people, win prizes. Only real payments count; prizes are paid after the {{ \App\Support\Settings::int('referral.pending_days') }}-day check.</p>
 
 @if (count($challenges))

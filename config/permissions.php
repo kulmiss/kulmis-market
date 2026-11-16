@@ -27,6 +27,7 @@ return [
         ]],
     ],
 
-    // Admins must set up and use 2FA before reaching any admin screen.
-    'require_2fa' => (bool) env('ADMIN_REQUIRE_2FA', true),
+    // Staff (Super Admin included) must set up and use 2FA before reaching any admin screen.
+    // On a live shop this is always on; ADMIN_REQUIRE_2FA=false only works on a developer's computer.
+    'require_2fa' => env('APP_ENV', 'production') === 'production' ? true : (bool) env('ADMIN_REQUIRE_2FA', true),
 ];

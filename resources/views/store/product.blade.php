@@ -52,7 +52,7 @@
                 <p class="muted mt-1 text-sm">
                     Ends in <span class="font-semibold tabular-nums" data-countdown="{{ $sale->ends_at->toIso8601String() }}">{{ $sale->ends_at->diffForHumans(null, \Carbon\CarbonInterface::DIFF_ABSOLUTE) }}</span>
                     @if ($sale->remaining() !== null) · only {{ $sale->remaining() }} {{ $sale->remaining() === 1 ? 'piece' : 'pieces' }} left at this price @endif
-                    @if (\App\Support\Features::enabled('membership') && $product->member_discount !== false) · members pay {{ \App\Support\Money::format(app(\App\Pricing\PriceCalculator::class)->memberPrice($sale->price)) }} @endif
+                    @if (\App\Support\Features::enabled('membership.member_discount') && $product->member_discount !== false) · members pay {{ \App\Support\Money::format(app(\App\Pricing\PriceCalculator::class)->memberPrice($sale->price)) }} @endif
                 </p>
             </div>
         @endif
@@ -151,10 +151,23 @@
         @endfeature
 
         @feature('membership')
+        @php
+            // Only perks that are switched on.
+            $perks = array_values(array_filter([
+                \App\Support\Features::enabled('shop.free_shipping') ? 'free shipping over '.\App\Support\Money::format(\App\Support\Settings::int('shipping.member_free_over')) : null,
+                \App\Support\Features::enabled('shop.early_access') ? 'early access' : null,
+                \App\Support\Features::enabled('signals') ? 'trading signals' : null,
+            ]));
+            $discount = \App\Support\Features::enabled('membership.member_discount') && $product->member_discount !== false && $memberPrice < $product->price;
+            $last = array_pop($perks);
+            $perkText = $perks ? implode(', ', $perks).' and '.$last : $last;
+        @endphp
+        @if ($discount || $perkText)
         <div class="card mt-6 text-sm">
-            <p class="font-semibold">Members pay {{ \App\Support\Money::format($memberPrice) }} for this</p>
-            <p class="muted mt-1">Plus free shipping over {{ \App\Support\Money::format(\App\Support\Settings::int('shipping.member_free_over')) }}, early access and signals. <a class="text-brand-600 underline" href="{{ url('/membership') }}">Join &amp; save</a></p>
+            @if ($discount)<p class="font-semibold">Members pay {{ \App\Support\Money::format($memberPrice) }} for this</p>@endif
+            <p @class(['muted mt-1' => $discount])>@if ($perkText){{ $discount ? 'Plus' : 'Members get' }} {{ $perkText }}. @endif<a class="text-brand-600 underline" href="{{ url('/membership') }}">Join &amp; save</a></p>
         </div>
+        @endif
         @endfeature
 
         @if ($product->description)<div class="prose-km mt-8">{!! \Illuminate\Support\Str::markdown($product->description, ['html_input' => 'escape', 'allow_unsafe_links' => false]) !!}</div>@endif

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Demo\HidesDemo;
+use App\Notify\Inbox;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -26,6 +28,19 @@ class UserNotification extends Model
     public const UPDATED_AT = null;
 
     protected $guarded = ['id'];
+
+    /**
+     * Only news whose feature is on (old news of a switched-off feature stays stored, just not shown).
+     *
+     * @param  Builder<UserNotification>  $query
+     */
+    public function scopeShown(Builder $query): void
+    {
+        $hidden = Inbox::hiddenTypes();
+        if ($hidden !== []) {
+            $query->whereNotIn('type', $hidden);
+        }
+    }
 
     protected function casts(): array
     {

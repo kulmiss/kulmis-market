@@ -20,8 +20,9 @@ description, and every number is in Admin → Settings. Decisions: QUESTIONS.md
 - The product-order simulation (`ProductProfitSimulationTest`, 3 × 90 random
   orders with sales, bundles, coupons up to half price, extras and all 3 team
   levels) checks that no paid order loses money: goods + extras − cost − team
-  earnings − payment fee ≥ 0. Delivery is left out: the delivery charge pays
-  the courier and its share of the fee (members' free delivery is your choice).
+  earnings − payment fee − courier ≥ 0, in random cities with their own
+  courier cost. Free delivery is included: it is only given when the order
+  still pays for the courier.
 - **Coupon safety** (`shop.coupon_floor`, on): a coupon is made smaller only
   when it would take an order below cost + the most team earnings + the
   payment fee. Flash sales and bundles that lose money need "I know it loses

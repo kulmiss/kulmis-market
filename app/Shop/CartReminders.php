@@ -41,7 +41,7 @@ class CartReminders
                     }
                     $names = $cart->items->map(fn (CartItem $i) => $i->product->name)->unique()->values();
                     $items = $names->first().($names->count() > 1 ? ' and '.($names->count() - 1).' more' : '');
-                    $body = strtr(Settings::string('notify.cart_reminder'), [
+                    $body = strtr(Settings::template('notify.cart_reminder'), [
                         '{name}' => $user->first_name, '{items}' => $items, '{site}' => Settings::string('site.name'),
                         '{url}' => URL::temporarySignedRoute('cart.resume', now()->addDays(7), ['cart' => $cart->id]),
                         '{stop}' => URL::signedRoute('cart-reminders.stop', ['user' => $user->id]),

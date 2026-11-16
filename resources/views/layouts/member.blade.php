@@ -10,7 +10,7 @@
         ['Wallet', '/account/wallet', 'wallet', \App\Support\Features::enabled('wallet')],
         ['Badges', '/account/badges', 'award', \App\Support\Features::enabled('badges')],
         ['Share kit', '/account/share', 'share-2', \App\Support\Features::enabled('referral') && \App\Support\Features::enabled('referral.share_kit')],
-        ['Contests', '/account/contests', 'trophy', \App\Support\Features::enabled('referral') && (\App\Support\Features::enabled('referral.contests') || \App\Support\Features::enabled('referral.challenges'))],
+        [\App\Support\Features::enabled('referral.contests') ? 'Contests' : 'Challenges', '/account/contests', 'trophy', \App\Support\Features::enabled('referral') && (\App\Support\Features::enabled('referral.contests') || \App\Support\Features::enabled('referral.challenges'))],
         ['Orders', '/account/orders', 'shopping-bag', \App\Support\Features::enabled('shop')],
         ['Signals', '/account/signals', 'radio', \App\Support\Features::enabled('signals')],
         ['Wishlist', '/account/wishlist', 'heart', \App\Support\Features::enabled('shop.wishlist')],
@@ -59,9 +59,9 @@
             @endif
         </nav>
         <div class="mt-auto grid gap-1 border-t pt-3" style="border-color: var(--m-line)">
-            <a href="{{ url('/shop') }}" class="m-nav-link">{!! I::svg('store', 19) !!}Shop</a>
+            @feature('shop')<a href="{{ url('/shop') }}" class="m-nav-link">{!! I::svg('store', 19) !!}Shop</a>@endfeature
             @feature('appearance.theme_switch')<button type="button" data-theme-toggle class="m-nav-link text-start">{!! I::svg('moon', 19) !!}Light / dark</button>@endfeature
-            <form method="post" action="{{ url('/logout') }}">@csrf<button class="m-nav-link w-full text-start">{!! I::svg('log-out', 19) !!}Sign out</button></form>
+            <form method="post" action="{{ url('/logout') }}" data-confirm="Do you want to sign out?" data-confirm-ok="Sign out">@csrf<button class="m-nav-link w-full text-start">{!! I::svg('log-out', 19) !!}Sign out</button></form>
         </div>
     </aside>
 
@@ -99,11 +99,12 @@
             @foreach (array_slice($nav, 4) as [$label, $href, $icon])
                 <a href="{{ url($href) }}" class="m-nav-link">{!! I::svg($icon, 18) !!}{{ $label }}</a>
             @endforeach
-            <a href="{{ url('/shop') }}" class="m-nav-link">{!! I::svg('store', 18) !!}Shop</a>
-            <form method="post" action="{{ url('/logout') }}">@csrf<button class="m-nav-link w-full text-start">{!! I::svg('log-out', 18) !!}Sign out</button></form>
+            @feature('shop')<a href="{{ url('/shop') }}" class="m-nav-link">{!! I::svg('store', 18) !!}Shop</a>@endfeature
+            <form method="post" action="{{ url('/logout') }}" data-confirm="Do you want to sign out?" data-confirm-ok="Sign out">@csrf<button class="m-nav-link w-full text-start">{!! I::svg('log-out', 18) !!}Sign out</button></form>
         </div>
     </details>
 </nav>
 @stack('scripts')
+    @include('partials.ask')
 </body>
 </html>

@@ -6,6 +6,7 @@ use App\Models\Commission;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ShippingZone;
 use App\Support\Features;
 use App\Support\Settings;
 use App\Support\Totp;
@@ -17,9 +18,10 @@ use PHPUnit\Framework\Attributes\DataProvider;
  * flash sales and bundles accepted by the admin's own profit check (never
  * "accept loss"), coupons up to half price, members and guests through
  * referral links, all 3 team levels: then, for every paid order,
- *   goods + extras − product cost − team earnings − payment fee ≥ 0.
- * Delivery is left out on both sides: the delivery charge pays the courier
- * and its share of the payment fee (members' free delivery is your choice).
+ *   goods + extras + delivery paid − product cost − team earnings
+ *   − payment fee (on everything paid) − what the courier charges ≥ 0.
+ * Couriers cost different amounts per city; members get free delivery over
+ * the threshold, so the shop pays the courier on those orders.
  */
 class ProductProfitSimulationTest extends ReferralTestCase
 {
@@ -34,6 +36,11 @@ class ProductProfitSimulationTest extends ReferralTestCase
     {
         mt_srand($seed);
         Settings::set('payments.fee_bps', 150); // a payment fee makes it harder
+        $cities = ['Addis Ababa' => [15_000, 12_000], 'Adama' => [25_000, null], 'Gambela' => [40_000, 38_000]];
+        foreach ($cities as $city => [$fee, $courier]) {
+            ShippingZone::query()->create(['name' => $city, 'cities' => [$city], 'base_fee' => $fee, 'included_grams' => 1000,
+                'per_kg_fee' => 5_000, 'courier_cost' => $courier, 'courier_per_kg' => $courier ? 6_000 : null]);
+        }
         foreach (['shop.extras.gift_wrap', 'shop.extras.express', 'shop.extras.insurance'] as $f) {
             Features::set($f, true);
         }
@@ -96,7 +103,7 @@ class ProductProfitSimulationTest extends ReferralTestCase
                 $this->withHeaders($h)->putJson('/api/v1/cart/extras', ['extras' => ['gift_wrap']]);
             }
             $res = $this->withHeaders($h)->postJson('/api/v1/checkout', ['checkout_key' => (string) Str::uuid(), 'first_name' => 'Buyer',
-                'phone' => $buyer?->phone ?? '09'.mt_rand(10_000_000, 99_999_999), 'city' => 'Adama', 'address' => 'x',
+                'phone' => $buyer?->phone ?? '09'.mt_rand(10_000_000, 99_999_999), 'city' => array_rand($cities), 'address' => 'x',
                 'referral_code' => $buyer ? null : $members[array_rand($members)]->referral_code]);
             if ($res->getStatusCode() === 201) {
                 $order = Order::query()->latest('id')->firstOrFail();
@@ -116,14 +123,16 @@ class ProductProfitSimulationTest extends ReferralTestCase
         foreach ($paid as $o) {
             $cost = (int) $o->items->sum(fn ($i) => $i->product->totalCost() * $i->quantity);
             $team = (int) Commission::query()->where('source_type', $o->getMorphClass())->where('source_id', $o->id)->sum('amount');
-            // The fee on the delivery part is paid from the delivery charge (as in the admin profit check).
-            $fee = intdiv(($o->merchandise_total + $o->extras_total) * Settings::int('payments.fee_bps') + 9_999, 10_000);
-            $profit = $o->merchandise_total + $o->extras_total - $cost - $team - $fee;
+            $delivery = $o->shipping - $o->shipping_discount;
+            $fee = intdiv($o->total * Settings::int('payments.fee_bps') + 9_999, 10_000);
+            $profit = $o->merchandise_total + $o->extras_total + $delivery - $cost - $team - $fee - $o->courier_cost;
+            $this->assertGreaterThan(0, $o->courier_cost, 'every order knows what delivery cost');
             $worst = min($worst, $profit);
-            $this->assertGreaterThanOrEqual(0, $profit, "order {$o->number} loses ".-$profit.' santim (goods '.$o->merchandise_total.", cost $cost, team $team, fee $fee)");
+            $this->assertGreaterThanOrEqual(0, $profit, "order {$o->number} loses ".-$profit.' santim (goods '.$o->merchandise_total.", delivery paid $delivery, courier {$o->courier_cost}, cost $cost, team $team, fee $fee)");
         }
         $this->assertGreaterThan(0, Commission::query()->where('type', 'products')->where('amount', '>', 0)->count(), 'team earnings were paid');
         $this->assertGreaterThan(0, Order::query()->where('coupon_discount', '>', 0)->count(), 'coupons were used');
+        $this->assertGreaterThan(0, Order::query()->where('status', Order::PAID)->where('shipping_discount', '>', 0)->count(), 'some orders shipped free');
         $this->assertGreaterThanOrEqual(0, $worst);
     }
 }

@@ -24,12 +24,63 @@ final class MemberTables
     public const MONEY_TYPES = [
         'commission.earned' => 'Team earnings', 'commission.released' => 'Team earnings ready', 'commission.reversed' => 'Team earnings taken back (refund)',
         'badge.bonus' => 'Badge bonus', 'badge.bonus.released' => 'Badge bonus ready', 'badge.bonus.reduced' => 'Badge bonus taken back (refund)',
-        'loyalty.reward' => 'Loyalty reward', 'wallet.spend' => 'Paid with your wallet', 'wallet.refunded' => 'Money back to your wallet',
+        'loyalty.reward' => 'Loyalty reward', 'wallet.spend' => 'Paid with your wallet', 'wallet.refunded' => 'Money back to your wallet', 'access.unused_credit' => 'Money back for days not used',
         'payout.requested' => 'Cash-out asked', 'payout.paid' => 'Cash-out sent to you', 'payout.rejected' => 'Cash-out not approved (back in your wallet)',
         'manual.adjustment' => 'Fixed by our team',
     ];
 
     public const BUCKET = [Wallet::PENDING => 'On the way', Wallet::AVAILABLE => 'Ready to use', Wallet::PAYOUT => 'Cash-out asked'];
+
+    /**
+     * Neutral words for past money of a feature that is switched off now
+     * (type prefix => [feature, label]): the history stays, the feature's
+     * name does not.
+     */
+    private const NEUTRAL = [
+        'commission.' => ['referral', 'Earlier earning'], 'badge.bonus' => ['badges.bonus', 'Earlier reward'],
+        'loyalty.' => ['loyalty_reward', 'Earlier reward'], 'payout.' => ['wallet.cashout', 'Money sent out'],
+    ];
+
+    /** What a money line is called right now. */
+    public static function moneyType(string $type, string $fallback = ''): string
+    {
+        return self::neutral($type) ?? self::MONEY_TYPES[$type] ?? $fallback;
+    }
+
+    /** The neutral name of a money line whose feature is off now, or null. */
+    public static function neutral(string $type): ?string
+    {
+        foreach (self::NEUTRAL as $prefix => [$feature, $label]) {
+            if (str_starts_with($type, $prefix) && Features::disabled($feature)) {
+                return match (true) {
+                    str_ends_with($type, 'reversed') || str_ends_with($type, 'reduced') => $label.' taken back (refund)',
+                    $type === 'payout.rejected' => 'Money back to your wallet',
+                    default => $label,
+                };
+            }
+        }
+
+        return null;
+    }
+
+    /** @return array<string, string> the wallet places, in today's words */
+    public static function buckets(): array
+    {
+        return array_merge(self::BUCKET, Features::disabled('wallet.cashout') ? [Wallet::PAYOUT => 'Being sent'] : []);
+    }
+
+    /** What an earning came from, or a neutral word when that feature is off now. */
+    public static function earningType(string $type): string
+    {
+        $feature = $type === 'products' ? 'shop' : $type;
+        if (Features::exists($feature) && Features::disabled($feature)) {
+            return 'Earlier earning';
+        }
+
+        return match ($type) {
+            'membership' => 'Membership', 'products' => 'Shop order', 'signals' => 'Signals', default => ucfirst($type),
+        };
+    }
 
     /** @param array<string, mixed> $ref TeamView::for() */
     public static function team(Request $request, array $ref): MemberTable
@@ -45,7 +96,7 @@ final class MemberTables
             'joined' => ['Joined', 'date', true],
             'status' => ['Membership', 'status', true],
         ], ['status' => ['label' => 'Membership', 'options' => ['active' => 'Active', 'not_active' => 'Not active']]],
-            'Search a name', '-joined', 'No one yet. Share your link from the home screen.'))->fromRows($request, $rows);
+            'Search a name', '-joined', 'No one yet. Share your link from your dashboard.'))->fromRows($request, $rows);
     }
 
     public static function earnings(Request $request, User $user): MemberTable
@@ -59,16 +110,15 @@ final class MemberTables
             'available_at' => ['Ready on', 'date', true, '', true],
         ], [
             'status' => ['label' => 'Status', 'options' => ['pending' => 'On the way', 'available' => 'Ready to use', 'reversed' => 'Taken back']],
-            'type' => ['label' => 'From', 'options' => ['membership' => 'Memberships', 'products' => 'Shop orders', 'signals' => 'Signals']],
-            'level' => ['label' => 'Level', 'options' => ['1' => 'Level 1', '2' => 'Level 2', '3' => 'Level 3']],
+            'type' => ['label' => 'From', 'options' => array_filter(['membership' => 'Memberships', 'products' => 'Shop orders', 'signals' => 'Signals'],
+                fn ($k) => Features::enabled($k === 'products' ? 'shop' : $k), ARRAY_FILTER_USE_KEY)],
+            'level' => ['label' => 'Level', 'options' => array_filter(['1' => 'Level 1', '2' => 'Level 2', '3' => 'Level 3'], fn ($l) => Features::enabled("referral.level$l"), ARRAY_FILTER_USE_KEY)],
         ], null, '', 'Nothing yet. When someone in your team pays, you see it here.'))->fromQuery(
             $request,
             Commission::query()->where('recipient_id', $user->id)->where('status', '!=', Commission::SKIPPED),
             ['created_at' => 'created_at', 'type' => 'type', 'level' => 'level', 'amount' => 'amount', 'status' => 'status', 'available_at' => 'available_at'],
             fn (Builder $q, string $v) => $q->where('type', 'like', "%$v%"),
-            fn (Commission $c) => ['_id' => $c->id, 'created_at' => $c->created_at?->toIso8601String(), 'type' => match ($c->type) {
-                'membership' => 'Membership', 'products' => 'Shop order', 'signals' => 'Signals', default => ucfirst($c->type),
-            }, 'level' => $c->level, 'amount' => $c->amount - $c->reversed_amount, 'status' => $c->status,
+            fn (Commission $c) => ['_id' => $c->id, 'created_at' => $c->created_at?->toIso8601String(), 'type' => self::earningType($c->type), 'level' => $c->level, 'amount' => $c->amount - $c->reversed_amount, 'status' => $c->status,
                 'available_at' => $c->status === Commission::PENDING ? $c->available_at?->toIso8601String() : null],
             ['status' => 'status', 'type' => 'type', 'level' => 'level'],
         );
@@ -83,7 +133,7 @@ final class MemberTables
             'what' => ['What', 'text'],
             'where' => ['Where', 'text'],
             'amount' => ['Amount', 'money', true, 'end'],
-        ], ['bucket' => ['label' => 'Where', 'options' => self::BUCKET]], 'Search, e.g. bonus', '', 'No money moved yet.'))->fromQuery(
+        ], ['bucket' => ['label' => 'Where', 'options' => self::buckets()]], 'Search, e.g. '.(Features::enabled('wallet.spend') ? 'paid' : 'fixed'), '', 'No money moved yet.'))->fromQuery(
             $request,
             Posting::query()->whereIn('ledger_postings.ledger_account_id', $accounts ?: [0])
                 ->join('ledger_accounts', 'ledger_accounts.id', '=', 'ledger_postings.ledger_account_id')
@@ -91,12 +141,12 @@ final class MemberTables
                 ->select('ledger_postings.id', 'ledger_postings.amount', 'ledger_postings.created_at', 'ledger_accounts.code', 'journal_entries.type', 'journal_entries.description'),
             ['created_at' => 'ledger_postings.created_at', 'amount' => 'ledger_postings.amount'],
             function (Builder $q, string $v) {
-                $types = array_keys(array_filter(self::MONEY_TYPES, fn ($label) => str_contains(mb_strtolower($label), mb_strtolower($v))));
+                $types = array_values(array_filter(array_keys(self::MONEY_TYPES), fn ($t) => str_contains(mb_strtolower(self::moneyType($t)), mb_strtolower($v))));
                 $q->where(fn ($w) => $w->where('journal_entries.description', 'like', "%$v%")->orWhereIn('journal_entries.type', $types ?: ['']));
             },
             fn (Posting $p) => ['_id' => $p->id, 'created_at' => $p->created_at->toIso8601String(),
-                'what' => self::MONEY_TYPES[(string) $p->getAttribute('type')] ?? (string) $p->getAttribute('description'),
-                'where' => self::BUCKET[explode(':', (string) $p->getAttribute('code'))[2] ?? ''] ?? '',
+                'what' => self::moneyType((string) $p->getAttribute('type'), (string) $p->getAttribute('description')),
+                'where' => self::buckets()[explode(':', (string) $p->getAttribute('code'))[2] ?? ''] ?? '',
                 // The wallet is money the shop owes you: a credit is money in.
                 'amount' => -$p->amount],
             ['bucket' => fn (Builder $q, string $b) => $q->where('ledger_accounts.code', "user:{$user->id}:$b")],

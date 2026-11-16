@@ -1,6 +1,6 @@
 # Handover — Kulmis Market
 
-_Last updated: Round 5 (PR #74, branch `pr/66-review`)._
+_Last updated: Round 6 (switched off = never existed; top branch `pr/74-admin-off`)._
 
 Kulmis Market is an online shop for handcrafted Ethiopian products, plus a
 trading-signals service (private Telegram channel) and a paid monthly
@@ -17,6 +17,9 @@ English (ready for Amharic) and aimed at customers in Ethiopia.
 - Built assets are committed, so the server needs no Node
 
 ## PRs (1–44 are merged into main; everything newer is one stack — merge the top PR)
+
+After every merge into `main`, the **Close PRs already in main** workflow closes open PRs that have nothing new left (for example the lower PRs of a stack). It never closes a PR with new changes. Script: `scripts/close-merged-prs.sh` (`--dry-run` to only list).
+
 | PR | Branch | Status |
 |----|--------|--------|
 | 1 | `pr/01-scaffold` | Merged. Laravel 13, Docker, CI, docs |
@@ -114,6 +117,24 @@ One stack on top of Round 4 (#59): #60 → #74. The top PR targets `main`, so on
 - **Profit**: every new payout goes through the ledger, the 14-day "on the way" period, fraud holds and ProfitGuard. Worst case with every payout on: 25.34% paid out of a 5,000 ETB membership (you keep 3,733 ETB); a running contest adds up to 2% and challenges up to 2% (29.34%, keep 3,533 ETB). Settings can never go over 35%. The random-teams simulation (all payouts, contests and challenges on) kept 81.6–84.2% of membership money.
 - **Review**: see SECURITY_REPORT.md (Round 5) and QUESTIONS.md #123–#133.
 
+## Round 6 (sign-out, 2FA check, courier cost, switched off = never existed)
+
+One stack on `main`: `pr/67-auto-close` (#75) → `pr/74-admin-off`. The top PR targets `main`, so one merge brings in all of it.
+
+| Branch | What |
+|--------|------|
+| `pr/67-auto-close` | After a merge into main, open PRs with nothing new are closed automatically |
+| `pr/68-signout` | "Do you want to sign out?" [Sign out] [Cancel] everywhere, then "You are signed out" |
+| `pr/69-hide-off` | First pass: notification options, menus and levels of switched-off features hidden |
+| `pr/70-2fa` | Staff must use two-step sign-in on the live shop; customer 2FA optional (tests per role) |
+| `pr/71-courier` | Courier cost per city in the price check and the order simulation; free delivery never loses money |
+| `pr/72-never-existed` | Switched off = never existed: words, links, pages (404), API texts, messages, earnings, badges; crawl test for every switch |
+| `pr/73-paid-access` | People who paid keep membership/signals until their month ends; End access now with money back for unused days |
+| `pr/74-admin-off` | Admin: preview before switching off, "Switched-off features" menu group with history, text warnings, page texts with {if …} |
+
+- **How it is checked**: `FeatureNeverExistedTest` turns every switch off one at a time, crawls the shop as a guest, a member with a team, a new member, an expired member and a shopper (plus sitemap, robots, manifests, offline page, 404 page, API, message templates), fails on any word/link/page of that feature, then switches it back on and checks the words come back. A new feature needs its words in `config/feature_words.php`.
+- **Decisions**: QUESTIONS.md #135–#148.
+
 ## Key decisions
 All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
 - Money is integer santim and double-entry. Balances are never stored.
@@ -133,6 +154,7 @@ All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
 See [docs/local-setup.md](docs/local-setup.md).
 
 ## Test status
+- Round 6: 535 backend tests pass on SQLite and MariaDB (Pint, Larastan level 6). The never-existed crawl takes about 2 minutes.
 - Round 5: 507 backend tests pass on SQLite and MariaDB (Pint, Larastan level 6, audits and gitleaks clean). Every screen re-checked at 360/390/414 px and desktop, light and dark, as 6 member types and 5 staff roles; new flows (gift card, download, gift membership, custom order, bell, contests, share) run in a phone-size browser; real parallel requests for flash-sale stock, gift cards and download limits; a product-order simulation (270 random orders) proves no paid order loses money.
 - Round 4: 424 backend tests passed on SQLite and MariaDB 10.11 (every money path in
   the brief is covered, plus the badge bonus simulation with 2,500 random

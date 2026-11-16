@@ -77,7 +77,7 @@ class MembershipService
 
             DB::afterCommit(function () use ($m, $p) {
                 MembershipActivated::dispatch($m, $p);
-                $this->message($p->user, Settings::string('notify.membership_activated'), $m, 'membership_activated');
+                $this->message($p->user, Settings::template('notify.membership_activated'), $m, 'membership_activated');
             });
 
             return $m;
@@ -149,7 +149,16 @@ class MembershipService
         $now ??= now();
         $stats = ['grace' => 0, 'expired' => 0, 'reminders' => 0];
         if (Features::disabled('membership')) {
-            return $stats; // paused: nothing expires and no reminders go out while it's off
+            // Switched off: nobody can renew, so a paid month simply ends (no grace, no reminders).
+            Membership::query()->whereIn('status', ['active', 'grace'])->where('current_period_end', '<', $now)
+                ->each(function (Membership $m) use (&$stats) {
+                    $m->update(['status' => 'expired', 'continuous_since' => null]);
+                    Activity::log('membership.expired', $m, ['while' => 'membership switched off']);
+                    MembershipEnded::dispatch($m, 'Expired');
+                    $stats['expired']++;
+                });
+
+            return $stats;
         }
 
         Membership::query()->where('status', 'active')->where('current_period_end', '<', $now)
@@ -177,7 +186,7 @@ class MembershipService
                     default => null,
                 };
                 if ($kind && $this->remindOnce($m, $kind)) {
-                    $this->message($m->user, Settings::string('notify.membership_'.$kind), $m, 'membership_'.$kind);
+                    $this->message($m->user, Settings::template('notify.membership_'.$kind), $m, 'membership_'.$kind);
                     $stats['reminders']++;
                 }
             });
@@ -217,7 +226,7 @@ class MembershipService
                         DB::table('loyalty_rewards')->insert(['user_id' => $m->user_id, 'is_demo' => Demo::isDemoUser($m->user_id), 'continuous_since' => $m->continuous_since,
                             'sequence' => $seq, 'amount' => $amount, 'journal_entry_id' => $entry->id, 'created_at' => now()]);
                     });
-                    $this->message($m->user, str_replace('{amount}', Money::format($amount), Settings::string('notify.loyalty_reward')), $m, 'loyalty_reward');
+                    $this->message($m->user, str_replace('{amount}', Money::format($amount), Settings::template('notify.loyalty_reward')), $m, 'loyalty_reward');
                     $granted++;
                 }
             });
@@ -245,6 +254,7 @@ class MembershipService
             '{price}' => Money::format(Settings::int('membership.price')),
             '{grace_date}' => $m->grace_ends_at?->timezone(config('app.timezone'))->format('d M Y') ?? '',
             '{renew_url}' => url('/membership'),
+            '{benefits}' => Benefits::sentence(),
             '{site}' => Settings::string('site.name'),
         ]);
         SendCustomerMessage::dispatch(new Message('Your membership', $body, $user->phone, $user->email, $user->telegram_user_id, $type));
