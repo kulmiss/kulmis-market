@@ -4,7 +4,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ShippingController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['feature:shop', 'can:manage-orders'])->group(function () {
+Route::middleware('can:manage-orders')->group(function () {
     Route::get('orders', [OrderController::class, 'index']);
     Route::post('orders/bulk-status', [OrderController::class, 'bulkStatus']);
     Route::get('orders/{order}', [OrderController::class, 'show']);

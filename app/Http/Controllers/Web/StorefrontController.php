@@ -125,6 +125,7 @@ class StorefrontController extends Controller
     public function page(string $slug): View
     {
         $page = Page::query()->where('slug', $slug)->where('is_published', true)->firstOrFail();
+        abort_unless($page->shownNow(), 404);
 
         return view('store.page', ['page' => $page]);
     }
@@ -174,7 +175,7 @@ class StorefrontController extends Controller
             ->when(Features::enabled('site.help_centre'), fn ($c) => $c->push(url('/help')))
             ->merge(Category::query()->where('is_active', true)->pluck('slug')->map(fn ($s) => url('/c/'.$s)))
             ->merge(Product::query()->visibleTo(false)->pluck('slug')->map(fn ($s) => url('/shop/'.$s)))
-            ->merge(Page::query()->where('is_published', true)->pluck('slug')->map(fn ($s) => url('/p/'.$s)));
+            ->merge(Page::query()->where('is_published', true)->get(['slug', 'title'])->filter(fn (Page $p) => $p->shownNow())->map(fn (Page $p) => url('/p/'.$p->slug)));
         $xml = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
             .$urls->map(fn ($u) => '<url><loc>'.e($u).'</loc></url>')->implode('').'</urlset>';
 

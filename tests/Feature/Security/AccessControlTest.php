@@ -226,7 +226,7 @@ class AccessControlTest extends ReferralTestCase
             $this->app['auth']->forgetGuards();
             $this->actingAsAdmin($role);
             $this->getJson('/api/v1/admin/features/state')->assertOk()->assertJsonFragment(['key' => 'shop', 'effective' => true])
-                ->assertJsonMissingPath('data.0.label');
+                ->assertJsonMissingPath('data.0.description')->assertJsonMissingPath('data.0.enabled')->assertJsonMissingPath('data.0.parent');
             $this->getJson('/api/v1/admin/features')->assertForbidden();
         }
         $this->app['auth']->forgetGuards();

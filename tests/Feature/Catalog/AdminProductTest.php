@@ -125,6 +125,6 @@ class AdminProductTest extends TestCase
 
         $this->actingAsAdmin();
         Features::set('shop', false);
-        $this->getJson('/api/v1/admin/products')->assertNotFound();
+        $this->getJson('/api/v1/admin/products')->assertOk(); // its history stays in the admin
     }
 }

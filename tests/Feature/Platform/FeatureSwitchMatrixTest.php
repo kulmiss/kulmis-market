@@ -22,6 +22,9 @@ class FeatureSwitchMatrixTest extends TestCase
 {
     use RefreshDatabase;
 
+    /** Admin actions that still stop while their feature is off (they would give a customer something new). */
+    private const ADMIN_OFF_TOO = ['/api/v1/admin/members/1/membership', '/api/v1/admin/payments/1/receipt'];
+
     /** @return array<string, array{0: string, 1: list<array{0: string, 1: string, 2: string}>}> */
     public static function switches(): array
     {
@@ -93,6 +96,11 @@ class FeatureSwitchMatrixTest extends TestCase
                 if ($on) {
                     if (! $this->isAlwaysMissing($uri)) {
                         $this->assertNotSame(404, $status, "$method $uri is hidden while $feature is ON");
+                    }
+                } elseif ($who === 'admin' && ! in_array($uri, self::ADMIN_OFF_TOO, true)) {
+                    // Admin screens stay (under "Switched-off features"): history, and open work to finish.
+                    if (! $this->isAlwaysMissing($uri)) {
+                        $this->assertNotSame(404, $status, "admin $method $uri is gone while $feature is OFF (its history must stay)");
                     }
                 } else {
                     $this->assertSame(404, $status, "$method $uri still answers ($status) while $feature is OFF");

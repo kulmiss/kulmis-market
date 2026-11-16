@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { OffFeatureNote } from '@/components/km/off-feature-note'
 import { MoneyInput } from '@/components/km/money-input'
 import { Page } from '@/components/km/page'
 
@@ -165,7 +166,12 @@ function Field({ row, value, onChange, preview }: { row: SettingRow; value: unkn
     case 'bool':
       return <Switch id={row.key} checked={Boolean(value)} onCheckedChange={onChange} />
     case 'text':
-      return <Textarea id={row.key} rows={3} value={String(value ?? '')} onChange={(e) => onChange(e.target.value)} />
+      return (
+        <>
+          <Textarea id={row.key} rows={3} value={String(value ?? '')} onChange={(e) => onChange(e.target.value)} />
+          <OffFeatureNote text={String(value ?? '')} />
+        </>
+      )
     default:
       return <Input id={row.key} value={String(value ?? '')} onChange={(e) => onChange(e.target.value)} />
   }

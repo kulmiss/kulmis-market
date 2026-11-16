@@ -10,8 +10,22 @@
 - **Sign-in:** email/phone + password → authenticator code (or a recovery
   code). An admin without 2FA is sent to **Set up 2FA** (QR, confirm, 8
   recovery codes) before any other screen.
-- The navigation hides screens of switched-off features and screens your
-  role can't use.
+- The navigation hides screens your role can't use. Screens of a
+  switched-off feature move to the **Switched-off features** group at the end:
+  its history stays and you can finish open work (ship open orders, pay asked
+  cash-outs, answer messages). Each such screen says "… is switched off.
+  Customers and members see nothing of it." Still blocked while off: changing
+  a membership by hand, PDF receipts.
+- **Feature switches page:** switching off first shows what it means ("37
+  people have signals until their month ends (the last on 12 Dec 2026).
+  Nobody can buy or renew.", open orders, waiting cash-outs…). For membership
+  and signals, while off and people still have paid days: **End access now**,
+  with "Add the days they did not use to their wallet". The page also lists
+  **Texts that mention a switched-off feature** (FAQ, pages, banners, share
+  kit, messages) and what customers see of each.
+- Text fields (FAQ, pages, banners, share kit, message settings) warn while
+  you type: "This text mentions Signals, which is off …" and suggest
+  `{if signals}…{/if}`.
 - No external fonts, analytics or trackers (system font stack, `noindex`).
 
 ## Develop

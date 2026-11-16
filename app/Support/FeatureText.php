@@ -34,6 +34,37 @@ final class FeatureText
     }
 
     /**
+     * A Markdown page with its {if} parts applied, and without the sections,
+     * list items and table rows that talk about a switched-off feature (so the
+     * terms page simply has no "Membership and signals" part while those are
+     * off). Plain sentences are kept: the admin warns about them.
+     */
+    public static function markdown(string $md): string
+    {
+        $out = [];
+        $skipBelow = null; // heading level of a dropped section
+        foreach (preg_split('/\R/', self::apply($md)) ?: [] as $line) {
+            if (preg_match('/^(#{1,6})\s/', $line, $h)) {
+                $level = strlen($h[1]);
+                if ($skipBelow !== null && $level > $skipBelow) {
+                    continue;
+                }
+                $skipBelow = self::mentionsOff($line) !== [] ? $level : null;
+                if ($skipBelow !== null) {
+                    continue;
+                }
+            } elseif ($skipBelow !== null) {
+                continue;
+            } elseif (preg_match('/^\s*([-*+]|\d+\.|\|)\s?/', $line) && ! preg_match('/^\s*\|[\s|:-]+\|?\s*$/', $line) && self::mentionsOff($line) !== []) {
+                continue;
+            }
+            $out[] = $line;
+        }
+
+        return implode("\n", $out);
+    }
+
+    /**
      * Switched-off features this text still talks about (outside {if} blocks).
      *
      * @return list<string> feature labels, e.g. ["Signals"]

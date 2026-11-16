@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
+import { OffFeatureNote } from '@/components/km/off-feature-note'
 import { FormDialog } from '@/components/km/form-dialog'
 import { DataTable, type DataColumn } from '@/components/km/data-table'
 import { Page } from '@/components/km/page'
@@ -70,6 +71,8 @@ function PageDialog({ page }: { page?: PageRow }) {
         <label className='grid gap-1.5 text-sm leading-none font-medium'>Address (/p/…)<Input value={d.slug} onChange={(e) => setD({ ...d, slug: e.target.value })} /></label>
       </div>
       <label className='grid gap-1.5 text-sm leading-none font-medium'>Text (Markdown: ## heading, - list, **bold**)<Textarea rows={14} className='font-mono text-xs' value={d.body} onChange={(e) => setD({ ...d, body: e.target.value })} /></label>
+      <OffFeatureNote text={`${d.title} ${d.slug.replace(/-/g, ' ')}`} hidden='The whole page is hidden while it is off.' />
+      <OffFeatureNote text={d.body} hidden='Parts with a heading, list item or table row about it are hidden; other sentences are still shown.' />
       <label className='grid gap-1.5 text-sm leading-none font-medium'>Search description<Input value={d.seo_description} onChange={(e) => setD({ ...d, seo_description: e.target.value })} /></label>
       <div className='flex gap-6 text-sm'>
         <label className='flex items-center gap-2'><Switch checked={d.is_published} onCheckedChange={(v) => setD({ ...d, is_published: v })} /> Published</label>
@@ -105,6 +108,7 @@ function BannerDialog({ banner }: { banner?: BannerRow }) {
       <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
         <label className='grid gap-1.5 text-sm leading-none font-medium'>Link (/shop or https://…)<Input value={d.link_url} onChange={(e) => setD({ ...d, link_url: e.target.value })} /></label>
         <label className='grid gap-1.5 text-sm leading-none font-medium'>Button text<Input value={d.link_text} onChange={(e) => setD({ ...d, link_text: e.target.value })} /></label>
+        <div className='sm:col-span-2'><OffFeatureNote text={`${d.title} ${d.text ?? ''} ${d.link_text ?? ''}`} hidden='This banner is hidden while it is off.' /></div>
         <label className='grid gap-1.5 text-sm leading-none font-medium'>From<Input type='date' value={d.starts_at} onChange={(e) => setD({ ...d, starts_at: e.target.value })} /></label>
         <label className='grid gap-1.5 text-sm leading-none font-medium'>Until<Input type='date' value={d.ends_at} onChange={(e) => setD({ ...d, ends_at: e.target.value })} /></label>
       </div>

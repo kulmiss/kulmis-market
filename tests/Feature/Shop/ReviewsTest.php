@@ -113,6 +113,6 @@ class ReviewsTest extends TestCase
         $this->actingAs($fulfilment)->getJson('/api/v1/admin/reviews')->assertForbidden();
 
         Features::set('shop.reviews', false);
-        $this->actingAs($this->admin())->getJson('/api/v1/admin/reviews')->assertNotFound();
+        $this->actingAs($this->admin())->getJson('/api/v1/admin/reviews')->assertOk(); // its history stays in the admin
     }
 }

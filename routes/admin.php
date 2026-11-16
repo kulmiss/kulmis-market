@@ -25,6 +25,8 @@ Route::middleware(['auth', 'staff', 'admin.timeout'])->group(function () {
         Route::get('features', [Admin\FeatureController::class, 'index'])->can('manage-features');
         Route::get('features/state', [Admin\FeatureController::class, 'state']);
         Route::put('features', [Admin\FeatureController::class, 'update'])->can('manage-features');
+        Route::get('features/impact/{key}', [Admin\FeatureController::class, 'impact'])->can('manage-features');
+        Route::get('features/texts', [Admin\FeatureController::class, 'texts'])->can('manage-features');
         Route::get('features/paid-access/{feature}', [Admin\FeatureController::class, 'paidAccess'])->can('manage-features');
         Route::post('features/paid-access/{feature}/end', [Admin\FeatureController::class, 'endAccess'])->can('manage-features')->middleware('throttle:5,1');
         Route::get('settings', [Admin\SettingController::class, 'index'])->can('manage-settings');

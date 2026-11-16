@@ -43,6 +43,13 @@ shop never had it:
 - **Badges:** badges about a switched-off feature (team badges while referrals
   are off, "Loyal" while membership is off…) are hidden and not given
   (`BadgeRules::FEATURES`).
+- **Pages** (terms, privacy…): a page whose title or address names a
+  switched-off feature answers 404 and leaves the footer and sitemap; inside
+  a page, headings, list items and table rows about it are left out
+  (`FeatureText::markdown`). The first texts of the terms, privacy and rules
+  pages now use `{if …}` parts (migration `page_texts_follow_switches`
+  changes only sentences you never edited).
+- **Admin:** screens stay, in "Switched-off features" (see docs/admin.md).
 - **Cache:** switching anything clears the saved pages at once.
 - **Test:** `FeatureNeverExistedTest` switches every feature off (one at a
   time), crawls every page for a guest, a member with a team, a new member,

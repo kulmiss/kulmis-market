@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FormDialog } from '@/components/km/form-dialog'
+import { OffFeatureNote } from '@/components/km/off-feature-note'
 import { Page } from '@/components/km/page'
 import { ResourceTable, type ResourceColumn } from '@/components/km/resource-table'
 import { StatusBadge } from '@/components/km/status-badge'
@@ -80,6 +81,7 @@ function FaqDialog({ faq }: { faq?: Faq }) {
       <L label='Group (e.g. Orders)'><Input value={d.category} onChange={(e) => setD({ ...d, category: e.target.value })} /></L>
       <L label='Question'><Input value={d.question} onChange={(e) => setD({ ...d, question: e.target.value })} /></L>
       <L label='Answer (easy words)'><Textarea rows={6} value={d.answer} onChange={(e) => setD({ ...d, answer: e.target.value })} /></L>
+      <OffFeatureNote text={`${d.question} ${d.answer}`} hidden='This question is hidden on /help while it is off.' />
       <L label='Order in the group'><Input type='number' min={0} value={d.position} onChange={(e) => setD({ ...d, position: Number(e.target.value) })} /></L>
       <label className='flex items-center gap-2 text-sm'><Switch checked={d.is_published} onCheckedChange={(v) => setD({ ...d, is_published: v })} /> Show on /help</label>
     </FormDialog>

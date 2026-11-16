@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Page;
 use App\Support\Money;
+use App\Support\PageTextUpdates;
 use App\Support\Settings;
 use Illuminate\Database\Seeder;
 
@@ -155,7 +156,7 @@ MD],
         ];
 
         foreach ($pages as [$slug, $title, $position, $body]) {
-            Page::query()->firstOrCreate(['slug' => $slug], ['title' => $title, 'body' => $body, 'position' => $position, 'in_footer' => true]);
+            Page::query()->firstOrCreate(['slug' => $slug], ['title' => $title, 'body' => PageTextUpdates::apply($body), 'position' => $position, 'in_footer' => true]);
         }
     }
 }

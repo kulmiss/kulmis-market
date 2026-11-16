@@ -1,4 +1,4 @@
-@php($pages = \App\Models\Page::query()->where('is_published', true)->where('in_footer', true)->orderBy('position')->get(['slug', 'title']))
+@php($pages = \App\Models\Page::query()->where('is_published', true)->where('in_footer', true)->orderBy('position')->get(['slug', 'title'])->filter(fn ($p) => $p->shownNow()))
 <footer class="mt-16 border-t border-mist-200 bg-mist-100/60 py-10 text-sm dark:border-ink-800 dark:bg-ink-900">
     <div class="container-km grid gap-8 sm:grid-cols-3">
         <div>

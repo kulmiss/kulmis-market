@@ -20,6 +20,7 @@ use App\Notify\Inbox;
 use App\Referral\CommissionEngine;
 use App\Support\Features;
 use App\Support\Settings;
+use Database\Seeders\PagesSeeder;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -56,6 +57,7 @@ trait BuildsEveryFeature
     /** Data so that every feature has something to show. */
     protected function fixture(): void
     {
+        $this->seed(PagesSeeder::class); // terms, privacy, membership terms… as on a new shop
         $boss = $this->member(null, 'Boss');
         $this->member = $this->member($boss, 'Selam');
         $team = $this->member($this->member, 'Hiwot');

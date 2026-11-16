@@ -2,7 +2,7 @@ import { Navigate, Outlet, useRouterState } from '@tanstack/react-router'
 import { useAuthStore } from '@/stores/auth-store'
 import { useFeatures } from '@/stores/features-store'
 import { ForbiddenError } from '@/features/errors/forbidden'
-import { NotFoundError } from '@/features/errors/not-found-error'
+import { CircleSlash } from 'lucide-react'
 import { type NavLink } from './types'
 import { navLinks as links, navItemFor } from './nav-access'
 
@@ -25,7 +25,18 @@ export function RouteGuard() {
     }
     return <ForbiddenError />
   }
-  if (item && features.loaded && !features.on(item.feature)) return <NotFoundError />
+  if (item && features.loaded && !features.on(item.feature)) {
+    // Its history stays here; customers and members see nothing of it.
+    return (
+      <>
+        <p role='status' className='mx-4 mt-4 flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-900 sm:mx-6 dark:text-amber-200'>
+          <CircleSlash className='mt-0.5 size-4 shrink-0' />
+          <span><b>{features.label(item.feature ?? '')}</b> is switched off. Customers and members see nothing of it. Its history stays here, and you can finish open work.</span>
+        </p>
+        <Outlet />
+      </>
+    )
+  }
 
   return <Outlet />
 }
