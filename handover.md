@@ -1,6 +1,6 @@
 # Handover — Kulmis Market
 
-_Last updated: PR 34._
+_Last updated: Round 5 (PR #74, branch `pr/66-review`)._
 
 Kulmis Market is an online shop for handcrafted Ethiopian products, plus a
 trading-signals service (private Telegram channel) and a paid monthly
@@ -16,7 +16,7 @@ English (ready for Amharic) and aimed at customers in Ethiopia.
 - **API:** REST `/api/v1`, ready for the Flutter app (Sanctum tokens)
 - Built assets are committed, so the server needs no Node
 
-## PRs (everything up to #44 is merged into main; #45–#51 are a stack — merge the top one)
+## PRs (1–44 are merged into main; everything newer is one stack — merge the top PR)
 | PR | Branch | Status |
 |----|--------|--------|
 | 1 | `pr/01-scaffold` | Merged. Laravel 13, Docker, CI, docs |
@@ -89,6 +89,31 @@ below it, so one merge brings in everything.
 - **Search**: Ctrl/⌘K, role-aware, about 15 ms.
 - **Words**: [docs/glossary.md](docs/glossary.md).
 
+## Round 5 (new ways to earn, then a full review)
+
+One stack on top of Round 4 (#59): #60 → #74. The top PR targets `main`, so one merge brings in Round 4 and Round 5.
+
+| PR | Branch | What |
+|----|--------|------|
+| 60 | `pr/52-wishlist` | Wishlist, back-in-stock alerts, saved addresses, buy again |
+| 61 | `pr/53-reviews` | Product reviews from verified buyers |
+| 62 | `pr/54-flash` | Flash sales, bundles, "bought together" and one-tap upsells |
+| 63 | `pr/55-notify` | Bell (notification centre), monthly goals, cart reminder |
+| 64 | `pr/56-help` | Signal results chart and notes per pair; help centre with contact form |
+| 65 | `pr/57-pwa` | Member app (install on the phone) and phone notifications |
+| 66 | `pr/58-rewards` | Rewards: first-payment bonus (250 ETB), welcome-back reward (0 = off), profit guard counts them |
+| 67 | `pr/59-contests` | Referral contests and team challenges (paid after the 14-day check, inside their budgets) |
+| 68 | `pr/60-share` | Product share links, share kit, picture cards, tips |
+| 69 | `pr/61-gift` | Gift membership |
+| 70 | `pr/62-extras` | Checkout extras (off), cash-out fee (off), gift cards |
+| 71 | `pr/63-digital` | Digital products and paid add-ons |
+| 72 | `pr/64-deposits` | Pre-orders, custom orders with a deposit, win-back offers |
+| 73 | `pr/65-reports` | Reports (CSV/PDF), bulk edit + CSV import, low-stock alerts, announcement colours, staff overview |
+| 74 | `pr/66-review` | Full review: bug fixes, demo data for new features, speed, security, docs |
+
+- **Profit**: every new payout goes through the ledger, the 14-day "on the way" period, fraud holds and ProfitGuard. Worst case with every payout on: 25.34% paid out of a 5,000 ETB membership (you keep 3,733 ETB); a running contest adds up to 2% and challenges up to 2% (29.34%, keep 3,533 ETB). Settings can never go over 35%. The random-teams simulation (all payouts, contests and challenges on) kept 81.6–84.2% of membership money.
+- **Review**: see SECURITY_REPORT.md (Round 5) and QUESTIONS.md #123–#133.
+
 ## Key decisions
 All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
 - Money is integer santim and double-entry. Balances are never stored.
@@ -108,7 +133,8 @@ All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
 See [docs/local-setup.md](docs/local-setup.md).
 
 ## Test status
-- 424 backend tests pass on SQLite and MariaDB 10.11 (every money path in
+- Round 5: 507 backend tests pass on SQLite and MariaDB (Pint, Larastan level 6, audits and gitleaks clean). Every screen re-checked at 360/390/414 px and desktop, light and dark, as 6 member types and 5 staff roles; new flows (gift card, download, gift membership, custom order, bell, contests, share) run in a phone-size browser; real parallel requests for flash-sale stock, gift cards and download limits; a product-order simulation (270 random orders) proves no paid order loses money.
+- Round 4: 424 backend tests passed on SQLite and MariaDB 10.11 (every money path in
   the brief is covered, plus the badge bonus simulation with 2,500 random
   members in 4 set-ups).
 - The admin passes typecheck, lint (0 errors) and build. The storefront
@@ -130,6 +156,4 @@ See [docs/local-setup.md](docs/local-setup.md).
 ## Not done / next ideas
 - Amharic: all texts go through settings, pages or Blade, so adding `lang/am`
   plus a language switch is the next step.
-- Product reviews: the `shop.reviews` switch exists (off), but the feature
-  isn't built.
 - Flutter app: the API is ready (`docs/api.md`).

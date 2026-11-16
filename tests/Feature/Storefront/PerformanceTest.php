@@ -5,6 +5,7 @@ namespace Tests\Feature\Storefront;
 use App\Models\Category;
 use App\Models\Challenge;
 use App\Models\Contest;
+use App\Models\FlashSale;
 use App\Models\Product;
 use App\Models\User;
 use App\Notify\Inbox;
@@ -50,6 +51,19 @@ class PerformanceTest extends ReferralTestCase
         Product::query()->limit(20)->delete();
         $few = $this->queries(fn () => $this->get('/shop')->assertOk());
         $this->assertSame($few, $many, 'query count must not grow with the number of products');
+    }
+
+    public function test_with_the_real_database_cache_the_shop_cost_does_not_grow_with_products(): void
+    {
+        config(['cache.default' => 'database']); // like the server: every cache read is a query
+        $this->catalog();
+        $p = Product::query()->firstOrFail();
+        FlashSale::query()->create(['product_id' => $p->id, 'price' => (int) ($p->price * 0.9), 'starts_at' => now()->subHour(), 'ends_at' => now()->addDay()]);
+        $this->get('/shop');
+        $many = $this->queries(fn () => $this->get('/shop?x=1')->assertOk());
+        Product::query()->whereKeyNot($p->id)->limit(20)->delete();
+        $few = $this->queries(fn () => $this->get('/shop?x=2')->assertOk());
+        $this->assertSame($few, $many, "24 products cost $many queries, 4 cost $few: something is read once per product");
     }
 
     public function test_member_pages_stay_within_their_query_budget(): void

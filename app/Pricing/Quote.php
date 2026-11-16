@@ -24,6 +24,7 @@ final class Quote
         public readonly array $bundles = [],
         /** @var list<array{key:string,label:string,amount:int}> paid checkout extras */
         public readonly array $extras = [],
+        public readonly bool $couponCapped = false, // the coupon was limited so the order doesn't lose money
     ) {}
 
     public function extrasTotal(): int
@@ -70,6 +71,7 @@ final class Quote
             'bundles' => $this->bundles,
             'coupon' => $this->coupon?->code,
             'coupon_discount' => $this->couponDiscount,
+            'coupon_capped' => $this->couponCapped,
             'merchandise_total' => $this->merchandiseTotal(),
             'shipping' => $this->shipping,
             'shipping_discount' => $this->shippingDiscount,

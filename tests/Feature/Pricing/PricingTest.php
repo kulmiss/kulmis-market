@@ -96,9 +96,33 @@ class PricingTest extends TestCase
         $this->assertSame(17_000, $q->couponDiscount);   // 10% of 1,700
         $this->assertSame(153_000, $q->total());
 
-        $f = $this->calc->quote($this->items(20_000), false, 'gift500');
+        $noCost = Product::factory()->create(['price' => 20_000, 'stock' => 50, 'cost_materials' => 0, 'cost_labour' => 0, 'cost_packaging' => 0])->load('variants');
+        $f = $this->calc->quote([[$noCost, null, 1]], false, 'gift500');
         $this->assertSame(20_000, $f->couponDiscount);   // never more than the goods
         $this->assertSame(0, $f->total());
+    }
+
+    public function test_a_coupon_never_takes_an_order_below_its_cost(): void
+    {
+        Coupon::query()->create(['code' => 'HALF', 'type' => 'percent', 'value' => 5_000]);
+        // 1,000 ETB, cost 600 ETB: members pay 850; team earnings (up to 10%) and the fee must still be covered.
+        $p = Product::factory()->create(['price' => 100_000, 'stock' => 50, 'cost_materials' => 60_000, 'cost_labour' => 0, 'cost_packaging' => 0])->load('variants');
+        $q = $this->calc->quote([[$p, null, 2]], true, 'HALF');
+        $this->assertTrue($q->couponCapped);
+        $floor = $this->calc->lossFloor($q->lines);
+        $this->assertSame($floor, $q->merchandiseTotal());
+        $bps = app(ProfitCheck::class)->maxProductCommissionBps($p) + Settings::int('payments.fee_bps');
+        $this->assertGreaterThanOrEqual(120_000, $q->merchandiseTotal() - intdiv($q->merchandiseTotal() * $bps, 10_000) - 3, 'covers the cost of 2');
+        $this->assertTrue($q->toArray()['coupon_capped']);
+
+        // Cheap coupon on a high-margin product: unchanged.
+        $rich = Product::factory()->create(['price' => 100_000, 'stock' => 50, 'cost_materials' => 10_000, 'cost_labour' => 0, 'cost_packaging' => 0])->load('variants');
+        $this->assertSame(42_500, $this->calc->quote([[$rich, null, 1]], true, 'HALF')->couponDiscount);
+        $this->assertFalse($this->calc->quote([[$rich, null, 1]], true, 'HALF')->couponCapped);
+
+        // Switch off: the coupon applies in full (your choice).
+        Features::set('shop.coupon_floor', false);
+        $this->assertSame(85_000, $this->calc->quote([[$p, null, 2]], true, 'HALF')->couponDiscount);
     }
 
     public function test_coupon_rules(): void

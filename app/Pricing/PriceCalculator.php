@@ -88,6 +88,14 @@ class PriceCalculator
             $coupon = $this->resolveCoupon($couponCode, $member, $afterBundles, $customerUses);
             $couponDiscount = $this->couponDiscount($coupon, $afterBundles);
         }
+        // A coupon never takes the order below what it costs you (cost + most team earnings + payment fee).
+        $capped = false;
+        if ($couponDiscount > 0) {
+            $allowed = max(0, $afterBundles - $this->lossFloor($lines));
+            if ($couponDiscount > $allowed) {
+                [$couponDiscount, $capped] = [$allowed, true];
+            }
+        }
 
         $merchandise = $afterBundles - $couponDiscount;
         $shippingDiscount = $member && $this->freeShippingApplies($merchandise) ? $shipping : 0;
@@ -102,7 +110,34 @@ class PriceCalculator
         }
 
         return new Quote($lines, $member, $listSubtotal, $memberDiscount, $couponDiscount, $coupon, $shipping, $shippingDiscount, $preview,
-            $bundles['discount'], $bundles['applied'], Extras::price($extras, $merchandise));
+            $bundles['discount'], $bundles['applied'], Extras::price($extras, $merchandise), $capped);
+    }
+
+    /**
+     * Smallest goods total (after discounts) at which this order still covers
+     * the product cost, the most team earnings (all levels) and the payment fee.
+     * 0 when no cost is filled in or the switch is off.
+     *
+     * @param  list<Line>  $lines
+     */
+    public function lossFloor(array $lines): int
+    {
+        if (Features::disabled('shop.coupon_floor')) {
+            return 0;
+        }
+        $cost = 0;
+        $bps = 0;
+        $profit = app(ProfitCheck::class);
+        foreach ($lines as $l) {
+            $cost += $l->product->totalCost() * $l->quantity;
+            $bps = max($bps, $profit->maxProductCommissionBps($l->product));
+        }
+        if ($cost <= 0) {
+            return 0;
+        }
+        $keep = 10_000 - min(9_000, $bps + Settings::int('payments.fee_bps'));
+
+        return intdiv($cost * 10_000 + $keep - 1, $keep) + 4 * count($lines); // rounded up, plus rounding slack
     }
 
     public function freeShippingApplies(int $merchandiseTotal): bool

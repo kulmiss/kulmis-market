@@ -157,7 +157,7 @@ class FlashSalesBundlesTest extends TestCase
 
     public function test_bundle_saving_in_cart_member_price_on_top_and_coupon_after(): void
     {
-        [$a, $b] = [Product::factory()->create(['price' => 100_000]), Product::factory()->create(['price' => 50_000])];
+        [$a, $b] = [Product::factory()->create(['price' => 100_000, 'cost_materials' => 20_000, 'cost_labour' => 0, 'cost_packaging' => 0]), Product::factory()->create(['price' => 50_000, 'cost_materials' => 20_000, 'cost_labour' => 0, 'cost_packaging' => 0])];
         $bundle = Bundle::query()->create(['name' => 'Coffee set', 'slug' => 'coffee-set', 'price' => 120_000]);
         $bundle->items()->create(['product_id' => $a->id, 'quantity' => 1]);
         $bundle->items()->create(['product_id' => $b->id, 'quantity' => 1]);
