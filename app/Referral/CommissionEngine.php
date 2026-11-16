@@ -37,6 +37,9 @@ class CommissionEngine
 {
     public const MAX_LEVELS = ['membership' => 3, 'signals' => 1, 'products' => 3];
 
+    /** The feature a payment type belongs to. */
+    private const SOURCE_FEATURE = ['membership' => 'membership', 'products' => 'shop', 'signals' => 'signals'];
+
     public function __construct(private readonly Ledger $ledger, private readonly Attribution $attribution) {}
 
     /** @return list<Commission> */
@@ -47,8 +50,9 @@ class CommissionEngine
             return []; // only a deposit so far: team earnings come when the order is fully paid
         }
         [$type, $base, $buyer, $start, $phone, $email] = $this->describe($source);
-        if ($type === null || $base <= 0 || $start === null || Features::disabled('referral') || Features::disabled("referral.commission.$type")) {
-            return [];
+        if ($type === null || $base <= 0 || $start === null || Features::disabled('referral') || Features::disabled("referral.commission.$type")
+            || Features::disabled(self::SOURCE_FEATURE[$type] ?? $type)) {
+            return []; // a switched-off feature earns nobody anything new
         }
 
         $created = [];

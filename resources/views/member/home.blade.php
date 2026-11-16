@@ -21,9 +21,9 @@
     <div>
         <p class="text-sm m-muted">Selam,</p>
         <h1 class="font-serif text-3xl font-semibold sm:text-4xl">{{ $user->first_name }}</h1>
-        <span @class(['mt-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold',
+        @if (F::enabled('membership'))<span @class(['mt-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold',
             'm-soft m-accent-text' => $statusChip[1] === 'ok', 'bg-amber-500/15 text-amber-700 dark:text-amber-300' => $statusChip[1] === 'warn',
-            'bg-black/5 dark:bg-white/10' => $statusChip[1] === 'muted']) data-membership-status>{!! I::svg($statusChip[1] === 'ok' ? 'circle-check' : 'clock', 14) !!}{{ $statusChip[0] }}</span>
+            'bg-black/5 dark:bg-white/10' => $statusChip[1] === 'muted']) data-membership-status>{!! I::svg($statusChip[1] === 'ok' ? 'circle-check' : 'clock', 14) !!}{{ $statusChip[0] }}</span>@endif
     </div>
     <div class="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto" aria-label="Quick actions">
         @feature('wallet')<a href="{{ url('/account/wallet') }}" class="m-btn">{!! I::svg('banknote', 17) !!}{{ \App\Support\Features::enabled('wallet.cashout') ? 'Cash out' : 'My wallet' }}</a>@endfeature
@@ -41,12 +41,16 @@
         <div class="grid gap-4 p-5 sm:grid-cols-[1fr_auto] sm:items-center" style="background: linear-gradient(135deg, var(--m-soft), transparent)">
             <div>
                 <h2 class="text-xl font-semibold">Welcome to {{ \App\Support\Settings::string('site.name') }}! 🎉</h2>
+                @if ($ref)
                 <p class="mt-1 text-sm m-muted">Your dashboard fills up as your team grows. Here's how to start:</p>
                 <ol class="mt-3 grid gap-2 text-sm">
                     <li class="flex gap-2"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-accent)">1</span>Share your link or code with friends and family.</li>
-                    <li class="flex gap-2"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-accent)">2</span>They join and shop. You earn from 3 levels.</li>
+                    <li class="flex gap-2"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-accent)">2</span>They join{{ F::enabled('shop') ? ' and shop' : '' }}. You earn from {{ count(array_filter([1, 2, 3], fn ($l) => F::enabled("referral.level$l"))) }} {{ count(array_filter([1, 2, 3], fn ($l) => F::enabled("referral.level$l"))) === 1 ? 'level' : 'levels' }}.</li>
                     <li class="flex gap-2"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-accent)">3</span>Earnings are ready after {{ \App\Support\Settings::int('referral.pending_days') }} days.@feature('wallet.cashout') Cash out to Telebirr or your bank.@endfeature</li>
                 </ol>
+                @else
+                <p class="mt-1 text-sm m-muted">Your {{ \App\Membership\Benefits::join([F::enabled('shop') ? 'orders' : null, F::enabled('signals') ? 'signals' : null, 'news']) }} will show here.</p>
+                @endif
             </div>
             @if ($ref)<a href="#referral" class="m-btn">{!! I::svg('share-2', 17) !!}{{ $ref['share'] ? 'Share my link' : 'My link' }}</a>@endif
         </div>
@@ -58,8 +62,8 @@
 <section class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Your money">
     @include('member.partials.stat', ['label' => 'Total earned', 'value' => $fmt($money['earned']), 'icon' => 'coins', 'tone' => 'accent', 'sub' => 'Since you joined, after money given back'])
     @include('member.partials.stat', ['label' => 'On the way', 'value' => $fmt($money['pending']), 'icon' => 'clock', 'sub' => 'Ready to use in '.\App\Support\Settings::int('referral.pending_days').' days'])
-    @include('member.partials.stat', ['label' => 'Ready to use', 'value' => $fmt($money['available']), 'icon' => 'wallet', 'sub' => 'You can cash it out or spend it'])
-    @include('member.partials.stat', ['label' => 'Paid out', 'value' => $fmt($money['paid_out']), 'icon' => 'banknote', 'sub' => $money['requested'] > 0 ? $fmt($money['requested']).' asked for' : 'To Telebirr / bank'])
+    @include('member.partials.stat', ['label' => 'Ready to use', 'value' => $fmt($money['available']), 'icon' => 'wallet', 'sub' => F::enabled('wallet.cashout') ? 'You can cash it out or spend it' : (F::enabled('wallet.spend') ? 'You can spend it' : 'Earnings that are ready')])
+    @if (F::enabled('wallet.cashout'))@include('member.partials.stat', ['label' => 'Paid out', 'value' => $fmt($money['paid_out']), 'icon' => 'banknote', 'sub' => $money['requested'] > 0 ? $fmt($money['requested']).' asked for' : 'To Telebirr / bank'])@endif
 </section>
 @endif
 
@@ -131,7 +135,7 @@
     <div class="m-card">
         <h2 class="font-semibold">By type</h2>
         <ul class="mt-3 grid gap-3">
-            @foreach (['membership' => 'Memberships', 'products' => 'Shop orders', 'signals' => 'Signals'] as $k => $label)
+            @foreach (array_filter(['membership' => 'Memberships', 'products' => 'Shop orders', 'signals' => 'Signals'], fn ($k) => F::enabled($k === 'products' ? 'shop' : $k), ARRAY_FILTER_USE_KEY) as $k => $label)
                 <li><div class="flex justify-between text-sm"><span>{{ $label }}</span><b class="tabular-nums">{{ $fmt($dash['by_type'][$k]) }}</b></div>
                     <div class="mt-1 h-2 rounded-full m-soft"><div class="h-2 rounded-full" style="width: {{ $dash['by_type'][$k] > 0 ? max(3, $dash['by_type'][$k] / $tyMax * 100) : 0 }}%; background: var(--m-accent)"></div></div></li>
             @endforeach
@@ -291,7 +295,7 @@
                     @if ($m['next_reward_in'])<span class="block text-xs m-muted">{{ $fmt($m['reward']) }} loyalty reward in {{ $m['next_reward_in'] }} {{ \Illuminate\Support\Str::plural('month', $m['next_reward_in']) }}</span>@endif</div>
             </div>
         @else
-            <p class="mt-1 text-sm m-muted">{{ $fmt($m['price']) }} per month: member prices, trading signals and earnings from your team.</p>
+            <p class="mt-1 text-sm m-muted">{{ $fmt($m['price']) }} per month: {{ \App\Membership\Benefits::sentence() }}.</p>
         @endif
         @if (F::enabled('wallet.spend') && $wallet['available'] >= $m['price'])
         <form method="post" action="{{ url('/account/membership/pay') }}" class="mt-3 grid gap-2">
@@ -324,15 +328,20 @@
     <div class="m-card">
         <h2 class="font-semibold">Trading signals</h2>
         @if ($signalsLink)
-            <p class="mt-1 text-sm m-muted">Included in your membership. Open your personal link in Telegram (don't share it).</p>
+            <p class="mt-1 text-sm m-muted">{{ F::enabled('membership') ? 'Included in your membership.' : 'You have access.' }} Open your personal link in Telegram (don't share it).</p>
             <a class="m-btn mt-3 w-full" href="{{ $signalsLink }}" rel="noopener">{!! I::svg('send', 17) !!}Open in Telegram</a>
             <a class="mt-2 flex min-h-12 items-center justify-center text-xs m-accent-text" href="{{ url('/account/signals') }}">Recent results →</a>
         @elseif ($isMember)
-            <p class="mt-1 text-sm m-muted">Included in your membership. Your personal Telegram link appears here as soon as our Telegram bot is connected.</p>
+            <p class="mt-1 text-sm m-muted">{{ F::enabled('membership') ? 'Included in your membership.' : 'You have access.' }} Your personal Telegram link appears here as soon as our Telegram bot is connected.</p>
             <a class="mt-3 flex min-h-12 items-center justify-center text-xs m-accent-text" href="{{ url('/account/signals') }}">Recent results →</a>
         @else
+            @if (F::enabled('membership'))
             <p class="mt-1 text-sm m-muted">Members get our private Telegram channel with trading signals.</p>
             <a class="m-btn-ghost mt-3 w-full" href="#membership">{!! I::svg('radio', 17) !!}Get access with membership</a>
+            @else
+            <p class="mt-1 text-sm m-muted">Our private Telegram channel with trading signals.</p>
+            <a class="m-btn-ghost mt-3 w-full" href="{{ url('/signals') }}">{!! I::svg('radio', 17) !!}Get access</a>
+            @endif
         @endif
     </div>
     @endfeature
@@ -351,7 +360,7 @@
             @if ($a['amount'] !== null)<b @class(['text-sm tabular-nums', 'm-accent-text' => $a['amount'] > 0])>{{ $a['amount'] > 0 ? '+' : '' }}{{ $fmt($a['amount']) }}</b>@endif
         </div>
     @empty
-        <p class="mt-3 text-sm m-muted">Nothing yet. Your earnings, orders and badges will show here.</p>
+        <p class="mt-3 text-sm m-muted">Nothing yet. Your {{ \App\Membership\Benefits::join([F::enabled('referral') ? 'earnings' : null, F::enabled('shop') ? 'orders' : null, F::enabled('badges') ? 'badges' : null, F::enabled('wallet') ? 'money' : null]) ?: 'news' }} will show here.</p>
     @endforelse
 </section>
 

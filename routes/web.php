@@ -47,7 +47,7 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
     Route::get('team', [AccountController::class, 'team'])->name('team');
     Route::get('earnings', [AccountController::class, 'earnings'])->name('earnings');
     Route::get('wallet', [AccountController::class, 'wallet'])->name('wallet');
-    Route::get('orders', [AccountController::class, 'orders'])->name('orders');
+    Route::get('orders', [AccountController::class, 'orders'])->middleware('feature:shop')->name('orders');
     Route::post('downloads/{grant}', [AccountController::class, 'download'])->middleware('throttle:20,1')->name('downloads');
     Route::get('signals', [AccountController::class, 'signals'])->name('signals');
     Route::post('membership/pay', [AccountController::class, 'payMembership'])->middleware('feature:membership')->name('membership.pay');

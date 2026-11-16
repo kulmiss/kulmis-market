@@ -7,6 +7,12 @@
 - The fee is picked by zone id, else by city name (any letter case), else
   the default zone. Free shipping for members is applied by the pricing
   engine.
+- **Courier cost per zone** ("Courier charges you", plus per extra kg):
+  what the courier charges you. The price check of a product counts it for
+  free-delivery orders, and free delivery is only given when the order still
+  pays for the courier — otherwise the cart charges delivery with a short
+  note. A zone whose courier costs more than the fee you charge shows ⚠ in
+  the admin (your prices are not changed). Each order stores its courier cost.
 - **Couriers:** EMS, HudHud and others. `tracking_url` can contain `{number}`.
 - Admin API: `/api/v1/admin/shipping-zones`, `/api/v1/admin/couriers`.
   Public: `GET /api/v1/shipping/zones`.

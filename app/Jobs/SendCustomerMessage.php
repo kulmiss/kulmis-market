@@ -38,7 +38,7 @@ class SendCustomerMessage implements ShouldQueue
 
             return;
         }
-        if (! $this->security && ! $m->allowed()) {
+        if (! $m->featureOn() || (! $this->security && ! $m->allowed())) {
             Log::info('Message type switched off, not sent: '.$m->type);
             if ($this->statusChangeId) {
                 OrderStatusChange::query()->whereKey($this->statusChangeId)->update(['notified' => json_encode(['all' => 'off'])]);

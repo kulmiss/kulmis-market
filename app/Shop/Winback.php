@@ -41,7 +41,7 @@ class Winback
                 $code = 'BACK'.Str::upper(Str::random(6));
                 Coupon::query()->create(['code' => $code, 'type' => Coupon::PERCENT, 'value' => $bps, 'max_uses' => 1, 'max_uses_per_customer' => 1,
                     'ends_at' => now()->addDays(14), 'is_active' => true, 'note' => "Win-back for user #{$u->id}"]);
-                $body = strtr(Settings::string('notify.winback'), ['{name}' => $u->first_name, '{site}' => Settings::string('site.name'),
+                $body = strtr(Settings::template('notify.winback'), ['{name}' => $u->first_name, '{site}' => Settings::string('site.name'),
                     '{percent}' => rtrim(rtrim(number_format($bps / 100, 2), '0'), '.').'%', '{code}' => $code,
                     '{until}' => now()->addDays(14)->timezone(config('app.timezone'))->format('d M'), '{url}' => url('/shop')]);
                 SendCustomerMessage::dispatch(new Message('A little gift from '.Settings::string('site.name'), $body, $u->phone, $u->email, $u->telegram_user_id, 'winback'));

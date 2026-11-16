@@ -7,7 +7,7 @@
         <h1 class="mt-4 text-4xl">Trading signals — one plan, every signal.</h1>
         <p class="muted mt-4 text-lg">Pair, direction, entry, targets and stop loss, posted as they happen. Results are logged and locked.</p>
         <div class="mt-6 grid gap-3 sm:grid-cols-2">
-            <div class="card"><p class="text-2xl font-semibold">{{ $m('signals.guest_price') }}</p><p class="muted text-sm">per month without membership</p></div>
+            <div class="card"><p class="text-2xl font-semibold">{{ $m('signals.guest_price') }}</p><p class="muted text-sm">per month{{ \App\Support\Features::enabled('membership') ? ' without membership' : '' }}</p></div>
             @feature('membership')<div class="card border-brand-500"><p class="text-2xl font-semibold text-brand-600">Included</p><p class="muted text-sm">for members ({{ $m('membership.price') }}/month, with all member benefits)</p></div>@endfeature
         </div>
         @feature('signals.performance_page')

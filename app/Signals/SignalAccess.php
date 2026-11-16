@@ -176,7 +176,7 @@ class SignalAccess
     public function sendAccessLink(SignalSubscription $sub): void
     {
         $link = $sub->deepLink();
-        $body = strtr(Settings::string('notify.signals_access'), [
+        $body = strtr(Settings::template('notify.signals_access'), [
             '{name}' => $sub->first_name, '{link}' => $link ?? '(Telegram bot not set up yet)',
             '{date}' => $sub->current_period_end?->timezone(config('app.timezone'))->format('d M Y') ?? '', '{site}' => Settings::string('site.name'),
         ]);

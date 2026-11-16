@@ -19,7 +19,7 @@ class ShareController extends Controller
         /** @var User $user */
         $user = $request->user();
         app(ReferralCodes::class)->assign($user);
-        $items = ShareKitItem::query()->where('is_active', true)->orderBy('position')->orderBy('id')->get()
+        $items = ShareKitItem::query()->where('is_active', true)->orderBy('position')->orderBy('id')->get()->filter(fn (ShareKitItem $i) => $i->shownNow())
             ->map(fn (ShareKitItem $i) => ['item' => $i, 'text' => $i->textFor($user), 'link' => ShareLinks::for($user, $i->path()),
                 'buttons' => ShareLinks::buttons(ShareLinks::for($user, $i->path()), $i->textFor($user))]);
 

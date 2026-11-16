@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Events\CatalogChanged;
+use App\Support\FeatureText;
+use App\Support\FeatureUrls;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -39,5 +41,12 @@ class Banner extends Model
             ->where(fn ($w) => $w->whereNull('starts_at')->orWhere('starts_at', '<=', $now))
             ->where(fn ($w) => $w->whereNull('ends_at')->orWhere('ends_at', '>=', $now))
             ->orderBy('position');
+    }
+
+    /** Shown? Not while it talks about, or links to, a switched-off feature (the admin is warned). */
+    public function shownNow(): bool
+    {
+        return FeatureText::mentionsOff($this->title.' '.$this->text.' '.$this->link_text) === []
+            && ($this->link_url === null || $this->link_url === '' || FeatureUrls::available($this->link_url));
     }
 }

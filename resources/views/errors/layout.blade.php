@@ -1,3 +1,13 @@
+@php
+    // Error pages must work even when the database does not: then show the shop links.
+    $on = function (string $key): bool {
+        try {
+            return \App\Support\Features::enabled($key);
+        } catch (\Throwable) {
+            return true;
+        }
+    };
+@endphp
 {{-- Error pages must work even when the database is down: no settings, no session. --}}
 <!doctype html>
 <html lang="en">
@@ -20,8 +30,8 @@
     <h1 class="mt-2 text-4xl">@yield('title')</h1>
     <p class="muted mt-3">@yield('message')</p>
     <div class="mt-8 flex flex-wrap justify-center gap-3">
-        @hasSection('action')@yield('action')@else<a class="btn-primary" href="/">Go to the shop</a>@endif
-        <a class="btn-ghost" href="/track">Track an order</a>
+        @hasSection('action')@yield('action')@else<a class="btn-primary" href="/">{{ $on('shop') ? 'Go to the shop' : 'Go to the home page' }}</a>@endif
+        @if ($on('shop') && $on('shop.order_tracking'))<a class="btn-ghost" href="/track">Track an order</a>@endif
     </div>
 </main>
 </body>

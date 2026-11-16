@@ -10,7 +10,7 @@
         ['Wallet', '/account/wallet', 'wallet', \App\Support\Features::enabled('wallet')],
         ['Badges', '/account/badges', 'award', \App\Support\Features::enabled('badges')],
         ['Share kit', '/account/share', 'share-2', \App\Support\Features::enabled('referral') && \App\Support\Features::enabled('referral.share_kit')],
-        ['Contests', '/account/contests', 'trophy', \App\Support\Features::enabled('referral') && (\App\Support\Features::enabled('referral.contests') || \App\Support\Features::enabled('referral.challenges'))],
+        [\App\Support\Features::enabled('referral.contests') ? 'Contests' : 'Challenges', '/account/contests', 'trophy', \App\Support\Features::enabled('referral') && (\App\Support\Features::enabled('referral.contests') || \App\Support\Features::enabled('referral.challenges'))],
         ['Orders', '/account/orders', 'shopping-bag', \App\Support\Features::enabled('shop')],
         ['Signals', '/account/signals', 'radio', \App\Support\Features::enabled('signals')],
         ['Wishlist', '/account/wishlist', 'heart', \App\Support\Features::enabled('shop.wishlist')],

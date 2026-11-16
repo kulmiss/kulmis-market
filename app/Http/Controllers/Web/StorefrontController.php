@@ -39,7 +39,7 @@ class StorefrontController extends Controller
             'membersOnly' => Features::enabled('shop.members_only_product')
                 ? Product::query()->visibleTo($member)->where('is_members_only', true)->with(['images', 'variants'])->latest('id')->first() : null,
             'categories' => Category::query()->where('is_active', true)->orderBy('position')->limit(8)->get(),
-            'banners' => Banner::query()->live('home')->get(),
+            'banners' => Banner::query()->live('home')->get()->filter(fn (Banner $b) => $b->shownNow())->values(),
             'isMember' => $member,
         ]);
     }
@@ -61,7 +61,7 @@ class StorefrontController extends Controller
         return view('store.shop', [
             'products' => $products, 'category' => $cat, 'sort' => $sort, 'isMember' => $member,
             'categories' => Category::query()->where('is_active', true)->orderBy('position')->get(),
-            'banners' => Banner::query()->live('shop')->get(),
+            'banners' => Banner::query()->live('shop')->get()->filter(fn (Banner $b) => $b->shownNow())->values(),
         ]);
     }
 
@@ -95,7 +95,7 @@ class StorefrontController extends Controller
     {
         abort_if(Features::disabled('membership'), 404);
 
-        return view('store.membership', ['banners' => Banner::query()->live('membership')->get()]);
+        return view('store.membership', ['banners' => Banner::query()->live('membership')->get()->filter(fn (Banner $b) => $b->shownNow())->values()]);
     }
 
     public function referralProgram(): View
@@ -109,7 +109,7 @@ class StorefrontController extends Controller
     {
         abort_if(Features::disabled('signals'), 404);
 
-        return view('store.signals', ['banners' => Banner::query()->live('signals')->get(), 'stats' => app(SignalStats::class)->totals()]);
+        return view('store.signals', ['banners' => Banner::query()->live('signals')->get()->filter(fn (Banner $b) => $b->shownNow())->values(), 'stats' => app(SignalStats::class)->totals()]);
     }
 
     public function performance(Request $request, SignalStats $stats): View
@@ -183,7 +183,7 @@ class StorefrontController extends Controller
 
     public function robots(): Response
     {
-        $body = "User-agent: *\nDisallow: /admin\nDisallow: /account\nDisallow: /checkout\nDisallow: /pay/\nDisallow: /api/\nSitemap: ".url('/sitemap.xml')."\n";
+        $body = "User-agent: *\nDisallow: /admin\nDisallow: /account\n".(Features::enabled('shop') ? "Disallow: /checkout\nDisallow: /pay/\n" : '')."Disallow: /api/\nSitemap: ".url('/sitemap.xml')."\n";
 
         return response($body, 200, ['Content-Type' => 'text/plain']);
     }

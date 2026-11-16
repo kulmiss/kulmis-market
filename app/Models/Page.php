@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Events\CatalogChanged;
+use App\Support\FeatureText;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
@@ -32,6 +33,6 @@ class Page extends Model
     /** Markdown → safe HTML (raw HTML in the text is escaped). */
     public function html(): string
     {
-        return Str::markdown($this->body, ['html_input' => 'escape', 'allow_unsafe_links' => false]);
+        return Str::markdown(FeatureText::apply((string) $this->body), ['html_input' => 'escape', 'allow_unsafe_links' => false]);
     }
 }

@@ -7,12 +7,12 @@
     $prefNames = \App\Notify\Inbox::types(); // only kinds whose feature is on
 @endphp
 <h1 class="font-serif text-3xl font-semibold">Notifications</h1>
-<p class="mt-1 text-sm m-muted">News about your money, your team and your orders. Newest first.</p>
+<p class="mt-1 text-sm m-muted">News about {{ \App\Membership\Benefits::join([\App\Support\Features::enabled('wallet') ? 'your money' : null, \App\Support\Features::enabled('referral') ? 'your team' : null, \App\Support\Features::enabled('shop') ? 'your orders' : null, 'your account']) }}. Newest first.</p>
 
 @if ($items->isEmpty())
     <div class="m-card mt-5 grid place-items-center gap-2 p-8 text-center text-sm">
         {!! I::svg('bell', 28) !!}
-        <p>Nothing yet. When you earn, someone joins your team or an order moves, you see it here.</p>
+        <p>Nothing yet. When {{ \App\Membership\Benefits::join([\App\Support\Features::enabled('referral') ? 'you earn, someone joins your team' : null, \App\Support\Features::enabled('shop') ? 'an order moves' : null, 'something changes on your account'], 'or') }}, you see it here.</p>
     </div>
 @else
     <ul class="m-card mt-5 divide-y p-0" style="--tw-divide-opacity:1; border-color: var(--m-line)">
@@ -38,7 +38,7 @@
 @if (\App\Support\Features::enabled('account.push') && \App\Notify\WebPush::configured())
 <section class="m-card mt-6" aria-labelledby="push-h" data-push hidden>
     <h2 id="push-h" class="font-semibold">Phone notifications</h2>
-    <p class="mt-1 text-sm m-muted">Your phone shows a short note like “New team earnings”. Amounts and names never show on the lock screen.</p>
+    <p class="mt-1 text-sm m-muted">Your phone shows a short note like “{{ \App\Support\Features::enabled('referral') ? 'New team earnings' : (\App\Support\Features::enabled('shop') ? 'Your order is on its way' : 'News from us') }}”. Amounts and names never show on the lock screen.</p>
     <div class="mt-3 grid gap-1" data-push-kinds>
         @foreach (array_intersect_key(['earning' => 'Team earnings', 'order' => 'My orders', 'bonus' => 'Badge bonus', 'cashout' => 'Cash-outs', 'signal' => 'New trading signals'], $prefNames) as $k => $label)
             <label class="flex min-h-12 items-center gap-3 text-sm"><input type="checkbox" class="size-5" value="{{ $k }}" @checked(\App\Notify\NotifyPrefs::on($user, 'push.'.$k) || (! \App\Notify\NotifyPrefs::on($user, 'push.earning') && $k !== 'signal'))> {{ $label }}</label>

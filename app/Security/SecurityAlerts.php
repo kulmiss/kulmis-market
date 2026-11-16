@@ -28,7 +28,7 @@ class SecurityAlerts
     public function notify(User $user, string $event, array $details = [], ?string $toEmail = null): void
     {
         Activity::log('security.'.$event, $user, array_diff_key($details, ['link' => 1]), null, $user->id);
-        $text = strtr(Settings::string('notify.security_'.$event), array_merge([
+        $text = strtr(Settings::template('notify.security_'.$event), array_merge([
             '{name}' => $user->first_name, '{site}' => Settings::string('site.name'),
             '{when}' => now()->timezone(config('app.timezone'))->format('d M Y H:i'),
             '{secure_url}' => url('/account/security'),
@@ -36,7 +36,7 @@ class SecurityAlerts
         // Security notices go to every channel the person has, including the
         // old email address when the email is being changed.
         SendCustomerMessage::dispatch(new Message('Security notice: '.Settings::string('site.name'), $text,
-            $user->phone, $toEmail ?? $user->email, $user->telegram_user_id), null, true);
+            $user->phone, $toEmail ?? $user->email, $user->telegram_user_id, 'security_'.$event), null, true);
     }
 
     /**

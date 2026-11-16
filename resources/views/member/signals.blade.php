@@ -4,13 +4,18 @@
 <h1 class="font-serif text-3xl font-semibold">Trading signals</h1>
 <section class="m-card mt-5">
     @if ($signalsLink)
-        <p class="text-sm m-muted">Your membership includes our private Telegram channel. Open your personal link in Telegram. It works for your Telegram account only, so don't share it.</p>
+        <p class="text-sm m-muted">{{ \App\Support\Features::enabled('membership') ? 'Your membership includes' : 'You have' }} our private Telegram channel. Open your personal link in Telegram. It works for your Telegram account only, so don't share it.</p>
         <a class="m-btn mt-3" href="{{ $signalsLink }}" rel="noopener">{!! I::svg('send', 17) !!}Open in Telegram</a>
     @elseif ($isMember)
-        <p class="text-sm m-muted">Included in your membership. Your personal Telegram link appears here as soon as our Telegram bot is connected.</p>
+        <p class="text-sm m-muted">{{ \App\Support\Features::enabled('membership') ? 'Included in your membership.' : 'You have access.' }} Your personal Telegram link appears here as soon as our Telegram bot is connected.</p>
     @else
+        @if (\App\Support\Features::enabled('membership'))
         <p class="text-sm m-muted">Become a member to get the private signals channel.</p>
         <a class="m-btn mt-3" href="{{ url('/account#membership') }}">Join</a>
+        @else
+        <p class="text-sm m-muted">Get the private signals channel.</p>
+        <a class="m-btn mt-3" href="{{ url('/signals') }}">Get access</a>
+        @endif
     @endif
 </section>
 <section class="m-card mt-3" aria-labelledby="res-h">

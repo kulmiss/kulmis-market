@@ -17,8 +17,8 @@
     @if (count($t['level1']))
         <div class="mt-3">@include('member.partials.table', ['table' => $table])</div>
     @else
-        <div class="mt-3 grid place-items-center gap-2 rounded-xl p-8 text-center text-sm m-soft">{!! I::svg('user-plus', 28) !!}<p>No one yet. Share your link from the home screen.</p><a class="m-btn mt-1" href="{{ url('/account#referral') }}">Share my link</a></div>
+        <div class="mt-3 grid place-items-center gap-2 rounded-xl p-8 text-center text-sm m-soft">{!! I::svg('user-plus', 28) !!}<p>No one yet. Share your link from your dashboard.</p><a class="m-btn mt-1" href="{{ url('/account#referral') }}">Share my link</a></div>
     @endif
-    <p class="mt-4 text-xs m-muted">"Active" means their membership is paid. You earn when active people in your 3 levels pay, and only while you are active too.</p>
+    @feature('membership')<p class="mt-4 text-xs m-muted">"Active" means their membership is paid. You earn when active people in your {{ count(array_filter([1, 2, 3], fn ($l) => \App\Support\Features::enabled("referral.level$l"))) }} levels pay, and only while you are active too.</p>@endfeature
 </section>
 @endsection

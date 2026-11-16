@@ -10,7 +10,7 @@
     @elseif ($gift->expires_at && $gift->expires_at->isPast())
         <p class="muted mt-6">This gift has expired. Please contact us and we will help.</p>
     @else
-        <p class="muted mt-4">Member prices on everything, free delivery and the signals channel. Use it before {{ $gift->expires_at?->timezone(config('app.timezone'))->format('d M Y') }}.</p>
+        <p class="muted mt-4">{{ ucfirst(\App\Membership\Benefits::sentence()) }}. Use it before {{ $gift->expires_at?->timezone(config('app.timezone'))->format('d M Y') }}.</p>
         @if ($errors->has('gift'))<p class="mt-4 text-sm text-danger-600" role="alert">{{ $errors->first('gift') }}</p>@endif
         @if ($user)
             <form method="post" action="{{ url('/gift/'.$gift->code) }}" class="mt-6">@csrf<button class="btn-primary">Start my month</button></form>

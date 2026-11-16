@@ -35,7 +35,7 @@ class BadgeEngine
     /** @return Collection<int, Badge> */
     public function activeBadges(): Collection
     {
-        return Badge::query()->where('is_active', true)->orderBy('rule')->orderBy('threshold')->get();
+        return Badge::query()->where('is_active', true)->whereIn('rule', BadgeRules::onNow())->orderBy('rule')->orderBy('threshold')->get();
     }
 
     public function metric(User $user, string $rule): int
@@ -104,9 +104,9 @@ class BadgeEngine
         Activity::log('badge.unlocked', $user, ['badge' => $badge->key], null, $user->id);
         Inbox::add($user, 'badge_unlocked', 'New badge: '.$badge->name, $badge->description, '/account/badges', "badge:{$badge->id}");
         if (Features::enabled('badges.messages')) {
-            $text = strtr(Settings::string('notify.badge_unlocked'), ['{name}' => $user->first_name, '{badge}' => $badge->name,
+            $text = strtr(Settings::template('notify.badge_unlocked'), ['{name}' => $user->first_name, '{badge}' => $badge->name,
                 '{site}' => Settings::string('site.name'), '{url}' => url('/account/badges')]);
-            SendCustomerMessage::dispatch(new Message('New badge: '.$badge->name, $text, $user->phone, $user->email, $user->telegram_user_id));
+            SendCustomerMessage::dispatch(new Message('New badge: '.$badge->name, $text, $user->phone, $user->email, $user->telegram_user_id, 'badge_unlocked'));
         }
 
         return true;
@@ -145,7 +145,7 @@ class BadgeEngine
             return null;
         }
 
-        return Badge::query()->where('is_active', true)
+        return Badge::query()->where('is_active', true)->whereIn('rule', BadgeRules::onNow())
             ->whereIn('id', UserBadge::query()->where('user_id', $user->id)->select('badge_id'))
             ->orderByDesc('rank')->first();
     }
@@ -195,7 +195,7 @@ class BadgeEngine
     /** Monthly: the top referrers of $month get the "top referrer" badges their rank qualifies for. */
     public function awardTopReferrers(Carbon $month): int
     {
-        if (Features::disabled('badges')) {
+        if (Features::disabled('badges') || Features::disabled('top_referrers')) {
             return 0;
         }
         $badges = Badge::query()->where('is_active', true)->where('rule', 'top_referrer_month')->get();

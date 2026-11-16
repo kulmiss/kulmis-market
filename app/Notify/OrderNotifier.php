@@ -22,7 +22,7 @@ class OrderNotifier
         if (! in_array($event->change->to, self::NOTIFY, true)) {
             return;
         }
-        $body = self::render(Settings::string('notify.order_'.$event->change->to), $order, $event->change->note);
+        $body = self::render(Settings::template('notify.order_'.$event->change->to), $order, $event->change->note);
         $owner = $order->user_id ? User::query()->find($order->user_id) : null;
         $telegram = $owner?->telegram_user_id;
         if ($owner) {

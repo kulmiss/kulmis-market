@@ -3,7 +3,7 @@
 <div class="container-km max-w-2xl py-10">
     <p class="badge">Gift 🎁</p>
     <h1 class="mt-3 text-4xl">Give a month of membership</h1>
-    <p class="muted mt-3 text-lg">{{ \App\Support\Money::format(\App\Support\Settings::int('membership.price')) }} for one month: member prices, free delivery and the signals channel. They get a private link to start it.</p>
+    <p class="muted mt-3 text-lg">{{ \App\Support\Money::format(\App\Support\Settings::int('membership.price')) }} for one month: {{ \App\Membership\Benefits::sentence() }}. They get a private link to start it.</p>
     <form class="card mt-6 grid gap-4" data-gift-form novalidate>
         <fieldset class="grid gap-3"><legend class="font-semibold">For</legend>
             <div class="grid gap-3 sm:grid-cols-2">

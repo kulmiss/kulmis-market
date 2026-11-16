@@ -1,7 +1,7 @@
 @php
     $site = \App\Support\Settings::string('site.name');
     $title = isset($title) ? $title.' · '.$site : $site.' — '.\App\Support\Settings::string('site.tagline');
-    $description = $description ?? 'Handcrafted Ethiopian products, member prices, and trading signals.';
+    $description = $description ?? \App\Membership\Benefits::siteDescription();
     $ogImage = $ogImage ?? asset('og-default.png');
     $topBar = \App\Models\Banner::query()->live('top_bar')->first();
 @endphp

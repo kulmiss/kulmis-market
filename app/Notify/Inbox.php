@@ -6,6 +6,7 @@ use App\Jobs\SendWebPush;
 use App\Models\User;
 use App\Models\UserNotification;
 use App\Support\Features;
+use App\Support\FeatureUrls;
 
 /**
  * The member's notification centre (the bell). Writes are tiny and happen in
@@ -34,13 +35,6 @@ final class Inbox
         return array_filter(self::TYPES, fn (string $type) => Features::enabled(self::FEATURES[$type]), ARRAY_FILTER_USE_KEY);
     }
 
-    /** Pages a notification can link to, and the feature each needs. */
-    private const URL_FEATURES = [
-        '/account/wallet' => 'wallet', '/account/badges' => 'badges', '/account/signals' => 'signals', '/account/orders' => 'shop',
-        '/account/team' => 'referral', '/account/earnings' => 'referral', '/account/share' => 'referral.share_kit',
-        '/signals' => 'signals', '/shop' => 'shop', '/membership' => 'membership',
-    ];
-
     /** Shown in the bell list? (its kind of news belongs to a feature that is on) */
     public static function visible(string $type): bool
     {
@@ -60,17 +54,7 @@ final class Inbox
     /** The link, or null when it points at a page whose feature is off. */
     public static function link(?string $url): ?string
     {
-        if ($url === null || $url === '') {
-            return null;
-        }
-        $path = '/'.ltrim((string) parse_url($url, PHP_URL_PATH), '/');
-        foreach (self::URL_FEATURES as $prefix => $feature) {
-            if (($path === $prefix || str_starts_with($path, $prefix.'/')) && Features::disabled($feature)) {
-                return null;
-            }
-        }
-
-        return $url;
+        return $url !== null && $url !== '' && FeatureUrls::available($url) ? $url : null;
     }
 
     /** Kinds of news that can also go to the phone. */

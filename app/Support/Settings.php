@@ -38,6 +38,12 @@ class Settings
         return (string) self::get($key);
     }
 
+    /** An editable message text with its {if feature} … {/if} parts applied (parts of switched-off features removed). */
+    public static function template(string $key): string
+    {
+        return FeatureText::apply(self::string($key));
+    }
+
     public static function set(string $key, mixed $value, ?int $actorId = null, ?string $reason = null): void
     {
         $def = self::definition($key);

@@ -1,10 +1,10 @@
-@extends('layouts.store', ['title' => 'Help and contact', 'description' => 'Answers to common questions about orders, membership, earnings and signals, and how to reach us.'])
+@extends('layouts.store', ['title' => 'Help and contact', 'description' => 'Answers to common questions about '.\App\Membership\Benefits::join([\App\Support\Features::enabled('shop') ? 'orders' : null, \App\Support\Features::enabled('membership') ? 'membership' : null, \App\Support\Features::enabled('referral') ? 'earnings' : null, \App\Support\Features::enabled('signals') ? 'signals' : null, 'your account']).', and how to reach us.'])
 @section('content')
 <div class="container-km max-w-3xl py-10">
     <h1 class="text-4xl">How can we help?</h1>
     <form method="get" action="{{ url('/help') }}" class="mt-5" role="search" data-help-search>
         <label for="help-q" class="sr-only">Search the questions</label>
-        <input id="help-q" name="q" type="search" class="input" placeholder="Search, e.g. delivery, cash-out, renew" value="{{ $q }}" autocomplete="off" maxlength="80">
+        <input id="help-q" name="q" type="search" class="input" placeholder="Search, e.g. {{ implode(', ', array_slice(array_values(array_filter([\App\Support\Features::enabled('shop') ? 'delivery' : null, \App\Support\Features::enabled('wallet.cashout') ? 'cash-out' : null, \App\Support\Features::enabled('membership') ? 'renew' : null, 'password'])), 0, 3)) }}" value="{{ $q }}" autocomplete="off" maxlength="80">
     </form>
 
     <div class="mt-8 grid gap-8" data-help-list>
@@ -17,7 +17,7 @@
                             <summary class="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 p-4 font-semibold">
                                 <span>{{ $f->question }}</span><span aria-hidden="true" class="transition group-open:rotate-45">+</span>
                             </summary>
-                            <div class="muted px-4 pb-4 leading-relaxed">{!! nl2br(e($f->answer)) !!}</div>
+                            <div class="muted px-4 pb-4 leading-relaxed">{!! nl2br(e($f->answerNow())) !!}</div>
                         </details>
                     @endforeach
                 </div>

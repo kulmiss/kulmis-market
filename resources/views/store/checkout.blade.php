@@ -6,7 +6,7 @@
         @if (!$user && !$guestAllowed)
             <p class="card mt-6">Please <a class="underline" href="{{ url('/login') }}">sign in</a>@feature('accounts.signup') or <a class="underline" href="{{ url('/register') }}">create an account</a>@endfeature to order.</p>
         @else
-            @if (!$user)<p class="muted mt-2 text-sm">No account needed. Members, <a class="underline" href="{{ url('/login') }}">sign in</a> for member prices.</p>@endif
+            @if (!$user)<p class="muted mt-2 text-sm">No account needed.@if (\App\Support\Features::enabled('membership.member_discount')) Members, <a class="underline" href="{{ url('/login') }}">sign in</a> for member prices.@endif</p>@endif
             @if ($errors->any())<div class="mt-4 rounded-xl bg-danger-600/10 p-3 text-sm text-danger-700" role="alert">{{ $errors->first() }}</div>@endif
             <form class="mt-6 grid gap-4" method="post" action="{{ url('/checkout') }}" @if (!$user) data-guest-checkout @endif data-checkout-form>
                 @if ($user) @csrf @endif
@@ -51,7 +51,7 @@
                 @if ($user && \App\Support\Features::enabled('shop.saved_addresses'))
                     <label class="flex min-h-12 items-center gap-2 text-sm"><input type="checkbox" name="save_address" value="1" class="size-5"> Save this address for next time</label>
                 @endif
-                @if (!$user)
+                @if (!$user && \App\Support\Features::enabled('referral'))
                     <div><label class="label" for="cr">Referral code (optional — a link you opened is remembered)</label><input id="cr" name="referral_code" class="input uppercase" value="{{ old('referral_code') }}"></div>
                 @endif
                 @if ($user && \App\Support\Features::enabled('wallet.spend'))
