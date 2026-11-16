@@ -1,0 +1,1 @@
+import{t as e}from"./money-pages-DntaP_m7.js";var t=e;export{t as component};

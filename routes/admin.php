@@ -35,6 +35,8 @@ Route::middleware(['auth', 'staff', 'admin.timeout'])->group(function () {
         Route::put('badges/{badge}', [Admin\BadgeController::class, 'update'])->can('manage-settings');
         Route::delete('badges/{badge}', [Admin\BadgeController::class, 'destroy'])->can('manage-settings');
         Route::get('activity', [Admin\ActivityLogController::class, 'index'])->can('view-activity');
+        Route::get('activity/staff', [Admin\ActivityLogController::class, 'staff'])->can('view-activity');
+        Route::get('search', Admin\SearchController::class)->middleware('throttle:120,1');
 
         foreach (glob(__DIR__.'/admin/*.php') ?: [] as $file) {
             require $file;

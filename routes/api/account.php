@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\ReferralController;
 use App\Http\Controllers\Api\WalletController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('auth/register', [AuthController::class, 'register'])->middleware('throttle:register')->name('auth.register');
+Route::post('auth/register', [AuthController::class, 'register'])->middleware(['feature:accounts.signup', 'throttle:register'])->name('auth.register');
 Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:login')->name('auth.login');
 Route::post('auth/two-factor', [AuthController::class, 'twoFactor'])->middleware('throttle:10,1')->name('auth.two-factor');
 
@@ -29,7 +29,7 @@ Route::middleware(['feature:referral', 'auth:sanctum'])->prefix('referral')->nam
     Route::get('/', [ReferralController::class, 'show'])->name('show');
     Route::get('history', [ReferralController::class, 'history'])->name('history');
     Route::put('code', [ReferralController::class, 'changeCode'])->middleware('throttle:10,1')->name('code');
-    Route::get('qr.svg', [ReferralController::class, 'qr'])->name('qr');
+    Route::get('qr.svg', [ReferralController::class, 'qr'])->middleware('feature:referral.qr_codes')->name('qr');
 });
 
 // Public monthly list: first name + badge only.
@@ -50,8 +50,8 @@ Route::middleware('auth:sanctum')->prefix('me')->name('me.')->group(function () 
     Route::put('/', [AccountController::class, 'update'])->middleware('throttle:10,1')->name('update');
     Route::put('password', [AccountController::class, 'password'])->middleware('throttle:10,1')->name('password');
     Route::post('sign-out-all', [AccountController::class, 'signOutAll'])->name('sign-out-all');
-    Route::post('two-factor', [AccountController::class, 'twoFactorSetup'])->middleware('throttle:10,1')->name('2fa.setup');
-    Route::post('two-factor/confirm', [AccountController::class, 'twoFactorConfirm'])->middleware('throttle:10,1')->name('2fa.confirm');
+    Route::post('two-factor', [AccountController::class, 'twoFactorSetup'])->middleware(['feature:accounts.two_factor', 'throttle:10,1'])->name('2fa.setup');
+    Route::post('two-factor/confirm', [AccountController::class, 'twoFactorConfirm'])->middleware(['feature:accounts.two_factor', 'throttle:10,1'])->name('2fa.confirm');
     Route::delete('two-factor', [AccountController::class, 'twoFactorDisable'])->middleware('throttle:10,1')->name('2fa.disable');
     Route::get('orders', [AccountController::class, 'orders'])->name('orders');
     Route::get('orders/{number}', [AccountController::class, 'order'])->name('orders.show');

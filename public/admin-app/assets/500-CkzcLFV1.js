@@ -1,1 +1,0 @@
-import{d as e}from"./index-D_BG-fSr.js";var t=e;export{t as component};

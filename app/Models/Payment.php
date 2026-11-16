@@ -45,6 +45,12 @@ class Payment extends Model
 
     public const WALLET = 'wallet';
 
+    /** A membership started from a gift (the money came in with the gift's own payment). */
+    public const GIFT = 'gift';
+
+    /** Paid with a gift card (the card's money came in when the card was bought). */
+    public const GIFT_CARD = 'gift_card';
+
     public const PENDING = 'pending';
 
     public const AWAITING_REVIEW = 'awaiting_review';

@@ -8,6 +8,7 @@ use App\Ledger\Wallet;
 use App\Membership\Members;
 use App\Models\Commission;
 use App\Models\User;
+use App\Support\Features;
 use Illuminate\Support\Collection;
 
 /**
@@ -51,8 +52,8 @@ class TeamView
             'earnings_by_level' => collect([1, 2, 3])->mapWithKeys(fn ($l) => [$l => (int) ($earnings[$l] ?? 0)]),
             'wallet' => Wallet::for($member)->summary(),
             'badge' => app(BadgeEngine::class)->summary($member),
-            'share' => app(Engagement::class)->shareLinks(url('/r/'.$member->referral_code), (string) $member->referral_code),
-            'qr_url' => route('api.referral.qr'),
+            'share' => Features::enabled('referral.share_buttons') ? app(Engagement::class)->shareLinks(url('/r/'.$member->referral_code), (string) $member->referral_code) : null,
+            'qr_url' => Features::enabled('referral.qr_codes') ? route('api.referral.qr') : null,
             'renews_at' => $member->membership()->first()?->current_period_end?->toIso8601String(),
         ];
     }

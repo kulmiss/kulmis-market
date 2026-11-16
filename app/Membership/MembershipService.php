@@ -12,6 +12,7 @@ use App\Ledger\Wallet;
 use App\Models\Membership;
 use App\Models\MembershipPurchase;
 use App\Models\User;
+use App\Notify\Inbox;
 use App\Notify\Message;
 use App\Support\Activity;
 use App\Support\Features;
@@ -76,7 +77,7 @@ class MembershipService
 
             DB::afterCommit(function () use ($m, $p) {
                 MembershipActivated::dispatch($m, $p);
-                $this->message($p->user, Settings::string('notify.membership_activated'), $m);
+                $this->message($p->user, Settings::string('notify.membership_activated'), $m, 'membership_activated');
             });
 
             return $m;
@@ -176,7 +177,7 @@ class MembershipService
                     default => null,
                 };
                 if ($kind && $this->remindOnce($m, $kind)) {
-                    $this->message($m->user, Settings::string('notify.membership_'.$kind), $m);
+                    $this->message($m->user, Settings::string('notify.membership_'.$kind), $m, 'membership_'.$kind);
                     $stats['reminders']++;
                 }
             });
@@ -216,7 +217,7 @@ class MembershipService
                         DB::table('loyalty_rewards')->insert(['user_id' => $m->user_id, 'is_demo' => Demo::isDemoUser($m->user_id), 'continuous_since' => $m->continuous_since,
                             'sequence' => $seq, 'amount' => $amount, 'journal_entry_id' => $entry->id, 'created_at' => now()]);
                     });
-                    $this->message($m->user, str_replace('{amount}', Money::format($amount), Settings::string('notify.loyalty_reward')), $m);
+                    $this->message($m->user, str_replace('{amount}', Money::format($amount), Settings::string('notify.loyalty_reward')), $m, 'loyalty_reward');
                     $granted++;
                 }
             });
@@ -236,7 +237,7 @@ class MembershipService
         }
     }
 
-    private function message(User $user, string $template, Membership $m): void
+    private function message(User $user, string $template, Membership $m, string $type): void
     {
         $body = strtr($template, [
             '{name}' => $user->first_name,
@@ -246,6 +247,10 @@ class MembershipService
             '{renew_url}' => url('/membership'),
             '{site}' => Settings::string('site.name'),
         ]);
-        SendCustomerMessage::dispatch(new Message('Your membership', $body, $user->phone, $user->email, $user->telegram_user_id));
+        SendCustomerMessage::dispatch(new Message('Your membership', $body, $user->phone, $user->email, $user->telegram_user_id, $type));
+        Inbox::add($user, 'renewal', match ($type) {
+            'membership_activated' => 'Your membership is active', 'membership_before' => 'Your membership ends soon',
+            'membership_today' => 'Your membership ends today', 'membership_after' => 'Your membership has ended', default => 'Your membership',
+        }, $body, '/account#membership', $type.':'.$m->id.':'.($m->current_period_end?->format('Ymd') ?? ''));
     }
 }

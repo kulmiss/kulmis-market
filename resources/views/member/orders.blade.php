@@ -1,15 +1,23 @@
-@php $fmt = fn ($v) => \App\Support\Money::format((int) $v); @endphp
 @extends('layouts.member', ['title' => 'Orders'])
 @section('content')
 <h1 class="font-serif text-3xl font-semibold">Orders</h1>
+@if (isset($downloads) && $downloads->isNotEmpty())
+<section class="m-card mt-5" aria-labelledby="dl-h">
+    <h2 id="dl-h" class="font-semibold">My downloads</h2>
+    <ul class="mt-3 grid gap-2">
+        @foreach ($downloads as $g)
+            <li class="flex flex-wrap items-center justify-between gap-2 text-sm">
+                <span>{{ $g->file->title }} <span class="m-muted">· order {{ $g->order->number }} · {{ $g->max_downloads - $g->downloads }} left · until {{ $g->expires_at->timezone(config('app.timezone'))->format('d M') }}</span></span>
+                <form method="post" action="{{ url('/account/downloads/'.$g->id) }}">@csrf<button class="m-btn min-h-10">{{ $g->file->kind === 'video' ? 'Watch' : 'Download' }}</button></form>
+            </li>
+        @endforeach
+    </ul>
+</section>
+@endif
 <section class="m-card mt-5">
-    @forelse ($orders as $o)
-        <a href="{{ url('/track?number='.$o->number) }}" class="flex items-center justify-between gap-3 border-b py-3 text-sm last:border-0" style="border-color: var(--m-line)">
-            <div><p class="font-medium">{{ $o->number }}</p><p class="text-xs m-muted">{{ $o->created_at->timezone(config('app.timezone'))->format('j M Y') }}</p></div>
-            <div class="text-end"><b class="tabular-nums">{{ $fmt($o->total) }}</b><p class="text-xs capitalize m-muted">{{ str_replace('_', ' ', $o->status) }}</p></div>
-        </a>
-    @empty
-        <p class="text-sm m-muted">No orders yet. <a class="underline" href="{{ url('/shop') }}">Visit the shop</a></p>
-    @endforelse
+    @include('member.partials.table', ['table' => $table])
+    @if (! $table->page->total() && ! $table->state['q'] && ! $table->state['filters'])
+        <p class="mt-2 text-sm"><a class="underline" href="{{ url('/shop') }}">Visit the shop</a></p>
+    @endif
 </section>
 @endsection

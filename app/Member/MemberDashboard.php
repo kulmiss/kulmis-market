@@ -3,6 +3,7 @@
 namespace App\Member;
 
 use App\Badges\BadgeEngine;
+use App\Badges\BonusCard;
 use App\Ledger\Wallet;
 use App\Membership\Members;
 use App\Models\Commission;
@@ -42,6 +43,7 @@ class MemberDashboard
             'newest' => $referral ? $this->newest($user) : [],
             'membership' => $this->membership($user),
             'badges' => Features::enabled('badges') ? app(BadgeEngine::class)->summary($user) : null,
+            'bonus' => app(BonusCard::class)->for($user),
             'activity' => $this->activity($user),
             'is_new' => $this->isNew($user),
         ];

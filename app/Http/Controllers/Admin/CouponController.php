@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Coupon;
 use App\Support\Activity;
+use App\Support\TableQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -16,7 +17,7 @@ class CouponController extends Controller
         $page = Coupon::query()
             ->when($request->input('q'), fn ($q, $v) => $q->where('code', 'like', '%'.strtoupper((string) $v).'%'))
             ->when($request->has('active'), fn ($q) => $q->where('is_active', $request->boolean('active')))
-            ->latest('id')->paginate(min(200, (int) $request->input('per_page', 50)));
+            ->tap(fn ($q) => TableQuery::sort($q, $request, ['code' => 'code', 'value' => 'value', 'used' => 'used_count', 'ends' => 'ends_at', 'created' => 'created_at']))->paginate(min(200, (int) $request->input('per_page', 50)));
 
         return response()->json($page);
     }

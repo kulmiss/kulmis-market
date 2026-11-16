@@ -6,9 +6,11 @@ use App\Cart\CartManager;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\User;
+use App\Notify\OrderNotifier;
 use App\Orders\Checkout;
 use App\Orders\CheckoutExtras;
 use App\Orders\OrderService;
+use App\Shop\GiftCards;
 use App\Support\Currency;
 use App\Support\Features;
 use App\Support\Phone;
@@ -46,7 +48,12 @@ class CheckoutController extends Controller
         abort_if($cart === null, 422, 'Your cart is empty.');
 
         $extra = app(CheckoutExtras::class)->collect($request, $cart, $user, $data);
+        $giftCardId = $cart->gift_card_id;
         $order = $this->checkout->place($cart, $data, $user, $data['checkout_key'], $extra);
+        if ($order->wasRecentlyCreated && $giftCardId) {
+            app(GiftCards::class)->apply($order, $giftCardId);
+            $order->refresh();
+        }
         if ($order->wasRecentlyCreated && $user && $request->boolean('use_wallet')) {
             app(WalletPayments::class)->apply($order, $user);
             $order->refresh();
@@ -71,7 +78,7 @@ class CheckoutController extends Controller
             'currency' => Currency::code(),
             'member_discount' => $order->member_discount,
             'shipping' => $order->shippingPayable(),
-            'track_url' => url('/track?number='.$order->number),
+            'track_url' => OrderNotifier::trackUrl($order),
             'payment_methods' => $order->status === Order::PENDING_PAYMENT ? PaymentController::methods() : [],
         ];
     }

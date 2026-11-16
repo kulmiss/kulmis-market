@@ -8,6 +8,7 @@ use App\Models\SignalSubscription;
 use App\Signals\SignalAccess;
 use App\Signals\SignalPublisher;
 use App\Support\Activity;
+use App\Support\TableQuery;
 use App\Telegram\TelegramClient;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,8 +24,8 @@ class SignalController extends Controller
         $page = Signal::query()
             ->when($request->input('status'), fn ($q, $v) => $q->where('status', $v))
             ->when($request->input('result'), fn ($q, $v) => $q->where('result', $v))
-            ->when($request->input('pair'), fn ($q, $v) => $q->where('pair', 'like', "%$v%"))
-            ->latest('id')->paginate(min(200, (int) $request->input('per_page', 25)));
+            ->when($request->input('pair') ?? $request->input('q'), fn ($q, $v) => $q->where('pair', 'like', "%$v%"))
+            ->tap(fn ($q) => TableQuery::sort($q, $request, ['pair' => 'pair', 'status' => 'status', 'result' => 'result', 'posted' => 'posted_at', 'created' => 'created_at']))->paginate(min(200, (int) $request->input('per_page', 25)));
 
         return response()->json($page);
     }
@@ -74,7 +75,7 @@ class SignalController extends Controller
             ->when($request->input('status'), fn ($q, $v) => $q->where('status', $v))
             ->when($request->input('source'), fn ($q, $v) => $q->where('source', $v))
             ->when($request->input('q'), fn ($q, $v) => $q->where(fn ($w) => $w->where('phone', 'like', "%$v%")->orWhere('first_name', 'like', "%$v%")))
-            ->latest('id')->paginate(min(200, (int) $request->input('per_page', 25)));
+            ->tap(fn ($q) => TableQuery::sort($q, $request, ['name' => 'first_name', 'status' => 'status', 'source' => 'source', 'ends' => 'current_period_end', 'joined' => 'created_at']))->paginate(min(200, (int) $request->input('per_page', 25)));
         $page->getCollection()->each(fn ($s) => $s->setAttribute('entitled', $s->isEntitled()));
 
         return response()->json($page);

@@ -6,6 +6,7 @@ use App\Fraud\FraudGuard;
 use App\Http\Controllers\Controller;
 use App\Models\FraudFlag;
 use App\Models\User;
+use App\Support\TableQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -17,7 +18,8 @@ class FraudController extends Controller
         $page = FraudFlag::query()->with('user:id,first_name,last_name,phone,referral_code,status')
             ->when($request->input('status', 'open'), fn ($q, $v) => $v === 'all' ? $q : $q->where('status', $v))
             ->when($request->input('type'), fn ($q, $v) => $q->where('type', $v))
-            ->latest('id')->paginate(min(200, (int) $request->input('per_page', 50)));
+            ->when($request->input('q'), fn ($q, $v) => $q->whereHas('user', fn ($u) => $u->where('first_name', 'like', "%$v%")->orWhere('last_name', 'like', "%$v%")->orWhere('phone', 'like', "%$v%")))
+            ->tap(fn ($q) => TableQuery::sort($q, $request, ['type' => 'type', 'status' => 'status', 'created' => 'created_at']))->paginate(min(200, (int) $request->input('per_page', 50)));
 
         return response()->json($page);
     }

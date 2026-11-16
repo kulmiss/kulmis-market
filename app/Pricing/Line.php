@@ -15,6 +15,8 @@ final class Line
         public readonly int $listUnitPrice,      // guest price
         public readonly int $unitPrice,          // after member discount
         public readonly int $memberUnitPrice,    // what a member would pay (for "Member price" display)
+        public readonly ?int $regularUnitPrice = null, // guest price without the flash sale (null = no sale)
+        public readonly ?int $flashSaleId = null,
     ) {}
 
     public function listTotal(): int

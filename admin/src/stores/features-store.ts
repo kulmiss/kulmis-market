@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { api } from '@/lib/api'
 
-export type FeatureRow = { key: string; label: string; group: string; enabled: boolean; effective: boolean; parent: string | null }
+export type FeatureRow = { key: string; label: string; group: string; description: string; enabled: boolean; effective: boolean; parent: string | null }
 type FeatureState = Pick<FeatureRow, 'key' | 'effective'>
 
 type FeaturesState = {

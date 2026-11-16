@@ -18,6 +18,13 @@ use App\Support\Settings;
 
 class CommissionsTest extends ReferralTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // These tests check team earnings alone (the first-payment bonus has its own tests).
+        Features::set('referral.first_payment_bonus', false);
+    }
+
     public function test_membership_commissions_on_three_levels(): void
     {
         [$l3, $l2, $l1] = $this->chain();
@@ -58,7 +65,7 @@ class CommissionsTest extends ReferralTestCase
     {
         [, , $l1] = $this->chain();
         Coupon::query()->create(['code' => 'HALF', 'type' => 'percent', 'value' => 5_000]);
-        $p = Product::factory()->create(['price' => 100_000]);
+        $p = Product::factory()->create(['price' => 100_000, 'cost_materials' => 20_000, 'cost_labour' => 0, 'cost_packaging' => 0]); // a coupon never goes below cost: keep the margin wide
         $token = $this->postJson('/api/v1/cart/items', ['product_id' => $p->id])->json('token');
         $this->withHeaders(['X-Cart-Token' => $token])->putJson('/api/v1/cart/coupon', ['code' => 'HALF']);
         $this->withHeaders(['X-Cart-Token' => $token])->postJson('/api/v1/checkout', ['checkout_key' => 'k-'.str_repeat('a', 20),

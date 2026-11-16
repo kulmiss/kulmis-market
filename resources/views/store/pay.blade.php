@@ -3,16 +3,27 @@
 <div class="container-km max-w-3xl py-10" data-pay-page data-number="{{ $order->number }}" data-phone="{{ $phone }}">
     <h1 class="text-4xl">Pay for order {{ $order->number }}</h1>
     @if ($order->status !== 'pending_payment')
-        <p class="card mt-6">This order is {{ str_replace('_', ' ', $order->status) }}. <a class="underline" href="{{ url('/track?number='.$order->number) }}">Track it</a>.</p>
+        <p class="card mt-6">This order is {{ str_replace('_', ' ', $order->status) }}.@feature('shop.order_tracking') <a class="underline" href="{{ url('/track?number='.$order->number) }}">Track it</a>.@endfeature</p>
     @else
+        @if ($order->deposit_amount > 0 && $order->deposit_paid === 0)
+            <p class="mt-3 text-2xl font-semibold">{{ \App\Support\Money::format($order->payableAmount()) }} <span class="muted text-base font-normal">deposit now</span></p>
+            <p class="muted text-sm">Total {{ \App\Support\Money::format($order->total) }}. You pay the rest ({{ \App\Support\Money::format($order->amountDue() - $order->payableAmount()) }}) when it is ready, before we send it.</p>
+        @elseif ($order->depositStage())
+            <p class="mt-3 text-2xl font-semibold">{{ \App\Support\Money::format($order->amountDue()) }} <span class="muted text-base font-normal">left to pay</span></p>
+            <p class="muted text-sm">Deposit of {{ \App\Support\Money::format($order->deposit_paid) }} received. Thank you!</p>
+        @else
         <p class="mt-3 text-2xl font-semibold">{{ \App\Support\Money::format($order->amountDue()) }}</p>
+        @endif
+        @if ($order->gift_card_used > 0 || $order->wallet_used > 0)
+            <p class="muted text-sm" data-paid-already>Total {{ \App\Support\Money::format($order->total) }}@if ($order->gift_card_used > 0) · gift card −{{ \App\Support\Money::format($order->gift_card_used) }}@endif @if ($order->wallet_used > 0) · from your wallet −{{ \App\Support\Money::format($order->wallet_used) }}@endif</p>
+        @endif
         <p class="muted text-sm">Save your order number: <b>{{ $order->number }}</b>. Unpaid orders are cancelled after {{ \App\Support\Settings::int('orders.unpaid_cancel_hours') }} hours.</p>
         <div class="mt-6 grid gap-4">
             @if ($order->receiptUnderReview())
             <div class="card" data-receipt-waiting>
                 <h2 class="text-xl">We have your receipt</h2>
                 <p class="mt-2 text-sm">We are checking your transfer, usually within a few hours. You don't need to pay again; we send you a message as soon as it is confirmed.</p>
-                <a class="btn-ghost mt-4" href="{{ url('/track?number='.$order->number) }}">Track your order</a>
+                @feature('shop.order_tracking')<a class="btn-ghost mt-4" href="{{ url('/track?number='.$order->number) }}">Track your order</a>@endfeature
             </div>
             @else
             @feature('payments.manual')

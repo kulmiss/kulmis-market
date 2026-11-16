@@ -5,12 +5,14 @@ namespace App\Models;
 use App\Demo\HidesDemo;
 use App\Orders\OrderService;
 use App\Payments\Payable;
+use App\Shop\Deposits;
 use App\Support\Activity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @property int $id
@@ -33,6 +35,9 @@ use Illuminate\Support\Carbon;
  * @property ?string $coupon_code
  * @property int $coupon_discount
  * @property int $merchandise_total
+ * @property int $deposit_amount
+ * @property int $deposit_paid
+ * @property int $gift_card_used
  * @property int $shipping
  * @property int $shipping_discount
  * @property int $total
@@ -82,9 +87,9 @@ class Order extends Model implements Payable
     protected function casts(): array
     {
         $ints = array_fill_keys(['list_subtotal', 'member_discount', 'coupon_discount', 'merchandise_total', 'shipping',
-            'shipping_discount', 'total', 'wallet_used', 'payment_fee', 'refunded_amount'], 'integer');
+            'shipping_discount', 'total', 'wallet_used', 'payment_fee', 'refunded_amount', 'bundle_discount', 'extras_total', 'gift_card_used', 'deposit_amount', 'deposit_paid'], 'integer');
 
-        return $ints + ['is_member_order' => 'boolean', 'paid_at' => 'datetime', 'shipped_at' => 'datetime',
+        return $ints + ['extras' => 'array', 'deposit_paid_at' => 'datetime', 'is_member_order' => 'boolean', 'paid_at' => 'datetime', 'shipped_at' => 'datetime',
             'delivered_at' => 'datetime', 'cancelled_at' => 'datetime'];
     }
 
@@ -122,7 +127,17 @@ class Order extends Model implements Payable
 
     public function payableAmount(): int
     {
+        // Pre-orders and custom orders: the deposit first, the rest before shipping.
+        if ($this->deposit_amount > 0 && $this->deposit_paid === 0) {
+            return max(0, min($this->amountDue(), $this->deposit_amount - $this->wallet_used - (int) $this->gift_card_used));
+        }
+
         return $this->amountDue();
+    }
+
+    public function depositStage(): bool
+    {
+        return $this->deposit_amount > 0 && $this->deposit_paid > 0 && $this->amountDue() > 0;
     }
 
     public function payableTitle(): string
@@ -154,6 +169,14 @@ class Order extends Model implements Payable
     {
         $this->refresh();
         $this->update(['payment_fee' => $this->payment_fee + $payment->fee]);
+        if ($payment->amount < $this->amountDue() && $this->deposit_amount > 0) {
+            // The deposit: the order stays open until the rest is paid (before shipping).
+            $this->update(['deposit_paid' => $this->deposit_paid + $payment->amount, 'deposit_paid_at' => $this->deposit_paid_at ?? now()]);
+            Activity::log('order.deposit_paid', $this, ['amount' => $payment->amount]);
+            DB::afterCommit(fn () => app(Deposits::class)->depositReceived($this->fresh() ?? $this));
+
+            return;
+        }
         if ($this->status === self::CANCELLED) {
             // Paid after auto-cancel: keep the money recorded, flag for a refund or re-open.
             Activity::log('order.paid_after_cancel', $this, ['payment' => $payment->uuid]);
@@ -187,7 +210,7 @@ class Order extends Model implements Payable
 
     public function amountDue(): int
     {
-        return max(0, $this->total - $this->wallet_used);
+        return max(0, $this->total - $this->wallet_used - (int) $this->gift_card_used - (int) $this->deposit_paid);
     }
 
     public function canMoveTo(string $status): bool

@@ -14,6 +14,10 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // Like the real cache (file/redis): values are serialized and objects are
+        // refused (serializable_classes = false), so caching a model fails here too.
+        config(['cache.stores.array.serialize' => true]);
+        app('cache')->forgetDriver('array');
         Features::flush();
         Settings::flush();
     }

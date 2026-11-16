@@ -3,8 +3,12 @@
 namespace Tests\Feature\Storefront;
 
 use App\Models\Category;
+use App\Models\Challenge;
+use App\Models\Contest;
+use App\Models\FlashSale;
 use App\Models\Product;
 use App\Models\User;
+use App\Notify\Inbox;
 use App\Support\Csp;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -49,6 +53,19 @@ class PerformanceTest extends ReferralTestCase
         $this->assertSame($few, $many, 'query count must not grow with the number of products');
     }
 
+    public function test_with_the_real_database_cache_the_shop_cost_does_not_grow_with_products(): void
+    {
+        config(['cache.default' => 'database']); // like the server: every cache read is a query
+        $this->catalog();
+        $p = Product::query()->firstOrFail();
+        FlashSale::query()->create(['product_id' => $p->id, 'price' => (int) ($p->price * 0.9), 'starts_at' => now()->subHour(), 'ends_at' => now()->addDay()]);
+        $this->get('/shop');
+        $many = $this->queries(fn () => $this->get('/shop?x=1')->assertOk());
+        Product::query()->whereKeyNot($p->id)->limit(20)->delete();
+        $few = $this->queries(fn () => $this->get('/shop?x=2')->assertOk());
+        $this->assertSame($few, $many, "24 products cost $many queries, 4 cost $few: something is read once per product");
+    }
+
     public function test_member_pages_stay_within_their_query_budget(): void
     {
         [$top] = $this->chain();
@@ -57,7 +74,15 @@ class PerformanceTest extends ReferralTestCase
         }
         $this->actingAs($top->fresh(), 'web');
         $this->get('/account');
-        foreach (['/account' => 70, '/account/team' => 16, '/account/wallet' => 8, '/account/earnings' => 14] as $path => $budget) {
+        Contest::query()->create(['name' => 'Race', 'rule' => 'new_paying_members', 'starts_at' => now()->startOfMonth(),
+            'ends_at' => now()->endOfMonth(), 'prizes' => [100_000, 50_000], 'min_score' => 1]);
+        Challenge::query()->create(['name' => 'Bring 3', 'target' => 3, 'reward' => 20_000]);
+        foreach (range(1, 30) as $i) {
+            Inbox::add($top, 'commission', "Earned $i", null, null, "t$i");
+        }
+        $this->get('/account/contests');
+        foreach (['/account' => 70, '/account/team' => 16, '/account/wallet' => 8, '/account/earnings' => 14,
+            '/account/contests' => 8, '/account/share' => 6, '/account/notifications' => 6] as $path => $budget) {
             $n = $this->queries(fn () => $this->get($path)->assertOk());
             $this->assertLessThanOrEqual($budget, $n, "$path used $n queries (budget $budget)");
         }

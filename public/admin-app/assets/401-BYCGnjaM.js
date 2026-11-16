@@ -1,0 +1,1 @@
+import{t as e}from"./unauthorized-error-DKKKofvx.js";var t=e;export{t as component};

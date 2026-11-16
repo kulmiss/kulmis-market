@@ -8,12 +8,13 @@ use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Controller;
 use App\Ledger\Wallet;
 use App\Member\MemberDashboard;
+use App\Member\MemberTables;
 use App\Membership\MembershipService;
+use App\Models\Address;
+use App\Models\DownloadGrant;
 use App\Models\Order;
 use App\Models\Payment;
-use App\Models\PayoutRequest;
 use App\Models\Product;
-use App\Models\Signal;
 use App\Models\User;
 use App\Orders\Checkout;
 use App\Orders\CheckoutExtras;
@@ -22,7 +23,10 @@ use App\Payments\PaymentService;
 use App\Pricing\PricingException;
 use App\Referral\ReferralCodes;
 use App\Referral\TeamView;
+use App\Shop\DigitalDelivery;
+use App\Shop\GiftCards;
 use App\Signals\SignalAccess;
+use App\Signals\SignalStats;
 use App\Support\Features;
 use App\Support\Phone;
 use App\Support\Settings;
@@ -36,6 +40,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use InvalidArgumentException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /** The member area: dashboard, referral, wallet, cash-out, orders. */
 class AccountController extends Controller
@@ -58,49 +63,83 @@ class AccountController extends Controller
         ]);
     }
 
-    public function team(Request $request, TeamView $team): View
+    public function team(Request $request, TeamView $team): View|StreamedResponse
     {
         abort_if(Features::disabled('referral'), 404);
+        $ref = $team->for($request->user());
+        $table = MemberTables::team($request, $ref);
 
-        return view('member.team', ['ref' => $team->for($request->user())]);
+        return $table->wantsCsv($request) ? $table->csv() : view('member.team', ['ref' => $ref, 'table' => $table]);
     }
 
-    public function earnings(Request $request, MemberDashboard $dashboard, TeamView $team): View
+    public function earnings(Request $request, MemberDashboard $dashboard): View|StreamedResponse
     {
         abort_if(Features::disabled('referral'), 404);
         $user = $request->user();
+        $table = MemberTables::earnings($request, $user);
 
-        return view('member.earnings', ['dash' => ['money' => $dashboard->money($user)], 'monthly' => $dashboard->monthly($user), 'history' => $team->history($user, 100)]);
+        return $table->wantsCsv($request) ? $table->csv()
+            : view('member.earnings', ['dash' => ['money' => $dashboard->money($user)], 'monthly' => $dashboard->monthly($user), 'table' => $table]);
     }
 
-    public function wallet(Request $request): View
+    public function wallet(Request $request): View|StreamedResponse
     {
         abort_if(Features::disabled('wallet'), 404);
         /** @var User $user */
         $user = $request->user();
+        $cashouts = MemberTables::cashouts($request, $user);
+        $money = MemberTables::money($request, $user);
+        foreach ([$cashouts, $money] as $table) {
+            if ($table->wantsCsv($request)) {
+                return $table->csv();
+            }
+        }
 
         return view('member.wallet', [
             'user' => $user,
             'wallet' => Wallet::for($user)->summary(),
-            'cashouts' => PayoutRequest::query()->where('user_id', $user->id)->latest('id')->limit(20)->get(),
+            'cashoutTable' => $cashouts,
+            'moneyTable' => $money,
             'payoutAccount' => app(PayoutAccounts::class)->current($user),
         ]);
     }
 
-    public function orders(Request $request): View
+    public function orders(Request $request): View|StreamedResponse
     {
-        return view('member.orders', ['orders' => Order::query()->where('user_id', $request->user()->id)->latest('id')->limit(50)->get()]);
+        $table = MemberTables::orders($request, $request->user());
+        $downloads = Features::enabled('shop.digital') ? DownloadGrant::query()->with(['file', 'order'])
+            ->whereHas('order', fn ($q) => $q->where('user_id', $request->user()->id))->latest('id')->limit(50)->get()
+            ->filter(fn (DownloadGrant $g) => DigitalDelivery::usable($g))->values() : collect();
+
+        return $table->wantsCsv($request) ? $table->csv() : view('member.orders', ['table' => $table, 'downloads' => $downloads]);
     }
 
-    public function signals(Request $request): View
+    /** A fresh private link to one of my downloads. */
+    public function download(Request $request, DownloadGrant $grant): RedirectResponse
+    {
+        abort_if(Features::disabled('shop.digital') || $grant->order->user_id !== $request->user()->id || ! DigitalDelivery::usable($grant), 404);
+
+        return redirect(DigitalDelivery::newLink($grant));
+    }
+
+    public function signals(Request $request): View|StreamedResponse
     {
         abort_if(Features::disabled('signals'), 404);
         $user = $request->user();
+        $table = MemberTables::signals($request);
+        if ($table->wantsCsv($request)) {
+            return $table->csv();
+        }
+
+        $stats = app(SignalStats::class);
+        $pair = $stats->validPair($request->query('pair'));
 
         return view('member.signals', [
             'isMember' => $user->isActiveMember(),
             'signalsLink' => $this->signalsLink($user, $user->isActiveMember()),
-            'signals' => Signal::query()->latest('posted_at')->limit(15)->get(),
+            'table' => $table,
+            'pairs' => $stats->pairs(), 'pair' => $pair, 'totals' => $stats->totals($pair), 'months' => $stats->monthly($pair),
+            'user' => $user,
         ]);
     }
 
@@ -211,9 +250,17 @@ class AccountController extends Controller
         }
         try {
             $extra = app(CheckoutExtras::class)->collect($request, $cart, $user, $data);
+            $giftCardId = $cart->gift_card_id;
             $order = $checkout->place($cart, $data, $user, $data['checkout_key'], $extra);
         } catch (PricingException $e) {
             throw ValidationException::withMessages(['cart' => $e->getMessage()]);
+        }
+        if ($order->wasRecentlyCreated && $giftCardId) {
+            app(GiftCards::class)->apply($order, $giftCardId);
+            $order->refresh();
+        }
+        if ($order->wasRecentlyCreated && $request->boolean('save_address') && Features::enabled('shop.saved_addresses')) {
+            $this->rememberAddress($user, $data);
         }
         if ($order->wasRecentlyCreated && $request->boolean('use_wallet')) {
             $wallet->apply($order, $user);
@@ -227,6 +274,21 @@ class AccountController extends Controller
         return $order->status === Order::PENDING_PAYMENT
             ? redirect('/pay/'.$order->number)
             : redirect('/track?number='.$order->number)->with('status', 'Order placed and paid. Thank you!');
+    }
+
+    /** @param array<string, mixed> $data */
+    private function rememberAddress(User $user, array $data): void
+    {
+        $same = Address::query()->where('user_id', $user->id)->where('city', $data['city'])->where('address', $data['address'])->exists();
+        $count = Address::query()->where('user_id', $user->id)->count();
+        if ($same || $count >= Address::MAX_PER_USER) {
+            return;
+        }
+        $a = new Address(['label' => $count ? 'Address '.($count + 1) : 'Home', 'first_name' => $data['first_name'],
+            'last_name' => (string) ($data['last_name'] ?? ''), 'phone' => $data['phone'], 'city' => $data['city'], 'address' => $data['address']]);
+        $a->user_id = $user->id;
+        $a->is_default = $count === 0;
+        $a->save();
     }
 
     public function newCheckoutKey(): string

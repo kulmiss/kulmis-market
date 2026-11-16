@@ -1,8 +1,13 @@
 <?php
 
+use App\Http\Controllers\Web\GiftController;
+use App\Http\Controllers\Web\HelpController;
 use App\Http\Controllers\Web\StorefrontController as S;
 use App\Http\Middleware\AdminIpAllowlist;
 use App\Referral\Attribution;
+use App\Referral\ShareLinks;
+use App\Shop\GiftCards;
+use App\Support\Features;
 use App\Support\Settings;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +24,13 @@ Route::get('/membership', [S::class, 'membership'])->name('membership');
 Route::get('/referral-program', [S::class, 'referralProgram'])->name('referral-program');
 Route::get('/signals', [S::class, 'signals'])->name('signals');
 Route::get('/signals/performance', [S::class, 'performance'])->name('signals.performance');
+Route::get('/help', [HelpController::class, 'index'])->name('help');
+Route::get('/gift-cards', fn () => Features::enabled('shop') && Features::enabled('shop.gift_cards')
+    ? view('store.gift-cards', ['amounts' => GiftCards::amounts(), 'bank' => Settings::string('payments.bank_details'),
+        'telebirr' => Settings::string('payments.telebirr_details')]) : abort(404))->name('gift-cards');
+Route::get('/custom-order', fn () => Features::enabled('shop') && Features::enabled('shop.custom_orders')
+    ? view('store.custom-order') : abort(404))->name('custom-order');
+Route::get('/membership/gift', [GiftController::class, 'form'])->name('membership.gift');
 Route::get('/p/{slug}', [S::class, 'page'])->where('slug', '[a-z0-9-]+')->name('page');
 Route::get('/cart', [S::class, 'cart'])->name('cart');
 Route::get('/checkout', [S::class, 'checkout'])->name('checkout');
@@ -41,6 +53,14 @@ Route::get('/r/{code}', function (string $code, Attribution $attribution) {
 
     return redirect('/?ref='.rawurlencode(strtoupper($code)));
 })->where('code', '[A-Za-z0-9]{2,16}')->middleware('throttle:60,1')->name('referral.link');
+// Share links to a page: /r/CODE/membership, /r/CODE/signals, /r/CODE/shop, /r/CODE/shop/<product>.
+Route::get('/r/{code}/{to}', function (string $code, string $to, Attribution $attribution) {
+    $target = ShareLinks::target($to);
+    abort_if($target === null, 404);
+    $attribution->rememberFromLink($code);
+
+    return redirect($target.'?ref='.rawurlencode(strtoupper($code)));
+})->where(['code' => '[A-Za-z0-9]{2,16}', 'to' => '(membership|signals|shop|shop/[a-z0-9-]{1,160})'])->middleware('throttle:60,1')->name('referral.link.to');
 
 // React admin (built into public/admin-app). Any /admin/* path loads the app.
 Route::get('/admin/{path?}', function () {

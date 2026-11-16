@@ -6,7 +6,7 @@
     $topBar = \App\Models\Banner::query()->live('top_bar')->first();
 @endphp
 <!doctype html>
-<html lang="en" class="h-full">
+<html lang="en" class="h-full" @if (\App\Support\Features::disabled('site.instant_loading')) data-instant="off"@endif @if (\App\Support\Features::disabled('site.offline_page')) data-offline="off"@endif>
 <head>
     <meta charset="utf-8">
     {{-- Also in a meta tag so static cached pages keep the policy (headers come from PHP for live pages). --}}
@@ -31,12 +31,13 @@
     @feature('appearance.theme_switch')<script>{!! \App\Support\Csp::THEME_SCRIPT !!}</script>@endfeature
     @stack('head')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script type="speculationrules">{!! \App\Support\Csp::SPECULATION_RULES !!}</script>
+    @feature('site.instant_loading')<script type="speculationrules">{!! \App\Support\Csp::SPECULATION_RULES !!}</script>@endfeature
 </head>
 <body class="flex min-h-full flex-col">
 <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:p-2">Skip to content</a>
 @if ($topBar)
-    <div class="bg-ink-900 px-4 py-2 text-center text-sm text-mist-100">
+    {{-- Announcement bar. data-ends: the page may be a saved copy, so the browser hides it on time too. --}}
+    <div class="{{ \App\Models\Banner::COLORS[$topBar->color ?? 'dark'] ?? \App\Models\Banner::COLORS['dark'] }} px-4 py-2 text-center text-sm" data-announce @if ($topBar->ends_at) data-ends="{{ $topBar->ends_at->toIso8601String() }}" @endif>
         {{ $topBar->title }} @if ($topBar->link_url)<a class="ms-2 underline" href="{{ $topBar->link_url }}">{{ $topBar->link_text ?? 'Learn more' }}</a>@endif
     </div>
 @endif

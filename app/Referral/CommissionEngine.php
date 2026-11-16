@@ -13,6 +13,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\SignalPurchase;
 use App\Models\User;
+use App\Notify\Inbox;
 use App\Support\Activity;
 use App\Support\Features;
 use App\Support\Money;
@@ -42,6 +43,9 @@ class CommissionEngine
     public function forPayment(Payment $payment): array
     {
         $source = $payment->payable;
+        if ($source instanceof Order && $source->fresh()?->status === Order::PENDING_PAYMENT) {
+            return []; // only a deposit so far: team earnings come when the order is fully paid
+        }
         [$type, $base, $buyer, $start, $phone, $email] = $this->describe($source);
         if ($type === null || $base <= 0 || $start === null || Features::disabled('referral') || Features::disabled("referral.commission.$type")) {
             return [];
@@ -81,7 +85,7 @@ class CommissionEngine
                     $this->ledger->post('commission.released', [
                         [$this->ledger->userAccount($locked->recipient_id, Wallet::PENDING), $amount],
                         [$this->ledger->userAccount($locked->recipient_id, Wallet::AVAILABLE), -$amount],
-                    ], "commission:{$locked->id}:released", $locked, description: 'Earnings available');
+                    ], "commission:{$locked->id}:released", $locked, description: 'Team earnings ready to use');
                     $locked->update(['status' => Commission::AVAILABLE, 'released_at' => now()]);
                     $count++;
                 });
@@ -113,7 +117,7 @@ class CommissionEngine
                     $this->ledger->post('commission.reversed', [
                         [$this->ledger->userAccount($locked->recipient_id, $bucket), $reverse],
                         [Account::COMMISSIONS, -$reverse],
-                    ], "commission:{$locked->id}:refund:$refundId", $locked, 'Refund', description: 'Commission reversed (refund)');
+                    ], "commission:{$locked->id}:refund:$refundId", $locked, 'Refund', description: 'Team earnings taken back (money given back)');
                     $total = $locked->reversed_amount + $reverse;
                     $locked->update(['reversed_amount' => $total, 'status' => $total >= $locked->amount ? Commission::REVERSED : $locked->status]);
                     $count++;
@@ -157,7 +161,7 @@ class CommissionEngine
         if ($existing) {
             return $existing; // idempotent: never twice for the same sale
         }
-        $rate = Settings::int("referral.rate.$type.l$level");
+        $rate = $source instanceof Order ? $this->orderRate($source, $level) : Settings::int("referral.rate.$type.l$level");
         $amount = Money::bpsFloor($base, $rate);
         $guard = app(FraudGuard::class);
         $device = $source instanceof Order ? $source->device_hash : null;
@@ -189,13 +193,36 @@ class CommissionEngine
                 $this->ledger->post('commission.earned', [
                     [Account::COMMISSIONS, $amount],
                     [$this->ledger->userAccount($recipient, Wallet::PENDING), -$amount],
-                ], "commission:{$c->id}:earned", $c, description: ucfirst($type)." commission L$level");
+                ], "commission:{$c->id}:earned", $c, description: "Team earnings, level $level, from ".match ($type) {
+                    'membership' => 'a membership', 'products' => 'a shop order', 'signals' => 'signals', default => $type
+                });
+                $from = $level === 1 && $buyer ? $buyer->first_name : 'someone in your team';
+                Inbox::add($recipient, 'earning', 'You earned '.Money::format($amount),
+                    "Level $level, from $from (".match ($type) {
+                        'membership' => 'membership', 'products' => 'shop order', 'signals' => 'signals', default => $type
+                    }
+                    .'). It is on the way: ready to use in '.Settings::int('referral.pending_days').' days.', '/account/earnings', "commission:{$c->id}");
+                Goals::check($recipient);
             } elseif ($skip === 'self_referral') {
                 Activity::log('referral.self_referral_skipped', $c, ['level' => $level]);
             }
 
             return $c;
         });
+    }
+
+    /** Add-ons have their own rates: an order with both gets the mix, line by line. */
+    private function orderRate(Order $order, int $level): int
+    {
+        $products = Settings::int("referral.rate.products.l$level");
+        $items = $order->items()->with('product:id,kind')->get(['product_id', 'line_total']);
+        $all = (int) $items->sum('line_total');
+        $addons = (int) $items->filter(fn ($i) => $i->product?->isAddon())->sum('line_total');
+        if ($all <= 0 || $addons === 0) {
+            return $products;
+        }
+
+        return intdiv($products * ($all - $addons) + Settings::int("referral.rate.addons.l$level") * $addons, $all);
     }
 
     private function paidTotal(Model $source, Payment $payment): int

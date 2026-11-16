@@ -10,6 +10,7 @@ use App\Ledger\Wallet;
 use App\Models\PayoutAccount;
 use App\Models\PayoutRequest;
 use App\Models\User;
+use App\Notify\Inbox;
 use App\Notify\Message;
 use App\Support\Activity;
 use App\Support\Features;
@@ -33,12 +34,25 @@ use Throwable;
  */
 class CashOuts
 {
+    public const FEE_ACCOUNT = 'income:cashout_fees';
+
     public function __construct(private readonly Ledger $ledger, private readonly FraudGuard $guard) {}
 
     /**
      * Ask to cash out $amount to the member's saved account. Safe to repeat
      * with the same $idempotencyKey (double clicks, app retries).
      */
+    /** The shop's fee for a cash-out of $amount (0 unless the "Cash-out fee" switch is on). */
+    public static function fee(int $amount): int
+    {
+        if (Features::disabled('wallet.cashout_fee')) {
+            return 0;
+        }
+        $fee = Settings::int('wallet.cashout_fee_fixed') + Money::bpsRound($amount, Settings::int('wallet.cashout_fee_bps'));
+
+        return max(0, min($fee, $amount - 1)); // the member always gets something
+    }
+
     public function request(User $user, int $amount, ?string $idempotencyKey = null): PayoutRequest
     {
         if (Features::disabled('wallet') || Features::disabled('wallet.cashout')) {
@@ -87,14 +101,14 @@ class CashOuts
                     'user_id' => $user->id, 'payout_account_id' => $account->id, 'amount' => $amount, 'method' => $account->method,
                     'account_name' => $account->account_name, 'account_number' => $account->account_number,
                     'account_fingerprint' => $account->account_fingerprint, 'bank_name' => $account->bank_name,
-                    'status' => $hold ? 'on_hold' : 'requested', 'hold_reason' => $hold, 'idempotency_key' => $key,
+                    'status' => $hold ? 'on_hold' : 'requested', 'hold_reason' => $hold, 'idempotency_key' => $key, 'fee' => self::fee($amount),
                     'due_at' => now()->addDays(Settings::int('wallet.payout_days')),
                 ]);
                 $availableAccount = $this->ledger->userAccount($user, Wallet::AVAILABLE);
                 $this->ledger->post('payout.requested', [
                     [$availableAccount, $amount],
                     [$this->ledger->userAccount($user, Wallet::PAYOUT), -$amount],
-                ], "payout:{$request->id}:requested", $request, description: 'Cash-out requested', nonNegative: [$availableAccount]);
+                ], "payout:{$request->id}:requested", $request, description: 'Cash-out asked', nonNegative: [$availableAccount]);
                 Activity::log('payout.requested', $request, ['amount' => $amount, 'hold' => $hold], null, $user->id);
 
                 return $request;
@@ -129,19 +143,21 @@ class CashOuts
             $account = $r->payout_account_id ? PayoutAccount::query()->lockForUpdate()->find($r->payout_account_id) : null;
             if ($account && ! $account->verified_at) {
                 if (! $accountChecked) {
-                    throw new InvalidArgumentException('First payout to this account: check that the name on the Telebirr/bank account is '
+                    throw new InvalidArgumentException('First cash-out to this account: check that the name on the Telebirr/bank account is '
                         .$r->account_name.', then tick "I checked the account".');
                 }
                 $account->update(['verified_at' => now(), 'verified_by' => $actorId]);
                 Activity::log('wallet.payout_account_verified', $account, [], null, $actorId);
             }
-            $this->ledger->post('payout.paid', [
-                [$this->ledger->userAccount($r->user_id, Wallet::PAYOUT), $r->amount],
-                [Account::CASH, -$r->amount],
-            ], "payout:{$r->id}:paid", $r, description: 'Cash-out paid', actorId: $actorId);
+            $fee = (int) $r->fee;
+            $lines = [[$this->ledger->userAccount($r->user_id, Wallet::PAYOUT), $r->amount], [Account::CASH, -($r->amount - $fee)]];
+            if ($fee > 0) {
+                $lines[] = [self::FEE_ACCOUNT, -$fee];
+            }
+            $this->ledger->post('payout.paid', $lines, "payout:{$r->id}:paid", $r, description: $fee > 0 ? 'Cash-out sent (fee '.Money::format($fee).')' : 'Cash-out sent', actorId: $actorId);
             $r->update(['status' => 'paid', 'processed_by' => $actorId, 'processed_at' => now(), 'payout_reference' => $reference]);
             Activity::log('payout.paid', $r, ['reference' => $reference], null, $actorId);
-            DB::afterCommit(fn () => $this->notify($r, Settings::string('notify.payout_paid')));
+            DB::afterCommit(fn () => $this->notify($r, Settings::string('notify.payout_paid'), null, 'payout_paid'));
 
             return $r;
         });
@@ -160,7 +176,7 @@ class CashOuts
             ], "payout:{$r->id}:rejected", $r, $reason, $actorId, 'Cash-out returned to wallet');
             $r->update(['status' => 'rejected', 'processed_by' => $actorId, 'processed_at' => now(), 'reject_reason' => $reason]);
             Activity::log('payout.rejected', $r, [], $reason, $actorId);
-            DB::afterCommit(fn () => $this->notify($r, Settings::string('notify.payout_rejected'), $reason));
+            DB::afterCommit(fn () => $this->notify($r, Settings::string('notify.payout_rejected'), $reason, 'payout_rejected'));
 
             return $r;
         });
@@ -202,12 +218,15 @@ class CashOuts
         return $first !== null && in_array($first, $tokens, true) && ($last === null || in_array($last, $tokens, true));
     }
 
-    private function notify(PayoutRequest $r, string $template, ?string $reason = null): void
+    private function notify(PayoutRequest $r, string $template, ?string $reason, string $type): void
     {
         $user = $r->user()->firstOrFail();
-        SendCustomerMessage::dispatch(new Message('Your cash-out', strtr($template, [
-            '{name}' => $user->first_name, '{amount}' => Money::format($r->amount), '{reference}' => (string) $r->payout_reference,
+        $body = strtr($template, [
+            '{name}' => $user->first_name, '{amount}' => Money::format($r->amount - ($type === 'payout_paid' ? (int) $r->fee : 0)).($type === 'payout_paid' && $r->fee > 0 ? ' (after a '.Money::format((int) $r->fee).' fee)' : ''),
+            '{reference}' => (string) $r->payout_reference,
             '{reason}' => (string) $reason,
-        ]), $user->phone, $user->email, $user->telegram_user_id));
+        ]);
+        SendCustomerMessage::dispatch(new Message('Your cash-out', $body, $user->phone, $user->email, $user->telegram_user_id, $type));
+        Inbox::add($user, 'cashout', $type === 'payout_paid' ? 'Cash-out sent: '.Money::format($r->amount) : 'Cash-out not approved', $body, '/account/wallet', "$type:{$r->id}");
     }
 }

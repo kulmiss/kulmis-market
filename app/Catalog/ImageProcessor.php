@@ -52,6 +52,31 @@ class ImageProcessor
         ]);
     }
 
+    /**
+     * One customer photo (reviews, custom orders): re-encoded (no hidden data,
+     * no EXIF/GPS), at most $max px wide. Returns the path on the public disk.
+     */
+    public function photo(UploadedFile $file, string $dir, int $max = 1200): string
+    {
+        $src = $this->load($file);
+        $w = imagesx($src);
+        $h = imagesy($src);
+        if ($w > 8000 || $h > 8000) {
+            throw new RuntimeException('Image is too large (max 8000 px).');
+        }
+        $tw = min($max, $w);
+        $th = (int) round($h * $tw / $w);
+        $img = imagecreatetruecolor($tw, $th);
+        imagecopyresampled($img, $src, 0, 0, 0, 0, $tw, $th, $w, $h);
+        $format = $this->supports('webp') ? 'webp' : 'jpg';
+        $path = trim($dir, '/').'/'.Str::lower(Str::random(24)).'.'.$format;
+        Storage::disk('public')->put($path, $this->encode($img, $format));
+        imagedestroy($img);
+        imagedestroy($src);
+
+        return $path;
+    }
+
     public function delete(ProductImage $image): void
     {
         $disk = Storage::disk('public');

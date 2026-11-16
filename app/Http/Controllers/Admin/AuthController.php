@@ -94,6 +94,7 @@ class AuthController extends Controller
             'abilities' => $user->isSuperAdmin() ? ['*'] : array_values(array_merge(
                 config("permissions.roles.{$user->role}.abilities", []),
                 $user->can('view-payments') ? ['view-payments'] : [],   // combined ability (see AppServiceProvider)
+                $user->can('answer-help') ? ['answer-help'] : [],
             )),
             'two_factor' => $user->hasTwoFactor(),
             'two_factor_required' => (bool) config('permissions.require_2fa'),

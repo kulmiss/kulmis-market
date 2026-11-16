@@ -8,6 +8,7 @@ use App\Membership\Members;
 use App\Models\Commission;
 use App\Models\User;
 use App\Referral\Attribution;
+use App\Support\TableQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -38,7 +39,8 @@ class ReferralController extends Controller
             ->when($request->input('type'), fn ($q, $v) => $q->where('type', $v))
             ->when($request->input('recipient_id'), fn ($q, $v) => $q->where('recipient_id', $v))
             ->when($request->input('level'), fn ($q, $v) => $q->where('level', $v))
-            ->latest('id')->paginate((int) $request->input('per_page', 50));
+            ->when($request->input('q'), fn ($q, $v) => $q->whereHas('recipient', fn ($u) => $u->where('first_name', 'like', "%$v%")->orWhere('last_name', 'like', "%$v%")->orWhere('phone', 'like', "%$v%")))
+            ->tap(fn ($q) => TableQuery::sort($q, $request, ['amount' => 'amount', 'level' => 'level', 'type' => 'type', 'status' => 'status', 'available' => 'available_at', 'created' => 'created_at']))->paginate((int) $request->input('per_page', 50));
 
         return response()->json($page);
     }

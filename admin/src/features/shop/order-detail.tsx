@@ -5,6 +5,7 @@ import { ArrowLeft, Check, ExternalLink, FileDown, RotateCcw, X } from 'lucide-r
 import { useMutate } from '@/hooks/use-mutate'
 import { api } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth-store'
+import { useFeatures } from '@/stores/features-store'
 import { formatDate, formatMoney } from '@/lib/money'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -18,6 +19,11 @@ import { Page } from '@/components/km/page'
 import { StatusBadge } from '@/components/km/status-badge'
 import { type Courier, type Order, type Payment } from './types'
 import { PageSkeleton } from '@/components/km/page-skeleton'
+
+function AskRest({ id }: { id: number }) {
+  const ask = useMutate('post', ['order'], 'Message sent: please pay the rest')
+  return <Button variant='outline' onClick={() => ask.mutate({ path: `/orders/${id}/ask-rest` })}>It's ready — ask for the rest</Button>
+}
 
 export function OrderDetail({ id }: { id: string }) {
   const order = useQuery({ queryKey: ['order', id], queryFn: async () => (await api.get<{ data: Order }>(`/orders/${id}`)).data.data })
@@ -58,6 +64,9 @@ export function OrderDetail({ id }: { id: string }) {
             <Row label='Shipping' value={o.shipping_discount ? `${formatMoney(o.shipping)} → free` : formatMoney(o.shipping)} />
             <Row label='Total' value={formatMoney(o.total)} strong />
             {o.wallet_used > 0 && <Row label='Paid from wallet' value={formatMoney(o.wallet_used)} />}
+            {(o.gift_card_used ?? 0) > 0 && <Row label='Paid with gift card' value={formatMoney(o.gift_card_used ?? 0)} />}
+            {(o.extras ?? []).map((x) => <Row key={x.key} label={`Extra: ${x.label}`} value={formatMoney(x.amount)} />)}
+            {(o.deposit_amount ?? 0) > 0 && <Row label={`Deposit ${(o.deposit_paid ?? 0) > 0 ? 'paid' : 'asked'}`} value={formatMoney((o.deposit_paid ?? 0) > 0 ? (o.deposit_paid ?? 0) : (o.deposit_amount ?? 0))} />}
             {o.payment_fee > 0 && <Row label='Payment fee' value={formatMoney(o.payment_fee)} />}
             {o.refunded_amount > 0 && <Row label='Refunded' value={formatMoney(o.refunded_amount)} />}
           </CardContent>
@@ -93,7 +102,8 @@ export function OrderDetail({ id }: { id: string }) {
               {(o.allowed_next ?? []).filter((s) => !['paid', 'refunded'].includes(s)).map((s) => (
                 <Button key={s} variant={s === 'cancelled' ? 'destructive' : 'default'} disabled={status.isPending} onClick={() => move(s)}>Mark {s}</Button>
               ))}
-              {o.status === 'pending_payment' && <span className='text-sm text-muted-foreground'>Waiting for payment. Confirm payment proofs below.</span>}
+              {o.status === 'pending_payment' && (o.deposit_paid ?? 0) > 0 && <AskRest id={o.id} />}
+              {o.status === 'pending_payment' && <span className='text-sm text-muted-foreground'>{(o.deposit_paid ?? 0) > 0 ? 'Deposit received: make it, then ask for the rest before shipping.' : 'Waiting for payment. Confirm payment proofs below.'}</span>}
             </div>
           </CardContent>
         </Card>
@@ -130,6 +140,7 @@ function Row({ label, value, strong }: { label: string; value: string; strong?: 
 /** Approve / reject proofs, refund (full or partial), receipt. Used on orders and the payments page. */
 export function PaymentRow({ payment: p }: { payment: Payment }) {
   const canApprove = useAuthStore((st) => st.can('approve-payments'))
+  const receipts = useFeatures((st) => st.on('payments.pdf_receipts'))
   const act = useMutate('post', ['payments', 'order', 'orders'], 'Done')
   const [reason, setReason] = useState('')
   const [amount, setAmount] = useState(p.amount - p.refunded_amount)
@@ -146,7 +157,7 @@ export function PaymentRow({ payment: p }: { payment: Payment }) {
         {p.proof_reference && <span className='text-muted-foreground'>proof ref {p.proof_reference}</span>}
         <span className='ms-auto flex gap-2'>
           {p.proof_path && <Button size='sm' variant='outline' asChild><a href={`/api/v1/admin/payments/${p.id}/proof`} target='_blank' rel='noreferrer'><ExternalLink /> Proof</a></Button>}
-          {['paid', 'partially_refunded', 'refunded'].includes(p.status) && <Button size='sm' variant='outline' asChild><a href={`/api/v1/admin/payments/${p.id}/receipt`}><FileDown /> Receipt</a></Button>}
+          {receipts && ['paid', 'partially_refunded', 'refunded'].includes(p.status) && <Button size='sm' variant='outline' asChild><a href={`/api/v1/admin/payments/${p.id}/receipt`}><FileDown /> Receipt</a></Button>}
         </span>
       </div>
       {p.status === 'awaiting_review' && !canApprove && <p className='text-xs text-muted-foreground'>Waiting for Finance or a Manager to approve this transfer.</p>}

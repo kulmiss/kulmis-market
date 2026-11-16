@@ -1,3 +1,4 @@
+import { statusWord } from './status-badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
@@ -23,4 +24,4 @@ export function SelectFilter({ value, onChange, options, placeholder }: {
   )
 }
 
-export const opts = (...values: string[]) => values.map((v) => ({ value: v, label: v.replaceAll('_', ' ') }))
+export const opts = (...values: string[]) => values.map((v) => ({ value: v, label: statusWord(v) }))

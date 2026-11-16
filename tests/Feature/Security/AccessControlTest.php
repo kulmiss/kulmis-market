@@ -83,7 +83,7 @@ class AccessControlTest extends ReferralTestCase
                 $this->app['auth']->forgetGuards();
                 $this->actingAs($who, $guard);
                 foreach ($routes as $r) {
-                    $status = $this->json($this->method($r), $this->uri($r))->status();
+                    $status = $this->json($this->method($r), $this->uri($r))->getStatusCode();
                     $this->assertContains($status, [401, 403, 404], "{$who->first_name} ($guard) got $status on ".$this->method($r).' '.$r->uri());
                 }
             }
@@ -97,9 +97,11 @@ class AccessControlTest extends ReferralTestCase
             $this->app['auth']->forgetGuards();
             $admin = $this->actingAsAdmin($role);
             foreach ($routes as $r) {
-                $ability = substr((string) collect($r->gatherMiddleware())->first(fn ($m) => is_string($m) && str_starts_with($m, 'can:')), 4);
-                $allowed = $admin->can($ability); // through the Gate, so combined abilities like view-payments count
-                $status = $this->json($this->method($r), $this->uri($r))->status();
+                // Every can: rule on the route (group + route) must pass, through the Gate so combined abilities like view-payments count.
+                $abilities = collect($r->gatherMiddleware())->filter(fn ($m) => is_string($m) && str_starts_with($m, 'can:'))->map(fn ($m) => substr($m, 4));
+                $ability = $abilities->implode(' + ');
+                $allowed = $abilities->every(fn ($a) => $admin->can($a));
+                $status = $this->json($this->method($r), $this->uri($r))->getStatusCode();
                 if ($allowed) {
                     $this->assertNotSame(403, $status, "$role should reach ".$this->method($r).' '.$r->uri());
                 } else {

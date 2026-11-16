@@ -27,15 +27,19 @@
     @foreach ($groups as $title => $rules)
         @php($items = $rows->whereIn('rule', $rules)->sortBy([['rule', 'asc'], ['threshold', 'asc']]))
         @if ($items->isNotEmpty())
-            <section class="mt-8">
-                <h2 class="text-2xl">{{ $title }}</h2>
+            {{-- Phones: each group folded with a count (remembered); desktop: open. --}}
+            <details class="mt-6 sm:mt-8" data-collapse="badges-{{ \Illuminate\Support\Str::slug($title) }}">
+                <summary class="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 sm:pointer-events-none">
+                    <h2 class="text-2xl">{{ $title }}</h2>
+                    <span class="rounded-full px-2.5 py-0.5 text-sm font-semibold m-soft">{{ $items->where('unlocked', true)->count() }}/{{ $items->count() }}</span>
+                </summary>
                 <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach ($items as $b)
                         <div class="card {{ $b['unlocked'] ? '' : 'opacity-90' }}">@include('store.account.partials.badge-progress', ['b' => $b])
                             <p class="muted mt-2 text-xs">{{ $b['description'] }}</p></div>
                     @endforeach
                 </div>
-            </section>
+            </details>
         @endif
     @endforeach
 </div>

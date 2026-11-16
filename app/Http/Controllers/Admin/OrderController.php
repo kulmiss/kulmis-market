@@ -7,6 +7,7 @@ use App\Models\Courier;
 use App\Models\Order;
 use App\Orders\OrderService;
 use App\Support\Activity;
+use App\Support\TableQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -33,7 +34,7 @@ class OrderController extends Controller
             ->when($request->has('member'), fn ($q) => $q->where('is_member_order', $request->boolean('member')))
             ->when($request->input('zone_id'), fn ($q, $v) => $q->where('shipping_zone_id', $v))
             ->when($request->input('courier_id'), fn ($q, $v) => $q->where('courier_id', $v))
-            ->latest('id')->paginate((int) $request->input('per_page', 25));
+            ->tap(fn ($q) => TableQuery::sort($q, $request, ['number' => 'id', 'total' => 'total', 'status' => 'status', 'items' => 'items_count', 'placed' => 'created_at', 'name' => 'first_name']))->paginate((int) $request->input('per_page', 25));
 
         return response()->json($page);
     }

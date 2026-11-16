@@ -4,11 +4,16 @@ namespace App\Orders;
 
 use App\Events\OrderPaid;
 use App\Events\OrderStatusChanged;
+use App\Jobs\NotifyBackInStock;
+use App\Models\FlashSale;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderStatusChange;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Shop\FlashSales;
+use App\Shop\GiftCards;
+use App\Storefront\PageCache;
 use App\Support\Activity;
 use App\Wallet\WalletPayments;
 use Illuminate\Support\Facades\DB;
@@ -41,6 +46,9 @@ class OrderService
                 if ($locked->wallet_used > 0 && $from === Order::PENDING_PAYMENT) {
                     app(WalletPayments::class)->releaseFor($locked, 'Order cancelled');
                 }
+                if ($locked->gift_card_used > 0 && $from === Order::PENDING_PAYMENT) {
+                    app(GiftCards::class)->releaseFor($locked, 'Order cancelled'); // the money goes back on the card
+                }
             }
             $change = $locked->history()->create(['from' => $from, 'to' => $to, 'note' => $note, 'actor_id' => $actorId]);
             $order->setRawAttributes($locked->getAttributes(), true);
@@ -71,16 +79,35 @@ class OrderService
 
     public function restock(Order $order): void
     {
+        $flash = false;
         foreach ($order->items as $item) {
             /** @var OrderItem $item */
+            if ($item->flash_sale_id) {
+                // The pieces go back to the sale too (if it is still running).
+                FlashSale::query()->whereKey($item->flash_sale_id)->where('sold', '>=', $item->quantity)->decrement('sold', $item->quantity);
+                $flash = true;
+            }
             if ($item->made_to_order) {
                 continue;
             }
+            // Was it sold out? Then the people waiting for it get a message.
             if ($item->product_variant_id) {
+                $was = (int) ProductVariant::query()->whereKey($item->product_variant_id)->value('stock');
                 ProductVariant::query()->whereKey($item->product_variant_id)->increment('stock', $item->quantity);
+                if ($was < 1 && $item->product_id) {
+                    NotifyBackInStock::dispatch($item->product_id, $item->product_variant_id)->afterCommit();
+                }
             } elseif ($item->product_id) {
+                $was = (int) Product::query()->whereKey($item->product_id)->value('stock');
                 Product::query()->whereKey($item->product_id)->increment('stock', $item->quantity);
+                if ($was < 1) {
+                    NotifyBackInStock::dispatch($item->product_id, null)->afterCommit();
+                }
             }
+        }
+        if ($flash) {
+            app(FlashSales::class)->forget();
+            PageCache::clear(); // a sold-out sale may be open again
         }
     }
 

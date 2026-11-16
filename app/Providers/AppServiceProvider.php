@@ -8,6 +8,7 @@ use App\Events\CatalogChanged;
 use App\Events\CustomerRegistered;
 use App\Events\MembershipActivated;
 use App\Events\MembershipEnded;
+use App\Events\OrderPaid;
 use App\Events\OrderStatusChanged;
 use App\Events\PaymentRefunded;
 use App\Events\PaymentSucceeded;
@@ -19,12 +20,18 @@ use App\Notify\Sms\SmsGateway;
 use App\Orders\CheckoutExtras;
 use App\Referral\Attribution;
 use App\Referral\ReferralListener;
+use App\Rewards\MembershipRewards;
 use App\Session\PrivacySessionHandler;
 use App\Shipping\ShippingQuoter;
 use App\Shipping\ZoneShippingQuoter;
+use App\Shop\Bundles;
+use App\Shop\DigitalDelivery;
+use App\Shop\FlashSales;
 use App\Signals\MembershipSignalsListener;
 use App\Storefront\PageCache;
+use App\Support\Currency;
 use App\Support\Features;
+use App\Support\Settings;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Request;
@@ -33,6 +40,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
@@ -44,6 +52,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // One per request / queue job, so it can remember what it already worked out.
         $this->app->scoped(BadgeEngine::class);
+        $this->app->scoped(FlashSales::class);
+        $this->app->scoped(Bundles::class);
         $this->app->singleton(CheckoutExtras::class);
         $this->app->bind(ShippingQuoter::class, ZoneShippingQuoter::class);
         $this->app->bind(SmsGateway::class, fn () => match (config('services.sms.driver')) {
@@ -57,12 +67,18 @@ class AppServiceProvider extends ServiceProvider
         // Every link, asset and image URL uses APP_URL, never the Host header a
         // visitor sends (stops host-header injection into cached pages and emails).
         URL::forceRootUrl(rtrim((string) config('app.url'), '/'));
+        // A queue worker runs for hours: every job reads the current switches and settings.
+        Queue::before(function (): void {
+            Features::forgetMemo();
+            Settings::forgetMemo();
+            Currency::flush();
+        });
         // `php artisan optimize` (every deploy) also empties the page cache: new CSS/JS names.
         $this->optimizes(optimize: 'km:clear-page-cache', clear: 'km:clear-page-cache', key: 'page cache');
 
-        // Development: every query slower than SLOW_QUERY_MS (default 50 ms) goes to the log.
+        // Every query slower than SLOW_QUERY_MS (default 50 ms, 0 = off) goes to the log, also live: SQL only, never the values.
         $slow = (int) config('database.slow_query_ms');
-        if ($slow > 0 && ! $this->app->isProduction()) {
+        if ($slow > 0) {
             DB::listen(function (QueryExecuted $q) use ($slow) {
                 if ($q->time >= $slow) {
                     Log::warning('Slow query ('.round($q->time).' ms)', ['sql' => $q->sql, 'url' => request()->fullUrl()]);
@@ -90,6 +106,8 @@ class AppServiceProvider extends ServiceProvider
         }
         // Seeing payments: whoever handles orders, approves transfers or does refunds.
         Gate::define('view-payments', fn (User $user) => $user->hasAbility('manage-orders') || $user->hasAbility('approve-payments') || $user->hasAbility('manage-ledger'));
+        // Help centre messages: content editors and support staff.
+        Gate::define('answer-help', fn (User $user) => $user->hasAbility('manage-content') || $user->hasAbility('manage-members'));
 
         Event::listen(OrderStatusChanged::class, [OrderNotifier::class, 'handle']);
 
@@ -100,13 +118,19 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(PaymentSucceeded::class, [ReferralListener::class, 'paid']);
         Event::listen(PaymentSucceeded::class, [BadgeListener::class, 'paid']); // after commissions exist
         Event::listen(PaymentRefunded::class, [ReferralListener::class, 'refunded']);
+        Event::listen(PaymentSucceeded::class, [MembershipRewards::class, 'paid']);
+        Event::listen(OrderPaid::class, [DigitalDelivery::class, 'paid']);
+        Event::listen(PaymentRefunded::class, [MembershipRewards::class, 'refunded']);
         Event::listen(CustomerRegistered::class,
             fn (CustomerRegistered $e) => app(Attribution::class)->attachAtSignup($e->request, $e->user));
         $this->app->make(CheckoutExtras::class)->add(
             fn ($request, $cart, $user, $data) => app(Attribution::class)->forOrder($request, $user, $data));
 
         // Static page cache: anything shown on public pages changed → purge.
-        Event::listen(CatalogChanged::class, fn () => PageCache::clear());
+        Event::listen(CatalogChanged::class, function (): void {
+            PageCache::clear();
+            app(Bundles::class)->forget(); // bundles keep product names, prices and costs in their cache
+        });
 
         Blade::if('feature', fn (string $key) => Features::enabled($key));
 

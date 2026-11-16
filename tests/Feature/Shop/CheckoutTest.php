@@ -117,7 +117,7 @@ class CheckoutTest extends TestCase
     public function test_coupon_is_applied_counted_and_per_customer_limited(): void
     {
         $coupon = Coupon::query()->create(['code' => 'ENKUTATASH', 'type' => 'fixed', 'value' => 20_000, 'max_uses_per_customer' => 1]);
-        $p = Product::factory()->create(['price' => 100_000]);
+        $p = Product::factory()->create(['price' => 100_000, 'cost_materials' => 20_000, 'cost_labour' => 0, 'cost_packaging' => 0]);
 
         $token = $this->addToCart($p);
         $this->withHeaders(['X-Cart-Token' => $token])->putJson('/api/v1/cart/coupon', ['code' => 'enkutatash'])

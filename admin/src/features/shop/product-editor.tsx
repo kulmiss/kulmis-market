@@ -24,6 +24,7 @@ const empty: Draft = {
   name: '', short_description: '', description: '', category_id: null, price: 0, cost_materials: 0, cost_labour: 0,
   cost_packaging: 0, weight_grams: 500, stock_mode: 'stock', stock: 0, making_days: null, is_featured: false,
   is_members_only: false, release_at: null, status: 'draft', seo_title: '', seo_description: '', tags: [], variants: [],
+  kind: 'physical', member_discount: true, booking_at: null,
 }
 
 export function ProductEditor({ id }: { id: string }) {
@@ -90,7 +91,7 @@ export function ProductEditor({ id }: { id: string }) {
     <Page title={isNew ? 'New product' : d.name} description={p ? `/${p.slug}` : undefined}
       actions={<>
         <Button variant='outline' asChild><Link to='/products'><ArrowLeft /> Products</Link></Button>
-        <Button onClick={save} disabled={saving}><Save /> Save</Button>
+        <Button onClick={save} disabled={saving}><Save /> {isNew ? 'Add product' : 'Save changes'}</Button>
       </>}>
       {p?.warnings.map((w) => (
         <Alert key={w.code} className='mb-3 border-amber-300 bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200'>
@@ -130,6 +131,25 @@ export function ProductEditor({ id }: { id: string }) {
                 <SelectContent>{['draft', 'active', 'archived'].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>
             </Field>
+            <Field label='Type'>
+              <Select value={d.kind ?? 'physical'} onValueChange={(v) => set('kind', v as Draft['kind'])}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='physical'>Physical product (shipped)</SelectItem>
+                  <SelectItem value='digital'>Digital (files or a private video link)</SelectItem>
+                  <SelectItem value='addon'>Paid add-on (session, workshop…)</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+            {d.kind === 'addon' && <Field label='Date of the session (optional)'><Input type='datetime-local' value={d.booking_at ? d.booking_at.slice(0, 16) : ''} onChange={(e) => set('booking_at', e.target.value || null)} /></Field>}
+            <Toggle label='Members get their member price' checked={d.member_discount !== false} onChange={(v) => set('member_discount', v)} />
+            {d.kind !== 'digital' && <Toggle label='Pre-order (pay part now, the rest before shipping)' checked={d.preorder_deposit_bps != null} onChange={(v) => set('preorder_deposit_bps', v ? 3000 : null)} />}
+            {d.preorder_deposit_bps != null && (
+              <div className='grid grid-cols-2 gap-3'>
+                <Field label='Paid now (%)'><Input type='number' min={10} max={90} value={d.preorder_deposit_bps / 100} onChange={(e) => set('preorder_deposit_bps', Math.round(Number(e.target.value) * 100))} /></Field>
+                <Field label='Ships about'><Input type='date' value={d.preorder_ships_on?.slice(0, 10) ?? ''} onChange={(e) => set('preorder_ships_on', e.target.value || null)} /></Field>
+              </div>
+            )}
             <Toggle label='Featured' checked={d.is_featured} onChange={(v) => set('is_featured', v)} />
             <Toggle label='Members-only product' checked={d.is_members_only} onChange={(v) => set('is_members_only', v)} />
             <Field label='Release date (members see it 48 h earlier)'>
@@ -157,11 +177,14 @@ export function ProductEditor({ id }: { id: string }) {
         <Card>
           <CardHeader><CardTitle className='text-base'>Stock & shipping</CardTitle></CardHeader>
           <CardContent className='grid gap-3'>
+            {d.kind === 'digital' ? <p className='text-sm text-muted-foreground'>Digital: no stock and no delivery. Buyers get safe download links after paying.</p> : <>
             <Toggle label='Made to order' checked={d.stock_mode === 'made_to_order'} onChange={(v) => set('stock_mode', v ? 'made_to_order' : 'stock')} />
             {d.stock_mode === 'made_to_order'
               ? <Field label='Making days'><Input type='number' min={1} value={d.making_days ?? ''} onChange={(e) => set('making_days', Number(e.target.value))} /></Field>
               : d.variants.length === 0 && <Field label='Stock'><Input type='number' min={0} value={d.stock ?? 0} onChange={(e) => set('stock', Number(e.target.value))} /></Field>}
-            <Field label='Weight (grams)'><Input type='number' min={0} value={d.weight_grams} onChange={(e) => set('weight_grams', Number(e.target.value))} /></Field>
+            {d.stock_mode !== 'made_to_order' && <Field label='Tell me when only this many are left (empty = Settings)'><Input type='number' min={0} value={d.low_stock_alert ?? ''} onChange={(e) => set('low_stock_alert', e.target.value === '' ? null : Number(e.target.value))} /></Field>}
+            <Field label={d.kind === 'addon' ? 'Weight (grams, 0 if nothing is shipped)' : 'Weight (grams)'}><Input type='number' min={0} value={d.weight_grams} onChange={(e) => set('weight_grams', Number(e.target.value))} /></Field>
+            </>}
           </CardContent>
         </Card>
 
@@ -174,7 +197,7 @@ export function ProductEditor({ id }: { id: string }) {
                   {p?.images.map((img) => (
                     <div key={img.id} className='group relative'>
                       <img src={img.thumb} alt={img.alt ?? ''} className='aspect-square w-full rounded object-cover' />
-                      <Button size='icon' variant='destructive' className='absolute end-1 top-1 size-7 opacity-0 group-hover:opacity-100' onClick={() => removeImage(img.id)}><Trash2 /></Button>
+                      <Button size='icon' variant='destructive' className='absolute end-1 top-1 size-12 sm:size-7 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100' aria-label='Remove photo' onClick={() => removeImage(img.id)}><Trash2 /></Button>
                     </div>
                   ))}
                 </div>
@@ -186,6 +209,8 @@ export function ProductEditor({ id }: { id: string }) {
             )}
           </CardContent>
         </Card>
+
+        {d.kind === 'digital' && !isNew && <DigitalFiles productId={id} />}
 
         <Card className='lg:col-span-3'>
           <CardHeader className='flex-row items-center justify-between'>
@@ -216,6 +241,44 @@ export function ProductEditor({ id }: { id: string }) {
         </Card>
       </div>
     </Page>
+  )
+}
+
+type DFile = { id: number; kind: 'file' | 'video'; title: string; size: number | null; has_link: boolean }
+
+function DigitalFiles({ productId }: { productId: string }) {
+  const qc = useQueryClient()
+  const files = useQuery({ queryKey: ['product-files', productId], queryFn: async () => (await api.get<{ data: DFile[] }>(`/products/${productId}/files`)).data.data })
+  const [title, setTitle] = useState('')
+  const [video, setVideo] = useState('')
+  const refresh = () => qc.invalidateQueries({ queryKey: ['product-files', productId] })
+  const add = async (file?: File) => {
+    const form = new FormData()
+    form.append('title', title || file?.name || 'Video')
+    if (file) form.append('file', file)
+    else form.append('video_url', video)
+    try { await api.post(`/products/${productId}/files`, form); setTitle(''); setVideo(''); refresh(); toast.success('Added') } catch (e) { toast.error(errorMessage(e)) }
+  }
+  return (
+    <Card className='lg:col-span-3'>
+      <CardHeader><CardTitle className='text-base'>What the buyer gets</CardTitle></CardHeader>
+      <CardContent className='grid gap-3'>
+        {(files.data ?? []).length === 0 && <p className='text-sm text-muted-foreground'>Add at least one file or private video link.</p>}
+        {(files.data ?? []).map((f) => (
+          <div key={f.id} className='flex items-center justify-between gap-2 rounded-md border p-2 text-sm'>
+            <span>{f.kind === 'video' ? '🎬' : '📄'} {f.title}{f.size ? ` · ${(f.size / 1048576).toFixed(1)} MB` : ''}</span>
+            <Button size='icon' variant='ghost' aria-label='Remove' onClick={async () => { await api.delete(`/products/${productId}/files/${f.id}`); refresh() }}><Trash2 /></Button>
+          </div>
+        ))}
+        <div className='grid gap-2 sm:grid-cols-3'>
+          <Input placeholder='Title shown to the buyer' value={title} onChange={(e) => setTitle(e.target.value)} />
+          <Label className='flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed p-2 text-sm'>Upload a file (up to 200 MB)
+            <input type='file' className='hidden' onChange={(e) => e.target.files?.[0] && add(e.target.files[0])} /></Label>
+          <div className='flex gap-2'><Input placeholder='https://… private video link' value={video} onChange={(e) => setVideo(e.target.value)} /><Button variant='outline' disabled={!video} onClick={() => add()}>Add</Button></div>
+        </div>
+        <p className='text-xs text-muted-foreground'>Files stay private. Each buyer gets links that end after the days and downloads set in Settings.</p>
+      </CardContent>
+    </Card>
   )
 }
 

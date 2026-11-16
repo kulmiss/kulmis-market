@@ -9,14 +9,29 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { FormDialog } from '@/components/km/form-dialog'
+import { DataTable, type DataColumn } from '@/components/km/data-table'
 import { Page } from '@/components/km/page'
 
 type PageRow = { id: number; slug: string; title: string; body: string; seo_description: string | null; is_published: boolean; in_footer: boolean; position: number; updated_at: string }
-type BannerRow = { id: number; placement: string; title: string; text: string | null; link_url: string | null; link_text: string | null; starts_at: string | null; ends_at: string | null; is_active: boolean; position: number }
+type BannerRow = { id: number; color?: string | null; placement: string; title: string; text: string | null; link_url: string | null; link_text: string | null; starts_at: string | null; ends_at: string | null; is_active: boolean; position: number }
+
+const pageColumns: DataColumn<PageRow>[] = [
+  { header: 'Title', accessorKey: 'title', cell: ({ row }) => <span>{row.original.title}{!row.original.is_published && <span className='ms-2 text-xs text-muted-foreground'>(hidden)</span>}</span>, meta: { sort: 'title' } },
+  { header: 'Address', accessorKey: 'slug', cell: ({ row }) => <a className='inline-flex items-center gap-1 underline' href={`/p/${row.original.slug}`} target='_blank' rel='noreferrer'>/p/{row.original.slug} <ExternalLink className='size-3' /></a>, meta: { sort: 'slug' } },
+  { header: 'Footer', cell: ({ row }) => (row.original.in_footer ? 'Yes' : ''), meta: { csv: (p) => (p.in_footer ? 'yes' : '') } },
+  { header: 'Updated', cell: ({ row }) => formatDate(row.original.updated_at), meta: { sort: 'updated_at', csv: (p) => p.updated_at } },
+  { header: '', id: 'edit', meta: { label: 'Edit' }, cell: ({ row }) => <div className='text-end'><PageDialog page={row.original} /></div> },
+]
+
+const bannerColumns: DataColumn<BannerRow>[] = [
+  { header: 'Where', accessorKey: 'placement', cell: ({ row }) => row.original.placement.replace('_', ' '), meta: { sort: 'placement' } },
+  { header: 'Title', accessorKey: 'title', meta: { sort: 'title' } },
+  { header: 'Dates', cell: ({ row }) => `${formatDate(row.original.starts_at)} → ${formatDate(row.original.ends_at)}`, meta: { sort: 'starts_at', csv: (b) => `${b.starts_at ?? ''} → ${b.ends_at ?? ''}` } },
+  { header: 'Active', cell: ({ row }) => (row.original.is_active ? 'Yes' : 'No'), meta: { csv: (b) => (b.is_active ? 'yes' : 'no') } },
+]
 
 export function ContentPage() {
   const pages = useQuery({ queryKey: ['pages'], queryFn: async () => (await api.get<{ data: PageRow[] }>('/pages')).data.data })
@@ -28,34 +43,15 @@ export function ContentPage() {
         <TabsList><TabsTrigger value='pages'>Pages</TabsTrigger><TabsTrigger value='banners'>Banners</TabsTrigger></TabsList>
         <TabsContent value='pages' className='mt-4'>
           <div className='mb-3 flex justify-end'><PageDialog /></div>
-          <Table>
-            <TableHeader><TableRow><TableHead>Title</TableHead><TableHead>Address</TableHead><TableHead>Footer</TableHead><TableHead>Updated</TableHead><TableHead /></TableRow></TableHeader>
-            <TableBody>
-              {pages.data?.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell>{p.title}{!p.is_published && <span className='ms-2 text-xs text-muted-foreground'>(hidden)</span>}</TableCell>
-                  <TableCell><a className='inline-flex items-center gap-1 underline' href={`/p/${p.slug}`} target='_blank' rel='noreferrer'>/p/{p.slug} <ExternalLink className='size-3' /></a></TableCell>
-                  <TableCell>{p.in_footer ? 'Yes' : ''}</TableCell><TableCell>{formatDate(p.updated_at)}</TableCell>
-                  <TableCell className='text-end'><PageDialog page={p} /></TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <DataTable<PageRow> id='pages' rows={pages.data ?? []} loading={pages.isLoading} columns={pageColumns} search={{ placeholder: 'Page title' }} />
         </TabsContent>
         <TabsContent value='banners' className='mt-4'>
           <div className='mb-3 flex justify-end'><BannerDialog /></div>
-          <Table>
-            <TableHeader><TableRow><TableHead>Where</TableHead><TableHead>Title</TableHead><TableHead>Dates</TableHead><TableHead>Active</TableHead><TableHead /></TableRow></TableHeader>
-            <TableBody>
-              {banners.data?.map((b) => (
-                <TableRow key={b.id}>
-                  <TableCell>{b.placement.replace('_', ' ')}</TableCell><TableCell>{b.title}</TableCell>
-                  <TableCell>{formatDate(b.starts_at)} → {formatDate(b.ends_at)}</TableCell><TableCell>{b.is_active ? 'Yes' : 'No'}</TableCell>
-                  <TableCell className='text-end'><BannerDialog banner={b} /><Button size='icon' variant='ghost' onClick={() => del.mutate({ path: `/banners/${b.id}` })}><Trash2 /></Button></TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <DataTable<BannerRow> id='banners' rows={banners.data ?? []} loading={banners.isLoading} search={{ placeholder: 'Banner title' }}
+            filters={[{ key: 'is_active', label: 'Active', options: [{ value: 'true', label: 'On' }, { value: 'false', label: 'Off' }] }]}
+            columns={[...bannerColumns, { header: '', id: 'edit', meta: { label: 'Edit' }, cell: ({ row }) => (
+              <div className='text-end'><BannerDialog banner={row.original} /><Button size='icon' variant='ghost' aria-label={`Delete ${row.original.title}`} onClick={() => del.mutate({ path: `/banners/${row.original.id}` })}><Trash2 /></Button></div>
+            ) }]} />
         </TabsContent>
       </Tabs>
     </Page>
@@ -69,7 +65,7 @@ function PageDialog({ page }: { page?: PageRow }) {
   return (
     <FormDialog title={page ? `Edit ${page.title}` : 'New page'} trigger={page ? <Button size='icon' variant='ghost'><Pencil /></Button> : <Button><Plus /> New page</Button>}
       onSave={() => save.mutateAsync({ path: page ? `/pages/${page.id}` : '/pages', body: d })}>
-      <div className='grid grid-cols-2 gap-3'>
+      <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
         <label className='grid gap-1.5 text-sm leading-none font-medium'>Title<Input value={d.title} onChange={(e) => setD({ ...d, title: e.target.value })} /></label>
         <label className='grid gap-1.5 text-sm leading-none font-medium'>Address (/p/…)<Input value={d.slug} onChange={(e) => setD({ ...d, slug: e.target.value })} /></label>
       </div>
@@ -84,7 +80,7 @@ function PageDialog({ page }: { page?: PageRow }) {
 }
 
 function BannerDialog({ banner }: { banner?: BannerRow }) {
-  const [d, setD] = useState({ placement: banner?.placement ?? 'home', title: banner?.title ?? '', text: banner?.text ?? '', link_url: banner?.link_url ?? '',
+  const [d, setD] = useState({ color: banner?.color ?? 'dark', placement: banner?.placement ?? 'home', title: banner?.title ?? '', text: banner?.text ?? '', link_url: banner?.link_url ?? '',
     link_text: banner?.link_text ?? '', starts_at: banner?.starts_at?.slice(0, 10) ?? '', ends_at: banner?.ends_at?.slice(0, 10) ?? '', is_active: banner?.is_active ?? true })
   const save = useMutate(banner ? 'put' : 'post', ['banners'], 'Banner saved')
   return (
@@ -93,12 +89,20 @@ function BannerDialog({ banner }: { banner?: BannerRow }) {
       <div className='grid gap-1.5'><Label>Where</Label>
         <Select value={d.placement} onValueChange={(v) => setD({ ...d, placement: v })}>
           <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>{['top_bar', 'home', 'shop', 'membership', 'signals'].map((p) => <SelectItem key={p} value={p}>{p.replace('_', ' ')}</SelectItem>)}</SelectContent>
+          <SelectContent>{['top_bar', 'home', 'shop', 'membership', 'signals'].map((p) => <SelectItem key={p} value={p}>{p === 'top_bar' ? 'Announcement bar (top of every page)' : p.replace('_', ' ')}</SelectItem>)}</SelectContent>
         </Select>
       </div>
+      {d.placement === 'top_bar' && (
+        <div className='grid gap-1.5'><Label>Colour</Label>
+          <Select value={d.color ?? 'dark'} onValueChange={(v) => setD({ ...d, color: v })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>{[['green', 'Green'], ['gold', 'Gold'], ['dark', 'Dark'], ['red', 'Red (urgent)']].map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
+      )}
       <label className='grid gap-1.5 text-sm leading-none font-medium'>Title<Input value={d.title} onChange={(e) => setD({ ...d, title: e.target.value })} /></label>
       <label className='grid gap-1.5 text-sm leading-none font-medium'>Text<Input value={d.text} onChange={(e) => setD({ ...d, text: e.target.value })} /></label>
-      <div className='grid grid-cols-2 gap-3'>
+      <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
         <label className='grid gap-1.5 text-sm leading-none font-medium'>Link (/shop or https://…)<Input value={d.link_url} onChange={(e) => setD({ ...d, link_url: e.target.value })} /></label>
         <label className='grid gap-1.5 text-sm leading-none font-medium'>Button text<Input value={d.link_text} onChange={(e) => setD({ ...d, link_text: e.target.value })} /></label>
         <label className='grid gap-1.5 text-sm leading-none font-medium'>From<Input type='date' value={d.starts_at} onChange={(e) => setD({ ...d, starts_at: e.target.value })} /></label>

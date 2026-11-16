@@ -2,6 +2,7 @@
 
 namespace App\Signals;
 
+use App\Jobs\NotifyNewSignal;
 use App\Models\Signal;
 use App\Telegram\TelegramClient;
 use Illuminate\Support\Facades\Log;
@@ -14,11 +15,15 @@ class SignalPublisher
 
     public function post(Signal $signal): void
     {
+        $first = $signal->posted_at === null;
         $id = $this->send(self::format($signal));
         if ($id) {
             $signal->update(['telegram_message_id' => $id, 'posted_at' => now()]);
         } else {
             $signal->update(['posted_at' => now()]);
+        }
+        if ($first) {
+            NotifyNewSignal::dispatch($signal->id)->afterCommit();
         }
     }
 

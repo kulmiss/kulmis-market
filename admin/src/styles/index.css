@@ -22,6 +22,23 @@
     overflow: unset !important;
   }
 
+  /* Phones: small controls (switches, checkboxes, text links, tabs) get a
+     48 px touch area without changing how they look. */
+  @media (max-width: 639px) {
+    :is([role='switch'], [role='checkbox'], [role='tab'], main a[href], header button, header a[href], [data-slot='dropdown-menu-trigger']):not([class*='absolute']):not([class*='fixed']):not([class*='after:']) {
+      position: relative;
+    }
+    :is([role='switch'], [role='checkbox'], [role='tab'], main a[href], header button, header a[href], [data-slot='dropdown-menu-trigger']):not([class*='absolute']):not([class*='fixed']):not([class*='after:'])::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: max(100%, 48px);
+      height: max(100%, 48px);
+      transform: translate(-50%, -50%);
+    }
+  }
+
   /* Cursor pointer for buttons */
   button:not(:disabled),
   [role='button']:not(:disabled) {

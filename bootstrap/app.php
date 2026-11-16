@@ -7,6 +7,7 @@ use App\Http\Middleware\CaptureReferral;
 use App\Http\Middleware\EnsureFeature;
 use App\Http\Middleware\EnsureStaff;
 use App\Http\Middleware\EnsureTwoFactor;
+use App\Http\Middleware\LinkCartToUser;
 use App\Http\Middleware\NormalizeQuery;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\ShareErrorsIfSession;
@@ -65,7 +66,7 @@ return Application::configure(basePath: dirname(__DIR__))
             EncryptCookies::class,
             AddQueuedCookiesToResponse::class,
         ]);
-        $middleware->web(append: [CaptureReferral::class]);
+        $middleware->web(append: [CaptureReferral::class, LinkCartToUser::class]);
         // API callers get a JSON 401; people browsing the shop go to /login.
         $middleware->redirectGuestsTo(fn (Request $request) => $request->is('api/*') ? null : '/login');
     })

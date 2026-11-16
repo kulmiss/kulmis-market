@@ -61,7 +61,7 @@ class MemberDashboardTest extends ReferralTestCase
 
         $team = $this->get('/account/team')->assertOk()->assertSee('Lensa A.')->assertSee('not active')->assertDontSee('Grandkid');
         $team->assertSee('Level 2');
-        $this->get('/account/earnings')->assertOk()->assertSee('membership · level 1', false)->assertSee('Last 12 months');
+        $this->get('/account/earnings')->assertOk()->assertSee('Membership')->assertSee('data-col="level"', false)->assertSee('Last 12 months');
     }
 
     public function test_wallet_page_cashes_out_and_signals_page_opens_telegram(): void
@@ -101,7 +101,7 @@ class MemberDashboardTest extends ReferralTestCase
         $me = $this->member(null, 'Abdi');
         $me->membership()->update(['status' => 'grace', 'current_period_end' => now()->subDay(), 'grace_ends_at' => now()->addDays(2)]);
         $this->actingAs($me->fresh(), 'web');
-        $this->get('/account')->assertSee('Grace period until');
+        $this->get('/account')->assertSee('Please pay: your benefits stop on');
 
         app(MembershipService::class)->adjust($me, -3650, 'test', $this->admin->id);
         $this->get('/account')->assertSee('Membership ended')->assertSee('Become an active member to earn from your team.');

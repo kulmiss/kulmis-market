@@ -19,20 +19,30 @@ import { Route as errors500RouteImport } from './routes/(errors)/500'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
+import { Route as AuthenticatedBadgeBonusRouteImport } from './routes/_authenticated/badge-bonus'
 import { Route as AuthenticatedBadgesRouteImport } from './routes/_authenticated/badges'
+import { Route as AuthenticatedBundlesRouteImport } from './routes/_authenticated/bundles'
 import { Route as AuthenticatedCashOutsRouteImport } from './routes/_authenticated/cash-outs'
 import { Route as AuthenticatedCategoriesRouteImport } from './routes/_authenticated/categories'
 import { Route as AuthenticatedCommissionsRouteImport } from './routes/_authenticated/commissions'
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
 import { Route as AuthenticatedContentRouteImport } from './routes/_authenticated/content'
+import { Route as AuthenticatedContestsRouteImport } from './routes/_authenticated/contests'
 import { Route as AuthenticatedCouponsRouteImport } from './routes/_authenticated/coupons'
+import { Route as AuthenticatedCustomOrdersRouteImport } from './routes/_authenticated/custom-orders'
 import { Route as AuthenticatedDemoRouteImport } from './routes/_authenticated/demo'
 import { Route as AuthenticatedFeaturesRouteImport } from './routes/_authenticated/features'
+import { Route as AuthenticatedFlashSalesRouteImport } from './routes/_authenticated/flash-sales'
 import { Route as AuthenticatedFraudRouteImport } from './routes/_authenticated/fraud'
+import { Route as AuthenticatedGiftCardsRouteImport } from './routes/_authenticated/gift-cards'
+import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
 import { Route as AuthenticatedLedgerRouteImport } from './routes/_authenticated/ledger'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
 import { Route as AuthenticatedReferralsRouteImport } from './routes/_authenticated/referrals'
+import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
+import { Route as AuthenticatedReviewsRouteImport } from './routes/_authenticated/reviews'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
+import { Route as AuthenticatedShareKitRouteImport } from './routes/_authenticated/share-kit'
 import { Route as AuthenticatedShippingRouteImport } from './routes/_authenticated/shipping'
 import { Route as AuthenticatedStatusRouteImport } from './routes/_authenticated/status'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
@@ -43,7 +53,6 @@ import { Route as AuthenticatedOrdersIdRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedProductsIndexRouteImport } from './routes/_authenticated/products/index'
 import { Route as AuthenticatedProductsIdRouteImport } from './routes/_authenticated/products/$id'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
-import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSignalsIndexRouteImport } from './routes/_authenticated/signals/index'
 import { Route as AuthenticatedSignalsSubscribersRouteImport } from './routes/_authenticated/signals/subscribers'
 import { Route as AuthenticatedSignalsTelegramRouteImport } from './routes/_authenticated/signals/telegram'
@@ -97,9 +106,19 @@ const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
   path: '/activity',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBadgeBonusRoute = AuthenticatedBadgeBonusRouteImport.update({
+  id: '/badge-bonus',
+  path: '/badge-bonus',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedBadgesRoute = AuthenticatedBadgesRouteImport.update({
   id: '/badges',
   path: '/badges',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBundlesRoute = AuthenticatedBundlesRouteImport.update({
+  id: '/bundles',
+  path: '/bundles',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCashOutsRoute = AuthenticatedCashOutsRouteImport.update({
@@ -128,11 +147,22 @@ const AuthenticatedContentRoute = AuthenticatedContentRouteImport.update({
   path: '/content',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedContestsRoute = AuthenticatedContestsRouteImport.update({
+  id: '/contests',
+  path: '/contests',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCouponsRoute = AuthenticatedCouponsRouteImport.update({
   id: '/coupons',
   path: '/coupons',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCustomOrdersRoute =
+  AuthenticatedCustomOrdersRouteImport.update({
+    id: '/custom-orders',
+    path: '/custom-orders',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDemoRoute = AuthenticatedDemoRouteImport.update({
   id: '/demo',
   path: '/demo',
@@ -143,9 +173,24 @@ const AuthenticatedFeaturesRoute = AuthenticatedFeaturesRouteImport.update({
   path: '/features',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFlashSalesRoute = AuthenticatedFlashSalesRouteImport.update({
+  id: '/flash-sales',
+  path: '/flash-sales',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedFraudRoute = AuthenticatedFraudRouteImport.update({
   id: '/fraud',
   path: '/fraud',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGiftCardsRoute = AuthenticatedGiftCardsRouteImport.update({
+  id: '/gift-cards',
+  path: '/gift-cards',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHelpRoute = AuthenticatedHelpRouteImport.update({
+  id: '/help',
+  path: '/help',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedLedgerRoute = AuthenticatedLedgerRouteImport.update({
@@ -163,12 +208,27 @@ const AuthenticatedReferralsRoute = AuthenticatedReferralsRouteImport.update({
   path: '/referrals',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedReviewsRoute = AuthenticatedReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSettingsRouteRoute =
   AuthenticatedSettingsRouteRouteImport.update({
     id: '/settings',
     path: '/settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedShareKitRoute = AuthenticatedShareKitRouteImport.update({
+  id: '/share-kit',
+  path: '/share-kit',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedShippingRoute = AuthenticatedShippingRouteImport.update({
   id: '/shipping',
   path: '/shipping',
@@ -224,12 +284,6 @@ const AuthenticatedSettingsIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
-const AuthenticatedSettingsDisplayRoute =
-  AuthenticatedSettingsDisplayRouteImport.update({
-    id: '/display',
-    path: '/display',
-    getParentRoute: () => AuthenticatedSettingsRouteRoute,
-  } as any)
 const AuthenticatedSignalsIndexRoute =
   AuthenticatedSignalsIndexRouteImport.update({
     id: '/signals/',
@@ -260,26 +314,35 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/activity': typeof AuthenticatedActivityRoute
+  '/badge-bonus': typeof AuthenticatedBadgeBonusRoute
   '/badges': typeof AuthenticatedBadgesRoute
+  '/bundles': typeof AuthenticatedBundlesRoute
   '/cash-outs': typeof AuthenticatedCashOutsRoute
   '/categories': typeof AuthenticatedCategoriesRoute
   '/commissions': typeof AuthenticatedCommissionsRoute
   '/config': typeof AuthenticatedConfigRoute
   '/content': typeof AuthenticatedContentRoute
+  '/contests': typeof AuthenticatedContestsRoute
   '/coupons': typeof AuthenticatedCouponsRoute
+  '/custom-orders': typeof AuthenticatedCustomOrdersRoute
   '/demo': typeof AuthenticatedDemoRoute
   '/features': typeof AuthenticatedFeaturesRoute
+  '/flash-sales': typeof AuthenticatedFlashSalesRoute
   '/fraud': typeof AuthenticatedFraudRoute
+  '/gift-cards': typeof AuthenticatedGiftCardsRoute
+  '/help': typeof AuthenticatedHelpRoute
   '/ledger': typeof AuthenticatedLedgerRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/referrals': typeof AuthenticatedReferralsRoute
+  '/reports': typeof AuthenticatedReportsRoute
+  '/reviews': typeof AuthenticatedReviewsRoute
+  '/share-kit': typeof AuthenticatedShareKitRoute
   '/shipping': typeof AuthenticatedShippingRoute
   '/status': typeof AuthenticatedStatusRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/products/$id': typeof AuthenticatedProductsIdRoute
-  '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/signals/subscribers': typeof AuthenticatedSignalsSubscribersRoute
   '/signals/telegram': typeof AuthenticatedSignalsTelegramRoute
   '/members/': typeof AuthenticatedMembersIndexRoute
@@ -297,19 +360,29 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/activity': typeof AuthenticatedActivityRoute
+  '/badge-bonus': typeof AuthenticatedBadgeBonusRoute
   '/badges': typeof AuthenticatedBadgesRoute
+  '/bundles': typeof AuthenticatedBundlesRoute
   '/cash-outs': typeof AuthenticatedCashOutsRoute
   '/categories': typeof AuthenticatedCategoriesRoute
   '/commissions': typeof AuthenticatedCommissionsRoute
   '/config': typeof AuthenticatedConfigRoute
   '/content': typeof AuthenticatedContentRoute
+  '/contests': typeof AuthenticatedContestsRoute
   '/coupons': typeof AuthenticatedCouponsRoute
+  '/custom-orders': typeof AuthenticatedCustomOrdersRoute
   '/demo': typeof AuthenticatedDemoRoute
   '/features': typeof AuthenticatedFeaturesRoute
+  '/flash-sales': typeof AuthenticatedFlashSalesRoute
   '/fraud': typeof AuthenticatedFraudRoute
+  '/gift-cards': typeof AuthenticatedGiftCardsRoute
+  '/help': typeof AuthenticatedHelpRoute
   '/ledger': typeof AuthenticatedLedgerRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/referrals': typeof AuthenticatedReferralsRoute
+  '/reports': typeof AuthenticatedReportsRoute
+  '/reviews': typeof AuthenticatedReviewsRoute
+  '/share-kit': typeof AuthenticatedShareKitRoute
   '/shipping': typeof AuthenticatedShippingRoute
   '/status': typeof AuthenticatedStatusRoute
   '/': typeof AuthenticatedIndexRoute
@@ -317,7 +390,6 @@ export interface FileRoutesByTo {
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/products/$id': typeof AuthenticatedProductsIdRoute
-  '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/signals/subscribers': typeof AuthenticatedSignalsSubscribersRoute
   '/signals/telegram': typeof AuthenticatedSignalsTelegramRoute
   '/members': typeof AuthenticatedMembersIndexRoute
@@ -338,19 +410,29 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
+  '/_authenticated/badge-bonus': typeof AuthenticatedBadgeBonusRoute
   '/_authenticated/badges': typeof AuthenticatedBadgesRoute
+  '/_authenticated/bundles': typeof AuthenticatedBundlesRoute
   '/_authenticated/cash-outs': typeof AuthenticatedCashOutsRoute
   '/_authenticated/categories': typeof AuthenticatedCategoriesRoute
   '/_authenticated/commissions': typeof AuthenticatedCommissionsRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
   '/_authenticated/content': typeof AuthenticatedContentRoute
+  '/_authenticated/contests': typeof AuthenticatedContestsRoute
   '/_authenticated/coupons': typeof AuthenticatedCouponsRoute
+  '/_authenticated/custom-orders': typeof AuthenticatedCustomOrdersRoute
   '/_authenticated/demo': typeof AuthenticatedDemoRoute
   '/_authenticated/features': typeof AuthenticatedFeaturesRoute
+  '/_authenticated/flash-sales': typeof AuthenticatedFlashSalesRoute
   '/_authenticated/fraud': typeof AuthenticatedFraudRoute
+  '/_authenticated/gift-cards': typeof AuthenticatedGiftCardsRoute
+  '/_authenticated/help': typeof AuthenticatedHelpRoute
   '/_authenticated/ledger': typeof AuthenticatedLedgerRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/referrals': typeof AuthenticatedReferralsRoute
+  '/_authenticated/reports': typeof AuthenticatedReportsRoute
+  '/_authenticated/reviews': typeof AuthenticatedReviewsRoute
+  '/_authenticated/share-kit': typeof AuthenticatedShareKitRoute
   '/_authenticated/shipping': typeof AuthenticatedShippingRoute
   '/_authenticated/status': typeof AuthenticatedStatusRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
@@ -358,7 +440,6 @@ export interface FileRoutesById {
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
   '/_authenticated/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/_authenticated/products/$id': typeof AuthenticatedProductsIdRoute
-  '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/signals/subscribers': typeof AuthenticatedSignalsSubscribersRoute
   '/_authenticated/signals/telegram': typeof AuthenticatedSignalsTelegramRoute
   '/_authenticated/members/': typeof AuthenticatedMembersIndexRoute
@@ -380,26 +461,35 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/activity'
+    | '/badge-bonus'
     | '/badges'
+    | '/bundles'
     | '/cash-outs'
     | '/categories'
     | '/commissions'
     | '/config'
     | '/content'
+    | '/contests'
     | '/coupons'
+    | '/custom-orders'
     | '/demo'
     | '/features'
+    | '/flash-sales'
     | '/fraud'
+    | '/gift-cards'
+    | '/help'
     | '/ledger'
     | '/payments'
     | '/referrals'
+    | '/reports'
+    | '/reviews'
+    | '/share-kit'
     | '/shipping'
     | '/status'
     | '/errors/$error'
     | '/members/$id'
     | '/orders/$id'
     | '/products/$id'
-    | '/settings/display'
     | '/signals/subscribers'
     | '/signals/telegram'
     | '/members/'
@@ -417,19 +507,29 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/activity'
+    | '/badge-bonus'
     | '/badges'
+    | '/bundles'
     | '/cash-outs'
     | '/categories'
     | '/commissions'
     | '/config'
     | '/content'
+    | '/contests'
     | '/coupons'
+    | '/custom-orders'
     | '/demo'
     | '/features'
+    | '/flash-sales'
     | '/fraud'
+    | '/gift-cards'
+    | '/help'
     | '/ledger'
     | '/payments'
     | '/referrals'
+    | '/reports'
+    | '/reviews'
+    | '/share-kit'
     | '/shipping'
     | '/status'
     | '/'
@@ -437,7 +537,6 @@ export interface FileRouteTypes {
     | '/members/$id'
     | '/orders/$id'
     | '/products/$id'
-    | '/settings/display'
     | '/signals/subscribers'
     | '/signals/telegram'
     | '/members'
@@ -457,19 +556,29 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/activity'
+    | '/_authenticated/badge-bonus'
     | '/_authenticated/badges'
+    | '/_authenticated/bundles'
     | '/_authenticated/cash-outs'
     | '/_authenticated/categories'
     | '/_authenticated/commissions'
     | '/_authenticated/config'
     | '/_authenticated/content'
+    | '/_authenticated/contests'
     | '/_authenticated/coupons'
+    | '/_authenticated/custom-orders'
     | '/_authenticated/demo'
     | '/_authenticated/features'
+    | '/_authenticated/flash-sales'
     | '/_authenticated/fraud'
+    | '/_authenticated/gift-cards'
+    | '/_authenticated/help'
     | '/_authenticated/ledger'
     | '/_authenticated/payments'
     | '/_authenticated/referrals'
+    | '/_authenticated/reports'
+    | '/_authenticated/reviews'
+    | '/_authenticated/share-kit'
     | '/_authenticated/shipping'
     | '/_authenticated/status'
     | '/_authenticated/'
@@ -477,7 +586,6 @@ export interface FileRouteTypes {
     | '/_authenticated/members/$id'
     | '/_authenticated/orders/$id'
     | '/_authenticated/products/$id'
-    | '/_authenticated/settings/display'
     | '/_authenticated/signals/subscribers'
     | '/_authenticated/signals/telegram'
     | '/_authenticated/members/'
@@ -570,11 +678,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedActivityRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/badge-bonus': {
+      id: '/_authenticated/badge-bonus'
+      path: '/badge-bonus'
+      fullPath: '/badge-bonus'
+      preLoaderRoute: typeof AuthenticatedBadgeBonusRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/badges': {
       id: '/_authenticated/badges'
       path: '/badges'
       fullPath: '/badges'
       preLoaderRoute: typeof AuthenticatedBadgesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/bundles': {
+      id: '/_authenticated/bundles'
+      path: '/bundles'
+      fullPath: '/bundles'
+      preLoaderRoute: typeof AuthenticatedBundlesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/cash-outs': {
@@ -612,11 +734,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContentRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/contests': {
+      id: '/_authenticated/contests'
+      path: '/contests'
+      fullPath: '/contests'
+      preLoaderRoute: typeof AuthenticatedContestsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/coupons': {
       id: '/_authenticated/coupons'
       path: '/coupons'
       fullPath: '/coupons'
       preLoaderRoute: typeof AuthenticatedCouponsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/custom-orders': {
+      id: '/_authenticated/custom-orders'
+      path: '/custom-orders'
+      fullPath: '/custom-orders'
+      preLoaderRoute: typeof AuthenticatedCustomOrdersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/demo': {
@@ -633,11 +769,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFeaturesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/flash-sales': {
+      id: '/_authenticated/flash-sales'
+      path: '/flash-sales'
+      fullPath: '/flash-sales'
+      preLoaderRoute: typeof AuthenticatedFlashSalesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/fraud': {
       id: '/_authenticated/fraud'
       path: '/fraud'
       fullPath: '/fraud'
       preLoaderRoute: typeof AuthenticatedFraudRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/gift-cards': {
+      id: '/_authenticated/gift-cards'
+      path: '/gift-cards'
+      fullPath: '/gift-cards'
+      preLoaderRoute: typeof AuthenticatedGiftCardsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/help': {
+      id: '/_authenticated/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof AuthenticatedHelpRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/ledger': {
@@ -661,11 +818,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReferralsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/reports': {
+      id: '/_authenticated/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AuthenticatedReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reviews': {
+      id: '/_authenticated/reviews'
+      path: '/reviews'
+      fullPath: '/reviews'
+      preLoaderRoute: typeof AuthenticatedReviewsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/share-kit': {
+      id: '/_authenticated/share-kit'
+      path: '/share-kit'
+      fullPath: '/share-kit'
+      preLoaderRoute: typeof AuthenticatedShareKitRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/shipping': {
@@ -738,13 +916,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
-    '/_authenticated/settings/display': {
-      id: '/_authenticated/settings/display'
-      path: '/display'
-      fullPath: '/settings/display'
-      preLoaderRoute: typeof AuthenticatedSettingsDisplayRouteImport
-      parentRoute: typeof AuthenticatedSettingsRouteRoute
-    }
     '/_authenticated/signals/': {
       id: '/_authenticated/signals/'
       path: '/signals'
@@ -770,13 +941,11 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedSettingsRouteRouteChildren {
-  AuthenticatedSettingsDisplayRoute: typeof AuthenticatedSettingsDisplayRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
 }
 
 const AuthenticatedSettingsRouteRouteChildren: AuthenticatedSettingsRouteRouteChildren =
   {
-    AuthenticatedSettingsDisplayRoute: AuthenticatedSettingsDisplayRoute,
     AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
   }
 
@@ -788,19 +957,29 @@ const AuthenticatedSettingsRouteRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
+  AuthenticatedBadgeBonusRoute: typeof AuthenticatedBadgeBonusRoute
   AuthenticatedBadgesRoute: typeof AuthenticatedBadgesRoute
+  AuthenticatedBundlesRoute: typeof AuthenticatedBundlesRoute
   AuthenticatedCashOutsRoute: typeof AuthenticatedCashOutsRoute
   AuthenticatedCategoriesRoute: typeof AuthenticatedCategoriesRoute
   AuthenticatedCommissionsRoute: typeof AuthenticatedCommissionsRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
   AuthenticatedContentRoute: typeof AuthenticatedContentRoute
+  AuthenticatedContestsRoute: typeof AuthenticatedContestsRoute
   AuthenticatedCouponsRoute: typeof AuthenticatedCouponsRoute
+  AuthenticatedCustomOrdersRoute: typeof AuthenticatedCustomOrdersRoute
   AuthenticatedDemoRoute: typeof AuthenticatedDemoRoute
   AuthenticatedFeaturesRoute: typeof AuthenticatedFeaturesRoute
+  AuthenticatedFlashSalesRoute: typeof AuthenticatedFlashSalesRoute
   AuthenticatedFraudRoute: typeof AuthenticatedFraudRoute
+  AuthenticatedGiftCardsRoute: typeof AuthenticatedGiftCardsRoute
+  AuthenticatedHelpRoute: typeof AuthenticatedHelpRoute
   AuthenticatedLedgerRoute: typeof AuthenticatedLedgerRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedReferralsRoute: typeof AuthenticatedReferralsRoute
+  AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
+  AuthenticatedReviewsRoute: typeof AuthenticatedReviewsRoute
+  AuthenticatedShareKitRoute: typeof AuthenticatedShareKitRoute
   AuthenticatedShippingRoute: typeof AuthenticatedShippingRoute
   AuthenticatedStatusRoute: typeof AuthenticatedStatusRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
@@ -819,19 +998,29 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
   AuthenticatedActivityRoute: AuthenticatedActivityRoute,
+  AuthenticatedBadgeBonusRoute: AuthenticatedBadgeBonusRoute,
   AuthenticatedBadgesRoute: AuthenticatedBadgesRoute,
+  AuthenticatedBundlesRoute: AuthenticatedBundlesRoute,
   AuthenticatedCashOutsRoute: AuthenticatedCashOutsRoute,
   AuthenticatedCategoriesRoute: AuthenticatedCategoriesRoute,
   AuthenticatedCommissionsRoute: AuthenticatedCommissionsRoute,
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,
   AuthenticatedContentRoute: AuthenticatedContentRoute,
+  AuthenticatedContestsRoute: AuthenticatedContestsRoute,
   AuthenticatedCouponsRoute: AuthenticatedCouponsRoute,
+  AuthenticatedCustomOrdersRoute: AuthenticatedCustomOrdersRoute,
   AuthenticatedDemoRoute: AuthenticatedDemoRoute,
   AuthenticatedFeaturesRoute: AuthenticatedFeaturesRoute,
+  AuthenticatedFlashSalesRoute: AuthenticatedFlashSalesRoute,
   AuthenticatedFraudRoute: AuthenticatedFraudRoute,
+  AuthenticatedGiftCardsRoute: AuthenticatedGiftCardsRoute,
+  AuthenticatedHelpRoute: AuthenticatedHelpRoute,
   AuthenticatedLedgerRoute: AuthenticatedLedgerRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedReferralsRoute: AuthenticatedReferralsRoute,
+  AuthenticatedReportsRoute: AuthenticatedReportsRoute,
+  AuthenticatedReviewsRoute: AuthenticatedReviewsRoute,
+  AuthenticatedShareKitRoute: AuthenticatedShareKitRoute,
   AuthenticatedShippingRoute: AuthenticatedShippingRoute,
   AuthenticatedStatusRoute: AuthenticatedStatusRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,

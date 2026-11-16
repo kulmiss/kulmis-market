@@ -46,6 +46,7 @@ class ContentController extends Controller
             'link_url' => ['nullable', 'string', 'max:255', 'regex:#^(/|https://)#'], 'link_text' => ['nullable', 'string', 'max:60'],
             'starts_at' => ['nullable', 'date'], 'ends_at' => ['nullable', 'date'],
             'is_active' => ['boolean'], 'position' => ['nullable', 'integer'],
+            'color' => ['nullable', Rule::in(array_keys(Banner::COLORS))],
         ]);
         $banner ??= new Banner;
         $banner->fill($data)->save();

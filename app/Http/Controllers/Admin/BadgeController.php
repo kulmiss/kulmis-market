@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Badges\BadgeIcons;
 use App\Badges\BadgeRules;
+use App\Badges\ProfitGuard;
 use App\Http\Controllers\Controller;
 use App\Models\Badge;
 use App\Support\Activity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -29,8 +31,13 @@ class BadgeController extends Controller
     {
         $data = $this->validated($request, true);
         $data['key'] = $this->uniqueKey($data['name']);
-        $badge = Badge::query()->create($data);
-        Activity::log('badge.created', $badge, $data);
+        $badge = DB::transaction(function () use ($data) {
+            $badge = Badge::query()->create($data);
+            $this->checkBonus($badge);
+            Activity::log('badge.created', $badge, $data);
+
+            return $badge;
+        });
 
         return response()->json(['data' => $badge->loadCount('holders')], 201);
     }
@@ -39,8 +46,11 @@ class BadgeController extends Controller
     {
         $data = $this->validated($request, false);
         $before = $badge->only(array_keys($data));
-        $badge->update($data);
-        Activity::log('badge.updated', $badge, ['from' => $before, 'to' => $data]);
+        DB::transaction(function () use ($badge, $data, $before) {
+            $badge->update($data);
+            $this->checkBonus($badge);
+            Activity::log('badge.updated', $badge, ['from' => $before, 'to' => $data]);
+        });
 
         return response()->json(['data' => $badge->loadCount('holders')]);
     }
@@ -71,7 +81,21 @@ class BadgeController extends Controller
             'threshold' => [$req, 'integer', 'min:1', 'max:1000000000000'],
             'rank' => ['sometimes', 'integer', 'min:0', 'max:1000'],
             'is_active' => ['sometimes', 'boolean'],
+            'monthly_bonus' => ['sometimes', 'integer', 'min:0', 'max:100000000000'],
+            'one_time_bonus' => ['sometimes', 'integer', 'min:0', 'max:100000000000'],
         ]) + ($creating ? ['description' => ''] : []);
+    }
+
+    /** Monthly bonuses only for level-1 team badges, one-time for the rest; and the shop stays in profit. */
+    private function checkBonus(Badge $badge): void
+    {
+        if ($badge->monthly_bonus > 0 && ! $badge->paysMonthly()) {
+            throw ValidationException::withMessages(['monthly_bonus' => 'Only team badges ("active members you invited") can pay every month. Use the one-time bonus.']);
+        }
+        if ($badge->one_time_bonus > 0 && $badge->paysMonthly()) {
+            throw ValidationException::withMessages(['one_time_bonus' => 'Team badges pay every month instead. Leave the one-time bonus at 0.']);
+        }
+        ProfitGuard::assertSafe();
     }
 
     private function uniqueKey(string $name): string

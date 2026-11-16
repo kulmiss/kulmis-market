@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Badges\ProfitGuard;
 use App\Http\Controllers\Controller;
 use App\Support\Settings;
 use Illuminate\Http\JsonResponse;
@@ -38,6 +39,9 @@ class SettingController extends Controller
             DB::transaction(function () use ($data, $request) {
                 foreach ($data['settings'] as $key => $value) {
                     Settings::set((string) $key, $value, $request->user()?->id, $data['reason'] ?? null);
+                }
+                if (array_filter(array_keys($data['settings']), fn ($k) => preg_match(ProfitGuard::PATTERN, (string) $k))) {
+                    ProfitGuard::assertSafe(); // you always keep at least 65% of every membership
                 }
                 if (Settings::string('currency.thousands') === Settings::string('currency.decimal_point')) {
                     throw ValidationException::withMessages(['settings.currency.decimal_point' => 'The decimal separator must be different from the thousands separator.']);

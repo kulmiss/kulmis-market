@@ -6,6 +6,7 @@ use App\Cart\CartManager;
 use App\Events\OrderPlaced;
 use App\Models\Cart;
 use App\Models\Coupon;
+use App\Models\FlashSale;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -14,6 +15,11 @@ use App\Pricing\PriceCalculator;
 use App\Pricing\PricingException;
 use App\Pricing\Quote;
 use App\Shipping\ShippingQuoter;
+use App\Shop\Deposits;
+use App\Shop\FlashSales;
+use App\Shop\LowStock;
+use App\Storefront\PageCache;
+use App\Support\Features;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -28,15 +34,21 @@ class Checkout
         private readonly CartManager $carts,
     ) {}
 
+    /** @param list<array{0: Product, 1: ?ProductVariant, 2: int}> $items  Nothing to ship → no delivery fee. */
+    public static function onlyDigital(array $items): bool
+    {
+        return $items !== [] && count(array_filter($items, fn ($i) => ! $i[0]->isDigital())) === 0;
+    }
+
     /** Price the cart for display (no locks, no changes). */
     public function preview(Cart $cart, ?User $user, ?int $zoneId = null, ?string $city = null, ?string $phone = null): Quote
     {
         $items = $this->carts->pricingItems($cart);
         $member = (bool) $user?->isActiveMember();
         $weight = array_sum(array_map(fn ($i) => ($i[1]->weight_grams ?? $i[0]->weight_grams) * $i[2], $items));
-        $fee = $items && ($zoneId || $city) ? $this->shipping->quote($zoneId, (string) $city, $weight) : 0;
+        $fee = $items && ($zoneId || $city) && ! self::onlyDigital($items) ? $this->shipping->quote($zoneId, (string) $city, $weight) : 0;
 
-        return $this->prices->quote($items, $member, $cart->coupon_code, $fee, $this->couponUses($user, $phone));
+        return $this->prices->quote($items, $member, $cart->coupon_code, $fee, $this->couponUses($user, $phone), true, (array) ($cart->extras ?? []));
     }
 
     /**
@@ -49,7 +61,8 @@ class Checkout
             return $existing; // double-click / retry → same order
         }
 
-        $order = DB::transaction(function () use ($cart, $customer, $user, $checkoutKey, $extra) {
+        $flashTouched = false; // true when a sale sold out with this order
+        $order = DB::transaction(function () use ($cart, $customer, $user, $checkoutKey, $extra, &$flashTouched) {
             $cartItems = $cart->items()->get();
             if ($cartItems->isEmpty()) {
                 throw new PricingException('Your cart is empty.');
@@ -74,8 +87,8 @@ class Checkout
 
             $member = (bool) $user?->isActiveMember();
             $weight = array_sum(array_map(fn ($i) => ($i[1]->weight_grams ?? $i[0]->weight_grams) * $i[2], $items));
-            $fee = $this->shipping->quote($customer['shipping_zone_id'] ?? null, $customer['city'], $weight);
-            $quote = $this->prices->quote($items, $member, $cart->coupon_code, $fee, $this->couponUses($user, $customer['phone']));
+            $fee = self::onlyDigital($items) ? 0 : $this->shipping->quote($customer['shipping_zone_id'] ?? null, $customer['city'], $weight);
+            $quote = $this->prices->quote($items, $member, $cart->coupon_code, $fee, $this->couponUses($user, $customer['phone']), true, (array) ($cart->extras ?? []));
 
             $order = Order::query()->create(array_merge([
                 'number' => $this->newNumber(),
@@ -92,6 +105,7 @@ class Checkout
                 'is_member_order' => $member,
                 'list_subtotal' => $quote->listSubtotal,
                 'member_discount' => $quote->memberDiscount,
+                'bundle_discount' => $quote->bundleDiscount,
                 'coupon_id' => $quote->coupon?->id,
                 'coupon_code' => $quote->coupon?->code,
                 'coupon_discount' => $quote->couponDiscount,
@@ -99,6 +113,8 @@ class Checkout
                 'shipping' => $quote->shipping,
                 'shipping_discount' => $quote->shippingDiscount,
                 'total' => $quote->total(),
+                'extras' => $quote->extras ?: null,
+                'extras_total' => $quote->extrasTotal(),
                 'checkout_key' => $checkoutKey,
                 'device_hash' => $this->carts->deviceHash($cart),
             ], $extra));
@@ -116,12 +132,30 @@ class Checkout
                     'line_total' => $line->total(),
                     'made_to_order' => $line->product->isMadeToOrder(),
                     'making_days' => $line->product->making_days,
+                    'flash_sale_id' => $line->flashSaleId,
+                    'deposit_bps' => Features::enabled('shop.preorders') ? $line->product->preorder_deposit_bps : null,
                 ]);
+                if ($line->flashSaleId !== null) {
+                    // Atomic: two checkouts can't both take the last pieces at the sale price.
+                    $taken = FlashSale::query()->whereKey($line->flashSaleId)
+                        ->where(fn ($q) => $q->whereNull('stock_limit')->orWhereRaw('sold + ? <= stock_limit', [$line->quantity]))
+                        ->increment('sold', $line->quantity);
+                    if ($taken === 0) {
+                        throw new PricingException("The sale price for “{$line->product->name}” just ran out. Please check your cart again.");
+                    }
+                    $flashTouched = $flashTouched || FlashSale::query()->whereKey($line->flashSaleId)
+                        ->whereNotNull('stock_limit')->whereColumn('sold', '>=', 'stock_limit')->exists();
+                }
                 if (! $line->product->isMadeToOrder()) {
                     $line->variant
                         ? ProductVariant::query()->whereKey($line->variant->id)->decrement('stock', $line->quantity)
                         : Product::query()->whereKey($line->product->id)->decrement('stock', $line->quantity);
+                    LowStock::afterSale($line->product, $line->variant, $line->quantity);
                 }
+            }
+
+            if (Features::enabled('shop.preorders') && ($deposit = Deposits::forPreorder($order->load('items'))) > 0) {
+                $order->update(['deposit_amount' => $deposit]);
             }
 
             if ($quote->coupon) {
@@ -138,11 +172,15 @@ class Checkout
             $order->history()->create(['from' => null, 'to' => Order::PENDING_PAYMENT, 'note' => 'Order placed']);
 
             $cart->items()->delete();
-            $cart->update(['coupon_code' => null]);
+            $cart->update(['coupon_code' => null, 'reminded_at' => null, 'extras' => null, 'gift_card_id' => null]);
 
             return $order;
         });
 
+        if ($flashTouched) {
+            app(FlashSales::class)->forget();
+            PageCache::clear(); // a sale just sold out: cached guest pages must stop showing it
+        }
         OrderPlaced::dispatch($order);
 
         return $order;
@@ -157,7 +195,7 @@ class Checkout
             ->count();
     }
 
-    private function newNumber(): string
+    public function newNumber(): string
     {
         do {
             $number = 'KM'.now()->format('ymd').'-'.str_pad((string) random_int(0, 99999), 5, '0', STR_PAD_LEFT);

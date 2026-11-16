@@ -1,0 +1,20 @@
+{
+  "id": "/account",
+  "name": "Kulmis Market — My account",
+  "short_name": "Kulmis",
+  "description": "Your earnings, team, orders and signals.",
+  "icons": [
+    { "src": "/brand/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "theme_color": "#1f8a4c",
+  "background_color": "#f4f8f5",
+  "display": "standalone",
+  "start_url": "/account?source=app",
+  "scope": "/",
+  "shortcuts": [
+    { "name": "Earnings", "url": "/account/earnings" },
+    { "name": "Wallet", "url": "/account/wallet" },
+    { "name": "Notifications", "url": "/account/notifications" }
+  ]
+}

@@ -5,6 +5,7 @@ import { AlertTriangle, Banknote, Crown, Package, Radio, ShieldAlert, TrendingUp
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { api } from '@/lib/api'
 import { formatMoney } from '@/lib/money'
+import { useAuthStore } from '@/stores/auth-store'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Page } from '@/components/km/page'
@@ -13,12 +14,13 @@ import { PageSkeleton } from '@/components/km/page-skeleton'
 type D = {
   revenue: { products: number; memberships: number; signals: number; total: number }
   gross_profit: number
-  costs: { products: number; commissions: number; loyalty: number; payment_fees: number }
+  costs: { products: number; commissions: number; loyalty: number; badge_bonuses: number; payment_fees: number; rewards?: number }
+  rewards?: Record<string, number>
   discounts: { member: number; coupons: number; free_shipping: number; total: number }
   shipping: { charged: number; free_given: number }
   orders: { paid: number; average: number }
   commissions: { earned_in_period: number; pending: number; available: number; requested: number; paid_out: number; paid_out_all_time: number }
-  loyalty_rewards: number; payment_fees: number
+  loyalty_rewards: number; badge_bonuses: number; payment_fees: number
   membership: { active: number; mrr: number; new: number; churned: number; churn_rate: number }
   signals: { subscribers: number; guests_paying: number }
   top_products: { product_id: number; name: string; qty: number; revenue: number }[]
@@ -31,12 +33,16 @@ type D = {
   daily: { date: string; revenue: number; orders: number }[]
 }
 
-const ranges = [{ label: '7 days', days: 7 }, { label: '30 days', days: 30 }, { label: '90 days', days: 90 }, { label: '12 months', days: 365 }]
+const ranges = [{ label: '7 days', short: '7 d', days: 7 }, { label: '30 days', short: '30 d', days: 30 }, { label: '90 days', short: '90 d', days: 90 }, { label: '12 months', short: '1 year', days: 365 }]
+
+const REWARD_NAMES: Record<string, string> = { first_payment: 'First-payment bonuses', contest: 'Contest prizes', challenge: 'Challenge rewards', comeback: 'Welcome-back rewards' }
 
 export function Dashboard() {
   const [days, setDays] = useState(30)
   const [data, setData] = useState<'demo' | 'real'>('demo')
+  const allowed = useAuthStore((s) => s.can('view-reports'))
   const q = useQuery({
+    enabled: allowed, // roles without the dashboard are sent to their first page: no 403 on the way
     queryKey: ['dashboard', days, data],
     queryFn: async () => {
       const to = new Date()
@@ -48,8 +54,8 @@ export function Dashboard() {
   const d = q.data
 
   return (
-    <Page title='Dashboard' description='Money from the ledger, so refunds are already taken off.'
-      actions={ranges.map((r) => <Button key={r.days} size='sm' variant={days === r.days ? 'default' : 'outline'} onClick={() => setDays(r.days)}>{r.label}</Button>)}>
+    <Page title='Dashboard' description='Money really received and paid. Money given back is already taken off.'
+      actions={<div className='grid w-full grid-cols-4 gap-2 sm:flex sm:w-auto' role='group' aria-label='Time range'>{ranges.map((r) => <Button key={r.days} size='sm' className='px-1 sm:px-3' aria-pressed={days === r.days} variant={days === r.days ? 'default' : 'outline'} onClick={() => setDays(r.days)}><span className='sm:hidden'>{r.short}</span><span className='hidden sm:inline'>{r.label}</span></Button>)}</div>}>
       {!d ? <PageSkeleton /> : (
         <div className='grid gap-4'>
           {d.demo.visible && d.demo.exists && (
@@ -65,7 +71,7 @@ export function Dashboard() {
             <Kpi icon={TrendingUp} title='Revenue' value={formatMoney(d.revenue.total)}
               sub={`Shop ${formatMoney(d.revenue.products)} · Membership ${formatMoney(d.revenue.memberships)} · Signals ${formatMoney(d.revenue.signals)}`} />
             <Kpi icon={Banknote} title='Gross profit' value={formatMoney(d.gross_profit)}
-              sub={`after product cost ${formatMoney(d.costs.products)}, commissions ${formatMoney(d.costs.commissions)}, loyalty ${formatMoney(d.costs.loyalty)}, fees ${formatMoney(d.costs.payment_fees)}`} />
+              sub={`after product cost ${formatMoney(d.costs.products)}, commissions ${formatMoney(d.costs.commissions)}, loyalty ${formatMoney(d.costs.loyalty)}, badge bonuses ${formatMoney(d.costs.badge_bonuses)}, rewards and prizes ${formatMoney(d.costs.rewards ?? 0)}, fees ${formatMoney(d.costs.payment_fees)}`} />
             <Kpi icon={Crown} title='Membership MRR' value={formatMoney(d.membership.mrr)}
               sub={`${d.membership.active} active · ${d.membership.new} new · ${d.membership.churned} churned (${d.membership.churn_rate}%)`} />
             <Kpi icon={Radio} title='Signals subscribers' value={String(d.signals.subscribers)} sub={`${d.signals.guests_paying} paying guests, the rest are members`} />
@@ -77,8 +83,8 @@ export function Dashboard() {
               <ResponsiveContainer width='100%' height='100%'>
                 <AreaChart data={d.daily}>
                   <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
-                  <XAxis dataKey='date' tickFormatter={(v: string) => v.slice(5)} fontSize={12} />
-                  <YAxis allowDecimals={false} domain={[0, (max: number) => Math.max(max, 100_000)]} tickFormatter={(v: number) => `${Math.round(v / 100).toLocaleString()}`} fontSize={12} width={60} />
+                  <XAxis dataKey='date' tickFormatter={(v: string) => v.slice(5)} fontSize={12} minTickGap={24} />
+                  <YAxis allowDecimals={false} domain={[0, (max: number) => Math.max(max, 100_000)]} tickFormatter={(v: number) => (v >= 100_000_00 ? `${Math.round(v / 100_000_00)}M` : v >= 100_000 ? `${Math.round(v / 100_000)}k` : `${Math.round(v / 100)}`)} fontSize={12} width={40} />
                   <Tooltip formatter={(v) => formatMoney(Number(v))} labelFormatter={(l) => String(l)} />
                   <Area type='monotone' dataKey='revenue' stroke='var(--color-primary)' fill='var(--color-primary)' fillOpacity={0.15} />
                 </AreaChart>
@@ -86,7 +92,7 @@ export function Dashboard() {
             </CardContent>
           </Card>
 
-          <div className='grid grid-cols-1 gap-4 lg:grid-cols-3'>
+          <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
             <Card>
               <CardHeader><CardTitle className='text-base'>Commissions</CardTitle></CardHeader>
               <CardContent className='grid gap-1 text-sm'>
@@ -97,6 +103,10 @@ export function Dashboard() {
                 <Line label='Paid out in period' value={formatMoney(d.commissions.paid_out)} />
                 <Line label='Paid out all time' value={formatMoney(d.commissions.paid_out_all_time)} />
                 <Line label='Loyalty rewards in period' value={formatMoney(d.loyalty_rewards)} />
+                <Line label='Badge bonuses in period' value={formatMoney(d.badge_bonuses)} />
+                {Object.entries(d.rewards ?? {}).filter(([, v]) => v !== 0).map(([k, v]) => <Line key={k} label={`${REWARD_NAMES[k] ?? k} in period`} value={formatMoney(v)} />)}
+                {d.revenue.total > 0 && <Line label='Paid out vs money in' value={`${(((d.costs.commissions + d.costs.loyalty + d.costs.badge_bonuses + (d.costs.rewards ?? 0)) * 100) / d.revenue.total).toFixed(1)}%`} />}
+                <a href='/admin/reports' className='mt-1 text-xs underline'>See every source in Reports →</a>
               </CardContent>
             </Card>
             <Card>

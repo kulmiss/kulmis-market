@@ -1,5 +1,12 @@
 <?php
 
+use App\Notify\Inbox;
+use App\Notify\WebPush;
+use App\Rewards\Challenges;
+use App\Rewards\Contests;
+use App\Shop\CartReminders;
+use App\Shop\FlashSales;
+use App\Shop\Winback;
 use App\Storefront\PageCache;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -30,6 +37,7 @@ Schedule::command('referrals:release')->hourly()->withoutOverlapping();
 Schedule::command('payouts:remind')->dailyAt('08:41');
 Schedule::command('badges:check')->dailyAt('04:17')->withoutOverlapping();
 Schedule::command('badges:check --top-referrer')->monthlyOn(1, '05:13')->withoutOverlapping();
+Schedule::command('badges:bonus')->monthlyOn(1, '06:23')->withoutOverlapping();
 Schedule::command('km:prune-logs')->weeklyOn(1, '03:23');
 Schedule::command('sanctum:prune-expired --hours=24')->dailyAt('03:41');
 
@@ -48,3 +56,18 @@ Artisan::command('km:clear-page-cache', function () {
 if (config('shop.backup_key')) {
     Schedule::command('km:backup')->dailyAt('02:17')->withoutOverlapping();
 }
+Schedule::call(fn () => app(FlashSales::class)->tick())->everyMinute()->name('flash-sales:tick')->withoutOverlapping();
+Schedule::call(fn () => app(CartReminders::class)->run())->hourly()->name('carts:remind')->withoutOverlapping();
+Schedule::call(fn () => Inbox::prune())->dailyAt('03:37')->name('notifications:prune');
+
+Artisan::command('km:push-keys', function () {
+    $k = WebPush::newKeys();
+    $this->info('Add these two lines to .env (keep the second one secret), then restart:');
+    $this->line('WEBPUSH_PUBLIC_KEY='.$k['public']);
+    $this->line('WEBPUSH_PRIVATE_KEY='.$k['private']);
+})->purpose('Make the keys for phone notifications (Web Push)');
+Schedule::call(function () {
+    app(Contests::class)->settleDue();
+    app(Challenges::class)->settleDue();
+})->dailyAt('05:23')->name('contests:settle')->withoutOverlapping();
+Schedule::call(fn () => app(Winback::class)->run())->dailyAt('10:13')->name('shop:winback')->withoutOverlapping();
