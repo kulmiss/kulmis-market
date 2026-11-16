@@ -1,0 +1,1 @@
+import{T as e}from"./index-3SDEhjDB.js";var t={queryKey:[`setup`],queryFn:async()=>(await e.get(`/setup`)).data.data};export{t};

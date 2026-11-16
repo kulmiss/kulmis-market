@@ -1,1 +1,0 @@
-import{n as e}from"./catalog-pages-Bpo-dcgi.js";var t=e;export{t as component};

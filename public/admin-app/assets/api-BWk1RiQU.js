@@ -1,1 +1,0 @@
-import{T as e}from"./index-DuvvNB0Q.js";var t={queryKey:[`setup`],queryFn:async()=>(await e.get(`/setup`)).data.data};export{t};

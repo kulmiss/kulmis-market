@@ -299,7 +299,7 @@
 
     @feature('membership')
     <div class="m-card" id="membership">
-        <h2 class="font-semibold">Membership</h2>
+        <div class="flex items-center gap-2"><h2 class="font-semibold">Membership</h2>@include('member.partials.help-link', ['slug' => 'become-a-member', 'label' => 'membership'])</div>
         @if ($rejected)<p class="mt-2 rounded-xl bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-200" role="status" data-receipt-rejected><b>We could not accept your last receipt.</b> Reason: {{ $rejected->reject_reason }}. Please send a new one below.</p>@endif
         @if ($m['active'])
             <p class="mt-1 text-sm">Active until <b>{{ $day($m['ends']) }}</b>@if ($m['grace_until']) · if you pay late, benefits stop on {{ $day($m['grace_until']) }}@endif</p>

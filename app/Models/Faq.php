@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Help\HelpTokens;
 use App\Storefront\PageCache;
 use App\Support\FeatureText;
 use Illuminate\Database\Eloquent\Model;
@@ -38,6 +39,6 @@ class Faq extends Model
     /** The answer with {if feature} parts applied. */
     public function answerNow(): string
     {
-        return FeatureText::apply((string) $this->answer);
+        return HelpTokens::apply(FeatureText::apply((string) $this->answer));
     }
 }

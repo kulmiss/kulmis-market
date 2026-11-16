@@ -25,6 +25,7 @@ Route::get('/referral-program', [S::class, 'referralProgram'])->name('referral-p
 Route::get('/signals', [S::class, 'signals'])->name('signals');
 Route::get('/signals/performance', [S::class, 'performance'])->name('signals.performance');
 Route::get('/help', [HelpController::class, 'index'])->name('help');
+Route::get('/help/{slug}', [HelpController::class, 'show'])->where('slug', '[a-z0-9-]{1,80}')->name('help.article');
 Route::get('/gift-cards', fn () => Features::enabled('shop') && Features::enabled('shop.gift_cards')
     ? view('store.gift-cards', ['amounts' => GiftCards::amounts(), 'bank' => Settings::string('payments.bank_details'),
         'telebirr' => Settings::string('payments.telebirr_details')]) : abort(404))->name('gift-cards');

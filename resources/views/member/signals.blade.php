@@ -1,7 +1,7 @@
 @php use App\Badges\BadgeIcons as I; @endphp
 @extends('layouts.member', ['title' => 'Signals'])
 @section('content')
-<h1 class="font-serif text-3xl font-semibold">Trading signals</h1>
+<div class="flex items-center gap-2"><h1 class="font-serif text-3xl font-semibold">Trading signals</h1>@include('member.partials.help-link', ['slug' => 'join-the-signals-channel', 'label' => 'signals'])</div>
 <section class="m-card mt-5">
     @if ($signalsLink)
         <p class="text-sm m-muted">{{ \App\Support\Features::enabled('membership') ? 'Your membership includes' : 'You have' }} our private Telegram channel. Open your personal link in Telegram. It works for your Telegram account only, so don't share it.</p>

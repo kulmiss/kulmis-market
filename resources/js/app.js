@@ -613,3 +613,25 @@ if (tour) {
     tour.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
     show();
 }
+
+/* ---------- help article: "Was this helpful?" (one answer per article and browser) ---------- */
+const helpful = $('[data-help-feedback]');
+if (helpful) {
+    const slug = helpful.dataset.helpFeedback;
+    const msg = $('[data-helpful-msg]', helpful);
+    const key = 'km-helpful-' + slug;
+    let done = null;
+    try { done = localStorage.getItem(key); } catch { /* private mode */ }
+    if (done) { $$('[data-helpful]', helpful).forEach((b) => { b.disabled = true; }); msg.textContent = 'Thank you!'; }
+    $$('[data-helpful]', helpful).forEach((b) => b.addEventListener('click', async () => {
+        $$('[data-helpful]', helpful).forEach((x) => { x.disabled = true; });
+        try {
+            const r = await api(`/help/${slug}/feedback`, { method: 'POST', body: { helpful: b.dataset.helpful === '1' } });
+            msg.textContent = r.message || 'Thank you!';
+            try { localStorage.setItem(key, '1'); } catch { /* private mode */ }
+        } catch (e) {
+            msg.textContent = e.message;
+            $$('[data-helpful]', helpful).forEach((x) => { x.disabled = false; });
+        }
+    }));
+}

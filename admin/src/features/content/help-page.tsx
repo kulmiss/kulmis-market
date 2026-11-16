@@ -13,6 +13,7 @@ import { Page } from '@/components/km/page'
 import { ResourceTable, type ResourceColumn } from '@/components/km/resource-table'
 import { StatusBadge } from '@/components/km/status-badge'
 import { useAuthStore } from '@/stores/auth-store'
+import { HelpArticles } from './help-articles'
 
 type Faq = { id: number; category: string | null; question: string; answer: string; position: number; is_published: boolean }
 type Msg = { id: number; name: string; contact: string; topic: string | null; topic_label: string; message: string; status: string; created_at: string }
@@ -38,13 +39,14 @@ export function HelpPage() {
   const can = useAuthStore((s) => s.can)
   const editor = can('manage-content')
   return (
-    <Page title='Help centre' description='The questions and answers on /help, and messages people sent with the contact form.' actions={editor ? <FaqDialog /> : undefined}>
+    <Page title='Help centre' description='The articles and questions on /help, and messages people sent with the contact form.' actions={editor ? <FaqDialog /> : undefined}>
       <Tabs defaultValue='messages'>
-        <TabsList><TabsTrigger value='messages'>Messages</TabsTrigger>{editor && <TabsTrigger value='faqs'>Questions</TabsTrigger>}</TabsList>
+        <TabsList><TabsTrigger value='messages'>Messages</TabsTrigger>{editor && <TabsTrigger value='articles'>Articles</TabsTrigger>}{editor && <TabsTrigger value='faqs'>Questions</TabsTrigger>}</TabsList>
         <TabsContent value='messages' className='mt-4'>
           <ResourceTable<Msg> queryKey='help-messages' path='/help/messages' columns={msgColumns} search={{ placeholder: 'Name, phone, email or text' }}
             filters={[{ key: 'status', label: 'Status', default: 'new', sendAll: true, options: [{ value: 'new', label: 'New' }, { value: 'answered', label: 'Answered' }, { value: 'spam', label: 'Spam' }, { value: 'all', label: 'All' }] }]} />
         </TabsContent>
+        {editor && <TabsContent value='articles' className='mt-4'><HelpArticles /></TabsContent>}
         {editor && (
           <TabsContent value='faqs' className='mt-4'>
             <ResourceTable<Faq> queryKey='help-faqs' path='/help/faqs' columns={faqColumns} search={{ placeholder: 'Question or answer' }} />

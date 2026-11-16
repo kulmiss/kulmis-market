@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\CustomRequestController;
 use App\Http\Controllers\Api\GiftCardController;
 use App\Http\Controllers\Api\GiftController;
+use App\Http\Controllers\Api\HelpFeedbackController;
 use App\Http\Controllers\Api\StockAlertController;
 use App\Http\Controllers\Api\TrackingController;
 use App\Models\ShippingZone;
@@ -34,5 +35,7 @@ Route::middleware('feature:shop')->get('shipping/zones', fn () => response()->js
 Route::post('custom-requests', [CustomRequestController::class, 'store'])->middleware(['feature:shop,shop.custom_orders', 'throttle:3,10'])->name('custom-requests.store');
 Route::post('gift-cards', [GiftCardController::class, 'store'])->middleware(['feature:shop,shop.gift_cards', 'throttle:5,10'])->name('gift-cards.store');
 Route::post('gifts', [GiftController::class, 'store'])->middleware(['feature:membership,membership.gifts', 'throttle:5,10'])->name('gifts.store');
+Route::post('help/{slug}/feedback', [HelpFeedbackController::class, 'store'])->where('slug', '[a-z0-9-]{1,80}')
+    ->middleware(['feature:site.help_centre', 'feature:site.help_feedback', 'throttle:20,1'])->name('help.feedback');
 Route::post('contact', [ContactController::class, 'store'])->middleware(['feature:site.help_centre', 'throttle:5,10'])->name('contact');
 Route::post('stock-alerts', [StockAlertController::class, 'store'])->middleware(['feature:shop.stock_alerts', 'throttle:5,1'])->name('stock-alerts');
