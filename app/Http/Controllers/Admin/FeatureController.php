@@ -38,7 +38,7 @@ class FeatureController extends Controller
         $lines = [];
         $day = fn (?string $iso) => $iso ? Carbon::parse($iso)->timezone(config('app.timezone'))->format('j M Y') : '';
         foreach (PaidAccess::FEATURES as $paid) {
-            if ($key === $paid || ($paid === 'signals' && $key === 'membership')) {
+            if ($key === $paid) { // members' signals follow their membership; guest buyers are not touched by the membership switch
                 $s = $access->summary($paid);
                 if ($s['people'] > 0) {
                     $what = $paid === 'membership' ? 'membership' : 'signals (bought without membership)';
