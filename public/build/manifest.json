@@ -9,9 +9,41 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-vwyEAow5.js",
+    "file": "assets/app-Dl1coS23.js",
     "name": "app",
     "src": "resources/js/app.js",
-    "isEntry": true
+    "isEntry": true,
+    "dynamicImports": [
+      "resources/js/chunks/picture-card.js",
+      "resources/js/chunks/member-app.js",
+      "resources/js/chunks/member-tables.js"
+    ]
+  },
+  "resources/js/chunks/member-app.js": {
+    "file": "assets/member-app-BhtKaeVW.js",
+    "name": "member-app",
+    "src": "resources/js/chunks/member-app.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "resources/js/chunks/member-tables.js": {
+    "file": "assets/member-tables-CVPbVSPS.js",
+    "name": "member-tables",
+    "src": "resources/js/chunks/member-tables.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "resources/js/chunks/picture-card.js": {
+    "file": "assets/picture-card-DEFO0nww.js",
+    "name": "picture-card",
+    "src": "resources/js/chunks/picture-card.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ]
   }
 }

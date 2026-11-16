@@ -1,9 +1,9 @@
 // Kulmis Market storefront — small vanilla JS (no framework, no trackers).
 // Talks to the REST API with the essential cart cookie only.
 
+import { $, $$, say, store } from './lib.js';
+
 const API = '/api/v1';
-const $ = (sel, root = document) => root.querySelector(sel);
-const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 // Shop currency format from Settings → General (same rules as App\Support\Currency).
 const CUR = (() => {
     try { return JSON.parse(document.querySelector('meta[name=km-currency]')?.content || '{}'); } catch { return {}; }
@@ -37,12 +37,6 @@ async function api(path, { method = 'GET', body, form } = {}) {
     return data;
 }
 
-const say = (el, text, ok = false) => {
-    if (!el) return;
-    el.textContent = text;
-    el.classList.toggle('text-leaf-600', ok);
-    el.classList.toggle('text-danger-600', !ok);
-};
 
 const formData = (form) => Object.fromEntries(new FormData(form).entries());
 
@@ -451,61 +445,6 @@ $$('[data-copy]').forEach((b) => b.addEventListener('click', () => {
     navigator.clipboard?.writeText(src.value).then(() => { b.textContent = 'Copied!'; setTimeout(() => { b.textContent = 'Copy'; }, 1500); });
 }));
 
-/* ---------- picture card for sharing (made on the phone, nothing uploaded) ---------- */
-const loadImg = (src) => new Promise((ok, fail) => { const i = new Image(); i.onload = () => ok(i); i.onerror = fail; i.src = src; });
-const wrap = (ctx, text, max) => {
-    const words = String(text).split(/\s+/);
-    const lines = [];
-    let line = '';
-    words.forEach((w) => { const t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > max && line) { lines.push(line); line = w; } else line = t; });
-    if (line) lines.push(line);
-    return lines;
-};
-$$('[data-card]').forEach((b) => b.addEventListener('click', async () => {
-    const d = b.dataset;
-    const msg = $('[data-card-msg]', b.closest('[data-share-block]'));
-    b.disabled = true;
-    try {
-        const W = 1080, H = 1350, c = document.createElement('canvas');
-        c.width = W; c.height = H;
-        const ctx = c.getContext('2d');
-        const font = getComputedStyle(document.body).fontFamily || 'sans-serif';
-        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
-        try {
-            const img = await loadImg(d.cardImage);
-            const s = Math.max(W / img.width, 810 / img.height);
-            ctx.drawImage(img, (W - img.width * s) / 2, (810 - img.height * s) / 2, img.width * s, img.height * s);
-        } catch { ctx.fillStyle = '#e8f1eb'; ctx.fillRect(0, 0, W, 810); }
-        ctx.fillStyle = '#13241a';
-        ctx.font = `700 64px ${font}`;
-        wrap(ctx, d.cardTitle, W - 120).slice(0, 2).forEach((l, i) => ctx.fillText(l, 60, 900 + i * 76));
-        ctx.font = `500 44px ${font}`;
-        ctx.fillStyle = '#1f8a4c';
-        ctx.fillText(d.cardLine, 60, 1060);
-        ctx.fillStyle = '#13241a';
-        ctx.font = `600 40px ${font}`;
-        ctx.fillText('My code:', 60, 1170);
-        ctx.font = `800 72px ${font}`;
-        ctx.fillText(d.cardCode, 60, 1250);
-        if (d.cardQr) {
-            try { const q = await loadImg(d.cardQr); ctx.drawImage(q, W - 330, H - 330, 270, 270); } catch { /* no QR */ }
-        }
-        const blob = await new Promise((ok) => c.toBlob(ok, 'image/png'));
-        const file = new File([blob], `kulmis-${d.cardCode}.png`, { type: 'image/png' });
-        if (navigator.canShare?.({ files: [file] })) {
-            await navigator.share({ files: [file], text: d.cardText, url: d.cardLink }).catch(() => {});
-        } else {
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = file.name;
-            a.click();
-            setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-            if (msg) { msg.textContent = 'Saved. Send the picture with your link.'; }
-        }
-    } catch { if (msg) msg.textContent = 'Could not make the picture. Please try again.'; }
-    b.disabled = false;
-}));
-
 /* ---------- instant navigation fallback (browsers without Speculation Rules) ---------- */
 const NO_PREFETCH = /^\/(account|admin|api|cart|checkout|pay|login|register|logout|r)(\/|$)/;
 const html = document.documentElement;
@@ -536,84 +475,6 @@ if ('serviceWorker' in navigator && html.dataset.offline === 'off') {
     }));
 }
 
-/* ---------- member app: home-screen icon + phone notifications ---------- */
-const installBox = $('[data-install]');
-if (installBox && !window.matchMedia('(display-mode: standalone)').matches) {
-    let deferred = null;
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferred = e;
-        installBox.hidden = false;
-        $('[data-install-btn]', installBox).hidden = false;
-    });
-    $('[data-install-btn]', installBox)?.addEventListener('click', async () => {
-        if (!deferred) return;
-        deferred.prompt();
-        await deferred.userChoice.catch(() => null);
-        deferred = null;
-        installBox.hidden = true;
-    });
-    if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !navigator.standalone) {
-        installBox.hidden = false;
-        $('[data-install-ios]', installBox).hidden = false;
-    }
-}
-
-const pushBox = $('[data-push]');
-const pushKey = document.querySelector('meta[name=km-push-key]')?.content;
-if (pushBox && pushKey && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window) {
-    pushBox.hidden = false;
-    const msg = $('[data-push-msg]', pushBox);
-    const on = $('[data-push-on]', pushBox);
-    const off = $('[data-push-off]', pushBox);
-    const csrf = document.querySelector('meta[name=csrf-token]')?.content || '';
-    const send = async (method, body) => {
-        const res = await fetch('/account/push', { method, credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrf }, body: JSON.stringify(body) });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.message || 'Something went wrong. Please try again.');
-        return data;
-    };
-    const keyBytes = () => {
-        const b64 = (pushKey + '='.repeat((4 - (pushKey.length % 4)) % 4)).replace(/-/g, '+').replace(/_/g, '/');
-        return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-    };
-    const device = () => {
-        const ua = navigator.userAgent;
-        const os = /android/i.test(ua) ? 'Android' : /iphone|ipad/i.test(ua) ? 'iPhone' : /windows/i.test(ua) ? 'Windows' : /mac/i.test(ua) ? 'Mac' : 'Computer';
-        const br = /edg\//i.test(ua) ? 'Edge' : /firefox/i.test(ua) ? 'Firefox' : /chrome/i.test(ua) ? 'Chrome' : /safari/i.test(ua) ? 'Safari' : 'Browser';
-        return `${os} · ${br}`;
-    };
-    const kinds = () => $$('[data-push-kinds] input:checked', pushBox).map((i) => i.value);
-    const show = (subscribed) => { on.textContent = subscribed ? 'Save my choices' : 'Turn on for this phone'; off.hidden = !subscribed; };
-    navigator.serviceWorker.ready.then((reg) => reg.pushManager.getSubscription()).then((s) => show(!!s)).catch(() => {});
-    on.addEventListener('click', async () => {
-        on.disabled = true;
-        try {
-            if (Notification.permission === 'denied') throw new Error('Notifications are blocked for this site. Allow them in your browser settings first.');
-            if ((await Notification.requestPermission()) !== 'granted') throw new Error('You did not allow notifications.');
-            const reg = await navigator.serviceWorker.ready;
-            const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes() });
-            const { data } = await send('POST', { endpoint: sub.endpoint, device: device(), kinds: kinds() });
-            say(msg, data.message, true);
-            show(true);
-        } catch (err) { say(msg, err.message); }
-        on.disabled = false;
-    });
-    off.addEventListener('click', async () => {
-        off.disabled = true;
-        try {
-            const reg = await navigator.serviceWorker.ready;
-            const sub = await reg.pushManager.getSubscription();
-            await send('DELETE', { endpoint: sub?.endpoint });
-            await sub?.unsubscribe();
-            say(msg, 'Phone notifications are off.', true);
-            show(false);
-        } catch (err) { say(msg, err.message); }
-        off.disabled = false;
-    });
-}
-
 /* ---------- checkout: pick a saved address ---------- */
 $$('[data-saved-address]').forEach((sel) => {
     const fill = () => {
@@ -642,93 +503,6 @@ $$('[data-stock-alert]').forEach((form) => form.addEventListener('submit', (e) =
     });
 }));
 
-/* ---------- member tables: saved view, columns, selection, CSV ---------- */
-const store = {
-    get(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch { return null; } },
-    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* private mode */ } },
-    del(k) { try { localStorage.removeItem(k); } catch { /* ignore */ } },
-};
-$$('[data-mtable]').forEach((root) => {
-    const key = `km.mtable.${root.dataset.mtable}`;
-    const params = root.dataset.mtableKeys.split(',');
-    const url = new URL(location.href);
-    const saved = store.get(key) || {};
-    // Saved sort / page size / filters come back when you open the page without any.
-    if (saved.query && !params.some((p) => url.searchParams.has(p)) && !url.searchParams.has(root.dataset.mtablePage)) {
-        const q = Object.entries(saved.query).filter(([, v]) => v);
-        if (q.length) {
-            q.forEach(([k, v]) => url.searchParams.set(k, v));
-            location.replace(url);
-            return;
-        }
-    }
-    const remember = () => {
-        const now = new URL(location.href);
-        const query = {};
-        params.filter((p) => !p.endsWith('q')).forEach((p) => { if (now.searchParams.get(p)) query[p] = now.searchParams.get(p); });
-        store.set(key, { ...store.get(key), query });
-    };
-    remember();
-
-    // Show / hide columns (kept in this browser).
-    const hidden = new Set(saved.hidden || []);
-    const apply = () => $$('[data-col]', root).forEach((el) => el.classList.toggle('hidden', hidden.has(el.dataset.col)));
-    $$('[data-col-toggle]', root).forEach((box) => {
-        if (saved.hidden) box.checked = !hidden.has(box.dataset.colToggle);
-        else if (!box.checked) hidden.add(box.dataset.colToggle);
-        box.addEventListener('change', () => {
-            box.checked ? hidden.delete(box.dataset.colToggle) : hidden.add(box.dataset.colToggle);
-            store.set(key, { ...store.get(key), hidden: [...hidden] });
-            apply();
-        });
-    });
-    apply();
-
-    const form = $('[data-mtable-form]', root);
-    $$('[data-autosubmit]', root).forEach((s) => s.addEventListener('change', () => form.requestSubmit()));
-    $('[data-mtable-per-page]', root)?.addEventListener('change', (e) => {
-        $('[data-mtable-per-page-field]', form).value = e.target.value;
-        form.requestSubmit();
-    });
-    form?.addEventListener('submit', () => {
-        // Empty fields stay out of the address.
-        $$('input, select', form).forEach((el) => { if (!el.value) el.disabled = true; });
-    });
-    $('[data-mtable-reset]', root)?.addEventListener('click', () => store.del(key));
-
-    // Selection + CSV of the selected rows (phone cards and table rows are the same rows).
-    const bulk = $('[data-mtable-bulk]', root);
-    const picked = new Set();
-    const sync = () => {
-        $$('[data-mtable-row]', root).forEach((r) => { const box = $('[data-mtable-select]', r); if (box) box.checked = picked.has(r.dataset.mtableRow); });
-        bulk.classList.toggle('hidden', picked.size === 0);
-        bulk.classList.toggle('flex', picked.size > 0);
-        $('[data-mtable-count]', root).textContent = picked.size;
-    };
-    $$('[data-mtable-select]', root).forEach((box) => box.addEventListener('change', () => {
-        const id = box.closest('[data-mtable-row]').dataset.mtableRow;
-        box.checked ? picked.add(id) : picked.delete(id);
-        sync();
-    }));
-    $('[data-mtable-all]', root)?.addEventListener('change', (e) => {
-        $$('tr[data-mtable-row]', root).forEach((r) => (e.target.checked ? picked.add(r.dataset.mtableRow) : picked.delete(r.dataset.mtableRow)));
-        sync();
-    });
-    $('[data-mtable-clear]', root)?.addEventListener('click', () => { picked.clear(); sync(); });
-    $('[data-mtable-csv]', root)?.addEventListener('click', () => {
-        const cell = (v) => `"${String(v).replaceAll('"', '""')}"`;
-        const head = $$('thead th[data-col]', root).map((th) => cell(th.textContent.replace(/[↑↓↕]/g, '').trim()));
-        const lines = $$('tr[data-mtable-row]', root).filter((r) => picked.has(r.dataset.mtableRow))
-            .map((r) => $$('td[data-col]', r).map((td) => cell(td.dataset.csv)).join(','));
-        const blob = new Blob(['﻿', [head.join(','), ...lines].join('\r\n')], { type: 'text/csv;charset=utf-8' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `${root.dataset.mtable}-selected.csv`;
-        a.click();
-        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    });
-});
-
 /* ---------- folded on phones, open on desktop (remembered per screen) ---------- */
 const wide = window.matchMedia('(min-width: 640px)');
 $$('details[data-collapse]').forEach((d) => {
@@ -738,3 +512,8 @@ $$('details[data-collapse]').forEach((d) => {
     wide.addEventListener?.('change', set);
     d.addEventListener('toggle', () => { if (!wide.matches) store.set(key, d.open); });
 });
+
+/* ---------- page parts loaded only where they are used (smaller first download) ---------- */
+if ($('[data-card]')) import('./chunks/picture-card.js');
+if ($('[data-install], [data-push]')) import('./chunks/member-app.js');
+if ($('[data-mtable]')) import('./chunks/member-tables.js');
