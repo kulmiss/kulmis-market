@@ -3,6 +3,7 @@
 namespace Tests\Feature\Referral;
 
 use App\Jobs\SendCustomerMessage;
+use App\Ledger\MoneyChecks;
 use App\Membership\MembershipService;
 use App\Models\Order;
 use App\Models\Payment;
@@ -12,6 +13,7 @@ use App\Models\User;
 use App\Payments\PaymentService;
 use App\Referral\ReferralCodes;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Bus;
@@ -32,6 +34,30 @@ abstract class ReferralTestCase extends TestCase
         Bus::fake([SendCustomerMessage::class]);
         $this->admin = User::factory()->superAdmin()->create();
         ShippingZone::query()->create(['name' => 'All', 'cities' => [], 'base_fee' => 20_000, 'is_default' => true]);
+    }
+
+    /**
+     * After every money test: the "never collapses" rules still hold (books add
+     * up, members only earn from money really paid, never more than 35%).
+     * A test that breaks them on purpose sets $checkMoney = false.
+     */
+    protected bool $checkMoney = true;
+
+    protected function tearDown(): void
+    {
+        try {
+            // (Skipped when a test emptied the database, e.g. by running `optimize`.)
+            if ($this->checkMoney && $this->status()->isSuccess()) {
+                try {
+                    $problems = MoneyChecks::problems();
+                } catch (QueryException) {
+                    $problems = [];
+                }
+                $this->assertSame([], $problems, 'Money rules broken after '.static::class.'::'.$this->name());
+            }
+        } finally {
+            parent::tearDown();
+        }
     }
 
     /** A member (active) referred by $referrer. */
