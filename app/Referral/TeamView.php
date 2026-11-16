@@ -5,6 +5,7 @@ namespace App\Referral;
 use App\Badges\BadgeEngine;
 use App\Fraud\FraudGuard;
 use App\Ledger\Wallet;
+use App\Member\MemberTables;
 use App\Membership\Members;
 use App\Models\Commission;
 use App\Models\User;
@@ -58,12 +59,13 @@ class TeamView
         ];
     }
 
-    /** @return Collection<int, array{type: string, level: int, amount: int, reversed: int, status: string, available_at: string|null, created_at: string|null}> earnings history without buyer details */
+    /** @return Collection<int, array{type: string, from: string, payment: string, level: int, amount: int, reversed: int, status: string, available_at: string|null, created_at: string|null}> earnings history (first names of your own invites only) */
     public function history(User $member, int $limit = 50): Collection
     {
         return Commission::query()->where('recipient_id', $member->id)->where('status', '!=', Commission::SKIPPED)
             ->latest('id')->limit($limit)->get()
-            ->map(fn (Commission $c) => ['type' => $c->type, 'level' => $c->level, 'amount' => $c->amount,
+            ->map(fn (Commission $c) => ['type' => $c->type, 'from' => MemberTables::fromWhom($c),
+                'payment' => MemberTables::earningPayment($c), 'level' => $c->level, 'amount' => $c->amount,
                 'reversed' => $c->reversed_amount, 'status' => $c->status, 'available_at' => $c->available_at?->toIso8601String(),
                 'created_at' => $c->created_at?->toIso8601String()]);
     }

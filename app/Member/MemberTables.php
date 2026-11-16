@@ -11,6 +11,7 @@ use App\Models\Signal;
 use App\Models\User;
 use App\Notify\OrderNotifier;
 use App\Support\Features;
+use App\Support\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -69,6 +70,34 @@ final class MemberTables
         return array_merge(self::BUCKET, Features::disabled('wallet.cashout') ? [Wallet::PAYOUT => 'Being sent'] : []);
     }
 
+    /**
+     * Who an earning came from, in easy words. You see the first name of
+     * people you invited yourself; deeper levels show through whom (your
+     * team's privacy): "Hana", "Someone Sara invited", "Someone in Sara's team".
+     */
+    public static function fromWhom(Commission $c): string
+    {
+        if ($c->level === 1) {
+            $name = $c->buyer_user_id ? User::query()->whereKey($c->buyer_user_id)->value('first_name') : null;
+
+            return is_string($name) && $name !== '' ? $name : ($c->type === 'products' ? 'A customer who used your link' : 'A buyer who used your link');
+        }
+        // The level above on the same payment was paid to (or skipped for) the person you invited yourself.
+        $via = Commission::query()->where('payment_id', $c->payment_id)->where('level', $c->level - 1)->value('recipient_id');
+        $name = $via ? (string) User::query()->whereKey($via)->value('first_name') : '';
+        if ($name === '') {
+            return 'Someone in your team';
+        }
+
+        return $c->level === 2 ? "Someone $name invited" : "Someone in $name's team";
+    }
+
+    /** "Membership · 5,000 ETB" */
+    public static function earningPayment(Commission $c): string
+    {
+        return self::earningType($c->type).' · '.Money::format($c->base_amount);
+    }
+
     /** What an earning came from, or a neutral word when that feature is off now. */
     public static function earningType(string $type): string
     {
@@ -103,11 +132,12 @@ final class MemberTables
     {
         return (new MemberTable('earnings', [
             'created_at' => ['Date', 'date', true],
-            'type' => ['From', 'text', true],
+            'who' => ['From whom', 'text'],
+            'type' => ['Payment', 'text', true],
             'level' => ['Level', 'number', true, 'end'],
             'amount' => ['Amount', 'money', true, 'end'],
             'status' => ['Status', 'status', true],
-            'available_at' => ['Ready on', 'date', true, '', true],
+            'available_at' => ['Ready on', 'date', true],
         ], [
             'status' => ['label' => 'Status', 'options' => ['pending' => 'On the way', 'available' => 'Ready to use', 'reversed' => 'Taken back']],
             'type' => ['label' => 'From', 'options' => array_filter(['membership' => 'Memberships', 'products' => 'Shop orders', 'signals' => 'Signals'],
@@ -118,8 +148,9 @@ final class MemberTables
             Commission::query()->where('recipient_id', $user->id)->where('status', '!=', Commission::SKIPPED),
             ['created_at' => 'created_at', 'type' => 'type', 'level' => 'level', 'amount' => 'amount', 'status' => 'status', 'available_at' => 'available_at'],
             fn (Builder $q, string $v) => $q->where('type', 'like', "%$v%"),
-            fn (Commission $c) => ['_id' => $c->id, 'created_at' => $c->created_at?->toIso8601String(), 'type' => self::earningType($c->type), 'level' => $c->level, 'amount' => $c->amount - $c->reversed_amount, 'status' => $c->status,
-                'available_at' => $c->status === Commission::PENDING ? $c->available_at?->toIso8601String() : null],
+            fn (Commission $c) => ['_id' => $c->id, 'created_at' => $c->created_at?->toIso8601String(), 'who' => self::fromWhom($c),
+                'type' => self::earningPayment($c), 'level' => $c->level, 'amount' => $c->amount - $c->reversed_amount, 'status' => $c->status,
+                'available_at' => $c->status !== Commission::REVERSED ? $c->available_at?->toIso8601String() : null],
             ['status' => 'status', 'type' => 'type', 'level' => 'level'],
         );
     }

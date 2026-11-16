@@ -20,7 +20,7 @@ final class WhatIf
         $members = max(0, min($members, 1_000_000));
         $invites = max(0.0, min($invites, 50.0));
         $price = Settings::int('membership.price');
-        $rate = fn (int $l) => Features::enabled('referral') && Features::enabled("referral.level$l") && Features::enabled('referral.commission.membership')
+        $rate = fn (int $l) => Features::enabled('membership') && Features::enabled('referral') && Features::enabled("referral.level$l") && Features::enabled('referral.commission.membership')
             ? Settings::int("referral.rate.membership.l$l") : 0;
         $levels = [$members, $members * $invites, $members * $invites ** 2, $members * $invites ** 3];
         $people = (int) round(array_sum($levels));
@@ -50,7 +50,7 @@ final class WhatIf
         $direct = max(0, min($direct, 1_000));
         $theirs = max(0, min($theirs, 100));
         $price = Settings::int('membership.price');
-        $on = fn (int $l) => Features::enabled('referral') && Features::enabled("referral.level$l") && Features::enabled('referral.commission.membership');
+        $on = fn (int $l) => Features::enabled('membership') && Features::enabled('referral') && Features::enabled("referral.level$l") && Features::enabled('referral.commission.membership');
         $l1 = $on(1) ? intdiv($price * Settings::int('referral.rate.membership.l1'), 10_000) * $direct : 0;
         $l2 = $on(2) ? intdiv($price * Settings::int('referral.rate.membership.l2'), 10_000) * $direct * $theirs : 0;
         $l3 = $on(3) ? intdiv($price * Settings::int('referral.rate.membership.l3'), 10_000) * $direct * $theirs * $theirs : 0;
