@@ -4,7 +4,7 @@
     <form method="dialog" class="p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
         <h2 id="ask-text" data-ask-text class="text-lg font-semibold">Are you sure?</h2>
         <p data-ask-more class="muted mt-1 text-sm" hidden></p>
-        <div class="mt-5 grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 gap-3 pt-5">{{-- two buttons side by side, also on phones --}}
             <button value="cancel" class="btn-ghost min-h-12 justify-center" autofocus>Cancel</button>
             <button value="ok" class="btn-primary min-h-12 justify-center" data-ask-ok>Yes</button>
         </div>
