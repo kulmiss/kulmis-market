@@ -79,7 +79,7 @@
         @if ($devices->isNotEmpty())
             <p class="muted mt-4 text-xs">Browsers used before: {{ $devices->pluck('label')->unique()->implode(', ') }}.</p>
         @endif
-        <form method="post" action="{{ url('/account/security/sign-out-everywhere') }}" class="mt-4">@csrf<button class="btn-ghost">Sign out all other devices and apps</button></form>
+        <form method="post" action="{{ url('/account/security/sign-out-everywhere') }}" class="mt-4" data-confirm="Sign out on all your other phones and computers?" data-confirm-ok="Sign them out" data-confirm-more="You stay signed in here.">@csrf<button class="btn-ghost">Sign out all other devices and apps</button></form>
     </section>
 </div>
 @endsection

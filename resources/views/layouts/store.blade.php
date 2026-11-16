@@ -43,6 +43,9 @@
 @endif
 @include('store.partials.header')
 <main id="main" class="flex-1">
+    @if (request()->has('signed_out') && auth()->guest())
+        <div class="container-km mt-4"><div class="rounded-xl bg-leaf-600/10 px-4 py-3 text-leaf-600" role="status" data-signed-out>You are signed out.</div></div>
+    @endif
     @if (session('status'))
         <div class="container-km mt-4"><div class="rounded-xl bg-leaf-600/10 px-4 py-3 text-leaf-600" role="status">{{ session('status') }}</div></div>
     @endif
@@ -50,5 +53,6 @@
 </main>
 @include('store.partials.footer')
 @stack('scripts')
+    @include('partials.ask')
 </body>
 </html>

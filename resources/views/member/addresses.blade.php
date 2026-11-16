@@ -25,7 +25,7 @@
                     <p class="font-semibold">{{ $a->label }} @if ($a->is_default)<span class="ms-1 rounded-full px-2 py-0.5 text-xs m-soft m-accent-text">Default</span>@endif</p>
                     <p class="mt-1 text-sm break-words">{{ trim($a->first_name.' '.$a->last_name) }} · {{ $a->phone }}<br>{{ $a->city }}, {{ $a->address }}</p>
                 </div>
-                <form method="post" action="{{ url('/account/addresses/'.$a->id) }}" data-confirm="Delete this address?">@csrf @method('delete')
+                <form method="post" action="{{ url('/account/addresses/'.$a->id) }}" data-confirm="Delete this address?" data-confirm-ok="Delete">@csrf @method('delete')
                     <button class="m-btn-ghost min-h-10" aria-label="Delete {{ $a->label }}">Delete</button>
                 </form>
             </div>

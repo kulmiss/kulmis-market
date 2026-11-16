@@ -1,0 +1,1 @@
+import{j as e}from"./index-DAMT7gLP.js";import{t}from"./page-DQFcimqu.js";import{c as n}from"./dist-BXPugWsx.js";var r=n();function i(){return(0,r.jsx)(t,{title:`My account`,description:`How the admin looks for you. Saved on this device.`,children:(0,r.jsx)(e,{})})}var a=i;export{a as component};

@@ -118,9 +118,16 @@ class StorefrontTest extends TestCase
         $this->get('/account')->assertOk()->assertSeeInOrder(['Selam,', 'Meron'])->assertSee('Your referral link')->assertSee($user->referral_code);
         $this->get('/account/referral-qr.svg')->assertOk()->assertHeader('Content-Type', 'image/svg+xml');
 
-        $this->post('/logout')->assertRedirect('/');
+        // Sign out: the member area asks first, then the home page says so.
+        $this->get('/account')->assertSee('data-confirm="Do you want to sign out?" data-confirm-ok="Sign out"', false)->assertSee('data-ask', false);
+        $this->post('/logout')->assertRedirect('/?signed_out=1');
+        $this->assertGuest();
+        $this->get('/?signed_out=1')->assertOk()->assertSee('You are signed out.')->assertSee('data-ask', false);
+        $this->assertFileDoesNotExist(public_path('page-cache/index.html'), 'the message page is never cached for others');
+        $this->get('/')->assertOk()->assertDontSee('You are signed out.');
         $this->post('/login', ['login' => '0911456789', 'password' => 'wrong'])->assertSessionHasErrors('login');
         $this->post('/login', ['login' => '0911456789', 'password' => 'buna-time-2026x'])->assertRedirect('/account');
+        $this->get('/?signed_out=1')->assertDontSee('You are signed out.'); // signed in again: no message
     }
 
     public function test_account_requires_login(): void

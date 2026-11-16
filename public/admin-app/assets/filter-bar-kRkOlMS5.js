@@ -1,0 +1,1 @@
+import{r as e}from"./status-badge-mZuU1Vcp.js";import"./input-Cpi05CRB.js";import"./search-provider-700_7ZTl.js";import{c as t}from"./dist-BXPugWsx.js";var n=t();function r({children:e}){return(0,n.jsx)(`div`,{className:`mb-3 flex flex-wrap items-center gap-2`,children:e})}var i=(...t)=>t.map(t=>({value:t,label:e(t)}));export{i as n,r as t};
