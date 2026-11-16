@@ -1,10 +1,11 @@
 @php $title = \App\Help\HelpTokens::apply($article['title']); @endphp
 @extends('layouts.store', ['title' => $title.' · Help', 'description' => \Illuminate\Support\Str::limit(\App\Help\HelpArticles::plain($article['body']), 155)])
+@push('head')@vite('resources/css/help.css')@endpush
 @section('content')
 <div class="container-km max-w-3xl py-8 sm:py-10">
     <nav class="muted text-sm" aria-label="Breadcrumb"><a class="underline" href="{{ url('/help') }}">Help</a> <span aria-hidden="true">›</span> {{ \App\Help\HelpArticles::topicLabel($article['topic']) }}</nav>
     <h1 class="mt-2 text-3xl sm:text-4xl">{{ $title }}</h1>
-    <article class="prose-km mt-6 [&_img]:mx-auto [&_img]:max-h-[70vh] [&_img]:rounded-2xl [&_img]:border [&_img]:border-mist-200 [&_pre]:overflow-x-auto [&_pre]:rounded-xl [&_pre]:bg-mist-100 [&_pre]:p-3 [&_pre]:text-sm dark:[&_pre]:bg-ink-800 [&_table]:w-full [&_td]:border-b [&_td]:border-mist-200 [&_td]:py-2 [&_th]:py-2 [&_th]:text-start dark:[&_td]:border-ink-700" data-help-body>{!! $html !!}</article>
+    <article class="prose-km help-body mt-6" data-help-body>{!! $html !!}</article>
 
     @feature('site.help_feedback')
     <div class="card mt-8 flex flex-wrap items-center gap-3" data-help-feedback="{{ $article['slug'] }}">

@@ -563,6 +563,8 @@ $$('details[data-collapse]').forEach((d) => {
 if ($('[data-card]')) import('./chunks/picture-card.js');
 if ($('[data-install], [data-push]')) import('./chunks/member-app.js');
 if ($('[data-mtable]')) import('./chunks/member-tables.js');
+if ($('[data-tour]')) import('./chunks/welcome-tour.js');
+if ($('[data-help-feedback]')) import('./chunks/help-feedback.js');
 
 /* "What you could earn" (member home): the same sums as App\Reports\WhatIf::forMember, from the real settings. */
 $$('[data-earn-calc]').forEach((box) => {
@@ -583,55 +585,3 @@ $$('[data-earn-calc]').forEach((box) => {
     $$('input', box).forEach((i) => i.addEventListener('input', draw));
     draw();
 });
-
-/* ---------- member welcome tour: one slide at a time; Skip / Got it saves that it was seen ---------- */
-const tour = $('[data-tour]');
-if (tour) {
-    const slides = $$('[data-tour-slide]', tour);
-    const dots = $$('[data-tour-dots] span', tour);
-    const back = $('[data-tour-back]', tour);
-    const next = $('[data-tour-next]', tour);
-    let at = 0;
-    const show = () => {
-        slides.forEach((s, i) => { s.hidden = i !== at; });
-        dots.forEach((d, i) => { d.style.opacity = i === at ? '1' : '.3'; });
-        back.classList.toggle('hidden', at === 0);
-        next.textContent = at === slides.length - 1 ? 'Got it' : 'Next';
-        (slides[at].querySelector('h2') || slides[at]).focus?.();
-    };
-    const close = () => {
-        const csrf = document.querySelector('meta[name=csrf-token]')?.content || '';
-        fetch('/account/tour/seen', { method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf } }).catch(() => {});
-        tour.remove();
-    };
-    $$('[data-tour-form]', tour).forEach((f) => f.addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (e.submitter === next && at < slides.length - 1) { at++; show(); return; }
-        close();
-    }));
-    back.addEventListener('click', () => { at = Math.max(0, at - 1); show(); });
-    tour.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
-    show();
-}
-
-/* ---------- help article: "Was this helpful?" (one answer per article and browser) ---------- */
-const helpful = $('[data-help-feedback]');
-if (helpful) {
-    const slug = helpful.dataset.helpFeedback;
-    const msg = $('[data-helpful-msg]', helpful);
-    const key = 'km-helpful-' + slug;
-    let done = null;
-    try { done = localStorage.getItem(key); } catch { /* private mode */ }
-    if (done) { $$('[data-helpful]', helpful).forEach((b) => { b.disabled = true; }); msg.textContent = 'Thank you!'; }
-    $$('[data-helpful]', helpful).forEach((b) => b.addEventListener('click', async () => {
-        $$('[data-helpful]', helpful).forEach((x) => { x.disabled = true; });
-        try {
-            const r = await api(`/help/${slug}/feedback`, { method: 'POST', body: { helpful: b.dataset.helpful === '1' } });
-            msg.textContent = r.message || 'Thank you!';
-            try { localStorage.setItem(key, '1'); } catch { /* private mode */ }
-        } catch (e) {
-            msg.textContent = e.message;
-            $$('[data-helpful]', helpful).forEach((x) => { x.disabled = false; });
-        }
-    }));
-}

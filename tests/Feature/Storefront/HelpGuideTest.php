@@ -106,6 +106,18 @@ class HelpGuideTest extends TestCase
         $this->putJson('/api/v1/admin/help/articles/cash-out', ['topic' => 'x', 'title' => 'x', 'body' => 'x'])->assertForbidden();
     }
 
+    public function test_help_and_tour_code_is_only_loaded_where_it_is_used(): void
+    {
+        // The shop's first download stays small (phone speed budget in CI).
+        $app = (string) file_get_contents(resource_path('js/app.js'));
+        $this->assertStringNotContainsString('data-tour-slide', $app);
+        $this->assertStringNotContainsString('km-helpful-', $app);
+        $this->assertStringContainsString("import('./chunks/welcome-tour.js')", $app);
+        $this->assertStringContainsString("import('./chunks/help-feedback.js')", $app);
+        $this->get('/help/cash-out')->assertSee('help-', false)->assertSee('.css', false);
+        $this->assertDoesNotMatchRegularExpression('#/build/assets/help-[^"]+\.css#', $this->get('/shop')->getContent());
+    }
+
     public function test_member_pages_link_to_the_right_article(): void
     {
         $u = User::factory()->member()->create();
