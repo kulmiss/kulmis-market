@@ -100,3 +100,22 @@ composer check            # pint --test + all tests (SQLite)
 scripts/test-mysql.sh     # the same tests against MySQL (Docker on port 3307)
 php artisan km:doctor     # setup checklist
 ```
+
+## Testing tools (your own computer only)
+Both refuse to run unless `APP_ENV=local`; a live shop always uses the real time.
+
+- `php artisan km:story` — makes the people of TESTING_GUIDE.md: the owner
+  (Super Admin), Abdi (member, code `ABDI`, 2,250 ETB ready, Bronze badge,
+  a saved Telebirr account), his first invites Bekele, Chaltu and Dawit, and
+  the 2,000 ETB "Story basket". Password: `kulmis story 2026`. Add `--team`
+  to also sign up Sara → Hana → Omar → Ali (not paid). Start clean first
+  (`php artisan migrate:fresh --seed --force`).
+- `php artisan km:test-clock +15days` — the shop (pages, jobs, queue) now
+  thinks it is 15 days later, and the daily jobs run at once (memberships,
+  signals access, "on the way" → "ready to use", badges). Forward only:
+  `+2 hours`, `+29days`, `+1 month`. `php artisan km:test-clock` shows the
+  pretend time; `--reset` goes back. Two-step codes from your phone keep
+  working (they use the real time). You may need to sign in again after a
+  big jump.
+- The referral link memory (30 days) is checked by the shop itself from the
+  time the link was opened, so the test clock shows day 29 vs day 31.

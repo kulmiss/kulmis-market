@@ -36,7 +36,8 @@ class Totp
         if (! preg_match('/^\d{6}$/', $code)) {
             return null;
         }
-        $current = intdiv($now ?? now()->getTimestamp(), 30);
+        // Your phone's app uses the real time, also while the local test clock pretends it is later.
+        $current = intdiv($now ?? (TestClock::active() ? time() : now()->getTimestamp()), 30);
         for ($i = -$window; $i <= $window; $i++) {
             $step = $current + $i;
             if ($lastStep !== null && $step <= $lastStep) {
