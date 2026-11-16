@@ -12,6 +12,7 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ShippingZone;
 use App\Models\User;
+use App\Models\UserBadge;
 use App\Payments\PaymentService;
 use App\Reports\MoneyHealth;
 use App\Wallet\CashOuts;
@@ -148,6 +149,10 @@ class AbdiStoryTest extends ReferralTestCase
         $this->assertSame([0, 2_250, 0], $this->wallet($this->abdi), 'Abdi starts with 2,250 ETB ready: 3 × 500 team earnings + 3 × 250 first-payment bonus');
         $this->assertTrue($this->abdi->fresh()->isActiveMember());
         $this->assertSame('ABDI', $this->abdi->referral_code);
+        $this->assertTrue(UserBadge::query()->where('user_id', $this->abdi->id)
+            ->whereHas('badge', fn ($q) => $q->where('key', 'bronze'))->exists(), 'Bronze: 3 active people he invited');
+        $this->actingAs($this->abdi)->get('/account')->assertSee('How you earn');
+        $this->app['auth']->forgetGuards();
 
         // Step 1 (case 10): last month's badge bonus — Bronze (3 active invites) pays 200 ETB.
         Artisan::call('badges:bonus', ['--month' => now()->startOfMonth()->subMonthNoOverflow()->format('Y-m')]);
@@ -164,6 +169,9 @@ class AbdiStoryTest extends ReferralTestCase
         $pSara = $this->payMonth($sara);
         $this->assertSame([1 => 500], $this->earned($this->abdi, $pSara));
         $this->assertSame([1_070, 2_250, 0], $this->wallet($this->abdi), '320 + 500 + 250');
+        $this->actingAs($this->abdi)->get('/account/earnings')->assertSee('Sara')->assertSee('Membership · 5,000 ETB')
+            ->assertSee('A customer who used your link')->assertSee('Shop order · 2,000 ETB');
+        $this->app['auth']->forgetGuards();
 
         // Step 4 (case 3): Hana through Sara's link pays → Sara L1 500 + 250 bonus, Abdi L2 250.
         $hana = $this->signUp('hana', $this->openLink((string) $sara->fresh()->referral_code));
@@ -172,6 +180,8 @@ class AbdiStoryTest extends ReferralTestCase
         $this->assertSame([2 => 250], $this->earned($this->abdi, $pHana));
         $this->assertSame([750, 0, 0], $this->wallet($sara));
         $this->assertSame([1_320, 2_250, 0], $this->wallet($this->abdi));
+        $this->actingAs($this->abdi)->get('/account/earnings')->assertSee('Someone Sara invited')->assertDontSee('Hana');
+        $this->app['auth']->forgetGuards();
 
         // Step 5 (case 4): Omar (Hana's link) pays → Hana L1 500 + 250, Sara L2 250, Abdi L3 100.
         $omar = $this->signUp('omar', $this->openLink((string) $hana->fresh()->referral_code));
