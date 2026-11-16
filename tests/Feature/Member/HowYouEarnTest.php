@@ -17,6 +17,8 @@ class HowYouEarnTest extends ReferralTestCase
             ->assertSee('250 ETB a month for each of those (level 2), and 100 ETB for each person they bring (level 3)', false)
             ->assertSee('250 ETB once, when someone you invited pays for the first time')
             ->assertSee('Bronze badge, 200 ETB extra every month')
+            ->assertSee('Earnings are ready to use 14 days after each payment, and only while your own membership is paid.')
+            ->assertDontSee('@if', false)->assertDontSee('@endif', false)
             ->assertSee('data-earn-calc', false)->assertSee('What you could earn');
 
         // The numbers follow the switches.

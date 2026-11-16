@@ -23,7 +23,7 @@
         @if ($rate(2) > 0)<li>• When they invite people too: {{ Money::format($rate(2)) }} a month for each of those (level 2){{ $rate(3) > 0 ? ', and '.Money::format($rate(3)).' for each person they bring (level 3)' : '' }}.</li>@endif
         @if ($calc['first'] > 0)<li>• {{ Money::format($calc['first']) }} once, when someone you invited pays for the first time.</li>@endif
         @if ($three['badge_bonus'] > 0)<li>• With 3 active members you invited: the {{ $calc['ladder'][count($calc['ladder']) - 1][2] ?? 'Bronze' }} badge, {{ Money::format($three['badge_bonus']) }} extra every month.</li>@endif
-        <li>• Earnings are ready to use {{ Settings::int('referral.pending_days') }} days after each payment@if (F::enabled('membership')), and only while your own membership is paid@endif.</li>
+        <li>• Earnings are ready to use {{ Settings::int('referral.pending_days') }} days after each payment{{ F::enabled('membership') ? ', and only while your own membership is paid' : '' }}.</li>
     </ul>
     @endif
     <div class="mt-4 rounded-xl p-3 m-soft" data-earn-calc="{{ json_encode($calc) }}">
