@@ -43,6 +43,7 @@ class ShareKitTipsTest extends ReferralTestCase
         $this->get('/r/ABC12/https://evil.example')->assertNotFound();
         $this->get('/r/ABC12/shop/../../etc')->assertNotFound();
         $this->get('/r/ABC12/membership')->assertRedirect('/membership?ref=ABC12');
+        $this->get('/r/ABC12/shop')->assertRedirect('/shop?ref=ABC12');
         $u = $this->member();
         $this->actingAs($u)->get('/account/referral-qr.svg?to=signals')->assertOk()->assertHeader('Content-Type', 'image/svg+xml');
         $this->get('/account/referral-qr.svg?to=//evil.example')->assertNotFound();

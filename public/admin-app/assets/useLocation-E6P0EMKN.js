@@ -1,0 +1,1 @@
+import{r as e}from"./useNavigate-CRgia9eK.js";import{n as t}from"./useMatch-DEcMnOLf.js";import{t as n}from"./useSelector-DnijI2o0.js";function r(r){let i=e();return n(i.stores.location,t(r,i))}export{r as t};

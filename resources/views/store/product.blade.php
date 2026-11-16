@@ -143,7 +143,7 @@
                     <label><span class="label">Phone or email</span>
                         <input name="contact" class="input" required maxlength="160" autocomplete="email" placeholder="09… or you@example.com" value="{{ auth()->user()?->phone }}">
                     </label>
-                    <input type="text" name="website" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
+                    <input type="text" name="website" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true" aria-label="Leave this empty">
                     <button class="btn-dark">Tell me when it's back</button>
                     <p data-alert-message class="text-sm" role="status" aria-live="polite"></p>
                 </form>

@@ -12,6 +12,7 @@ import { MoneyInput } from '@/components/km/money-input'
 import { Page } from '@/components/km/page'
 import { ResourceTable, type ResourceColumn } from '@/components/km/resource-table'
 import { StatusBadge } from '@/components/km/status-badge'
+import { useAuthStore } from '@/stores/auth-store'
 
 type Card = { id: number; last4: string | null; amount: number; balance: number; status: string; buyer_name: string; buyer_phone: string | null
   recipient_name: string | null; expires_at: string | null; created_at: string }
@@ -29,9 +30,10 @@ const columns: ResourceColumn<Card>[] = [
 ]
 
 export function GiftCardsPage() {
+  const canSell = useAuthStore((st) => st.can('approve-payments')) // selling for cash creates money: managers and finance only
   const owed = useQuery({ queryKey: ['gift-cards-owed'], queryFn: async () => (await api.get<{ owed: number }>('/gift-cards', { params: { per_page: 1 } })).data.owed })
   return (
-    <Page title='Gift cards' description={`Money on gift cards not spent yet: ${formatMoney(owed.data ?? 0)}. Online cards are made when you approve the receipt in Payments.`} actions={<SellDialog />}>
+    <Page title='Gift cards' description={`Money on gift cards not spent yet: ${formatMoney(owed.data ?? 0)}. Online cards are made when you approve the receipt in Payments.`} actions={canSell ? <SellDialog /> : undefined}>
       <ResourceTable<Card> queryKey='gift-cards' path='/gift-cards' columns={columns} search={{ placeholder: 'Last 4, buyer name or phone' }}
         filters={[{ key: 'status', label: 'Status', options: [{ value: 'active', label: 'Active' }, { value: 'used', label: 'Used up' }, { value: 'pending', label: 'Waiting for payment' }, { value: 'disabled', label: 'Off' }] }]} />
     </Page>

@@ -28,7 +28,7 @@
             </div>
             <label><span class="label">Receipt photo or PDF</span><input name="proof" type="file" accept="image/*,application/pdf" class="input" required></label>
         </fieldset>
-        <input type="text" name="website" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <input type="text" name="website" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true" aria-label="Leave this empty">
         <button class="btn-primary">Send the gift</button>
         <p class="text-sm" data-form-message role="status" aria-live="polite"></p>
     </form>

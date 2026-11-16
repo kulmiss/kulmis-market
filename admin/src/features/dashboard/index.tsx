@@ -5,6 +5,7 @@ import { AlertTriangle, Banknote, Crown, Package, Radio, ShieldAlert, TrendingUp
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { api } from '@/lib/api'
 import { formatMoney } from '@/lib/money'
+import { useAuthStore } from '@/stores/auth-store'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Page } from '@/components/km/page'
@@ -39,7 +40,9 @@ const REWARD_NAMES: Record<string, string> = { first_payment: 'First-payment bon
 export function Dashboard() {
   const [days, setDays] = useState(30)
   const [data, setData] = useState<'demo' | 'real'>('demo')
+  const allowed = useAuthStore((s) => s.can('view-reports'))
   const q = useQuery({
+    enabled: allowed, // roles without the dashboard are sent to their first page: no 403 on the way
     queryKey: ['dashboard', days, data],
     queryFn: async () => {
       const to = new Date()

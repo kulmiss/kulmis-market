@@ -3,8 +3,10 @@
 namespace Tests\Feature\Referral;
 
 use App\Badges\ProfitGuard;
+use App\Events\PaymentSucceeded;
 use App\Fraud\FraudGuard;
 use App\Ledger\Ledger;
+use App\Ledger\Posting;
 use App\Ledger\Wallet;
 use App\Models\FraudFlag;
 use App\Models\MembershipPurchase;
@@ -116,5 +118,15 @@ class RewardsTest extends ReferralTestCase
         Settings::set('reward.comeback', 600_000);
         $this->putJson('/api/v1/admin/features', ['features' => ['membership.comeback_reward' => true]])->assertJsonValidationErrors('features');
         $this->assertFalse(Features::enabled('membership.comeback_reward'));
+    }
+
+    public function test_a_payment_event_seen_twice_pays_the_bonus_once(): void
+    {
+        $inviter = $this->member(null, 'Inviter');
+        $payment = $this->payMembership($this->member($inviter, 'New'));
+        event(new PaymentSucceeded($payment->fresh()));
+        event(new PaymentSucceeded($payment->fresh()));
+        $this->assertSame(1, Reward::query()->where('kind', 'first_payment')->where('user_id', $inviter->id)->count());
+        $this->assertSame(0, (int) Posting::query()->sum('amount'));
     }
 }

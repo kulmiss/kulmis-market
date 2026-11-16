@@ -53,14 +53,14 @@ Route::get('/r/{code}', function (string $code, Attribution $attribution) {
 
     return redirect('/?ref='.rawurlencode(strtoupper($code)));
 })->where('code', '[A-Za-z0-9]{2,16}')->middleware('throttle:60,1')->name('referral.link');
-// Share links to a page: /r/CODE/membership, /r/CODE/signals, /r/CODE/shop/<product>.
+// Share links to a page: /r/CODE/membership, /r/CODE/signals, /r/CODE/shop, /r/CODE/shop/<product>.
 Route::get('/r/{code}/{to}', function (string $code, string $to, Attribution $attribution) {
     $target = ShareLinks::target($to);
     abort_if($target === null, 404);
     $attribution->rememberFromLink($code);
 
     return redirect($target.'?ref='.rawurlencode(strtoupper($code)));
-})->where(['code' => '[A-Za-z0-9]{2,16}', 'to' => '(membership|signals|shop/[a-z0-9-]{1,160})'])->middleware('throttle:60,1')->name('referral.link.to');
+})->where(['code' => '[A-Za-z0-9]{2,16}', 'to' => '(membership|signals|shop|shop/[a-z0-9-]{1,160})'])->middleware('throttle:60,1')->name('referral.link.to');
 
 // React admin (built into public/admin-app). Any /admin/* path loads the app.
 Route::get('/admin/{path?}', function () {

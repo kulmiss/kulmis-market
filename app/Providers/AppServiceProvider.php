@@ -76,9 +76,9 @@ class AppServiceProvider extends ServiceProvider
         // `php artisan optimize` (every deploy) also empties the page cache: new CSS/JS names.
         $this->optimizes(optimize: 'km:clear-page-cache', clear: 'km:clear-page-cache', key: 'page cache');
 
-        // Development: every query slower than SLOW_QUERY_MS (default 50 ms) goes to the log.
+        // Every query slower than SLOW_QUERY_MS (default 50 ms, 0 = off) goes to the log, also live: SQL only, never the values.
         $slow = (int) config('database.slow_query_ms');
-        if ($slow > 0 && ! $this->app->isProduction()) {
+        if ($slow > 0) {
             DB::listen(function (QueryExecuted $q) use ($slow) {
                 if ($q->time >= $slow) {
                     Log::warning('Slow query ('.round($q->time).' ms)', ['sql' => $q->sql, 'url' => request()->fullUrl()]);

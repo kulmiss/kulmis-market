@@ -1,1 +1,0 @@
-import{d as e}from"./index-C4_WAU45.js";var t=e;export{t as component};

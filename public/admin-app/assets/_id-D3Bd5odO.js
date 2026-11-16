@@ -1,1 +1,0 @@
-import{t as e}from"./members-pages-LrE57J-T.js";import{d as t}from"./button-CLcLC9O1.js";import{r as n}from"./index-C4_WAU45.js";var r=t();function i(){let{id:t}=n.useParams();return(0,r.jsx)(e,{id:t},t)}export{i as component};

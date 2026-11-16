@@ -18,6 +18,7 @@ final class ShareLinks
             $to === '' => '/',
             $to === 'membership' => '/membership',
             $to === 'signals' => '/signals',
+            $to === 'shop' => '/shop',
             (bool) preg_match('#^shop/[a-z0-9-]{1,160}$#', $to) => '/'.$to,
             default => null,
         };

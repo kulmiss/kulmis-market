@@ -17,7 +17,7 @@
             <label><span class="label">City</span><input name="city" class="input" required maxlength="80" autocomplete="address-level2"></label>
         </div>
         <label><span class="label">Address</span><input name="address" class="input" required maxlength="500" autocomplete="street-address"></label>
-        <input type="text" name="website" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <input type="text" name="website" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true" aria-label="Leave this empty">
         <button class="btn-primary">Send my request</button>
         <p class="text-sm" data-form-message role="status" aria-live="polite"></p>
     </form>

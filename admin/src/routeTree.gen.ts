@@ -53,7 +53,6 @@ import { Route as AuthenticatedOrdersIdRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedProductsIndexRouteImport } from './routes/_authenticated/products/index'
 import { Route as AuthenticatedProductsIdRouteImport } from './routes/_authenticated/products/$id'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
-import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSignalsIndexRouteImport } from './routes/_authenticated/signals/index'
 import { Route as AuthenticatedSignalsSubscribersRouteImport } from './routes/_authenticated/signals/subscribers'
 import { Route as AuthenticatedSignalsTelegramRouteImport } from './routes/_authenticated/signals/telegram'
@@ -285,12 +284,6 @@ const AuthenticatedSettingsIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
-const AuthenticatedSettingsDisplayRoute =
-  AuthenticatedSettingsDisplayRouteImport.update({
-    id: '/display',
-    path: '/display',
-    getParentRoute: () => AuthenticatedSettingsRouteRoute,
-  } as any)
 const AuthenticatedSignalsIndexRoute =
   AuthenticatedSignalsIndexRouteImport.update({
     id: '/signals/',
@@ -350,7 +343,6 @@ export interface FileRoutesByFullPath {
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/products/$id': typeof AuthenticatedProductsIdRoute
-  '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/signals/subscribers': typeof AuthenticatedSignalsSubscribersRoute
   '/signals/telegram': typeof AuthenticatedSignalsTelegramRoute
   '/members/': typeof AuthenticatedMembersIndexRoute
@@ -398,7 +390,6 @@ export interface FileRoutesByTo {
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/products/$id': typeof AuthenticatedProductsIdRoute
-  '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/signals/subscribers': typeof AuthenticatedSignalsSubscribersRoute
   '/signals/telegram': typeof AuthenticatedSignalsTelegramRoute
   '/members': typeof AuthenticatedMembersIndexRoute
@@ -449,7 +440,6 @@ export interface FileRoutesById {
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
   '/_authenticated/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/_authenticated/products/$id': typeof AuthenticatedProductsIdRoute
-  '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/signals/subscribers': typeof AuthenticatedSignalsSubscribersRoute
   '/_authenticated/signals/telegram': typeof AuthenticatedSignalsTelegramRoute
   '/_authenticated/members/': typeof AuthenticatedMembersIndexRoute
@@ -500,7 +490,6 @@ export interface FileRouteTypes {
     | '/members/$id'
     | '/orders/$id'
     | '/products/$id'
-    | '/settings/display'
     | '/signals/subscribers'
     | '/signals/telegram'
     | '/members/'
@@ -548,7 +537,6 @@ export interface FileRouteTypes {
     | '/members/$id'
     | '/orders/$id'
     | '/products/$id'
-    | '/settings/display'
     | '/signals/subscribers'
     | '/signals/telegram'
     | '/members'
@@ -598,7 +586,6 @@ export interface FileRouteTypes {
     | '/_authenticated/members/$id'
     | '/_authenticated/orders/$id'
     | '/_authenticated/products/$id'
-    | '/_authenticated/settings/display'
     | '/_authenticated/signals/subscribers'
     | '/_authenticated/signals/telegram'
     | '/_authenticated/members/'
@@ -929,13 +916,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
-    '/_authenticated/settings/display': {
-      id: '/_authenticated/settings/display'
-      path: '/display'
-      fullPath: '/settings/display'
-      preLoaderRoute: typeof AuthenticatedSettingsDisplayRouteImport
-      parentRoute: typeof AuthenticatedSettingsRouteRoute
-    }
     '/_authenticated/signals/': {
       id: '/_authenticated/signals/'
       path: '/signals'
@@ -961,13 +941,11 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedSettingsRouteRouteChildren {
-  AuthenticatedSettingsDisplayRoute: typeof AuthenticatedSettingsDisplayRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
 }
 
 const AuthenticatedSettingsRouteRouteChildren: AuthenticatedSettingsRouteRouteChildren =
   {
-    AuthenticatedSettingsDisplayRoute: AuthenticatedSettingsDisplayRoute,
     AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
   }
 

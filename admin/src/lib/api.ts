@@ -38,9 +38,9 @@ export function fieldErrors(error: unknown): ValidationErrors {
   return {}
 }
 
-/** Laravel answers with a fresh XSRF cookie on any web-group request. */
+/** Get the XSRF cookie before signing in (204, no error in the console). */
 export async function ensureCsrf(): Promise<void> {
   if (!document.cookie.includes('XSRF-TOKEN=')) {
-    await api.get('/auth/me').catch(() => undefined)
+    await api.get('/sanctum/csrf-cookie', { baseURL: '/' }).catch(() => undefined)
   }
 }

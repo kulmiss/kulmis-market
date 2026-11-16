@@ -3,8 +3,11 @@
 namespace Tests\Feature\Storefront;
 
 use App\Models\Category;
+use App\Models\Challenge;
+use App\Models\Contest;
 use App\Models\Product;
 use App\Models\User;
+use App\Notify\Inbox;
 use App\Support\Csp;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -57,7 +60,15 @@ class PerformanceTest extends ReferralTestCase
         }
         $this->actingAs($top->fresh(), 'web');
         $this->get('/account');
-        foreach (['/account' => 70, '/account/team' => 16, '/account/wallet' => 8, '/account/earnings' => 14] as $path => $budget) {
+        Contest::query()->create(['name' => 'Race', 'rule' => 'new_paying_members', 'starts_at' => now()->startOfMonth(),
+            'ends_at' => now()->endOfMonth(), 'prizes' => [100_000, 50_000], 'min_score' => 1]);
+        Challenge::query()->create(['name' => 'Bring 3', 'target' => 3, 'reward' => 20_000]);
+        foreach (range(1, 30) as $i) {
+            Inbox::add($top, 'commission', "Earned $i", null, null, "t$i");
+        }
+        $this->get('/account/contests');
+        foreach (['/account' => 70, '/account/team' => 16, '/account/wallet' => 8, '/account/earnings' => 14,
+            '/account/contests' => 8, '/account/share' => 6, '/account/notifications' => 6] as $path => $budget) {
             $n = $this->queries(fn () => $this->get($path)->assertOk());
             $this->assertLessThanOrEqual($budget, $n, "$path used $n queries (budget $budget)");
         }

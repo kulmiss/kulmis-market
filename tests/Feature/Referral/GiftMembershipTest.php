@@ -4,6 +4,7 @@ namespace Tests\Feature\Referral;
 
 use App\Jobs\SendCustomerMessage;
 use App\Ledger\Ledger;
+use App\Ledger\Posting;
 use App\Ledger\Wallet;
 use App\Membership\Members;
 use App\Models\MembershipGift;
@@ -109,5 +110,21 @@ class GiftMembershipTest extends ReferralTestCase
         $pay = $gift->payments()->firstOrFail();
         $this->expectException(\InvalidArgumentException::class);
         app(PaymentService::class)->refund($pay, $pay->amount, 'x', $this->admin->id);
+    }
+
+    public function test_a_gift_starts_only_one_membership_even_if_two_people_use_the_link(): void
+    {
+        $this->post('/api/v1/gifts', $this->form(), ['Accept' => 'application/json'])->assertCreated();
+        $gift = $this->approveGift();
+        $a = User::factory()->create(['first_name' => 'Abeba']);
+        $b = User::factory()->create(['first_name' => 'Bontu']);
+        $this->actingAs($a)->post('/gift/'.$gift->code)->assertRedirect('/account');
+        $this->actingAs($b)->from('/gift/'.$gift->code)->post('/gift/'.$gift->code)->assertRedirect('/gift/'.$gift->code)->assertSessionHasErrors('gift');
+        $this->actingAs($a)->from('/account')->post('/gift/'.$gift->code)->assertSessionHasErrors('gift'); // and not twice for the same person
+        $this->assertTrue(Members::isActive($a));
+        $this->assertFalse(Members::isActive($b));
+        $this->assertSame(1, Payment::query()->where('provider', Payment::GIFT)->count());
+        $this->assertSame(0, app(Ledger::class)->balance(MembershipGift::ACCOUNT));
+        $this->assertSame(0, (int) Posting::query()->sum('amount'));
     }
 }

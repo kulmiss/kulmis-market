@@ -45,7 +45,7 @@
                 <select name="topic" class="input">@foreach ($topics as $k => $t)<option value="{{ $k }}">{{ $t }}</option>@endforeach</select>
             </label>
             <label><span class="label">Your message</span><textarea name="message" class="input min-h-32" required minlength="10" maxlength="2000"></textarea></label>
-            <input type="text" name="website" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <input type="text" name="website" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true" aria-label="Leave this empty">
             <button class="btn-primary">Send</button>
             <p class="text-sm" data-form-message role="status" aria-live="polite"></p>
         </form>
