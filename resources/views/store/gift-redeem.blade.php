@@ -5,7 +5,7 @@
     <h1 class="mt-4 text-3xl">{{ $gift->giver_name }} gave you a month of membership</h1>
     @if ($gift->message)<p class="mt-4 text-lg italic">“{{ $gift->message }}”</p>@endif
     @if ($gift->status === 'redeemed')
-        <p class="muted mt-6">This gift was already used.</p>
+        <p class="muted mt-6">{{ $user && $gift->redeemed_by === $user->id ? 'This gift month is already on your account. Enjoy!' : 'This gift was already used.' }}</p>
         <a href="{{ url('/account') }}" class="btn-primary mt-6">Go to my account</a>
     @elseif ($gift->expires_at && $gift->expires_at->isPast())
         <p class="muted mt-6">This gift has expired. Please contact us and we will help.</p>

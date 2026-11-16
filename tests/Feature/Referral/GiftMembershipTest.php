@@ -121,6 +121,8 @@ class GiftMembershipTest extends ReferralTestCase
         $this->actingAs($a)->post('/gift/'.$gift->code)->assertRedirect('/account');
         $this->actingAs($b)->from('/gift/'.$gift->code)->post('/gift/'.$gift->code)->assertRedirect('/gift/'.$gift->code)->assertSessionHasErrors('gift');
         $this->actingAs($a)->from('/account')->post('/gift/'.$gift->code)->assertSessionHasErrors('gift'); // and not twice for the same person
+        $this->actingAs($a)->get('/gift/'.$gift->code)->assertSee('already on your account');
+        $this->actingAs($b)->get('/gift/'.$gift->code)->assertSee('This gift was already used.');
         $this->assertTrue(Members::isActive($a));
         $this->assertFalse(Members::isActive($b));
         $this->assertSame(1, Payment::query()->where('provider', Payment::GIFT)->count());

@@ -32,11 +32,13 @@
                     <div><label class="label" for="cp">Phone</label><input id="cp" name="phone" class="input" required inputmode="tel" placeholder="09…" autocomplete="tel" value="{{ old('phone', $user?->phone) }}"></div>
                     <div><label class="label" for="ce">Email (optional)</label><input id="ce" name="email" type="email" class="input" autocomplete="email" value="{{ old('email', $user?->email) }}"></div>
                 </div>
-                <div class="grid gap-4 sm:grid-cols-2">
-                    <div><label class="label" for="cc">City</label><input id="cc" name="city" class="input" required list="cities" autocomplete="address-level2" value="{{ old('city') }}"><datalist id="cities" data-cities></datalist></div>
+                @php $cartNow = app(\App\Cart\CartManager::class)->find(request()); $digitalOnly = $cartNow && \App\Orders\Checkout::onlyDigital(app(\App\Cart\CartManager::class)->pricingItems($cartNow)); @endphp
+                @if ($digitalOnly)<p class="rounded-xl bg-brand-500/10 p-3 text-sm" data-digital-only>Nothing to deliver: the download links come by message right after payment. No address needed.</p>@endif
+                <div class="grid gap-4 sm:grid-cols-2" @if ($digitalOnly) hidden @endif>
+                    <div><label class="label" for="cc">City</label><input id="cc" name="city" class="input" @required(! $digitalOnly) list="cities" autocomplete="address-level2" value="{{ old('city', $digitalOnly ? 'Online' : '') }}"><datalist id="cities" data-cities></datalist></div>
                     <div><label class="label" for="cz">Delivery zone</label><select id="cz" name="shipping_zone_id" class="input" data-zones><option value="">Pick by city</option></select></div>
                 </div>
-                <div><label class="label" for="ca">Address (area, street, landmark)</label><textarea id="ca" name="address" class="input" rows="2" required autocomplete="street-address">{{ old('address') }}</textarea></div>
+                <div @if ($digitalOnly) hidden @endif><label class="label" for="ca">Address (area, street, landmark)</label><textarea id="ca" name="address" class="input" rows="2" @required(! $digitalOnly) autocomplete="street-address">{{ old('address', $digitalOnly ? 'Digital order: nothing to deliver' : '') }}</textarea></div>
                 @php $extrasOn = \App\Orders\Extras::available(); $chosen = (array) (app(\App\Cart\CartManager::class)->find(request())?->extras ?? []); @endphp
                 @if ($extrasOn)
                     <fieldset class="grid gap-1"><legend class="label">Extras (optional)</legend>

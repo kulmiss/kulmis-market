@@ -54,6 +54,7 @@ class GiftCards
     /** @param array{amount:int, buyer_name:string, buyer_phone:string, buyer_email?:?string, recipient_name?:?string, recipient_contact?:?string, message?:?string} $d */
     public function create(array $d): GiftCard
     {
+        $d['amount'] = (int) $d['amount']; // a form sends text: "100000"
         if (! in_array($d['amount'], self::amounts(), true)) {
             throw new InvalidArgumentException('Choose one of the amounts.');
         }

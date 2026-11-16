@@ -38,7 +38,7 @@ class GiftCardsTest extends TestCase
 
     private function buyOnline(int $amount = 100_000): string
     {
-        $this->post('/api/v1/gift-cards', ['amount' => $amount, 'buyer_name' => 'Abel', 'buyer_phone' => '0911000111', 'recipient_name' => 'Sara',
+        $this->post('/api/v1/gift-cards', ['amount' => (string) $amount /* a real form sends text */, 'buyer_name' => 'Abel', 'buyer_phone' => '0911000111', 'recipient_name' => 'Sara',
             'recipient_contact' => 'sara@example.com', 'method' => 'telebirr', 'proof' => UploadedFile::fake()->image('r.jpg')], ['Accept' => 'application/json'])->assertCreated();
         $card = GiftCard::query()->latest('id')->firstOrFail();
         app(PaymentService::class)->approveProof($card->payments()->firstOrFail(), $this->admin->id);
@@ -82,6 +82,8 @@ class GiftCardsTest extends TestCase
         $this->assertSame(100_000, $order->gift_card_used);
         $this->assertSame(110_000, $order->amountDue());
         $this->assertSame('pending_payment', $order->status);
+        $this->get('/pay/'.$order->number.'?phone='.urlencode($order->phone))->assertOk()
+            ->assertSee('1,100 ETB')->assertSee('gift card −1,000 ETB'); // the pay page says why it is less
         $this->assertSame(0, $card->fresh()->balance);
         $this->assertSame('used', $card->fresh()->status);
         $this->assertSame(0, app(Ledger::class)->balance(GiftCard::ACCOUNT));

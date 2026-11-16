@@ -46,6 +46,13 @@ class Product extends Model
 {
     protected static function booted(): void
     {
+        // A file never runs out and is never shipped, however the product was made (form, CSV import, bulk edit).
+        static::saving(function (Product $p) {
+            if ($p->kind === self::DIGITAL) {
+                $p->stock_mode = self::MADE_TO_ORDER;
+                $p->weight_grams = 0;
+            }
+        });
         // Sold out → back in stock: tell the people who asked (products without options).
         static::updated(function (Product $p) {
             if ($p->wasChanged('stock') && (int) $p->getOriginal('stock') < 1 && (int) $p->stock > 0) {

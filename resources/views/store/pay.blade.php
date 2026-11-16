@@ -14,6 +14,9 @@
         @else
         <p class="mt-3 text-2xl font-semibold">{{ \App\Support\Money::format($order->amountDue()) }}</p>
         @endif
+        @if ($order->gift_card_used > 0 || $order->wallet_used > 0)
+            <p class="muted text-sm" data-paid-already>Total {{ \App\Support\Money::format($order->total) }}@if ($order->gift_card_used > 0) · gift card −{{ \App\Support\Money::format($order->gift_card_used) }}@endif @if ($order->wallet_used > 0) · from your wallet −{{ \App\Support\Money::format($order->wallet_used) }}@endif</p>
+        @endif
         <p class="muted text-sm">Save your order number: <b>{{ $order->number }}</b>. Unpaid orders are cancelled after {{ \App\Support\Settings::int('orders.unpaid_cancel_hours') }} hours.</p>
         <div class="mt-6 grid gap-4">
             @if ($order->receiptUnderReview())

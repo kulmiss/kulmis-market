@@ -32,6 +32,22 @@ class DigitalAddonsTest extends ReferralTestCase
         return $p;
     }
 
+    public function test_a_digital_product_is_never_sold_out(): void
+    {
+        $p = Product::factory()->create(['kind' => Product::DIGITAL, 'stock_mode' => Product::STOCK, 'stock' => 0, 'weight_grams' => 900]);
+        $this->assertSame(Product::MADE_TO_ORDER, $p->stock_mode);
+        $this->assertSame(0, $p->weight_grams);
+        $this->assertNull($p->availableStock());
+        $this->get('/shop/'.$p->slug)->assertOk()->assertDontSee('Sold out right now');
+        $token = $this->postJson('/api/v1/cart/items', ['product_id' => $p->id])->assertSuccessful()->json('token');
+        // Checkout: nothing to deliver, so no address to type (fields hidden and filled in).
+        $this->withCookie('km_cart', $token)->get('/checkout')->assertOk()->assertSee('No address needed')
+            ->assertSee('Digital order: nothing to deliver');
+        $physical = Product::factory()->create(['price' => 10_000, 'stock' => 5]);
+        $this->withHeaders(['X-Cart-Token' => $token])->postJson('/api/v1/cart/items', ['product_id' => $physical->id])->assertSuccessful();
+        $this->withCookie('km_cart', $token)->get('/checkout')->assertOk()->assertDontSee('No address needed');
+    }
+
     public function test_digital_order_no_shipping_private_links_that_end(): void
     {
         $p = $this->digital();
