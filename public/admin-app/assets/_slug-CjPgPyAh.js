@@ -1,1 +1,0 @@
-import{n as e}from"./guide-Dm5arWit.js";import{i as t}from"./index-BJi34AcL.js";import{c as n}from"./dist-BXPugWsx.js";var r=n();function i(){let{slug:n}=t.useParams();return(0,r.jsx)(e,{slug:n},n)}export{i as component};

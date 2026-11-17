@@ -1,0 +1,1 @@
+import{a as e}from"./money-pages-BK7ivq8N.js";import{o as t}from"./index-DKv27Tmw.js";import{c as n}from"./dist-BXPugWsx.js";var r=n(),i=function(){let{user:n}=t.useSearch();return(0,r.jsx)(e,{initialUser:n},n)};export{i as component};

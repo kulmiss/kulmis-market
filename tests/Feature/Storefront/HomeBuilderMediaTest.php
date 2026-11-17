@@ -19,6 +19,7 @@ use App\Support\Csp;
 use App\Support\Settings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -211,7 +212,14 @@ class HomeBuilderMediaTest extends TestCase
         $this->putJson('/api/v1/admin/home-page/draft', ['sections' => $sections, 'revision' => 0])->assertOk()->assertJsonPath('problems.errors', []);
         $this->postJson('/api/v1/admin/home-page/publish')->assertOk();
         auth()->guard('web')->logout();
+        // Speed budget for the heaviest page (every section): few queries, small HTML, no extra script or frame up front.
+        DB::enableQueryLog();
         $html = $this->get('/')->assertOk()->getContent();
+        $this->assertLessThan(60, count(DB::getQueryLog()), 'queries for the page with every section');
+        $this->assertLessThan(160_000, strlen($html), 'HTML size');
+        $this->assertSame(1, preg_match_all('#<script type="module"#', $html), 'only the main script');
+        $this->assertStringNotContainsString('<iframe', $html);
+        $this->assertLessThanOrEqual(1, substr_count($html, 'fetchpriority="high"'), 'only the first picture loads first; the rest are lazy');
         $this->assertStringContainsString('Selam', $html);
         $this->assertStringContainsString('>Demo</span>', $html);
         $this->assertStringContainsString('Demo photo:', $html);

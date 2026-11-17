@@ -317,7 +317,8 @@ class HomeBuilderTest extends TestCase
     public function test_preview_is_the_page_as_a_visitor_sees_it(): void
     {
         $this->shop();
-        $this->actingAsAdmin();
+        $admin = $this->actingAsAdmin();
+        $admin->forceFill(['first_name' => 'Zewditu'])->save();
         $hero = Sections::make('hero');
         $hero['data']['headline'] = 'Typed just now';
         $html = $this->postJson('/api/v1/admin/home-page/preview', ['sections' => [$hero, Sections::make('cta')], 'dark' => true])->assertOk()->json('html');
@@ -326,6 +327,9 @@ class HomeBuilderTest extends TestCase
         $this->assertStringContainsString('data-home-preview', $html);
         $this->assertMatchesRegularExpression('/<html[^>]*class="h-full dark"/', $html);
         $this->assertNull(HomePageVersion::draft(), 'a preview saves nothing');
+        $this->assertStringNotContainsString('Zewditu', $html, 'shown as a visitor, not as the signed-in admin');
+        $this->assertStringNotContainsString('<script', $html, 'no scripts in the preview');
+        $this->getJson('/api/v1/admin/home-page')->assertOk(); // still signed in afterwards
         $this->assertStringNotContainsString('data-home-section', $this->get('/')->getContent());
     }
 

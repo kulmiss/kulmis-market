@@ -305,15 +305,13 @@ class HomePageController extends Controller
      */
     private function asGuest(callable $render): string
     {
-        $guard = Auth::guard('web');
-        $user = $guard->user();
-        $guard->forgetUser();
+        $was = Auth::getDefaultDriver();
+        Auth::shouldUse('home_preview');
         try {
-            return $render();
+            // The preview frame runs no scripts: leave them out (and autofocus), so the browser has nothing to complain about.
+            return (string) preg_replace(['#<script\b[^>]*>.*?</script>#is', '#<link rel="modulepreload"[^>]*>#i', '#\sautofocus\b#i'], '', $render());
         } finally {
-            if ($user) {
-                $guard->setUser($user);
-            }
+            Auth::shouldUse($was);
         }
     }
 }

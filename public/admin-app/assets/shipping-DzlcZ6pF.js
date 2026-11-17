@@ -1,0 +1,1 @@
+import{r as e}from"./catalog-pages-DY2GF32q.js";var t=e;export{t as component};

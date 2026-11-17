@@ -1,4 +1,4 @@
-<section class="container-km mt-16 max-w-3xl">
+<section class="container-km mt-16"><div class="max-w-3xl">
     @if ($x['title'] !== '')<h2 class="text-3xl">{{ $x['title'] }}</h2>@endif
     <div class="mt-5 grid gap-3">
         @foreach ($x['items'] as $item)
@@ -8,4 +8,4 @@
         </details>
         @endforeach
     </div>
-</section>
+</div></section>

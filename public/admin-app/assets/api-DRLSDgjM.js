@@ -1,0 +1,1 @@
+import{E as e}from"./index-DKv27Tmw.js";var t={queryKey:[`setup`],queryFn:async()=>(await e.get(`/setup`)).data.data};export{t};

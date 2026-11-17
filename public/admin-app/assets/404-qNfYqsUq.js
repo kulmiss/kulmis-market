@@ -1,0 +1,1 @@
+import{s as e}from"./index-DKv27Tmw.js";var t=e;export{t as component};
