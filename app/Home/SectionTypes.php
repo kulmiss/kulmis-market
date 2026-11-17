@@ -8,7 +8,7 @@ use App\Support\Features;
  * Every kind of section the home page builder can add, with the fields the
  * side panel shows, the starting values and the switches it needs.
  *
- * Field types: text, textarea, link, select, toggle, number, image, video,
+ * Field types: text, textarea, link, video_url, select, toggle, number, image, video,
  * color, checks, list (repeating items), categories, products, faqs,
  * testimonials (picked rows, in order).
  *
@@ -214,6 +214,43 @@ final class SectionTypes
                 ],
                 'defaults' => ['title' => 'Made to last', 'text' => 'Tell people what makes your pieces special.', 'image' => null, 'image_side' => 'left',
                     'button1_text' => '', 'button1_link' => '', 'accent' => 'none'],
+            ],
+            'testimonials' => [
+                'label' => 'What customers say', 'group' => 'Story', 'icon' => 'chat', 'needs' => [],
+                'description' => 'Real words from real customers that you typed in. Never made up.',
+                'note' => 'Only quotes with the "A real customer said this" tick are shown. Add them under "Customer quotes".',
+                'fields' => [
+                    'title' => $title,
+                    'pick' => ['type' => 'testimonials', 'label' => 'Quotes (empty = all you ticked, in your order)', 'max' => 12],
+                    'count' => ['type' => 'number', 'label' => 'How many at most', 'min' => 1, 'max' => 12],
+                ],
+                'defaults' => ['title' => 'What customers say', 'pick' => [], 'count' => 3],
+            ],
+            'video' => [
+                'label' => 'Video', 'group' => 'Story', 'icon' => 'star', 'needs' => [],
+                'description' => 'A YouTube or Vimeo link, or a short video you upload (up to 2 minutes). It loads only when tapped.',
+                'fields' => [
+                    'title' => $title,
+                    'source' => ['type' => 'select', 'label' => 'Video from', 'options' => ['link' => 'YouTube or Vimeo link', 'upload' => 'My video file']],
+                    'url' => ['type' => 'video_url', 'label' => 'YouTube or Vimeo link', 'when' => ['source', 'link']],
+                    'video' => ['type' => 'video', 'label' => 'Video file', 'when' => ['source', 'upload']],
+                    'poster' => ['type' => 'image', 'label' => 'Picture before it plays'],
+                    'caption' => ['type' => 'text', 'label' => 'Line under the video', 'max' => 200],
+                ],
+                'defaults' => ['title' => '', 'source' => 'link', 'url' => '', 'video' => null, 'poster' => null, 'caption' => ''],
+            ],
+            'gallery' => [
+                'label' => 'Gallery', 'group' => 'Story', 'icon' => 'heart', 'needs' => [],
+                'description' => 'A set of pictures, each with an optional line.',
+                'fields' => [
+                    'title' => $title,
+                    'items' => ['type' => 'list', 'label' => 'Pictures', 'max' => 12, 'fields' => [
+                        'image' => ['type' => 'image', 'label' => 'Picture'],
+                        'caption' => ['type' => 'text', 'label' => 'Line under it', 'max' => 120],
+                    ]],
+                    'layout' => ['type' => 'select', 'label' => 'Layout', 'options' => ['grid' => 'Grid', 'row' => 'Row you can swipe']],
+                ],
+                'defaults' => ['title' => 'From the workshop', 'items' => [], 'layout' => 'grid'],
             ],
             'numbers' => [
                 'label' => 'Trust numbers', 'group' => 'Explain', 'icon' => 'check', 'needs' => [],

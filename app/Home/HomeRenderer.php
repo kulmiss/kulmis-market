@@ -10,6 +10,7 @@ use App\Models\Faq;
 use App\Models\HomeMedia;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Testimonial;
 use App\Shop\FlashSales;
 use App\Support\Features;
 use App\Support\FeatureText;
@@ -69,9 +70,11 @@ final class HomeRenderer
         return $out;
     }
 
-    public function media(?int $id): ?HomeMedia
+    public function media(?int $id, string $kind = 'image'): ?HomeMedia
     {
-        return $id === null ? null : $this->media->get($id);
+        $m = $id === null ? null : $this->media->get($id);
+
+        return $m?->kind === $kind ? $m : null;
     }
 
     /** A text with live numbers; empty when it still mentions a switched-off feature. */
@@ -139,6 +142,10 @@ final class HomeRenderer
             'numbers' => ($n = array_intersect_key(HomeNumbers::all(), array_flip($d['stats']))) === [] ? null
                 : ['title' => $this->text($d['title']), 'numbers' => self::rows($d['stats'])->filter(fn ($k) => isset($n[$k]))->map(fn ($k) => ['value' => $n[$k], 'label' => HomeNumbers::LABELS[$k]])->values()],
             'faq' => $this->faq($d),
+            'testimonials' => $this->testimonials($d),
+            'video' => $this->video($d),
+            'gallery' => ($pics = self::rows($d['items'])->map(fn ($i) => ['image' => $this->media($i['image']), 'caption' => $this->text($i['caption'])])
+                ->filter(fn ($i) => $i['image'] !== null)->values())->isEmpty() ? null : ['title' => $this->text($d['title']), 'items' => $pics],
             'contact' => $this->contact($d),
             'spacer' => [],
             default => null,
@@ -309,6 +316,39 @@ final class HomeRenderer
         $buttons = self::rows($d['channels'])->map(fn ($k) => $all[$k] ?? null)->filter()->map(fn ($b) => ['text' => $b[0], 'href' => $b[1]])->values();
 
         return $buttons->isEmpty() ? null : ['title' => $this->text($d['title']), 'text' => $this->text($d['text']), 'buttons' => $buttons];
+    }
+
+    /**
+     * @param  array<string, mixed>  $d
+     * @return ?array<string, mixed>
+     */
+    private function testimonials(array $d): ?array
+    {
+        $q = Testimonial::query()->showable();
+        $rows = $d['pick'] !== []
+            ? $q->whereIn('id', $d['pick'])->get()->sortBy(fn (Testimonial $t) => array_search($t->id, $d['pick'], true))->values()
+            : $q->orderBy('position')->orderByDesc('id')->get();
+        $items = $rows->map(fn (Testimonial $t) => ['text' => $this->text($t->text), 'name' => $t->name, 'city' => (string) $t->city, 'photo' => $t->photoUrl(), 'demo' => $t->is_demo])
+            ->filter(fn ($t) => $t['text'] !== '')->take($d['count'])->values();
+
+        return $items->isEmpty() ? null : ['title' => $this->text($d['title']), 'items' => $items];
+    }
+
+    /**
+     * @param  array<string, mixed>  $d
+     * @return ?array<string, mixed>
+     */
+    private function video(array $d): ?array
+    {
+        $poster = $this->media($d['poster']);
+        if ($d['source'] === 'upload') {
+            $file = $this->media($d['video'], 'video');
+
+            return $file ? ['title' => $this->text($d['title']), 'caption' => $this->text($d['caption']), 'file' => $file, 'poster' => $poster, 'link' => null] : null;
+        }
+        $link = VideoLink::parse($d['url']);
+
+        return $link ? ['title' => $this->text($d['title']), 'caption' => $this->text($d['caption']), 'file' => null, 'poster' => $poster, 'link' => $link] : null;
     }
 
     /** @return Collection<int, mixed> */

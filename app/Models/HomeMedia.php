@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Demo\HidesDemo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -21,17 +22,20 @@ use Illuminate\Support\Facades\Storage;
  * @property int $bytes
  * @property ?string $alt
  * @property ?int $uploaded_by
+ * @property bool $is_demo
  * @property Carbon $created_at
  */
 class HomeMedia extends Model
 {
+    use HidesDemo;
+
     protected $table = 'home_media';
 
-    protected $fillable = ['kind', 'path', 'formats', 'widths', 'width', 'height', 'bytes', 'alt', 'uploaded_by'];
+    protected $fillable = ['kind', 'path', 'formats', 'widths', 'width', 'height', 'bytes', 'alt', 'uploaded_by', 'is_demo'];
 
     protected function casts(): array
     {
-        return ['formats' => 'array', 'widths' => 'array', 'width' => 'integer', 'height' => 'integer', 'bytes' => 'integer'];
+        return ['formats' => 'array', 'widths' => 'array', 'width' => 'integer', 'height' => 'integer', 'bytes' => 'integer', 'is_demo' => 'boolean'];
     }
 
     public function url(int $width = 800, string $format = 'webp'): string

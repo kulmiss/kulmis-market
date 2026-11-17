@@ -565,6 +565,7 @@ if ($('[data-install], [data-push]')) import('./chunks/member-app.js');
 if ($('[data-mtable]')) import('./chunks/member-tables.js');
 if ($('[data-tour]')) import('./chunks/welcome-tour.js');
 if ($('[data-help-feedback]')) import('./chunks/help-feedback.js');
+if ($('[data-video]')) import('./chunks/video.js');
 
 /* "What you could earn" (member home): the same sums as App\Reports\WhatIf::forMember, from the real settings. */
 $$('[data-earn-calc]').forEach((box) => {

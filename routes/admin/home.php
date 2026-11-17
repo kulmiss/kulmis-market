@@ -15,7 +15,15 @@ Route::middleware('can:manage-home')->prefix('home-page')->group(function () {
     Route::get('versions', [HomePageController::class, 'versions']);
     Route::get('versions/{version}/preview', [HomePageController::class, 'versionPreview'])->middleware('throttle:60,1');
     Route::post('versions/{version}/restore', [HomePageController::class, 'restore'])->middleware('throttle:20,1');
-    Route::get('templates/{key}', [HomePageController::class, 'template'])->where('key', '[a-z_]{1,40}');
+    Route::post('templates/{key}', [HomePageController::class, 'template'])->where('key', '[a-z_]{1,40}')->middleware('throttle:20,1');
+    Route::get('media', [HomePageController::class, 'media']);
+    Route::post('media', [HomePageController::class, 'upload'])->middleware('throttle:30,1');
+    Route::put('media/{media}', [HomePageController::class, 'updateMedia']);
+    Route::delete('media/{media}', [HomePageController::class, 'deleteMedia']);
+    Route::get('testimonials', [HomePageController::class, 'testimonials']);
+    Route::post('testimonials', [HomePageController::class, 'saveTestimonial'])->middleware('throttle:30,1');
+    Route::post('testimonials/{testimonial}', [HomePageController::class, 'saveTestimonial'])->middleware('throttle:30,1'); // POST: may carry a photo
+    Route::delete('testimonials/{testimonial}', [HomePageController::class, 'deleteTestimonial']);
     Route::get('sections/new/{type}', [HomePageController::class, 'newSection'])->where('type', '[a-z_]{1,40}');
-    Route::get('options/{kind}', [HomePageController::class, 'options'])->whereIn('kind', ['categories', 'products', 'faqs']);
+    Route::get('options/{kind}', [HomePageController::class, 'options'])->whereIn('kind', ['categories', 'products', 'faqs', 'testimonials']);
 });

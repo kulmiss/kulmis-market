@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Catalog\ImageProcessor;
 use App\Help\HelpTokens;
+use App\Home\HomeMediaStore;
 use App\Home\HomePageView;
 use App\Home\HomePublisher;
 use App\Home\HomeTemplates;
@@ -12,14 +14,20 @@ use App\Home\SectionTypes;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Faq;
+use App\Models\HomeMedia;
 use App\Models\HomePageVersion;
 use App\Models\Product;
+use App\Models\Testimonial;
 use App\Models\User;
+use App\Storefront\PageCache;
+use App\Support\Activity;
 use App\Support\Features;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Admin → Home page: the builder's API. The editor keeps the sections in
@@ -46,6 +54,7 @@ class HomePageController extends Controller
             'templates' => HomeTemplates::list(),
             'tokens' => collect(HelpTokens::all())->map(fn ($t, $k) => ['token' => '{'.$k.'}', 'value' => $t[0], 'label' => $t[1]])->values(),
             'link_help' => SafeLink::HELP,
+            'video_upload' => HomeMediaStore::videoEnabled(),
         ]);
     }
 
@@ -122,11 +131,119 @@ class HomePageController extends Controller
         return response()->json(['live' => $this->summary($v)]);
     }
 
-    public function template(string $key): JsonResponse
+    /** A template's sections for the editor (not saved: the editor puts them in the draft, and Undo works). */
+    public function template(Request $request, string $key): JsonResponse
     {
         abort_unless(isset(HomeTemplates::list()[$key]), 404);
 
-        return response()->json(['sections' => HomeTemplates::sections($key)]);
+        return response()->json(['sections' => HomeTemplates::sections($key, $this->user($request))]);
+    }
+
+    public function media(): JsonResponse
+    {
+        return response()->json(['data' => HomeMedia::query()->latest('id')->limit(300)->get()->map(fn (HomeMedia $m) => $m->toEditor())]);
+    }
+
+    public function upload(Request $request, HomeMediaStore $store): JsonResponse
+    {
+        $data = $request->validate([
+            'kind' => ['required', 'in:image,video'],
+            'alt' => ['required', 'string', 'min:3', 'max:200'],
+            'file' => ['required', 'file', ...($request->input('kind') === 'video'
+                ? ['max:15360', 'mimetypes:video/mp4,video/webm,video/quicktime']
+                : ['max:10240', 'mimes:jpg,jpeg,png,webp,avif'])],
+        ], ['alt.required' => 'Write a short description of the picture (for people who cannot see it).']);
+        try {
+            if ($data['kind'] === 'video') {
+                ['video' => $video, 'poster' => $poster] = $store->video($data['file'], $data['alt'], $this->user($request));
+                Activity::log('home.media_uploaded', $video, ['kind' => 'video', 'bytes' => $video->bytes]);
+
+                return response()->json(['media' => $video->toEditor(), 'poster' => $poster?->toEditor()], 201);
+            }
+            $m = $store->image($data['file'], $data['alt'], $this->user($request));
+        } catch (\RuntimeException $e) {
+            throw ValidationException::withMessages(['file' => $e->getMessage()]);
+        }
+        Activity::log('home.media_uploaded', $m, ['kind' => 'image', 'bytes' => $m->bytes]);
+
+        return response()->json(['media' => $m->toEditor()], 201);
+    }
+
+    public function updateMedia(Request $request, HomeMedia $media): JsonResponse
+    {
+        $data = $request->validate(['alt' => ['required', 'string', 'min:3', 'max:200']]);
+        $media->forceFill(['alt' => trim($data['alt'])])->save();
+        PageCache::clear();
+
+        return response()->json(['media' => $media->toEditor()]);
+    }
+
+    public function deleteMedia(HomeMedia $media, HomeMediaStore $store): JsonResponse
+    {
+        if (($used = $store->usedIn($media)) !== []) {
+            throw ValidationException::withMessages(['media' => 'It is used on the '.implode(' and the ', $used).'. Take it out there first.']);
+        }
+        $store->delete($media);
+        Activity::log('home.media_deleted', null, ['id' => $media->id]);
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function testimonials(): JsonResponse
+    {
+        return response()->json(['data' => Testimonial::query()->orderBy('position')->orderByDesc('id')->get()->map(fn (Testimonial $t) => $this->quote($t))]);
+    }
+
+    public function saveTestimonial(Request $request, ImageProcessor $images, ?Testimonial $testimonial = null): JsonResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:80'], 'city' => ['nullable', 'string', 'max:80'], 'text' => ['required', 'string', 'max:600'],
+            'confirmed_real' => ['boolean'], 'photo_ok' => ['boolean'], 'is_active' => ['boolean'], 'position' => ['nullable', 'integer', 'min:0', 'max:999'],
+            'photo' => ['nullable', 'file', 'max:8192', 'mimes:jpg,jpeg,png,webp'], 'remove_photo' => ['boolean'],
+        ]);
+        abort_if($testimonial?->is_demo, 422, 'Demo quotes cannot be changed. Add your own real ones.');
+        $t = $testimonial ?? new Testimonial(['created_by' => $this->user($request)->id]);
+        $old = $t->photo_path;
+        if ($request->hasFile('photo')) {
+            try {
+                $t->photo_path = $images->photo($data['photo'], 'testimonials', 400);
+            } catch (\RuntimeException $e) {
+                throw ValidationException::withMessages(['photo' => $e->getMessage()]);
+            }
+        } elseif ($request->boolean('remove_photo')) {
+            $t->photo_path = null;
+        }
+        $fields = array_intersect_key($data, array_flip(['name', 'city', 'text', 'confirmed_real', 'photo_ok', 'is_active', 'position']));
+        $t->fill(array_map(fn ($v) => is_string($v) ? trim($v) : $v, $fields));
+        $t->position ??= 0;
+        $t->save();
+        if ($old && $old !== $t->photo_path) {
+            Storage::disk('public')->delete($old);
+        }
+        Activity::log('home.testimonial_saved', $t, ['confirmed_real' => $t->confirmed_real]);
+
+        return response()->json(['data' => $this->quote($t)], $t->wasRecentlyCreated ? 201 : 200);
+    }
+
+    public function deleteTestimonial(Testimonial $testimonial): JsonResponse
+    {
+        if ($testimonial->photo_path) {
+            Storage::disk('public')->delete($testimonial->photo_path);
+        }
+        $testimonial->delete();
+        Activity::log('home.testimonial_deleted', null, ['id' => $testimonial->id]);
+
+        return response()->json(['ok' => true]);
+    }
+
+    /** @return array<string, mixed> */
+    private function quote(Testimonial $t): array
+    {
+        return [
+            'id' => $t->id, 'name' => $t->name, 'city' => $t->city, 'text' => $t->text, 'confirmed_real' => $t->confirmed_real,
+            'photo_ok' => $t->photo_ok, 'is_active' => $t->is_active, 'position' => $t->position, 'is_demo' => $t->is_demo,
+            'photo' => $t->photo_path ? Storage::disk('public')->url($t->photo_path) : null, 'not_shown' => $t->notShownBecause(),
+        ];
     }
 
     public function newSection(string $type): JsonResponse
@@ -144,6 +261,8 @@ class HomePageController extends Controller
                 ->map(fn ($c) => ['id' => $c->id, 'label' => $c->name.($c->is_active ? '' : ' (hidden)')]),
             'products' => Product::query()->where('status', 'active')->orderBy('name')->limit(500)->get(['id', 'name'])
                 ->map(fn ($p) => ['id' => $p->id, 'label' => $p->name]),
+            'testimonials' => Testimonial::query()->orderBy('position')->orderByDesc('id')->get()
+                ->map(fn ($t) => ['id' => $t->id, 'label' => $t->name.': '.mb_strimwidth($t->text, 0, 60, '…').($t->notShownBecause() !== [] && ! $t->is_demo ? ' (not shown)' : '').($t->is_demo ? ' (demo)' : '')]),
             'faqs' => Faq::query()->orderBy('position')->get(['id', 'question', 'is_published'])
                 ->map(fn ($f) => ['id' => $f->id, 'label' => $f->question.($f->is_published ? '' : ' (not published)')]),
             default => abort(404),

@@ -89,6 +89,7 @@ final class Sections
                 'text' => self::text($v, $f['max'] ?? 160),
                 'textarea' => self::text($v, $f['max'] ?? 600, true),
                 'link' => self::text($v, 500),
+                'video_url' => self::text($v, 300),
                 'select' => is_string($v) && isset($f['options'][$v]) ? $v : ($defaults[$key] ?? array_key_first($f['options'])),
                 'toggle' => (bool) $v,
                 'number' => max($f['min'] ?? 0, min($f['max'] ?? 100, is_numeric($v) ? (int) $v : (int) ($defaults[$key] ?? $f['min'] ?? 0))),
@@ -215,11 +216,17 @@ final class Sections
             };
             if (in_array($f['type'], ['text', 'textarea'], true) && ! empty($f['required']) && $v === '') {
                 $add('is empty.');
+            } elseif ($f['type'] === 'video_url' && VideoLink::parse((string) $v) === null) {
+                $add($v === '' ? 'is empty.' : 'is not a YouTube or Vimeo video link.');
+            } elseif ($f['type'] === 'video' && $v === null) {
+                $add('is empty. Upload a video or pick one.');
             } elseif ($f['type'] === 'link' && $v !== '' && SafeLink::clean((string) $v) === null) {
                 $add('is not an allowed link. '.SafeLink::HELP.'.');
             } elseif (in_array($f['type'], ['image', 'video'], true) && $v !== null) {
                 if (! isset($media[$v])) {
                     $add('was deleted. Pick another one.');
+                } elseif ($media[$v]->kind !== $f['type']) {
+                    $add($f['type'] === 'image' ? 'must be a picture.' : 'must be a video.');
                 } elseif ($media[$v]->kind === 'image' && trim((string) $media[$v]->alt) === '') {
                     $add('needs a short description (alt text) for people who cannot see it.');
                 }

@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-BJ0HqV-E.css",
+    "file": "assets/app-wJL7-tdS.css",
     "name": "app",
     "names": [
       "app.css"
@@ -18,7 +18,7 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-D08I6Sxt.js",
+    "file": "assets/app-DSAWcmFo.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -27,11 +27,12 @@
       "resources/js/chunks/member-app.js",
       "resources/js/chunks/member-tables.js",
       "resources/js/chunks/welcome-tour.js",
-      "resources/js/chunks/help-feedback.js"
+      "resources/js/chunks/help-feedback.js",
+      "resources/js/chunks/video.js"
     ]
   },
   "resources/js/chunks/help-feedback.js": {
-    "file": "assets/help-feedback-CBRNHVin.js",
+    "file": "assets/help-feedback-BXE55ARE.js",
     "name": "help-feedback",
     "src": "resources/js/chunks/help-feedback.js",
     "isDynamicEntry": true,
@@ -40,7 +41,7 @@
     ]
   },
   "resources/js/chunks/member-app.js": {
-    "file": "assets/member-app-CBbhdPLe.js",
+    "file": "assets/member-app-uAbYXD7C.js",
     "name": "member-app",
     "src": "resources/js/chunks/member-app.js",
     "isDynamicEntry": true,
@@ -49,7 +50,7 @@
     ]
   },
   "resources/js/chunks/member-tables.js": {
-    "file": "assets/member-tables-DGjP2uun.js",
+    "file": "assets/member-tables-BrFLiTRm.js",
     "name": "member-tables",
     "src": "resources/js/chunks/member-tables.js",
     "isDynamicEntry": true,
@@ -58,7 +59,7 @@
     ]
   },
   "resources/js/chunks/picture-card.js": {
-    "file": "assets/picture-card-CEZ_nNfT.js",
+    "file": "assets/picture-card-Bnv7Zb2K.js",
     "name": "picture-card",
     "src": "resources/js/chunks/picture-card.js",
     "isDynamicEntry": true,
@@ -66,8 +67,17 @@
       "resources/js/app.js"
     ]
   },
+  "resources/js/chunks/video.js": {
+    "file": "assets/video-DwlAwDGL.js",
+    "name": "video",
+    "src": "resources/js/chunks/video.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
   "resources/js/chunks/welcome-tour.js": {
-    "file": "assets/welcome-tour-CiT6PWru.js",
+    "file": "assets/welcome-tour-_LBqd-2a.js",
     "name": "welcome-tour",
     "src": "resources/js/chunks/welcome-tour.js",
     "isDynamicEntry": true,
