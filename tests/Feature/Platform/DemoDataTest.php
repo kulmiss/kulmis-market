@@ -5,6 +5,7 @@ namespace Tests\Feature\Platform;
 use App\Demo\Demo;
 use App\Jobs\SendCustomerMessage;
 use App\Ledger\Wallet;
+use App\Models\MembershipPurchase;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
@@ -86,6 +87,15 @@ class DemoDataTest extends TestCase
             $this->assertNotFalse(getimagesize(database_path("seeders/demo-photos/$photo.jpg")));
         }
         $this->assertStringContainsString('pexels.com/license', $credits);
+    }
+
+    public function test_demo_data_can_be_added_while_show_demo_data_is_off(): void
+    {
+        Settings::set('demo.show', false); // e.g. switched off while trying things out
+        $this->seedDemo();
+        $this->assertTrue(Settings::get('demo.show'));
+        $this->assertGreaterThan(10, Order::query()->where('is_demo', true)->count(), 'orders were made');
+        $this->assertGreaterThan(5, MembershipPurchase::query()->where('is_demo', true)->where('status', 'paid')->count(), 'memberships were paid');
     }
 
     public function test_the_seeder_refuses_to_run_in_production(): void
