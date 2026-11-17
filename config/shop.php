@@ -16,6 +16,9 @@ return [
 
     // Static HTML cache for guest pages (see docs/deploy.md for the server rules).
     'page_cache' => (bool) env('PAGE_CACHE', true),
+
+    // Home page builder videos: re-encoded with ffmpeg (in the Docker image). Empty = video upload off (links still work).
+    'ffmpeg' => env('FFMPEG_PATH', 'ffmpeg'),
     'page_cache_in_tests' => false,
 
     // 32-byte key for encrypted backups (php artisan km:backup-key).

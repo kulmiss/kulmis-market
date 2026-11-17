@@ -1,0 +1,1 @@
+import{n as e}from"./guide-C8qD3Azv.js";import{i as t}from"./index-CRHl_4lF.js";import{c as n}from"./dist-BXPugWsx.js";var r=n();function i(){let{slug:n}=t.useParams();return(0,r.jsx)(e,{slug:n},n)}export{i as component};

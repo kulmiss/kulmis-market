@@ -5,8 +5,9 @@ FROM php:8.3-fpm-alpine3.22
 ARG UID=1000
 ARG GID=1000
 
+# ffmpeg: home page videos are re-encoded (no hidden data) and get a poster picture.
 RUN apk add --no-cache icu-dev libzip-dev libpng-dev libjpeg-turbo-dev libwebp-dev \
-        libavif-dev freetype-dev oniguruma-dev bash git unzip mysql-client shadow \
+        libavif-dev freetype-dev oniguruma-dev bash git unzip mysql-client shadow ffmpeg \
     && docker-php-ext-configure gd --with-jpeg --with-webp --with-avif --with-freetype \
     && docker-php-ext-install -j"$(nproc)" pdo_mysql bcmath intl zip gd mbstring opcache pcntl \
     && groupmod -o -g "${GID}" www-data && usermod -o -u "${UID}" -g "${GID}" www-data \

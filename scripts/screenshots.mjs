@@ -30,6 +30,7 @@ mkdirSync('docs/screenshots', { recursive: true })
 
 const PHONE = { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }
 const DESKTOP = { viewport: { width: 1366, height: 860 } }
+const TABLET = { viewport: { width: 820, height: 1180 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true }
 
 // [file, who, path, size, optional steps on the page]
 const SHOTS = [
@@ -73,6 +74,16 @@ const SHOTS = [
   ['docs/dashboard-checklist-desktop', 'admin', '/admin/', DESKTOP, finishWizard],
   // Member welcome tour
   ...[1, 2, 3].flatMap((n) => [[`docs/tour-${n}-phone`, 'member', '/account?tour=1', PHONE, tourSlide(n)], [`docs/tour-${n}-desktop`, 'member', '/account?tour=1', DESKTOP, tourSlide(n)]]),
+  // Home page builder
+  ['docs/admin-home-builder', 'admin', '/admin/home-page', DESKTOP, async (p) => { await p.waitForTimeout(3500) }],
+  ['docs/admin-home-builder-tablet', 'admin', '/admin/home-page', TABLET, async (p) => { await p.waitForTimeout(2500) }],
+  ['docs/admin-home-preview-phone', 'admin', '/admin/home-page', DESKTOP, async (p) => { await p.getByRole('button', { name: 'Phone' }).click(); await p.waitForTimeout(3500) }],
+  ['docs/admin-home-library', 'admin', '/admin/home-page', DESKTOP, async (p) => { await p.getByRole('button', { name: 'Add section' }).click(); await p.waitForTimeout(1000) }],
+  ['docs/admin-home-history', 'admin', '/admin/home-page', DESKTOP, async (p) => {
+    await p.getByRole('button', { name: 'History' }).click(); await p.waitForTimeout(1500)
+    const preview = p.getByRole('dialog').getByRole('button', { name: 'Preview' }).first()
+    if (await preview.count()) { await preview.click(); await p.waitForTimeout(2500) }
+  }],
   ['docs/admin-guide-question-button', 'admin', '/admin/cash-outs', DESKTOP, async (p) => { await p.locator('[data-page-help]').click(); await p.waitForTimeout(1500) }],
 ]
 
@@ -146,7 +157,10 @@ async function signInAdmin(ctx) {
       console.error(`The demo Super Admin already has two-step sign-in. Put its secret (the 32 letters shown at set-up) in ${secretFile} and run again.`)
       process.exit(1)
     } else {
+      // A code works once: a second sign-in waits for the next code.
+      if (lastCode === Math.floor(Date.now() / 30000)) await p.waitForTimeout(30000 - (Date.now() % 30000) + 1000)
       if (Date.now() % 30000 > 25000) await p.waitForTimeout(6000)
+      lastCode = Math.floor(Date.now() / 30000)
       await p.locator('input[inputmode=numeric], input[autocomplete=one-time-code]').first().fill(totp(readFileSync(secretFile, 'utf8').trim()))
       await p.keyboard.press('Enter')
       await p.waitForTimeout(2500)
@@ -155,10 +169,11 @@ async function signInAdmin(ctx) {
   await p.close()
 }
 
+let lastCode = 0
 const browser = await chromium.launch()
 const contexts = {}
 async function context(who, size) {
-  const key = `${who}-${size === PHONE ? 'phone' : 'desktop'}`
+  const key = `${who}-${size === PHONE ? 'phone' : size === TABLET ? 'tablet' : 'desktop'}`
   if (!contexts[key]) {
     contexts[key] = await browser.newContext({ ...size, colorScheme: 'light' })
     await (who === 'admin' ? signInAdmin : signInMember)(contexts[key])

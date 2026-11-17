@@ -1,0 +1,1 @@
+import{s as e}from"./index-CRHl_4lF.js";var t=e;export{t as component};
