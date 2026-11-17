@@ -8,7 +8,7 @@ import { api, errorMessage } from '@/lib/api'
 import { formatDate } from '@/lib/money'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Page } from '@/components/km/page'
 import { PageSkeleton } from '@/components/km/page-skeleton'
 import { AddSectionDialog, HistoryDialog, PublishDialog, QuotesDialog, SeoDialog, TemplatesDialog } from './dialogs'
@@ -206,10 +206,10 @@ function Editor({ initial }: { initial: HomeState }) {
           <TabsList className='mb-3 grid w-full grid-cols-3'>
             <TabsTrigger value='sections'>Sections</TabsTrigger><TabsTrigger value='edit'>Edit</TabsTrigger><TabsTrigger value='preview'>Preview</TabsTrigger>
           </TabsList>
+          <TabsContent value='sections'>{sectionsPane}</TabsContent>
+          <TabsContent value='edit'>{editPane}</TabsContent>
+          <TabsContent value='preview'>{previewPane}</TabsContent>
         </Tabs>
-        {tab === 'sections' && sectionsPane}
-        {tab === 'edit' && editPane}
-        {tab === 'preview' && previewPane}
       </div> : <div className='grid grid-cols-[280px_360px_minmax(0,1fr)] gap-4'>
         <div className='max-h-[calc(100vh-11rem)] overflow-y-auto pe-1'>{sectionsPane}</div>
         <div className='max-h-[calc(100vh-11rem)] overflow-y-auto rounded-md border p-4'>{editPane}</div>

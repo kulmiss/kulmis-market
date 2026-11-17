@@ -64,7 +64,7 @@ function PageDialog({ page }: { page?: PageRow }) {
     is_published: page?.is_published ?? true, in_footer: page?.in_footer ?? true, position: page?.position ?? 0 })
   const save = useMutate(page ? 'put' : 'post', ['pages'], 'Page saved')
   return (
-    <FormDialog title={page ? `Edit ${page.title}` : 'New page'} trigger={page ? <Button size='icon' variant='ghost'><Pencil /></Button> : <Button><Plus /> New page</Button>}
+    <FormDialog title={page ? `Edit ${page.title}` : 'New page'} trigger={page ? <Button aria-label='Edit' size='icon' variant='ghost'><Pencil /></Button> : <Button><Plus /> New page</Button>}
       onSave={() => save.mutateAsync({ path: page ? `/pages/${page.id}` : '/pages', body: d })}>
       <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
         <label className='grid gap-1.5 text-sm leading-none font-medium'>Title<Input value={d.title} onChange={(e) => setD({ ...d, title: e.target.value })} /></label>
@@ -87,7 +87,7 @@ function BannerDialog({ banner }: { banner?: BannerRow }) {
     link_text: banner?.link_text ?? '', starts_at: banner?.starts_at?.slice(0, 10) ?? '', ends_at: banner?.ends_at?.slice(0, 10) ?? '', is_active: banner?.is_active ?? true })
   const save = useMutate(banner ? 'put' : 'post', ['banners'], 'Banner saved')
   return (
-    <FormDialog title={banner ? 'Edit banner' : 'New banner'} trigger={banner ? <Button size='icon' variant='ghost'><Pencil /></Button> : <Button><Plus /> New banner</Button>}
+    <FormDialog title={banner ? 'Edit banner' : 'New banner'} trigger={banner ? <Button aria-label='Edit' size='icon' variant='ghost'><Pencil /></Button> : <Button><Plus /> New banner</Button>}
       onSave={() => save.mutateAsync({ path: banner ? `/banners/${banner.id}` : '/banners', body: { ...d, starts_at: d.starts_at || null, ends_at: d.ends_at || null, link_url: d.link_url || null } })}>
       <div className='grid gap-1.5'><Label>Where</Label>
         <Select value={d.placement} onValueChange={(v) => setD({ ...d, placement: v })}>

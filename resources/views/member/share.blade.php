@@ -7,7 +7,7 @@
         @php $i = $row['item']; @endphp
         <section class="m-card grid gap-3" aria-label="{{ $i->title }}">
             <div class="flex items-center gap-3">
-                <img src="{{ $i->imageUrl() }}" alt="" width="64" height="64" class="size-16 rounded-xl object-cover" loading="lazy">
+                <img src="{{ $i->thumbUrl() }}" alt="" width="64" height="64" class="size-16 rounded-xl object-cover" loading="lazy">
                 <h2 class="font-semibold">{{ $i->title }}</h2>
             </div>
             @include('member.partials.share-card', ['text' => $row['text'], 'buttons' => $row['buttons'], 'image' => $i->imageUrl(), 'title' => $i->title,

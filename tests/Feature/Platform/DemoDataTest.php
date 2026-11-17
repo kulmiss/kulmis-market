@@ -135,7 +135,8 @@ class DemoDataTest extends TestCase
         $star = User::query()->where('email', 'demo-member@kulmis.test')->firstOrFail();
         $this->assertGreaterThanOrEqual(25, User::query()->where('referrer_id', $star->id)->count(), 'a deep tree with many level-1 members');
         $this->assertTrue(User::query()->whereIn('referrer_id', User::query()->where('referrer_id', $star->id)->select('id'))->exists(), 'level 2');
-        foreach (['super_admin', 'manager', 'finance', 'fulfilment', 'support'] as $role) {
+        // Every staff role has a demo account (to try each one out).
+        foreach (array_keys(config('permissions.roles')) as $role) {
             $this->assertDatabaseHas('users', ['email' => "demo-$role@kulmis.test", 'role' => $role, 'is_demo' => true]);
         }
         $this->assertTrue(DB::table('payments')->where('status', 'awaiting_review')->exists());

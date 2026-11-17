@@ -18,7 +18,10 @@ class WelcomeTourTest extends ReferralTestCase
             ->assertSee('3 friends join → <b data-tour-example>1,500 ETB every month</b>', false)
             ->assertSee('on the way</b> for 14 days', false)
             ->assertSee($m->referral_code)->assertSee('/r/'.$m->referral_code)
-            ->assertSee('data-help-link', false); // Help in the menu (sidebar and More)
+            ->assertSee('data-help-link', false) // Help in the menu (sidebar and More)
+            // Only the first slide shows before the script runs (no layout jump: CLS 0).
+            ->assertSee('<section data-tour-slide="earn" aria-label="How you earn" hidden>', false)
+            ->assertSee('<section data-tour-slide="start" aria-label="Start now"  hidden >', false);
 
         $this->postJson('/account/tour/seen')->assertOk();
         $this->assertNotNull($m->fresh()->welcome_tour_seen_at);

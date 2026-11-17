@@ -24,7 +24,7 @@
                     <p class="font-semibold">
                         @php $link = \App\Notify\Inbox::link($n->url); @endphp
                         @if ($link)<a href="{{ url($link) }}" class="hover:underline">{{ $n->title }}</a>@else{{ $n->title }}@endif
-                        @if ($new)<span class="ms-1 rounded-full px-2 py-0.5 text-xs font-semibold text-white" style="background: var(--m-accent)">New</span>@endif
+                        @if ($new)<span class="ms-1 rounded-full px-2 py-0.5 text-xs font-semibold text-white" style="background: var(--m-fill)">New</span>@endif
                     </p>
                     @if ($n->body)<p class="mt-0.5 text-sm m-muted break-words">{{ $n->body }}</p>@endif
                     <p class="mt-1 text-xs m-muted"><time datetime="{{ $n->created_at?->toIso8601String() }}">{{ $n->created_at?->timezone(config('app.timezone'))->format('d M Y, H:i') }}</time></p>

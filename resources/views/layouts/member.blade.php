@@ -54,7 +54,7 @@
             @endforeach
             @if ($bell)
                 <a href="{{ url('/account/notifications') }}" class="m-nav-link" @if ($isHere('/account/notifications')) aria-current="page" @endif>{!! I::svg('bell', 19) !!}Notifications
-                    @if ($unread)<span class="ms-auto rounded-full px-2 text-xs font-bold text-white" style="background: var(--m-accent)">{{ $unread > 99 ? '99+' : $unread }}<span class="sr-only"> new</span></span>@endif
+                    @if ($unread)<span class="ms-auto rounded-full px-2 text-xs font-bold text-white" style="background: var(--m-fill)">{{ $unread > 99 ? '99+' : $unread }}<span class="sr-only"> new</span></span>@endif
                 </a>
             @endif
         </nav>
@@ -74,11 +74,11 @@
             <span class="ms-auto"></span>
             @if ($bell)
                 <a href="{{ url('/account/notifications') }}" class="relative grid size-12 place-items-center rounded-full" aria-label="Notifications{{ $unread ? " ($unread new)" : '' }}">{!! I::svg('bell', 20) !!}
-                    @if ($unread)<span class="absolute end-2 top-2 grid min-w-5 place-items-center rounded-full px-1 text-[10px] font-bold leading-5 text-white" style="background: var(--m-accent)" aria-hidden="true">{{ $unread > 9 ? '9+' : $unread }}</span>@endif
+                    @if ($unread)<span class="absolute end-2 top-2 grid min-w-5 place-items-center rounded-full px-1 text-[10px] font-bold leading-5 text-white" style="background: var(--m-fill)" aria-hidden="true">{{ $unread > 9 ? '9+' : $unread }}</span>@endif
                 </a>
             @endif
             @feature('appearance.theme_switch')<button type="button" data-theme-toggle class="grid size-12 place-items-center rounded-full" aria-label="Switch light/dark">{!! I::svg('moon', 20) !!}</button>@endfeature
-            <a href="{{ url('/account/security') }}" class="-me-2 grid size-12 place-items-center" aria-label="My profile and security"><span class="grid size-8 place-items-center rounded-full text-sm font-bold text-white" style="background: var(--m-accent)">{{ mb_substr($u->first_name, 0, 1) }}</span></a>
+            <a href="{{ url('/account/security') }}" class="-me-2 grid size-12 place-items-center" aria-label="My profile and security"><span class="grid size-8 place-items-center rounded-full text-sm font-bold text-white" style="background: var(--m-fill)">{{ mb_substr($u->first_name, 0, 1) }}</span></a>
         </header>
 
         <main id="main" class="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-5 sm:px-6 lg:pb-10 lg:pt-8">

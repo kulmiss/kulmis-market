@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Referral;
 
+use App\Ledger\Account;
+use App\Ledger\Ledger;
 use App\Ledger\Wallet;
 use App\Membership\MembershipService;
 use App\Models\Commission;
@@ -72,7 +74,10 @@ class MemberDashboardTest extends ReferralTestCase
         config(['services.telegram.bot_username' => 'KulmisSignalsBot']);
         $this->actingAs($me, 'web');
 
-        $this->get('/account/wallet')->assertOk()->assertSee('Request cash-out')->assertSee('Cash-out account');
+        $this->get('/account/wallet')->assertOk()->assertSee('You can cash out from')->assertSee('Cash-out account');
+        $ledger = app(Ledger::class);
+        $ledger->post('manual.adjustment', [[$ledger->userAccount($me, Wallet::AVAILABLE), -100_000], [Account::ADJUSTMENTS, 100_000]], reason: 'test');
+        $this->get('/account/wallet')->assertOk()->assertSee('Request cash-out');
         $this->get('/account/signals')->assertOk()->assertSee('Open in Telegram')->assertSee('https://t.me/KulmisSignalsBot?start=', false);
         $this->get('/account/badges')->assertOk()->assertSee('My account (mobile)', false);
         $this->get('/account/security')->assertOk()->assertSee('My account (mobile)', false)->assertSee('Security');

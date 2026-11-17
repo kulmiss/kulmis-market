@@ -308,7 +308,8 @@ class DemoSeeder extends Seeder
     private function staff(): void
     {
         $this->admin = $this->staffUser('super_admin', 'Hanna', 'Girma');
-        foreach (['manager' => ['Yonas', 'Alemu'], 'finance' => ['Meron', 'Tadesse'], 'fulfilment' => ['Kebede', 'Wolde'], 'support' => ['Liya', 'Mekonnen']] as $role => [$f, $l]) {
+        foreach (['manager' => ['Yonas', 'Alemu'], 'finance' => ['Meron', 'Tadesse'], 'fulfilment' => ['Kebede', 'Wolde'], 'support' => ['Liya', 'Mekonnen'],
+            'content_editor' => ['Saba', 'Worku']] as $role => [$f, $l]) {
             $this->staffUser($role, $f, $l);
         }
     }

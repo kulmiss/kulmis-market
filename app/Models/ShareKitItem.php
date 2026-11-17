@@ -40,6 +40,12 @@ class ShareKitItem extends Model
         return $this->image_path ? Storage::disk('public')->url($this->image_path) : asset('og-default.png');
     }
 
+    /** The small square picture next to the post: its own picture, or the shop icon (the wide link picture would be cut). */
+    public function thumbUrl(): string
+    {
+        return $this->image_path ? $this->imageUrl() : asset('apple-touch-icon.png');
+    }
+
     /** The text with this member's name, code and link filled in. */
     /** Shown to members? Its page's feature is on and the text doesn't talk about a switched-off feature. */
     public function shownNow(): bool

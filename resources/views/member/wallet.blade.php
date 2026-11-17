@@ -36,18 +36,18 @@
                     </form>
                 </details>
             </div>
-            @if ($acct?->isUsable())
+            @php $cashMin = \App\Support\Settings::int('wallet.cashout_min'); @endphp
+            @if ($acct?->isUsable() && $wallet['available'] < $cashMin)
+            {{-- Not enough yet: say so, instead of a form that can only answer "too little". --}}
+            <p class="mt-4 text-sm m-muted">You can cash out from {{ $fmt($cashMin) }}. Ready to use now: {{ $fmt($wallet['available']) }}.</p>
+            @include('member.partials.cashout-fee')
+            @elseif ($acct?->isUsable())
             <form method="post" action="{{ url('/account/cash-out') }}" class="mt-4 flex flex-wrap items-end gap-3">
                 @csrf
                 <input type="hidden" name="request_id" value="{{ \Illuminate\Support\Str::random(32) }}">
-                <div><label class="label" for="ca">Cash out (from {{ $fmt(\App\Support\Settings::int('wallet.cashout_min')) }})</label><input id="ca" name="amount_birr" class="m-input" inputmode="decimal" required placeholder="{{ \App\Support\Currency::config()['symbol'] }}"></div>
+                <div><label class="label" for="ca">Cash out (from {{ $fmt($cashMin) }})</label><input id="ca" name="amount_birr" class="m-input" inputmode="decimal" required placeholder="{{ \App\Support\Currency::config()['symbol'] }}"></div>
                 <button class="m-btn">Request cash-out</button>
-                @feature('wallet.cashout_fee')
-                    @php $fx = \App\Support\Settings::int('wallet.cashout_fee_fixed'); $fb = \App\Support\Settings::int('wallet.cashout_fee_bps'); @endphp
-                    @if ($fx > 0 || $fb > 0)
-                        <p class="basis-full text-xs m-muted">Cash-out fee: {{ trim(($fx > 0 ? $fmt($fx) : '').($fx > 0 && $fb > 0 ? ' + ' : '').($fb > 0 ? rtrim(rtrim(number_format($fb / 100, 2), '0'), '.').'%' : '')) }}. You get the amount minus the fee.</p>
-                    @endif
-                @endfeature
+                @include('member.partials.cashout-fee')
                 <p class="muted w-full text-xs">Paid to {{ ucfirst($acct->method) }} {{ $acct->masked() }} within {{ \App\Support\Settings::int('wallet.payout_days') }} days.</p>
             </form>
             @endif

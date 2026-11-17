@@ -53,7 +53,9 @@ class ShareKitTipsTest extends ReferralTestCase
     {
         $u = $this->member(null, 'Selam');
         $this->actingAs($u)->get('/account/share')->assertOk()->assertSee('Membership')
-            ->assertSee($u->fresh()->referral_code)->assertSee('/r/'.$u->fresh()->referral_code.'/membership', false)->assertSee('facebook.com/sharer', false);
+            ->assertSee($u->fresh()->referral_code)->assertSee('/r/'.$u->fresh()->referral_code.'/membership', false)->assertSee('facebook.com/sharer', false)
+            // A post without its own picture shows the square shop icon, not a corner of the wide link picture.
+            ->assertSee('src="'.asset('apple-touch-icon.png').'"', false);
 
         Storage::fake('public');
         $this->actingAsAdmin();
