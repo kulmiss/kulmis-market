@@ -3,6 +3,7 @@
 @source '../views/**/*.blade.php';
 @source '../js/**/*.js';
 @source '../../app/Models/Banner.php';
+@source '../../app/Home/*.php';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -110,3 +111,6 @@
         content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, 44px); height: 44px; transform: translate(-50%, -50%);
     }
 }
+
+/* Home page builder preview (Admin → Home page): links and forms do nothing there. */
+[data-home-preview] a, [data-home-preview] form { pointer-events: none; }

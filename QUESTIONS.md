@@ -175,6 +175,13 @@ change any of them.
 | 166 | Welcome tour for existing members | Everyone sees it once, the next time they open their account (also people who joined before). | Decided (recommended) |
 | 167 | The guide for staff | All staff can read the Guide (it has no secrets). The "?" picks the page for the screen you are on. | Decided (recommended) |
 | 168 | Lost 2FA phone and no recovery codes | New server command `php artisan km:reset-2fa email`: only someone with server access can use it; the person gets a safety message and sets 2FA up again at the next sign-in. | Decided (recommended) |
+| 169 | Who can change the home page | Super Admin and a new **Content editor** role (home page + pages, banners and help texts; no money, members or orders). Managers cannot. | Decided (recommended) |
+| 170 | Home page builder switch | On from the start, but nothing changes until you publish for the first time. The "Current home page" template is your home page today, section by section (a test checks it is the same, also with switches off). | Decided (recommended) |
+| 171 | Category buttons while the shop is off | Hidden (before, the old home page still showed them and they opened empty pages). | Decided (recommended) |
+| 172 | Mistakes in the editor | The draft is always saved, so nothing you type is lost. Publishing waits until errors are fixed (a link that is not allowed, a picture without a description, an empty headline, an empty page). Warnings (no Hero at the top, hard-to-read colour) do not stop you. | Decided (recommended) |
+| 173 | Texts about a switched-off feature | That text (or button) is left out, the rest of the section stays, like FAQ answers. The editor says which sections are hidden and why. | Decided (recommended) |
+| 174 | Planned publish | Checked every minute. If something broke since you planned it (a picture was deleted), it is not published: it becomes your draft again and the activity log says why. | Decided (recommended) |
+| 175 | Trust numbers | Counted from real orders, products and members, refreshed every 10 minutes. 0 is never shown. The signal win rate shows only after 10 closed signals. | Decided (recommended) |
 
 ## Still open: needs you
 | # | What | Why |
