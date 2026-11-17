@@ -28,6 +28,7 @@ Easy steps to set up and run Kulmis Market. The same guide is in the admin under
 10. [Settings, texts and demo data](daily-settings.md)
 11. [Staff, roles and safety](daily-staff-security.md)
 12. [Reports, exports and system health](daily-reports-backups.md)
+13. [Home page builder](daily-home-page.md)
 
 **Part 3.** [Problems and answers](problems.md)
 

@@ -1,0 +1,2 @@
+{{-- One builder button. $onDark: the section has a dark colour; $main: the first (strongest) button. --}}
+<a href="{{ $btn['href'] }}" class="{{ $onDark ? (($main ?? true) ? 'btn bg-white text-brand-700 hover:bg-mist-100' : 'btn border border-white/60 hover:bg-white/10') : (($main ?? true) ? ($dark ?? false ? 'btn-dark' : 'btn-primary') : 'btn-ghost') }}{{ isset($extra) ? ' '.$extra : '' }}">{{ $btn['text'] }}</a>

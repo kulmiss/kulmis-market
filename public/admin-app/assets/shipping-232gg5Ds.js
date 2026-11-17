@@ -1,0 +1,1 @@
+import{r as e}from"./catalog-pages-Dz3nenR1.js";var t=e;export{t as component};

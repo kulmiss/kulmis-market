@@ -1,12 +1,12 @@
 @php
     $site = \App\Support\Settings::string('site.name');
-    $title = isset($title) ? $title.' · '.$site : $site.' — '.\App\Support\Settings::string('site.tagline');
+    $title = ! empty($fullTitle) ? $fullTitle : (isset($title) ? $title.' · '.$site : $site.' — '.\App\Support\Settings::string('site.tagline'));
     $description = $description ?? \App\Membership\Benefits::siteDescription();
     $ogImage = $ogImage ?? asset('og-default.png');
     $topBar = \App\Models\Banner::query()->live('top_bar')->first();
 @endphp
 <!doctype html>
-<html lang="en" class="h-full" @if ($brandStyle = \App\Support\Branding::shopColorStyle()) style="{{ $brandStyle }}" @endif @if (\App\Support\Features::disabled('site.instant_loading')) data-instant="off"@endif @if (\App\Support\Features::disabled('site.offline_page')) data-offline="off"@endif>
+<html lang="en" class="h-full{{ ! empty($homePreview['dark']) ? ' dark' : '' }}" @isset($homePreview) data-home-preview @endisset @if ($brandStyle = \App\Support\Branding::shopColorStyle()) style="{{ $brandStyle }}" @endif @if (\App\Support\Features::disabled('site.instant_loading')) data-instant="off"@endif @if (\App\Support\Features::disabled('site.offline_page')) data-offline="off"@endif>
 <head>
     <meta charset="utf-8">
     {{-- Also in a meta tag so static cached pages keep the policy (headers come from PHP for live pages). --}}
