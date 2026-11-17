@@ -47,9 +47,9 @@ function Editor({ initial }: { initial: HomeState }) {
   const currentType = current ? types.get(current.type) : undefined
 
   // Autosave a moment after the last change.
-  const flush = useCallback(async (value: Doc) => {
+  const flush = useCallback(async (value: Doc): Promise<boolean> => {
     const body = JSON.stringify(value)
-    if (body === lastSent.current) { setSave('saved'); return }
+    if (body === lastSent.current) { setSave('saved'); return true }
     setSave('saving')
     try {
       const r = await api.put<{ revision: number; updated_at: string; problems: Problems }>('/home-page/draft', { ...value, revision: revision.current })
@@ -59,9 +59,11 @@ function Editor({ initial }: { initial: HomeState }) {
       setSavedAt(r.data.updated_at)
       setHasDraft(true)
       setSave('saved')
+      return true
     } catch (e) {
       if (e instanceof AxiosError && e.response?.status === 409) setSave('conflict')
       else { setSave('error'); toast.error(`Not saved: ${errorMessage(e)}`) }
+      return false
     }
   }, [])
   useEffect(() => {
@@ -122,14 +124,15 @@ function Editor({ initial }: { initial: HomeState }) {
   }
 
   async function publish(note: string) {
-    await flush(doc.value)
+    // Publish exactly what is on the screen: stop if the last changes could not be saved.
+    if (!(await flush(doc.value))) throw new Error('not saved')
     try {
       await api.post('/home-page/publish', { note: note || null })
       await reload('Published. Visitors see the new home page now.')
     } catch (e) { toast.error(errorMessage(e)); throw e }
   }
   async function schedule(at: string) {
-    await flush(doc.value)
+    if (!(await flush(doc.value))) throw new Error('not saved')
     try {
       await api.post('/home-page/schedule', { publish_at: at })
       await reload(`Planned for ${formatDate(at, true)}`)
