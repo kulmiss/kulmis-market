@@ -31,7 +31,7 @@
     </div></div>
 @endforeach
 
-@if ($categories->isNotEmpty())
+@if ($categories->isNotEmpty() && \App\Support\Features::enabled('shop'))
 <section class="container-km mt-12">
     <div class="flex flex-wrap gap-2">
         @foreach ($categories as $c)<a href="{{ url('/c/'.$c->slug) }}" class="btn-ghost">{{ $c->name }}</a>@endforeach

@@ -122,6 +122,7 @@ return [
     // Look and speed
     'appearance.theme_switch' => ['Light / dark switch', 'Look and speed', true, null, 'Customers can switch between light and dark. Off: always light.'],
     'site.instant_loading' => ['Instant page loading', 'Look and speed', true, null, 'Pages load before the click, so the shop feels instant.'],
+    'site.home_builder' => ['Home page builder', 'Look and speed', true, null, 'Show the home page you build in Admin → Home page. Off: the fixed home page.'],
     'site.offline_page' => ['Offline page', 'Look and speed', true, null, 'Saves pages on the phone, and shows a friendly page with no internet.'],
     'site.help_feedback' => ['"Was this helpful?" buttons', 'Help and contact', true, 'site.help_centre', 'Yes / No buttons under each help article. You see the counts in Admin → Help centre.'],
     'admin.setup_wizard' => ['Setup wizard', 'Help and contact', true, null, '5-page setup for the Super Admin at the first sign-in, and the "still to do" list on the dashboard.'],

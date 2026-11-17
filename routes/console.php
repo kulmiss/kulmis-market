@@ -1,5 +1,6 @@
 <?php
 
+use App\Home\HomePublisher;
 use App\Notify\Inbox;
 use App\Notify\WebPush;
 use App\Rewards\Challenges;
@@ -56,6 +57,7 @@ Artisan::command('km:clear-page-cache', function () {
 if (config('shop.backup_key')) {
     Schedule::command('km:backup')->dailyAt('02:17')->withoutOverlapping();
 }
+Schedule::call(fn () => app(HomePublisher::class)->publishDue())->everyMinute()->name('home:publish-due')->withoutOverlapping();
 Schedule::call(fn () => app(FlashSales::class)->tick())->everyMinute()->name('flash-sales:tick')->withoutOverlapping();
 Schedule::call(fn () => app(CartReminders::class)->run())->hourly()->name('carts:remind')->withoutOverlapping();
 Schedule::call(fn () => Inbox::prune())->dailyAt('03:37')->name('notifications:prune');

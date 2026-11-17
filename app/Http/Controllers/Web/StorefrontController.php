@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Home\HomePageView;
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use App\Models\Category;
+use App\Models\HomePageVersion;
 use App\Models\Order;
 use App\Models\Page;
 use App\Models\Product;
@@ -32,6 +34,10 @@ class StorefrontController extends Controller
     public function home(Request $request): View
     {
         $member = $this->isMember($request);
+        // The page built in Admin → Home page, once one is published (switch off: the fixed page below).
+        if (Features::enabled('site.home_builder') && ($built = HomePageVersion::live())) {
+            return HomePageView::make($built->sections, $built->seo, $member);
+        }
 
         return view('store.home', [
             'featured' => Product::query()->visibleTo($member)->where('is_featured', true)->with(['images', 'variants'])->latest('id')->limit(8)->get(),
