@@ -180,6 +180,13 @@ Home page speed (Lighthouse, 3 runs each, local server, page cache on):
 | Builder, Current template (after) | 100 / 100 / 100 | 1.24 / 1.14 / 1.20 s | 100 | 0.29–0.38 s | 138–148 KB | 0 |
 | Builder, Investor demo (every section type) | 100 / 100 / 100 | 1.16 / 1.11 / 1.15 s | 100 | 0.29–0.45 s | 200–210 KB | 0 |
 
+## Round 11 (guides check + full site test)
+| Branch | What |
+|--------|------|
+| `pr/96-guide-refresh` | Job 1 was already in place (Rounds 9–10); checked against the new list. The screenshot script now also takes the Home page builder pictures (tablet size, waits for a fresh two-step code); cheat sheet; PDF made again |
+| `pr/97-site-test-fixes` | Bugs from the full site test: readable colours (axe 0 problems, light and dark), member home no longer jumps (welcome tour), cut-off hints, wallet says when there is not enough to cash out, share-kit thumbnails, demo Content editor, cash-out help text, CI audit split (shipped code vs build tools) |
+| `pr/98-site-test-report` | SECURITY_REPORT Round 11, QUESTIONS #181–#182, this file |
+
 ## Key decisions
 All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
 - Money is integer santim and double-entry. Balances are never stored.
@@ -199,6 +206,7 @@ All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
 See [docs/local-setup.md](docs/local-setup.md).
 
 ## Test status
+- Round 11: the money story in a browser again (55/55, 60,050 / 5,780 / 54,270 = 90.4%); a crawler visited every page 5,986 times (13 kinds of people and staff, 360–1366 px, light/dark, 125% text): no errors left; axe-core 0 problems on 34 pages; Lighthouse home default and Investor demo 100 on phone and desktop.
 - Round 10: home page builder tests (HomeBuilderTest, HomeBuilderMediaTest) plus the whole suite on SQLite and MariaDB. The builder checked in a browser on a desktop, a tablet (820 px) and a phone (390 px); the shop home page on a phone and a desktop with the default and the Investor demo templates.
 - Round 9: 601 backend tests pass on SQLite and MariaDB. Setup wizard, welcome tour, Help and Guide checked in a browser on a phone and a desktop (light and dark).
 - Round 8: the whole TESTING_GUIDE.md run in a browser (Must 1–10 on a phone and again on a desktop, Should 1–10, Nice 1–4); all numbers match, ending at 60,050 / 5,780 / 54,270 = 90.4%. 573 backend tests pass on SQLite and MariaDB.

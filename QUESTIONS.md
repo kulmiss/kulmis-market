@@ -187,6 +187,8 @@ change any of them.
 | 178 | Customer quotes | You type them in. They show only with the "A real customer said this" tick, and the photo only with "They said yes to showing their photo". The only made-up quotes are the 3 demo ones of the Investor demo, marked "Demo" and hidden while demo data is off. | Decided (recommended) |
 | 179 | Investor demo template | Needs "Show demo data" on. It adds 6 demo photos and 3 demo quotes (deleted with the demo data). Its Video section starts switched off, because we have no demo video: paste your link and switch it on. | Decided (recommended) |
 | 180 | Deleting a picture that is in use | Refused while the draft, a planned publish or the live page uses it. Old versions in the history may then show without that picture. | Decided (recommended) |
+| 181 | New npm advisory in the build tools (picomatch, Nov 2026, no fixed version yet) | It is only in vite and tailwind, which run on our computers when we build, never in the shop. CI now checks shipped code at "moderate" (as before) and the build tools at "critical"; the build packages were moved to "devDependencies" where they belong. When a fixed version comes out, `npm update` clears it. | Decided (recommended) |
+| 182 | "Failed to load resource" lines in the browser console | When a coupon or gift-card code is wrong the shop answers "422" and the page shows the message; when staff are signed out the admin asks "/me" and gets "401" before showing the sign-in page. Browsers always print these answers in the console. They are not program errors, so they stay. | Decided (recommended) |
 
 ## Still open: needs you
 | # | What | Why |
