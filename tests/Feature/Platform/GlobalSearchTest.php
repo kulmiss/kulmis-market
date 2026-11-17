@@ -19,7 +19,8 @@ class GlobalSearchTest extends TestCase
 
     private function staff(string $role): User
     {
-        $u = User::factory()->role($role)->create();
+        // Fixed name and email: a random one (e.g. "Abernathy") would also match the searches below.
+        $u = User::factory()->role($role)->create(['first_name' => 'Staff', 'last_name' => 'Tester', 'email' => "staff-$role@kulmis.test", 'phone' => '+251944000'.str_pad((string) (crc32($role) % 1000), 3, '0', STR_PAD_LEFT)]);
         $u->forceFill(['two_factor_secret' => 'JBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()])->save();
 
         return $u;
@@ -42,7 +43,7 @@ class GlobalSearchTest extends TestCase
     public function test_finds_members_by_name_phone_email_and_referral_code(): void
     {
         $abebe = User::factory()->create(['first_name' => 'Abebe', 'last_name' => 'Kebede', 'phone' => '+251911556677', 'email' => 'abebe@example.com', 'referral_code' => 'ABEBE25']);
-        User::factory()->create(['first_name' => 'Hanna', 'last_name' => 'Girma']);
+        User::factory()->create(['first_name' => 'Hanna', 'last_name' => 'Girma', 'email' => 'hanna@kulmis.test', 'phone' => '+251922000111']);
         $this->actingAs($this->staff('super_admin'));
 
         foreach (['abe', 'Abebe Keb', '0911 55', '+251911556677', 'abebe@ex', 'abebe25', '#'.$abebe->id, '"Abebe"'] as $q) {
