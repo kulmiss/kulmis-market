@@ -37,6 +37,7 @@ import { Route as AuthenticatedFlashSalesRouteImport } from './routes/_authentic
 import { Route as AuthenticatedFraudRouteImport } from './routes/_authenticated/fraud'
 import { Route as AuthenticatedGiftCardsRouteImport } from './routes/_authenticated/gift-cards'
 import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
+import { Route as AuthenticatedHomePageRouteImport } from './routes/_authenticated/home-page'
 import { Route as AuthenticatedLedgerRouteImport } from './routes/_authenticated/ledger'
 import { Route as AuthenticatedMoneyHealthRouteImport } from './routes/_authenticated/money-health'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
@@ -202,6 +203,11 @@ const AuthenticatedHelpRoute = AuthenticatedHelpRouteImport.update({
   path: '/help',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHomePageRoute = AuthenticatedHomePageRouteImport.update({
+  id: '/home-page',
+  path: '/home-page',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedLedgerRoute = AuthenticatedLedgerRouteImport.update({
   id: '/ledger',
   path: '/ledger',
@@ -357,6 +363,7 @@ export interface FileRoutesByFullPath {
   '/fraud': typeof AuthenticatedFraudRoute
   '/gift-cards': typeof AuthenticatedGiftCardsRoute
   '/help': typeof AuthenticatedHelpRoute
+  '/home-page': typeof AuthenticatedHomePageRoute
   '/ledger': typeof AuthenticatedLedgerRoute
   '/money-health': typeof AuthenticatedMoneyHealthRoute
   '/payments': typeof AuthenticatedPaymentsRoute
@@ -407,6 +414,7 @@ export interface FileRoutesByTo {
   '/fraud': typeof AuthenticatedFraudRoute
   '/gift-cards': typeof AuthenticatedGiftCardsRoute
   '/help': typeof AuthenticatedHelpRoute
+  '/home-page': typeof AuthenticatedHomePageRoute
   '/ledger': typeof AuthenticatedLedgerRoute
   '/money-health': typeof AuthenticatedMoneyHealthRoute
   '/payments': typeof AuthenticatedPaymentsRoute
@@ -461,6 +469,7 @@ export interface FileRoutesById {
   '/_authenticated/fraud': typeof AuthenticatedFraudRoute
   '/_authenticated/gift-cards': typeof AuthenticatedGiftCardsRoute
   '/_authenticated/help': typeof AuthenticatedHelpRoute
+  '/_authenticated/home-page': typeof AuthenticatedHomePageRoute
   '/_authenticated/ledger': typeof AuthenticatedLedgerRoute
   '/_authenticated/money-health': typeof AuthenticatedMoneyHealthRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
@@ -516,6 +525,7 @@ export interface FileRouteTypes {
     | '/fraud'
     | '/gift-cards'
     | '/help'
+    | '/home-page'
     | '/ledger'
     | '/money-health'
     | '/payments'
@@ -566,6 +576,7 @@ export interface FileRouteTypes {
     | '/fraud'
     | '/gift-cards'
     | '/help'
+    | '/home-page'
     | '/ledger'
     | '/money-health'
     | '/payments'
@@ -619,6 +630,7 @@ export interface FileRouteTypes {
     | '/_authenticated/fraud'
     | '/_authenticated/gift-cards'
     | '/_authenticated/help'
+    | '/_authenticated/home-page'
     | '/_authenticated/ledger'
     | '/_authenticated/money-health'
     | '/_authenticated/payments'
@@ -854,6 +866,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHelpRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/home-page': {
+      id: '/_authenticated/home-page'
+      path: '/home-page'
+      fullPath: '/home-page'
+      preLoaderRoute: typeof AuthenticatedHomePageRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/ledger': {
       id: '/_authenticated/ledger'
       path: '/ledger'
@@ -1052,6 +1071,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFraudRoute: typeof AuthenticatedFraudRoute
   AuthenticatedGiftCardsRoute: typeof AuthenticatedGiftCardsRoute
   AuthenticatedHelpRoute: typeof AuthenticatedHelpRoute
+  AuthenticatedHomePageRoute: typeof AuthenticatedHomePageRoute
   AuthenticatedLedgerRoute: typeof AuthenticatedLedgerRoute
   AuthenticatedMoneyHealthRoute: typeof AuthenticatedMoneyHealthRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
@@ -1096,6 +1116,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFraudRoute: AuthenticatedFraudRoute,
   AuthenticatedGiftCardsRoute: AuthenticatedGiftCardsRoute,
   AuthenticatedHelpRoute: AuthenticatedHelpRoute,
+  AuthenticatedHomePageRoute: AuthenticatedHomePageRoute,
   AuthenticatedLedgerRoute: AuthenticatedLedgerRoute,
   AuthenticatedMoneyHealthRoute: AuthenticatedMoneyHealthRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,

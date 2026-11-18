@@ -97,6 +97,7 @@ class SwitchedOffFeaturesAreHiddenTest extends ReferralTestCase
         'referral.first_payment_bonus' => 'Paid in the background; shows up as a normal earning.',
         'badges.messages' => 'Messages sent to members, not a page.',
         'telegram_bot' => 'Adds and removes people in the Telegram channel in the background.',
+        'site.home_builder' => 'Picks which home page is shown; the builder page has no words of its own (HomeBuilderTest).',
         'site.offline_page' => 'No visible part: the pages only tell the browser not to use the offline copy.',
         'notifications.sms' => 'A way of sending messages, not a page.',
         'notifications.email' => 'A way of sending messages, not a page.',

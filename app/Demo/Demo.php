@@ -29,11 +29,12 @@ final class Demo
         'fraud_flags', 'signals', 'signal_subscriptions', 'signal_purchases', 'activity_log', 'journal_entries',
         'ledger_postings', 'user_badges', 'user_notifications', 'badge_bonus_runs', 'badge_bonuses', 'product_reviews',
         'rewards', 'membership_gifts', 'gift_cards', 'flash_sales', 'bundles', 'contests', 'challenges', 'custom_requests',
+        'testimonials', 'home_media',
     ];
 
     /** Tables made after the is_demo migration: they create their own column. */
     public const LATER_TABLES = ['badge_bonus_runs', 'badge_bonuses', 'product_reviews', 'rewards', 'membership_gifts', 'gift_cards',
-        'flash_sales', 'bundles', 'contests', 'challenges', 'custom_requests'];
+        'flash_sales', 'bundles', 'contests', 'challenges', 'custom_requests', 'testimonials', 'home_media'];
 
     private static ?bool $actingDemo = null;
 
@@ -144,6 +145,8 @@ final class Demo
         $before = self::counts();
         $images = DB::table('product_images')->whereIn('product_id', $products)->get();
         $files = DB::table('product_files')->whereIn('product_id', $products)->whereNotNull('path')->pluck('path')->all();
+        $homeMedia = DB::table('home_media')->where('is_demo', true)->get();
+        $quotePhotos = DB::table('testimonials')->where('is_demo', true)->whereNotNull('photo_path')->pluck('photo_path')->all();
 
         DB::transaction(function () use ($users, $products, $orders, $entries) {
             $in = fn (string $table, string $col, array $vals) => $vals === [] ? 0 : DB::table($table)->whereIn($col, $vals)->delete();
@@ -198,8 +201,18 @@ final class Demo
             // Real people who were referred by a demo member keep their account, without the demo referrer.
             DB::table('users')->where('is_demo', false)->whereIn('referrer_id', $users ?: [0])->update(['referrer_id' => null]);
             DB::table('users')->where('is_demo', true)->update(['referrer_id' => null]);
+            DB::table('testimonials')->where('is_demo', true)->delete();
+            DB::table('home_media')->where('is_demo', true)->delete();
             DB::table('users')->where('is_demo', true)->delete();
         });
+
+        Storage::disk('public')->delete($quotePhotos);
+        foreach ($homeMedia as $m) {
+            $widths = (array) json_decode((string) $m->widths, true);
+            foreach ((array) json_decode((string) $m->formats, true) as $f) {
+                $m->kind === 'video' ? Storage::disk('public')->delete($m->path) : Storage::disk('public')->delete(array_map(fn ($w) => "{$m->path}-$w.$f", $widths));
+            }
+        }
 
         Storage::disk('local')->delete($files); // demo downloads (private disk)
         foreach ($images as $img) {

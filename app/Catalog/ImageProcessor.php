@@ -20,6 +20,22 @@ class ImageProcessor
 
     public function store(Product $product, UploadedFile $file, ?string $alt = null): ProductImage
     {
+        $r = $this->responsive($file, "products/{$product->id}");
+
+        return $product->images()->create([
+            ...$r, 'alt' => $alt ?? $product->name,
+            'position' => (int) $product->images()->max('position') + 1,
+        ]);
+    }
+
+    /**
+     * Any picture as AVIF / WebP / JPEG at 400, 800 and 1600 px (never wider
+     * than the original), re-encoded so no hidden data or EXIF/GPS is kept.
+     *
+     * @return array{path:string, formats:list<string>, widths:list<int>, width:int, height:int}
+     */
+    public function responsive(UploadedFile $file, string $dir): array
+    {
         $src = $this->load($file);
         $w = imagesx($src);
         $h = imagesy($src);
@@ -27,7 +43,7 @@ class ImageProcessor
             throw new RuntimeException('Image is too large (max 8000 px).');
         }
 
-        $base = "products/{$product->id}/".Str::lower(Str::random(12));
+        $base = trim($dir, '/').'/'.Str::lower(Str::random(12));
         $widths = array_values(array_unique(array_map(fn ($t) => min($t, $w), self::WIDTHS)));
         $formats = array_values(array_filter(['avif', 'webp', 'jpg'], fn ($f) => $this->supports($f)));
         $disk = Storage::disk('public');
@@ -45,11 +61,7 @@ class ImageProcessor
         }
         imagedestroy($src);
 
-        return $product->images()->create([
-            'path' => $base, 'formats' => $formats, 'widths' => $widths,
-            'width' => $w, 'height' => $h, 'alt' => $alt ?? $product->name,
-            'position' => (int) $product->images()->max('position') + 1,
-        ]);
+        return ['path' => $base, 'formats' => $formats, 'widths' => $widths, 'width' => $w, 'height' => $h];
     }
 
     /**

@@ -1,0 +1,1 @@
+<div class="container-km {{ ['small' => 'py-3', 'medium' => 'py-6', 'large' => 'py-12'][$d['size']] ?? 'py-6' }}" aria-hidden="true">@if ($d['line'])<hr class="border-mist-200 dark:border-ink-700">@endif</div>

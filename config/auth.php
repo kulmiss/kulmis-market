@@ -42,6 +42,11 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        // Nobody ever signs in with this one: the home page builder renders its preview through it, as a visitor.
+        'home_preview' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
     ],
 
     /*
