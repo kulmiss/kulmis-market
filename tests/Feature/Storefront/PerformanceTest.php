@@ -118,12 +118,13 @@ class PerformanceTest extends ReferralTestCase
         $this->assertStringContainsString(base64_encode(hash('sha256', Csp::SPECULATION_RULES, true)), Csp::storefront());
     }
 
-    public function test_main_photo_is_preloaded_on_product_and_home_pages(): void
+    public function test_main_photo_is_preloaded_on_product_shop_and_home_pages(): void
     {
         $p = Product::factory()->create(['is_featured' => true]);
         $p->images()->create(['path' => "products/{$p->id}/abc", 'formats' => ['avif', 'webp', 'jpg'], 'widths' => [400, 800],
             'width' => 1000, 'height' => 800, 'alt' => 'x', 'position' => 1]);
-        foreach (['/', "/shop/{$p->slug}"] as $path) {
+        // The shop's first photo is its biggest picture on a phone (LCP), like the home hero and the product photo.
+        foreach (['/', "/shop/{$p->slug}", '/shop'] as $path) {
             $html = (string) $this->get($path)->getContent();
             $this->assertMatchesRegularExpression('#<link rel="preload" as="image" type="image/avif" imagesrcset="[^"]+abc-400\.avif 400w[^"]*" imagesizes="[^"]+" fetchpriority="high">#', $html, $path);
             $this->assertLessThan(strpos($html, 'rel="stylesheet"'), strpos($html, 'rel="preload" as="image"'), 'preload before the CSS');
