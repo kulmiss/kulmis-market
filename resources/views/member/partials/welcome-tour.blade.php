@@ -1,5 +1,6 @@
 {{-- Welcome tour: 3 short slides the first time (or ?tour=1 from Help). Slides about switched-off features are left out.
-     Without JS all slides show one under the other and "Got it" saves that it was seen. JS: resources/js/chunks/member-app.js (data-tour). --}}
+     Only the first slide is shown from the start (the others are `hidden`), so nothing jumps when the script loads.
+     Without JS that first slide shows and "Got it" saves that it was seen (Help has the rest). JS: resources/js/chunks/welcome-tour.js. --}}
 @php
     use App\Badges\BadgeIcons as I;
     use App\Support\Features as F;
@@ -19,7 +20,7 @@
     <div class="m-card relative max-h-[90svh] w-full overflow-y-auto rounded-b-none sm:max-w-md sm:rounded-2xl">
         <div class="mb-3 flex items-center justify-between gap-2">
             <div class="flex gap-1.5" aria-hidden="true" data-tour-dots>
-                @foreach ($slides as $i => $s)<span class="h-1.5 w-6 rounded-full {{ $i === 0 ? '' : 'opacity-30' }}" style="background: var(--m-accent)"></span>@endforeach
+                @foreach ($slides as $i => $s)<span class="h-1.5 w-6 rounded-full {{ $i === 0 ? '' : 'opacity-30' }}" style="background: var(--m-fill)"></span>@endforeach
             </div>
             <form method="post" action="{{ url('/account/tour/seen') }}" data-tour-form>@csrf<button class="text-sm underline m-muted" data-tour-skip>Skip</button></form>
         </div>
@@ -37,19 +38,19 @@
         </section>
 
         @if ($ref)
-        <section data-tour-slide="earn" aria-label="How you earn">
+        <section data-tour-slide="earn" aria-label="How you earn" hidden>
             <h2 class="font-serif text-2xl font-semibold">How you earn</h2>
             <ol class="mt-4 grid gap-3 text-sm">
-                <li class="flex gap-3"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-accent)">1</span><span>Share your link or your code <b class="font-mono">{{ $ref['code'] }}</b>.</span></li>
-                <li class="flex gap-3"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-accent)">2</span><span>When people you invite pay, you earn. You also earn from the people they invite ({{ $levels }} {{ $levels === 1 ? 'level' : 'levels' }}).</span></li>
-                @if ($l1 > 0)<li class="flex gap-3"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-accent)">3</span><span>Example: 3 friends join → <b data-tour-example>{{ Money::format(3 * $l1) }} every month</b> they stay ({{ Money::format($l1) }} from each {{ Money::format($price) }} membership).</span></li>@endif
+                <li class="flex gap-3"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-fill)">1</span><span>Share your link or your code <b class="font-mono">{{ $ref['code'] }}</b>.</span></li>
+                <li class="flex gap-3"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-fill)">2</span><span>When people you invite pay, you earn. You also earn from the people they invite ({{ $levels }} {{ $levels === 1 ? 'level' : 'levels' }}).</span></li>
+                @if ($l1 > 0)<li class="flex gap-3"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-fill)">3</span><span>Example: 3 friends join → <b data-tour-example>{{ Money::format(3 * $l1) }} every month</b> they stay ({{ Money::format($l1) }} from each {{ Money::format($price) }} membership).</span></li>@endif
             </ol>
             <p class="mt-4 rounded-xl px-3 py-2 text-sm m-soft">Earnings are <b>on the way</b> for {{ Settings::int('referral.pending_days') }} days, then <b>ready to use</b>. You earn only while your own membership is paid.</p>
         </section>
         @endif
 
         @if (in_array('start', $slides, true))
-        <section data-tour-slide="start" aria-label="Start now">
+        <section data-tour-slide="start" aria-label="Start now" @if (count($slides) > 1) hidden @endif>
             <h2 class="font-serif text-2xl font-semibold">Start now</h2>
             @if ($ref)
             <div class="mt-4 grid gap-2" data-share-block>

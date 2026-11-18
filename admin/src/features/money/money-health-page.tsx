@@ -6,7 +6,7 @@ import { formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Segmented } from '@/components/km/segmented'
 import { Page } from '@/components/km/page'
 import { PageSkeleton } from '@/components/km/page-skeleton'
 
@@ -47,20 +47,10 @@ export function MoneyHealthPage() {
   return (
     <Page title='Money health' description='Is the shop safe? What came in, what members got, what the shop kept, and what it owes members. Real data and demo data are never added together.'>
       <div className='mb-4 flex flex-wrap gap-3'>
-      <Tabs value={demo ? 'demo' : 'real'} onValueChange={(v) => setDemo(v === 'demo')}>
-        <TabsList>
-          <TabsTrigger value='real' className='min-h-10'>Real data</TabsTrigger>
-          <TabsTrigger value='demo' className='min-h-10'>Demo data</TabsTrigger>
-        </TabsList>
-      </Tabs>
-      <Tabs value={period} onValueChange={setPeriod}>
-        <TabsList>
-          <TabsTrigger value='month' className='min-h-10'>This month</TabsTrigger>
-          <TabsTrigger value='last_month' className='min-h-10'>Last month</TabsTrigger>
-          <TabsTrigger value='year' className='min-h-10'>This year</TabsTrigger>
-          <TabsTrigger value='all' className='min-h-10'>All time</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <Segmented label='Which data' value={demo ? 'demo' : 'real'} onChange={(v) => setDemo(v === 'demo')}
+        options={[{ value: 'real', label: 'Real data' }, { value: 'demo', label: 'Demo data' }]} />
+      <Segmented label='Period' value={period} onChange={setPeriod}
+        options={[{ value: 'month', label: 'This month' }, { value: 'last_month', label: 'Last month' }, { value: 'year', label: 'This year' }, { value: 'all', label: 'All time' }]} />
       </div>
 
       <div role='status' className={cn('mb-4 flex items-start gap-3 rounded-lg border p-4', light.cls)} data-health-light={h.light}>

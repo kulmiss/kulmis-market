@@ -9,7 +9,7 @@ keywords: cash out, withdraw, telebirr, bank, minimum, held, name, payout
 
 **To cash out**
 1. Open **Wallet**.
-2. Type the amount (at least **{cashout_min}**) and tap **Cash out**.
+2. Type the amount (at least **{cashout_min}**) and tap **Request cash-out**. Less than {cashout_min} ready to use? The page shows how much is ready; the form comes when you have enough.
 3. We send it within **{payout_days} days**. You get a message with the reference.
 
 **Limits**: up to {cashout_daily_count} cash-outs and {cashout_daily_max} a day.

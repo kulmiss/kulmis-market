@@ -12,7 +12,7 @@ import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Segmented } from '@/components/km/segmented'
 import { Page } from '@/components/km/page'
 import { PageSkeleton } from '@/components/km/page-skeleton'
 
@@ -104,7 +104,7 @@ export function FeaturesPage() {
                   className='inline-flex min-h-12 items-center gap-2 rounded-md border px-3 text-sm hover:bg-accent'
                 >
                   {g}
-                  <span className={on === inGroup.length ? 'text-muted-foreground tabular-nums' : 'font-semibold text-amber-600 tabular-nums dark:text-amber-400'}>
+                  <span className={on === inGroup.length ? 'text-muted-foreground tabular-nums' : 'font-semibold text-amber-700 tabular-nums dark:text-amber-400'}>
                     {on}/{inGroup.length}
                   </span>
                 </a>
@@ -127,13 +127,8 @@ export function FeaturesPage() {
             className='h-12 ps-9'
           />
         </div>
-        <Tabs value={show} onValueChange={(v) => setShow(v as Show)}>
-          <TabsList className='h-12'>
-            <TabsTrigger value='all' className='min-h-10 px-4'>All</TabsTrigger>
-            <TabsTrigger value='on' className='min-h-10 px-4'>On</TabsTrigger>
-            <TabsTrigger value='off' className='min-h-10 px-4'>Off</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <Segmented<Show> label='Show' value={show} onChange={setShow} className='h-12' itemClassName='px-4'
+          options={[{ value: 'all', label: 'All' }, { value: 'on', label: 'On' }, { value: 'off', label: 'Off' }]} />
       </div>
 
       <OffTexts />

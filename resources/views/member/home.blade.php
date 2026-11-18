@@ -31,7 +31,7 @@
         <p class="text-sm m-muted">Selam,</p>
         <h1 class="font-serif text-3xl font-semibold sm:text-4xl">{{ $user->first_name }}</h1>
         @if (F::enabled('membership'))<span @class(['mt-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold',
-            'm-soft m-accent-text' => $statusChip[1] === 'ok', 'bg-amber-500/15 text-amber-700 dark:text-amber-300' => $statusChip[1] === 'warn',
+            'm-soft m-accent-text' => $statusChip[1] === 'ok', 'bg-amber-500/15 text-amber-800 dark:text-amber-300' => $statusChip[1] === 'warn',
             'bg-black/5 dark:bg-white/10' => $statusChip[1] === 'muted']) data-membership-status>{!! I::svg($statusChip[1] === 'ok' ? 'circle-check' : 'clock', 14) !!}{{ $statusChip[0] }}</span>@endif
     </div>
     <div class="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto" aria-label="Quick actions">
@@ -56,9 +56,9 @@
                 @if ($ref)
                 <p class="mt-1 text-sm m-muted">Your dashboard fills up as your team grows. Here's how to start:</p>
                 <ol class="mt-3 grid gap-2 text-sm">
-                    <li class="flex gap-2"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-accent)">1</span>Share your link or code with friends and family.</li>
-                    <li class="flex gap-2"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-accent)">2</span>They join{{ F::enabled('shop') ? ' and shop' : '' }}. You earn from {{ count(array_filter([1, 2, 3], fn ($l) => F::enabled("referral.level$l"))) }} {{ count(array_filter([1, 2, 3], fn ($l) => F::enabled("referral.level$l"))) === 1 ? 'level' : 'levels' }}.</li>
-                    <li class="flex gap-2"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-accent)">3</span>Earnings are ready after {{ \App\Support\Settings::int('referral.pending_days') }} days.@feature('wallet.cashout') Cash out to Telebirr or your bank.@endfeature</li>
+                    <li class="flex gap-2"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-fill)">1</span>Share your link or code with friends and family.</li>
+                    <li class="flex gap-2"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-fill)">2</span>They join{{ F::enabled('shop') ? ' and shop' : '' }}. You earn from {{ count(array_filter([1, 2, 3], fn ($l) => F::enabled("referral.level$l"))) }} {{ count(array_filter([1, 2, 3], fn ($l) => F::enabled("referral.level$l"))) === 1 ? 'level' : 'levels' }}.</li>
+                    <li class="flex gap-2"><span class="grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style="background: var(--m-fill)">3</span>Earnings are ready after {{ \App\Support\Settings::int('referral.pending_days') }} days.@feature('wallet.cashout') Cash out to Telebirr or your bank.@endfeature</li>
                 </ol>
                 @else
                 <p class="mt-1 text-sm m-muted">Your {{ \App\Membership\Benefits::join([F::enabled('shop') ? 'orders' : null, F::enabled('signals') ? 'signals' : null, 'news']) }} will show here.</p>
@@ -102,7 +102,7 @@
                         <span class="tabular-nums m-muted">{{ $goal['percent'] }}%</span>
                     </div>
                     <div class="mt-2 h-2.5 overflow-hidden rounded-full m-soft" role="progressbar" aria-label="Monthly goal" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $goal['percent'] }}">
-                        <div class="h-full rounded-full" style="width: {{ $goal['percent'] }}%; background: var(--m-accent)"></div>
+                        <div class="h-full rounded-full" style="width: {{ $goal['percent'] }}%; background: var(--m-fill)"></div>
                     </div>
                     <p class="mt-2 text-xs m-muted">{{ $goal['reached'] ? 'Goal reached this month. Well done! 🎉' : $fmt($goal['left']).' to go this month.' }}</p>
                 @endif
@@ -121,8 +121,8 @@
         <div class="flex items-center justify-between gap-2">
             <h2 class="font-semibold">Earnings</h2>
             <div class="flex rounded-xl p-1 text-xs font-semibold m-soft" role="tablist" aria-label="Chart period">
-                <a href="{{ url('/account?chart=daily') }}" role="tab" @class(['inline-flex min-h-12 items-center rounded-lg px-3 sm:min-h-8', 'text-white' => $dash['chart_mode'] === 'daily']) @if ($dash['chart_mode'] === 'daily') aria-selected="true" style="background: var(--m-accent)" @endif>Daily</a>
-                <a href="{{ url('/account?chart=monthly') }}" role="tab" @class(['inline-flex min-h-12 items-center rounded-lg px-3 sm:min-h-8', 'text-white' => $dash['chart_mode'] === 'monthly']) @if ($dash['chart_mode'] === 'monthly') aria-selected="true" style="background: var(--m-accent)" @endif>Monthly</a>
+                <a href="{{ url('/account?chart=daily') }}" role="tab" @class(['inline-flex min-h-12 items-center rounded-lg px-3 sm:min-h-8', 'text-white' => $dash['chart_mode'] === 'daily']) @if ($dash['chart_mode'] === 'daily') aria-selected="true" style="background: var(--m-fill)" @endif>Daily</a>
+                <a href="{{ url('/account?chart=monthly') }}" role="tab" @class(['inline-flex min-h-12 items-center rounded-lg px-3 sm:min-h-8', 'text-white' => $dash['chart_mode'] === 'monthly']) @if ($dash['chart_mode'] === 'monthly') aria-selected="true" style="background: var(--m-fill)" @endif>Monthly</a>
             </div>
         </div>
         @if (array_sum(array_column($dash['chart'], 'value')) > 0)
@@ -140,7 +140,7 @@
         <ul class="mt-3 grid gap-3">
             @foreach (array_filter($dash['by_level'], fn ($l) => \App\Support\Features::enabled("referral.level$l"), ARRAY_FILTER_USE_KEY) as $lvl => $amt)
                 <li><div class="flex justify-between text-sm"><span>Level {{ $lvl }}</span><b class="tabular-nums">{{ $fmt($amt) }}</b></div>
-                    <div class="mt-1 h-2 rounded-full m-soft"><div class="h-2 rounded-full" style="width: {{ $amt > 0 ? max(3, $amt / $lvMax * 100) : 0 }}%; background: var(--m-accent)"></div></div></li>
+                    <div class="mt-1 h-2 rounded-full m-soft"><div class="h-2 rounded-full" style="width: {{ $amt > 0 ? max(3, $amt / $lvMax * 100) : 0 }}%; background: var(--m-fill)"></div></div></li>
             @endforeach
         </ul>
     </div>
@@ -149,7 +149,7 @@
         <ul class="mt-3 grid gap-3">
             @foreach (array_filter(['membership' => 'Memberships', 'products' => 'Shop orders', 'signals' => 'Signals'], fn ($k) => F::enabled($k === 'products' ? 'shop' : $k), ARRAY_FILTER_USE_KEY) as $k => $label)
                 <li><div class="flex justify-between text-sm"><span>{{ $label }}</span><b class="tabular-nums">{{ $fmt($dash['by_type'][$k]) }}</b></div>
-                    <div class="mt-1 h-2 rounded-full m-soft"><div class="h-2 rounded-full" style="width: {{ $dash['by_type'][$k] > 0 ? max(3, $dash['by_type'][$k] / $tyMax * 100) : 0 }}%; background: var(--m-accent)"></div></div></li>
+                    <div class="mt-1 h-2 rounded-full m-soft"><div class="h-2 rounded-full" style="width: {{ $dash['by_type'][$k] > 0 ? max(3, $dash['by_type'][$k] / $tyMax * 100) : 0 }}%; background: var(--m-fill)"></div></div></li>
             @endforeach
         </ul>
     </div>
@@ -173,7 +173,7 @@
         <div class="min-w-0">
             <h2 id="bonus-title" class="font-semibold">Your badge bonus</h2>
             @if ($bonus['current'])
-                <p class="mt-1 text-sm">Badge now: <b style="color: {{ $bonus['current']['color'] }}">{{ $bonus['current']['name'] }}</b> · {{ $bonus['active'] }} active {{ \Illuminate\Support\Str::plural('member', $bonus['active']) }} you invited</p>
+                <p class="mt-1 text-sm">Badge now: <b style="--badge: {{ $bonus['current']['color'] }}" data-badge-text>{{ $bonus['current']['name'] }}</b> · {{ $bonus['active'] }} active {{ \Illuminate\Support\Str::plural('member', $bonus['active']) }} you invited</p>
             @else
                 <p class="mt-1 text-sm m-muted">{{ $bonus['active'] }} active {{ \Illuminate\Support\Str::plural('member', $bonus['active']) }} you invited. Bronze starts at {{ $bonus['next']['threshold'] ?? 3 }}.</p>
             @endif

@@ -6,7 +6,7 @@ const tones: Record<string, string> = {
   warn: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
   bad: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
   info: 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300',
-  muted: 'bg-muted text-muted-foreground',
+  muted: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
 }
 
 const map: Record<string, keyof typeof tones> = {

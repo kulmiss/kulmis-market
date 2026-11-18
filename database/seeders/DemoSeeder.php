@@ -38,6 +38,7 @@ use App\Referral\CommissionEngine;
 use App\Referral\ReferralCodes;
 use App\Shop\GiftCards;
 use App\Signals\SignalAccess;
+use App\Support\Settings;
 use App\Wallet\CashOuts;
 use App\Wallet\PayoutAccounts;
 use Illuminate\Database\Seeder;
@@ -104,6 +105,11 @@ class DemoSeeder extends Seeder
             $this->command?->warn('Demo data is already there. Delete it in Admin → Demo data first to add it again.');
 
             return;
+        }
+        if (! Demo::visible()) {
+            // Hidden demo rows can't be found while they are being made ("That product is not available").
+            Settings::set('demo.show', true);
+            $this->command?->info('"Show demo data" was off. It is on now, so you can see the demo data.');
         }
         mt_srand(2026);
         $this->days = max(14, (int) (self::flag('DEMO_DAYS') ?? self::DAYS)); // shorter history for tests
@@ -302,7 +308,8 @@ class DemoSeeder extends Seeder
     private function staff(): void
     {
         $this->admin = $this->staffUser('super_admin', 'Hanna', 'Girma');
-        foreach (['manager' => ['Yonas', 'Alemu'], 'finance' => ['Meron', 'Tadesse'], 'fulfilment' => ['Kebede', 'Wolde'], 'support' => ['Liya', 'Mekonnen']] as $role => [$f, $l]) {
+        foreach (['manager' => ['Yonas', 'Alemu'], 'finance' => ['Meron', 'Tadesse'], 'fulfilment' => ['Kebede', 'Wolde'], 'support' => ['Liya', 'Mekonnen'],
+            'content_editor' => ['Saba', 'Worku']] as $role => [$f, $l]) {
             $this->staffUser($role, $f, $l);
         }
     }

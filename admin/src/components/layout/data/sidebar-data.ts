@@ -1,4 +1,5 @@
 import {
+  House,
   HeartPulse,
   Activity,
   BarChart3,
@@ -102,6 +103,7 @@ export const sidebarData: SidebarData = {
     {
       title: 'System',
       items: [
+        { title: 'Home page', url: '/home-page', icon: House, ability: 'manage-home' },
         { title: 'Pages & banners', url: '/content', icon: FileText, ability: 'manage-content' },
         { title: 'Share kit', url: '/share-kit', icon: Share2, ability: 'manage-content', feature: 'referral.share_kit' },
         { title: 'Help centre', url: '/help', icon: LifeBuoy, ability: 'answer-help', feature: 'site.help_centre' },

@@ -62,6 +62,7 @@ Password for all of them: **`kulmis demo 2026`**
 | Finance | `demo-finance@kulmis.test` | `/admin` |
 | Fulfilment | `demo-fulfilment@kulmis.test` | `/admin` |
 | Support | `demo-support@kulmis.test` | `/admin` |
+| Content editor | `demo-content_editor@kulmis.test` | `/admin` |
 | Member with a big team (Selam) | `demo-member@kulmis.test` | `/account` |
 | Brand-new member (Dawit) | `demo-new@kulmis.test` | `/account` |
 | Team leader (Abebe) | `demo-team-abebe@kulmis.test` | `/account` |

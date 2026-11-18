@@ -9,7 +9,7 @@ return [
     'abilities' => [
         'manage-settings', 'manage-features', 'manage-products', 'manage-orders',
         'manage-members', 'manage-signals', 'manage-referrals', 'manage-ledger',
-        'approve-cashouts', 'approve-payments', 'review-fraud', 'manage-content', 'view-reports', 'view-activity',
+        'approve-cashouts', 'approve-payments', 'review-fraud', 'manage-content', 'manage-home', 'view-reports', 'view-activity',
     ],
 
     'roles' => [
@@ -22,6 +22,8 @@ return [
         // (approving gives value: membership, commissions, goods).
         'fulfilment' => ['label' => 'Fulfilment', 'abilities' => ['manage-orders']],
         'support' => ['label' => 'Support', 'abilities' => ['manage-orders', 'manage-members']],
+        // Builds the home page and edits pages, banners and help texts. No money, members or orders.
+        'content_editor' => ['label' => 'Content editor', 'abilities' => ['manage-home', 'manage-content']],
         'finance' => ['label' => 'Finance', 'abilities' => [
             'manage-ledger', 'approve-cashouts', 'approve-payments', 'review-fraud', 'view-reports',
         ]],

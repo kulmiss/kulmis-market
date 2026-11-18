@@ -64,7 +64,7 @@ function PayoutActions({ payout }: { payout: Payout }) {
           <div>{payout.method === 'bank' ? `Bank: ${payout.bank_name}` : 'Telebirr'}</div>
           <div>Name: <b>{payout.account_name}</b></div>
           <div className='flex items-center gap-2'>Account: <b className='font-mono'>{full?.account_number ?? '…'}</b>
-            {full && <Button size='icon' variant='ghost' className='size-6' onClick={() => navigator.clipboard.writeText(full.account_number).then(() => toast.success('Copied'))}><Copy /></Button>}</div>
+            {full && <Button size='icon' variant='ghost' className='size-6' aria-label='Copy the account number' onClick={() => navigator.clipboard.writeText(full.account_number).then(() => toast.success('Copied'))}><Copy /></Button>}</div>
           {payout.status === 'on_hold' && <div className='mt-2 text-amber-700'>On hold: {payout.hold_reason ?? 'review the fraud queue first'}.</div>}
           {full && (full.account_verified
             ? <div className='mt-2 text-emerald-700'>Account verified on an earlier payout.</div>
@@ -78,7 +78,7 @@ function PayoutActions({ payout }: { payout: Payout }) {
         )}
         <Input placeholder='Transfer reference (required)' value={reference} onChange={(e) => setReference(e.target.value)} />
       </FormDialog>
-      <FormDialog title='Do not pay this cash-out' saveText='Do not pay, put money back' trigger={<Button size='sm' variant='ghost'><X /></Button>}
+      <FormDialog title='Do not pay this cash-out' saveText='Do not pay, put money back' trigger={<Button size='sm' variant='ghost' aria-label='Do not pay, put money back' title='Do not pay, put money back'><X /></Button>}
         onSave={() => reject.mutateAsync({ path: `/cash-outs/${payout.id}/reject`, body: { reason } })}>
         <Input placeholder='Reason (sent to the member)' value={reason} onChange={(e) => setReason(e.target.value)} />
       </FormDialog>

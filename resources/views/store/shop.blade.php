@@ -1,4 +1,6 @@
 @extends('layouts.store', ['title' => $category?->name ?? 'Shop', 'description' => $category?->description ?? 'Handcrafted Ethiopian products'.(\App\Support\Features::enabled('membership.member_discount') ? ' — member prices shown on every item.' : '.')])
+{{-- The first photo is the biggest thing on a phone (LCP): start downloading it before the CSS. --}}
+@push('head')@include('store.partials.preload-image', ['image' => $products->first()?->images->first(), 'sizes' => '(min-width: 1024px) 25vw, 50vw'])@endpush
 @section('content')
 <div class="container-km py-10">
     <h1 class="text-4xl">{{ $category?->name ?? 'Shop' }}</h1>

@@ -1,6 +1,32 @@
 # Kulmis Market — security and quality review
 
-_Newest review first: Round 7, Round 5, Round 3, then round 1 (before the first merge)._
+_Newest review first: Round 11, Round 7, Round 5, Round 3, then round 1 (before the first merge)._
+
+## Round 11 — full site test, every scenario (18 Nov 2026)
+
+Branch `pr/97-site-test-fixes`, from `main` (with #99 and #103).
+
+**How it was checked**
+- **Clean start**: `migrate:fresh`, `km:story`, then the demo data. Docker + nginx + MySQL 8, port 8090, real headless Chrome.
+- **Money story in the browser** (Must 1–10, each person in their own browser, `km:test-clock`): 55 of 55 checks, ending at Money health **60,050 in / 5,780 paid / 54,270 kept = 90.4%**.
+- **Every page × every person × every screen**: a crawler opened every page as guest, member with a big team, new member, member in grace, expired member, member with a wallet below zero after a refund, and all 6 staff roles + Super Admin; at 360, 390, 414, 820 and 1366 px, light and dark, and once with 125% text. **5,986 page visits.** On each: HTTP errors, console errors, CSP blocks, failed requests, broken pictures, sideways scrolling, cut-off text and hints.
+- **Accessibility**: axe-core (WCAG 2.1 AA) on 34 key pages × light/dark × phone/desktop.
+- **Flows**: cart with variants, wrong and good coupons, wrong and real gift cards, guest checkout, bank receipt, order tracking, members-only and early-access products, wishlist, member checkout with the wallet, buy again, made-to-order, notifications, share kit and QR, offline page and service worker; admin global search (Ctrl+K), table search and CSV, bulk edit, Home page builder (all 5 templates, plan + cancel, XSS in a headline, discard), the "?" button and guide search; Should 1–10 and Nice 1–4 (last-piece race with two buyers at once, order life cycle with emails, rejected receipt, coupon, switches off and back on, End access now).
+- **Security**: every admin API route × every role including the new Content editor (`AccessControlTest`), XSS in builder texts and reviews (shown as text), CSV export cells never start a formula, uploads (re-encoded, SVG refused, fake video refused), CSP (no violation in any of the page visits), rate limits and enumeration (existing tests). `composer audit`, `npm audit`, gitleaks.
+
+### Found and fixed (Round 11)
+| Area | Found | Fixed? |
+|---|---|---|
+| Accessibility | White text on the member buttons 4.37 : 1; badge names in their own colour (gold 1.9 : 1); amber chip 4.2; white "See it" button in dark mode 1.9; status chips in the admin 4.34; switch counts 3.2; icon buttons without a name; filter switches built as tabs without panels | ✅ axe: 0 problems |
+| Speed | Member home jumped when the welcome tour script loaded (layout shift 0.58, Lighthouse 77 on a phone) | ✅ 0, Lighthouse 100 |
+| Dependencies | New npm advisory (picomatch ReDoS) with no fixed version, only in the build tools; CI would have turned red | ✅ build tools in devDependencies; CI: shipped code "moderate", build tools "critical" |
+| Screens | Cut-off hints ("Search everyth…", payments and guide search) | ✅ |
+| Member wallet | Cash-out form shown when there is not enough to cash out | ✅ clear sentence instead |
+| Share kit | Posts without a picture showed a cut piece of the wide link picture | ✅ shop icon |
+| Help / demo | Cash-out article named the wrong button; no demo account for the Content editor role | ✅ |
+| Speed (CI) | /shop on a slow phone: LCP 2.56 s once in CI (budget 2.5 s); its first photo was not preloaded | ✅ preloaded, like home and product |
+| Tests | The global search test could fail by chance (a random staff name like "Abernathy" matched "abe") | ✅ fixed names in that test |
+| Access control, XSS, CSRF, uploads, CSP, race conditions | none | — |
 
 ## Round 7 — the testing guide run by hand + money-cheating check (16 Nov 2026)
 

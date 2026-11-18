@@ -1,1 +1,0 @@
-import{t as e}from"./forbidden-BlNUs-cb.js";var t=e;export{t as component};

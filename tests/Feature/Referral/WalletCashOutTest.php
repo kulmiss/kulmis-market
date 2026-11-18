@@ -159,6 +159,19 @@ class WalletCashOutTest extends ReferralTestCase
         $this->assertTrue(PayoutRequest::query()->firstOrFail()->due_at->between(now()->addDays(3)->subMinute(), now()->addDays(3)->addMinute()));
     }
 
+    public function test_wallet_page_shows_the_cash_out_form_only_when_there_is_enough(): void
+    {
+        $u = $this->member(null, 'Abdi');
+        $this->account($u)->assertOk();
+        $this->credit($u, 40_000);
+        $this->actingAs($u)->get('/account/wallet')->assertOk()
+            ->assertDontSee('Request cash-out')
+            ->assertSee('You can cash out from 1,000 ETB. Ready to use now: 400 ETB.');
+
+        $this->credit($u, 60_000);
+        $this->actingAs($u)->get('/account/wallet')->assertOk()->assertSee('Request cash-out')->assertDontSee('You can cash out from');
+    }
+
     public function test_admin_pays_or_rejects_cash_out(): void
     {
         $u = $this->member(null, 'Abdi');

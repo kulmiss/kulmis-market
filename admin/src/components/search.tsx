@@ -25,7 +25,9 @@ export function Search({
         className='absolute inset-s-1.5 top-1/2 -translate-y-1/2'
         size={16}
       />
-      <span className='ms-4'>{placeholder}</span>
+      {/* Tablet widths only have room for one word. */}
+      <span className='ms-4 truncate lg:hidden'>Search</span>
+      <span className='ms-4 hidden truncate lg:inline'>{placeholder}</span>
       <kbd className='pointer-events-none absolute inset-e-[0.3rem] top-[0.3rem] hidden h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 select-none group-hover:bg-accent sm:flex'>
         <span className='text-xs'>⌘</span>K
       </kbd>
