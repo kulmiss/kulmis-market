@@ -24,6 +24,8 @@ Branch `pr/97-site-test-fixes`, from `main` (with #99 and #103).
 | Member wallet | Cash-out form shown when there is not enough to cash out | ✅ clear sentence instead |
 | Share kit | Posts without a picture showed a cut piece of the wide link picture | ✅ shop icon |
 | Help / demo | Cash-out article named the wrong button; no demo account for the Content editor role | ✅ |
+| Speed (CI) | /shop on a slow phone: LCP 2.56 s once in CI (budget 2.5 s); its first photo was not preloaded | ✅ preloaded, like home and product |
+| Tests | The global search test could fail by chance (a random staff name like "Abernathy" matched "abe") | ✅ fixed names in that test |
 | Access control, XSS, CSRF, uploads, CSP, race conditions | none | — |
 
 ## Round 7 — the testing guide run by hand + money-cheating check (16 Nov 2026)
