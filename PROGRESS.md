@@ -3,11 +3,11 @@
 Updated after every step. Newest round first.
 
 ## Now
-📍 **Now:** Step 9 of 9 — waiting for your merges
+📍 **Now:** Step 9 of 9 — waiting for your one merge
 📊 **Progress:** ▓▓▓▓▓▓▓▓▓▓ 100% done / 0% left
-✅ **Just finished:** Round 11: guides checked, whole site tested, 11 bugs fixed, CI green on #106
+✅ **Just finished:** every open PR now points at `main`; #106 contains all of them (#99–#105)
 ⏭️ **Next:** your next request
-⚠️ **Waiting for you:** merge #99 and #103, then #106 (it contains #104 and #105)
+⚠️ **Waiting for you:** merge only #106 with **Create a merge commit** (not Squash, not Rebase); GitHub then marks #99–#105 as merged by itself
 ⏱️ **Time left (estimate):** none for Round 11
 
 ## Round 11 — guides + full site test (PRs #104 → #105 → #106)
