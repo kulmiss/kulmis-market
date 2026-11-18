@@ -66,7 +66,12 @@ jobs:
       - name: Dependency audits
         run: |
           composer audit --locked --no-interaction || (echo "composer audit found advisories" && exit 1)
-          cd admin && npm audit --audit-level=moderate
+          # Code that runs in the browser or on the server: no advisory at all (moderate and up).
+          npm audit --omit=dev --audit-level=moderate
+          (cd admin && npm audit --omit=dev --audit-level=moderate)
+          # Build tools (vite, tailwind): they only run on our machines, never in the shop. Fail on critical ones;
+          # lower ones are listed so we see them (picomatch ReDoS, Nov 2026: no fixed version exists yet).
+          (cd admin && npm audit --audit-level=critical)
 
   admin:
     if: github.event_name == 'push' || github.event.pull_request.draft == false

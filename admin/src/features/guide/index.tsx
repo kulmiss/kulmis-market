@@ -25,7 +25,7 @@ export function GuideIndex() {
       actions={<Button variant='outline' asChild><a href='/api/v1/admin/guide/pdf' data-guide-pdf><FileDown /> Download as PDF</a></Button>}>
       <div className='relative mb-4 max-w-xl'>
         <Search className='absolute start-3 top-2.5 size-4 text-muted-foreground' />
-        <Input className='ps-9' placeholder='Search the guide, e.g. refund, cash-out, telegram' value={q} onChange={(e) => setQ(e.target.value)} aria-label='Search the guide' data-guide-search />
+        <Input className='ps-9' placeholder='Search, e.g. refund or cash-out' value={q} onChange={(e) => setQ(e.target.value)} aria-label='Search the guide' data-guide-search />
       </div>
       {!data ? <PageSkeleton /> : (
         <div className='grid gap-6' data-guide-list>

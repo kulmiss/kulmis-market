@@ -165,6 +165,21 @@ One stack on `main`: `pr/67-auto-close` (#75) → `pr/74-admin-off`. The top PR 
 | `pr/89-report-dates` | Reports and monthly signal results: sales after 21:00 were missing from "today" (time-zone bug, found by the evening test run) |
 | `pr/90-shop-speed` | Tour and "Was this helpful?" scripts load only where used; help article styles in their own small CSS (phone speed budget in CI) |
 
+## Round 10 (home page builder)
+| Branch | What |
+|--------|------|
+| `pr/92-home-builder-core` | Versions (draft, planned, every publish), 17 section types with a schema, safe links, Blade partials, live numbers, publish / plan / restore (page cache cleared, activity log), switch "Home page builder", Content editor role. The "Current home page" template gives the same HTML as the fixed page (tested) |
+| `pr/93-home-media-testimonials` | Pictures (AVIF/WebP/JPEG, no metadata, alt text required), Video (YouTube no-cookie / Vimeo after a tap, or an ffmpeg re-encoded upload with a poster; ffmpeg in the Docker image), Gallery, customer quotes (only with the "real customer" tick), 4 more templates incl. Investor demo (demo rows) |
+| `pr/94-home-builder-editor` | Admin → Home page: drag and drop, side panel, live preview (phone/desktop, light/dark), undo/redo, autosave, leave warning, history, guide page |
+| `pr/95-home-docs-speed` | Screenshots in the guide and PDF, speed numbers, QUESTIONS, this file |
+
+Home page speed (Lighthouse, 3 runs each, local server, page cache on):
+| Page | Phone score | Phone LCP | Desktop score | Desktop LCP | Bytes | CLS |
+|---|---|---|---|---|---|---|
+| Fixed home page (before) | 75 / 100 / 100 | 1.15 / 1.22 / 1.20 s | 100 | 0.29–0.38 s | 138–148 KB | 0 |
+| Builder, Current template (after) | 100 / 100 / 100 | 1.24 / 1.14 / 1.20 s | 100 | 0.29–0.38 s | 138–148 KB | 0 |
+| Builder, Investor demo (every section type) | 100 / 100 / 100 | 1.16 / 1.11 / 1.15 s | 100 | 0.29–0.45 s | 200–210 KB | 0 |
+
 ## Key decisions
 All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
 - Money is integer santim and double-entry. Balances are never stored.
@@ -184,6 +199,7 @@ All decisions are in [QUESTIONS.md](QUESTIONS.md). The important ones:
 See [docs/local-setup.md](docs/local-setup.md).
 
 ## Test status
+- Round 10: home page builder tests (HomeBuilderTest, HomeBuilderMediaTest) plus the whole suite on SQLite and MariaDB. The builder checked in a browser on a desktop, a tablet (820 px) and a phone (390 px); the shop home page on a phone and a desktop with the default and the Investor demo templates.
 - Round 9: 601 backend tests pass on SQLite and MariaDB. Setup wizard, welcome tour, Help and Guide checked in a browser on a phone and a desktop (light and dark).
 - Round 8: the whole TESTING_GUIDE.md run in a browser (Must 1–10 on a phone and again on a desktop, Should 1–10, Nice 1–4); all numbers match, ending at 60,050 / 5,780 / 54,270 = 90.4%. 573 backend tests pass on SQLite and MariaDB.
 - Round 6: 535 backend tests pass on SQLite and MariaDB (Pint, Larastan level 6). The never-existed crawl takes about 2 minutes.

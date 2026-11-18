@@ -5,6 +5,7 @@ namespace Tests\Feature\Platform;
 use App\Demo\Demo;
 use App\Jobs\SendCustomerMessage;
 use App\Ledger\Wallet;
+use App\Models\MembershipPurchase;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
@@ -88,6 +89,15 @@ class DemoDataTest extends TestCase
         $this->assertStringContainsString('pexels.com/license', $credits);
     }
 
+    public function test_demo_data_can_be_added_while_show_demo_data_is_off(): void
+    {
+        Settings::set('demo.show', false); // e.g. switched off while trying things out
+        $this->seedDemo();
+        $this->assertTrue(Settings::get('demo.show'));
+        $this->assertGreaterThan(10, Order::query()->where('is_demo', true)->count(), 'orders were made');
+        $this->assertGreaterThan(5, MembershipPurchase::query()->where('is_demo', true)->where('status', 'paid')->count(), 'memberships were paid');
+    }
+
     public function test_the_seeder_refuses_to_run_in_production(): void
     {
         $this->app['env'] = 'production';
@@ -125,7 +135,8 @@ class DemoDataTest extends TestCase
         $star = User::query()->where('email', 'demo-member@kulmis.test')->firstOrFail();
         $this->assertGreaterThanOrEqual(25, User::query()->where('referrer_id', $star->id)->count(), 'a deep tree with many level-1 members');
         $this->assertTrue(User::query()->whereIn('referrer_id', User::query()->where('referrer_id', $star->id)->select('id'))->exists(), 'level 2');
-        foreach (['super_admin', 'manager', 'finance', 'fulfilment', 'support'] as $role) {
+        // Every staff role has a demo account (to try each one out).
+        foreach (array_keys(config('permissions.roles')) as $role) {
             $this->assertDatabaseHas('users', ['email' => "demo-$role@kulmis.test", 'role' => $role, 'is_demo' => true]);
         }
         $this->assertTrue(DB::table('payments')->where('status', 'awaiting_review')->exists());

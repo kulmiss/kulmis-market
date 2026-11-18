@@ -41,7 +41,7 @@ function CategoryDialog({ category }: { category?: Category }) {
   const save = useMutate(category ? 'put' : 'post', ['categories'], 'Category saved')
   return (
     <FormDialog title={category ? 'Edit category' : 'New category'}
-      trigger={category ? <Button size='icon' variant='ghost'><Pencil /></Button> : <Button><Plus /> New category</Button>}
+      trigger={category ? <Button aria-label='Edit' size='icon' variant='ghost'><Pencil /></Button> : <Button><Plus /> New category</Button>}
       onSave={() => save.mutateAsync({ path: category ? `/categories/${category.id}` : '/categories', body: { ...d, slug: d.slug || undefined } })}>
       <L label='Name'><Input value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} /></L>
       <L label='Slug (optional)'><Input value={d.slug} onChange={(e) => setD({ ...d, slug: e.target.value })} /></L>
@@ -87,7 +87,7 @@ function CouponDialog({ coupon }: { coupon?: Coupon }) {
   const save = useMutate(coupon ? 'put' : 'post', ['coupons'], 'Coupon saved')
   return (
     <FormDialog title={coupon ? `Edit ${coupon.code}` : 'New coupon'}
-      trigger={coupon ? <Button size='icon' variant='ghost'><Pencil /></Button> : <Button><Plus /> New coupon</Button>}
+      trigger={coupon ? <Button aria-label='Edit' size='icon' variant='ghost'><Pencil /></Button> : <Button><Plus /> New coupon</Button>}
       onSave={() => save.mutateAsync({ path: coupon ? `/coupons/${coupon.id}` : '/coupons', body: { ...d, ends_at: d.ends_at || null } })}>
       <L label='Code'><Input value={d.code} onChange={(e) => setD({ ...d, code: e.target.value.toUpperCase() })} /></L>
       <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
@@ -161,7 +161,7 @@ function ZoneDialog({ zone }: { zone?: Zone }) {
   const save = useMutate(zone ? 'put' : 'post', ['zones'], 'Zone saved')
   return (
     <FormDialog title={zone ? `Edit ${zone.name}` : 'New zone'}
-      trigger={zone ? <Button size='icon' variant='ghost'><Pencil /></Button> : <Button size='sm'><Plus /> New zone</Button>}
+      trigger={zone ? <Button aria-label='Edit' size='icon' variant='ghost'><Pencil /></Button> : <Button size='sm'><Plus /> New zone</Button>}
       onSave={() => save.mutateAsync({ path: zone ? `/shipping-zones/${zone.id}` : '/shipping-zones', body: { ...d, cities: d.cities.split(',').map((c) => c.trim()).filter(Boolean) } })}>
       <L label='Name'><Input value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} /></L>
       <L label='Cities (comma separated)'><Input value={d.cities} placeholder='Addis Ababa, Adama' onChange={(e) => setD({ ...d, cities: e.target.value })} /></L>
@@ -186,7 +186,7 @@ function CourierDialog({ courier }: { courier?: Courier }) {
   const save = useMutate(courier ? 'put' : 'post', ['couriers'], 'Courier saved')
   return (
     <FormDialog title={courier ? `Edit ${courier.name}` : 'New courier'}
-      trigger={courier ? <Button size='icon' variant='ghost'><Pencil /></Button> : <Button size='sm'><Plus /> New courier</Button>}
+      trigger={courier ? <Button aria-label='Edit' size='icon' variant='ghost'><Pencil /></Button> : <Button size='sm'><Plus /> New courier</Button>}
       onSave={() => save.mutateAsync({ path: courier ? `/couriers/${courier.id}` : '/couriers', body: { ...d, tracking_url: d.tracking_url || null } })}>
       <L label='Name'><Input value={d.name} placeholder='EMS, HudHud…' onChange={(e) => setD({ ...d, name: e.target.value })} /></L>
       <L label='Phone'><Input value={d.phone} onChange={(e) => setD({ ...d, phone: e.target.value })} /></L>

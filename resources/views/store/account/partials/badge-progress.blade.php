@@ -4,7 +4,7 @@
         {!! \App\Badges\BadgeIcons::svg($b['icon'], 22) !!}
     </span>
     <div class="min-w-0 flex-1">
-        <div class="flex items-baseline justify-between gap-2"><b class="truncate">{{ $b['name'] }}</b>@if ($b['unlocked'])<span class="text-xs font-semibold" style="color: {{ $b['color'] }}">✓</span>@endif</div>
+        <div class="flex items-baseline justify-between gap-2"><b class="truncate">{{ $b['name'] }}</b>@if ($b['unlocked'])<span class="text-xs font-semibold" style="--badge: {{ $b['color'] }}" data-badge-text>✓</span>@endif</div>
         <div class="mt-1 h-2 overflow-hidden rounded-full bg-mist-200 dark:bg-white/10" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $b['percent'] }}" aria-label="{{ $b['name'] }} progress">
             <div class="h-full rounded-full" style="width: {{ max($b['percent'], $b['unlocked'] ? 100 : 2) }}%; background: {{ $b['color'] }}"></div>
         </div>

@@ -15,6 +15,7 @@ pages: /guide
 - [ ] **Fraud checks**: clear or confirm
 - [ ] Download the newest backup to your computer
 - [ ] **Help centre**: answer messages; look at articles with many *No*
+- [ ] **Home page**: still right? (sale ended, new pictures)
 
 **Every month**
 - [ ] On the 1st: **Badge bonus** → Pay now (or Skip)
@@ -38,6 +39,7 @@ pages: /guide
 | I want to… | Go to |
 |---|---|
 | approve a receipt | Payments |
+| change the front page of the shop | Home page (then Publish) |
 | refund | Payments → Filters → Status: all → open → Refund… |
 | ship an order | Orders → open → Mark making → Courier → Mark shipped |
 | pay a cash-out | Cash-outs → Pay |

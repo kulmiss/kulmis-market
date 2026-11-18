@@ -12,6 +12,7 @@ pages: /activity, /settings
 | Finance | money history, cash-outs, approve receipts, fraud checks, reports |
 | Fulfilment | orders and shipping |
 | Support | orders and members, help messages |
+| Content editor | the home page builder, pages, banners and help texts (no money, members or orders) |
 
 **Add staff**: on the server, `php artisan km:create-admin name@example.com --role=finance --first=Name --last=Surname`. They must set up two-step sign-in at their first sign-in.
 

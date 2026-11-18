@@ -16,7 +16,7 @@
                     <span class="m-muted">Bring {{ $c->target }} new paying {{ $c->target === 1 ? 'member' : 'members' }} → {{ Money::format($c->reward) }}</span>
                 </div>
                 <div class="mt-2 h-2.5 overflow-hidden rounded-full m-soft" role="progressbar" aria-label="{{ $c->name }}" aria-valuemin="0" aria-valuemax="{{ $c->target }}" aria-valuenow="{{ min($row['count'], $c->target) }}">
-                    <div class="h-full rounded-full" style="width: {{ $row['percent'] }}%; background: var(--m-accent)"></div>
+                    <div class="h-full rounded-full" style="width: {{ $row['percent'] }}%; background: var(--m-fill)"></div>
                 </div>
                 <p class="mt-1 text-xs m-muted">{{ $row['done'] ? 'Done! 🎉 Paid after the month and the check.' : $row['count'].' of '.$c->target.' so far this month.' }}</p>
             </div>
@@ -55,7 +55,7 @@
                     <li class="flex items-center gap-3 py-2" style="border-color: var(--m-line)">
                         <span class="w-6 text-end font-bold tabular-nums">{{ $b['place'] }}</span>
                         <span class="flex-1 font-medium">{{ $b['name'] }}@if ($b['user_id'] === $user->id) <span class="m-muted">(you)</span>@endif</span>
-                        @if ($b['badge'])<span class="inline-flex items-center gap-1 text-xs" style="color: {{ $b['badge']['color'] }}">{!! I::svg($b['badge']['icon'], 14) !!}{{ $b['badge']['name'] }}</span>@endif
+                        @if ($b['badge'])<span class="inline-flex items-center gap-1 text-xs" style="--badge: {{ $b['badge']['color'] }}" data-badge-text>{!! I::svg($b['badge']['icon'], 14) !!}{{ $b['badge']['name'] }}</span>@endif
                         <span class="tabular-nums m-muted">{{ $b['score_text'] }}</span>
                     </li>
                 @endforeach

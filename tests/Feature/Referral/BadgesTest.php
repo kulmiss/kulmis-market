@@ -154,7 +154,9 @@ class BadgesTest extends ReferralTestCase
         $this->post('/account/badges/seen')->assertRedirect();
         $this->get('/account')->assertDontSee('data-celebrate', false)->assertSee('Next badge');
         $this->get('/account/badges')->assertOk()->assertSee('My badges')->assertSee('3/10 active members to Silver')
-            ->assertSee('role="progressbar"', false)->assertSee('Shopping');
+            ->assertSee('role="progressbar"', false)->assertSee('Shopping')
+            // Badge colours are picked by admins (gold, light green…): text is mixed to a readable shade, never the raw colour.
+            ->assertSee('data-badge-text', false)->assertDontSee('; color: #', false);
 
         $this->actingAs($me, 'sanctum');
         $this->getJson('/api/v1/badges')->assertOk()->assertJsonPath('summary.highest.key', 'bronze')

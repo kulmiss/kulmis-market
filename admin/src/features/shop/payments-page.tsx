@@ -39,7 +39,7 @@ export function PaymentsPage() {
 
   return (
     <Page title='Payments' description='Check bank / Telebirr receipts, give money back, download receipts. Tap a payment to open it.'>
-      <ResourceTable<Payment> queryKey='payments' path='/payments' columns={columns} search={{ placeholder: 'Name, phone, order or reference' }}
+      <ResourceTable<Payment> queryKey='payments' path='/payments' columns={columns} search={{ placeholder: 'Name, phone, order, ref.' }}
         filters={[
           { key: 'status', label: 'Status', default: 'awaiting_review', options: opts('awaiting_review', 'pending', 'paid', 'partially_refunded', 'refunded', 'rejected', 'failed') },
           { key: 'provider', label: 'Method', options: opts('telebirr', 'bank_transfer', 'wallet') },

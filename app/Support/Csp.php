@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use App\Home\VideoLink;
+
 /**
  * Content-Security-Policy. The storefront's only inline script (theme
  * before paint) is allowed by hash, so cached static pages keep working.
@@ -38,6 +40,8 @@ final class Csp
             "img-src 'self' data: blob:",
             "font-src 'self'",
             "connect-src 'self'",
+            // Home page videos: only the YouTube (no-cookie) and Vimeo players, after a tap.
+            'frame-src '.implode(' ', VideoLink::HOSTS),
             "form-action 'self'",
             "frame-ancestors 'none'",
             "base-uri 'self'",

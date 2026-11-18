@@ -1,0 +1,1 @@
+import{n as e}from"./guide-aerE2_cF.js";import{i as t}from"./index-DoovHB0B.js";import{c as n}from"./dist-BXPugWsx.js";var r=n();function i(){let{slug:n}=t.useParams();return(0,r.jsx)(e,{slug:n},n)}export{i as component};
